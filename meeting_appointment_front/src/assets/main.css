@@ -1,0 +1,24 @@
+/* @import './base.css'; */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.el-header {
+    --el-header-padding: 0 !important;
+}
+.el-menu {
+    border-right: none !important;
+}
+
+a {
+  text-decoration: none;
+}
+/* 
+@media (hover: hover) {
+  a:hover {
+    background-color: hsla(160, 100%, 37%, 0.2);
+  }
+} */
