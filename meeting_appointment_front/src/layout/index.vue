@@ -1,7 +1,7 @@
 <template>
     <div class="layout-container">
         <div class="layout_header">
-            <div class="logo">
+            <div class="logo" @click="toHome">
                 <img src="@/assets/img/logo.png" alt="">
             </div>
             <div class="avatar">
@@ -22,7 +22,7 @@
                     <el-aside width="15.625rem">
                         <Sidebar/>
                     </el-aside>
-                    <el-main>Main</el-main>
+                    <el-main><RouterView></RouterView></el-main>
                 </el-container>
             </el-container>
         </div>
@@ -30,12 +30,20 @@
 </template>
 <script setup lang="ts">
     import { UserFilled } from '@element-plus/icons-vue';
+    import { useRouter } from 'vue-router'
     import Navbar from "@/layout/components/navbar.vue";
     import Sidebar from "@/layout/components/sidebar.vue";
+
+    const router = useRouter();
     /**
      * @description 退出登录
      */
-    const exitLogin = () => {};
+    const exitLogin = () => {
+        router.push('/login');
+    };
+    const toHome = () => {
+        router.push('/');
+    }
 </script>
 <style scoped lang="scss">
     .layout-container {

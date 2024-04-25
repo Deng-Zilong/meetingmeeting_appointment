@@ -1,27 +1,23 @@
 <template>
     <div class="sidebar-box">
-        <el-menu>
-            <el-menu-item index="2">
+        <el-menu :router="true">
+            <el-menu-item index="/">
                 <el-icon><icon-menu /></el-icon>
-                <span>Navigator Two</span>
+                <span>首页概览</span>
             </el-menu-item>
-            <el-menu-item index="3" disabled>
+            <el-menu-item index="/history">
                 <el-icon><document /></el-icon>
-                <span>Navigator Three</span>
+                <span>历史记录</span>
             </el-menu-item>
-            <el-menu-item index="4">
+            <el-menu-item index="/group">
                 <el-icon><setting /></el-icon>
-                <span>Navigator Four</span>
+                <span>群组管理</span>
             </el-menu-item>
         </el-menu>
     </div>
 </template>
 <script setup lang="ts">
-    import {
-    Document,
-    Menu as IconMenu,
-    Setting,
-} from '@element-plus/icons-vue'
+    import {Document, Menu as IconMenu, Setting} from '@element-plus/icons-vue'
 </script>
 <style scoped lang="scss">
     .sidebar-box {

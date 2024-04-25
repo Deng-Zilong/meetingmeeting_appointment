@@ -3,7 +3,7 @@
     <div class="leftBackground"></div>
     <div class="rightLogin">
       <div class="logo"></div>
-      <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules" label-width="auto">
+      <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules">
         <!-- 域名 -->
         <el-form-item prop="username">
           <el-input v-model="ruleForm.username" placeholder="账号" />

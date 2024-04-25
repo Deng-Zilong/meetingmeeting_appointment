@@ -54,8 +54,8 @@
 
         </div>
        <div class="right">
-        <el-button type="primary" plain>取消预约</el-button>
-        <el-button type="primary">会议室预约</el-button>
+        <router-link to="/history"><el-button>取消预约</el-button> </router-link>
+        <router-link to="/meeting-appoint"><el-button type="primary">会议室预约</el-button></router-link>
        </div>
     </div>
 </template>
@@ -68,7 +68,7 @@
     const router = useRouter();
     const handleMenu = (index: number) => {
         active.value = index;
-        router.push('/room');
+        router.push('/meeting-state');
     }
 </script>
 <style scoped lang="scss">
@@ -114,6 +114,9 @@
             .active {
                 background-color:#409EFF;
             }
+        }
+        .right a {
+            margin-left: .625rem;
         }
         .left, .right {
             margin: 0;
