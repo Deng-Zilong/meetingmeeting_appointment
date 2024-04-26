@@ -4,18 +4,19 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 类介绍:参会人员
- *
  * @author zhenxing.lu
+ * @description :参会人员
  * @sine 2024-04-24 11:03:26
  */
 @Data
 @TableName("attendees")
 public class AttendeesEntity implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /**

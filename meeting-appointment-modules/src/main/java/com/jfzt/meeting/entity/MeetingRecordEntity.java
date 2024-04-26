@@ -4,18 +4,19 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 类介绍:会议预约记录表
- *
  * @author zhenxing.lu
+ * @description 类介绍:会议预约记录表
  * @sine 2024-04-24 11:03:26
  */
 @Data
 @TableName("meeting_record")
 public class MeetingRecordEntity implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /**

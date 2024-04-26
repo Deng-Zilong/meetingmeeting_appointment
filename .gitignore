@@ -31,4 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
-/.mvn/
+/meeting-appointment-admin/.mvn/
+/.idea/
+/meeting-appointment-common/.mvn/
+/meeting-appointment-modules/.mvn/

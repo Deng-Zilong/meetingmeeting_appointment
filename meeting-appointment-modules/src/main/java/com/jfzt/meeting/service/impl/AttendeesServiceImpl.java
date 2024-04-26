@@ -7,6 +7,10 @@ import com.jfzt.meeting.service.AttendeesService;
 import org.springframework.stereotype.Service;
 
 
+/**
+ * @author zilong.deng
+ * @date 2024/04/26
+ */
 @Service("attendeesService")
 public class AttendeesServiceImpl extends ServiceImpl<AttendeesMapper, AttendeesEntity> implements AttendeesService {
 

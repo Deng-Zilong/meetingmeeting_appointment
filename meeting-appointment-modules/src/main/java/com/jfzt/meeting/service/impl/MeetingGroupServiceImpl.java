@@ -10,6 +10,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 
+/**
+ * @author zilong.deng
+ * @date 2024/04/26
+ */
 @Service("meetingGroupService")
 public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, MeetingGroupEntity> implements MeetingGroupService {
 
