@@ -1,21 +1,63 @@
-/* @import './base.css'; */
 
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+/* 中心*/
+.container {
+    width: 101rem;
+    height: 45.9rem;
+    border-radius: 15px;
+    background-color: #FFFFFF;
+    box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.08);
 }
 
 .el-header {
   --el-header-padding: 0 !important;
 }
 
+/* 去除侧边栏的右边框 */
 .el-menu {
   border-right: none !important;
 }
+/* 去除历史记录中时间线的padding */
+.history .el-timeline-item__wrapper {
+    padding-left: 0 !important;
+}
+/* 改变 时间线中日期的样式 */
+.history .el-timeline-item__timestamp {
+    display: inline;
+    position: absolute;
+    left: 1.125rem;
+    font-size: 1.25rem !important;
+}
+/* 隐藏时间线的线条和节点 */
+.history .el-timeline-item__tail, .el-timeline-item__node {
+    display: none !important;
+}
+/* 去除时间线子节点的下padding */
+.history .el-timeline-item {
+    padding-bottom: 0 !important;
+}
+.history .meeting-dialog .el-dialog {
+    width: 34rem;
+    height: 15rem;
+    border-radius: 15px;
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.8);
+    box-sizing: border-box;
+    border: 3px solid rgba(50, 104, 220, 0.9);
+    box-shadow: 0px 3px 8px 0px rgba(0, 0, 0, 0.2);
+    border-radius: 1.25rem !important;
+}
+/* 群组管理 修改群组名称输入框样式 */
+.group .el-input__wrapper {
+    box-shadow: none !important;
+}
 
 a {
-  text-decoration: none;
+    text-decoration: none;
 }
 
 /* 会议室预约时间 */
@@ -25,10 +67,3 @@ a {
     font-size: 1.5rem !important;
   }
 }
-
-/* 
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
-} */

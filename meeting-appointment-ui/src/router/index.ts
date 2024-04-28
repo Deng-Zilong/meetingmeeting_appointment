@@ -1,6 +1,12 @@
 import {createRouter, createWebHistory} from 'vue-router'
+import Cookies from "js-cookie"
 
 const routes = [
+    {
+        path: "/login",
+        name: "login",
+        component: () => import("@/views/login/login.vue"),
+    },
     {
         // 匹配不到路由时跳转登录页面
         path: '/:pathMatch(.*)*',
@@ -42,17 +48,29 @@ const routes = [
                 component: () => import("@/views/meeting-appoint/meeting-appoint.vue")
             },
         ]
-    },
-    {
-        path: "/login",
-        name: "login",
-        component: () => import("@/views/login/login.vue"),
     }
 ];
 const router = createRouter({
     history: createWebHistory(),
-    linkActiveClass: 'active',
     routes,
 });
+
+router.beforeEach((to, from, next) => {
+    const token = Cookies.get('token');
+    console.log(token, "token");
+    if (token) {
+        if(to.path == '/login') {
+            next('/');
+        } else {
+            next();
+        }
+    } else {
+        if (to.path != '/login') {
+            next('/login');
+        } else {
+            next();
+        }
+    }
+})
 
 export default router

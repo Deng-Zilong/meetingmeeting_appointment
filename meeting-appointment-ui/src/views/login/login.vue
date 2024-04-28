@@ -52,6 +52,7 @@ import { useRouter } from 'vue-router'
 import { h } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as ww from '@wecom/jssdk'
+import Cookies from "js-cookie"
 
 
 // const checkAge = (rule: any, value: any, callback: any) => {
@@ -91,7 +92,6 @@ import * as ww from '@wecom/jssdk'
 //     callback()
 //   }
 // }
-
 const ruleFormRef = ref<FormInstance>()
 // 登录验证
 const ruleForm = reactive({
@@ -136,7 +136,7 @@ const openVn = () => {
       }),
       h('span', null, '域账号输入错误！')
     ]),
-    duration: 10000
+    duration: 1000
   })
 }
 
@@ -153,6 +153,10 @@ const changeLogin = () => {
 // 账号登录 
 const router = useRouter()
 const submitForm = (formEl: FormInstance | undefined) => {
+    // 暂时
+    Cookies.set('token', '1');
+    router.push('/')
+
   if (!formEl) return
   formEl.validate((valid) => {
     if (valid) {
@@ -165,7 +169,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
   })
 }
 
-// 扫码登录
+// // 扫码登录
 // onMounted(() => {
 //   const wwLogin = ww.createWWLoginPanel({
 //     el: '#qr_login',
