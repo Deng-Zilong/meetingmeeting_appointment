@@ -1,7 +1,7 @@
 <template>
     <div class="sidebar-box">
         <el-menu :router="true">
-            <el-menu-item index="/" :class="currentPath == '/' ? 'active menu-item' : ' menu-item'">
+            <el-menu-item index="/home" :class="currentPath == '/home' ? 'active menu-item' : ' menu-item'">
                 <img src="@/assets/img/homeicon.png" alt="">
                 <span>首页概览</span>
             </el-menu-item>
@@ -22,7 +22,7 @@
 
     const router = useRouter();
     // 当前路由
-    let currentPath = ref('/');
+    let currentPath = ref('/home');
     // 监听路由变化 实现菜单选中后的状态
     watch(() => router.currentRoute.value.path, (newValue: any) => {
             currentPath.value = newValue;    

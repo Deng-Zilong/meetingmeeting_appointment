@@ -48,7 +48,7 @@
      * @description 点击logo 回到主页
      */
     const toHome = () => {
-        router.push('/');
+        router.push('/home');
     }
 </script>
 <style scoped lang="scss">

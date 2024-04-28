@@ -19,7 +19,7 @@ const routes = [
         children: [
             {
                 // 首页
-                path: "/",
+                path: "/home",
                 name: "home",
                 component: () => import("@/views/home/home.vue")
             },
