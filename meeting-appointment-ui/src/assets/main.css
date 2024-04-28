@@ -7,15 +7,25 @@
 }
 
 .el-header {
-    --el-header-padding: 0 !important;
+  --el-header-padding: 0 !important;
 }
+
 .el-menu {
-    border-right: none !important;
+  border-right: none !important;
 }
 
 a {
   text-decoration: none;
 }
+
+/* 会议室预约时间 */
+.meeting-container {
+  .left-date {
+    height: 3rem !important;
+    font-size: 1.5rem !important;
+  }
+}
+
 /* 
 @media (hover: hover) {
   a:hover {

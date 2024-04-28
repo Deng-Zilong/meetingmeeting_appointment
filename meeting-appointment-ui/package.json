@@ -11,6 +11,7 @@
     "type-check": "vue-tsc --build --force"
   },
   "dependencies": {
+    "@wecom/jssdk": "^1.4.5",
     "element-plus": "^2.7.1",
     "pinia": "^2.1.7",
     "vue": "^3.4.21",
