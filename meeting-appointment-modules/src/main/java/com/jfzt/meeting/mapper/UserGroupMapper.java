@@ -1,14 +1,20 @@
 package com.jfzt.meeting.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.jfzt.meeting.entity.UserGroupEntity;
+import com.jfzt.meeting.entity.UserGroup;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * @author zhenxing.lu
- * @sine 2024-04-24 11:03:26
+ * @author zilong.deng
+ * @description 针对表【user_group(群组人员关联表)】的数据库操作Mapper
+ * @createDate 2024-04-28 11:53:18
+ * @Entity com.jfzt.meeting.entity.UserGroup
  */
 @Mapper
-public interface UserGroupMapper extends BaseMapper<UserGroupEntity> {
+public interface UserGroupMapper extends BaseMapper<UserGroup> {
 
 }
+
+
+
+
