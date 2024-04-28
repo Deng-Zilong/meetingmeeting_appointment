@@ -203,7 +203,7 @@ const code = () => {
     "id": "login-scan",
     appid: 'ww942086e6c44abc4b',
     agentid: '1000002',
-    redirect_uri: 'ggssyy.cn/login/logininfo',
+    redirect_uri: 'http%3A%2F%2Fggssyy.cn%2Flogin%2Fuser',
     "state": Math.ceil(Math.random() * 1000),
     "lang": "zh",
   });
