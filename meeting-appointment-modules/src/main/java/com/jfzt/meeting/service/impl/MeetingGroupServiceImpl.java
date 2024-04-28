@@ -1,29 +1,22 @@
 package com.jfzt.meeting.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.jfzt.meeting.entity.MeetingGroupEntity;
+import com.jfzt.meeting.entity.MeetingGroup;
 import com.jfzt.meeting.mapper.MeetingGroupMapper;
 import com.jfzt.meeting.service.MeetingGroupService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-
 
 /**
  * @author zilong.deng
- * @date 2024/04/26
+ * @description 针对表【meeting_group(群组表)】的数据库操作Service实现
+ * @since 2024-04-28 11:33:49
  */
-@Service("meetingGroupService")
-public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, MeetingGroupEntity> implements MeetingGroupService {
+@Service
+public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, MeetingGroup>
+        implements MeetingGroupService {
 
-    @Autowired
-    private MeetingGroupMapper meetingGroupMapper;
-
-    @Override
-    public List<MeetingGroupEntity> find () {
-        List<MeetingGroupEntity> entities = meetingGroupMapper.selectList(null);
-        System.out.println(entities);
-        return null;
-    }
 }
+
+
+
+

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfzt.meeting.mapper.MeetingNoticeMapper">
+
+    <resultMap id="BaseResultMap" type="com.jfzt.meeting.entity.MeetingNotice">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="substance" column="substance" jdbcType="VARCHAR"/>
+        <result property="createdBy" column="created_by" jdbcType="BIGINT"/>
+        <result property="gmtCreate" column="gmt_create" jdbcType="TIMESTAMP"/>
+        <result property="gmtModified" column="gmt_modified" jdbcType="TIMESTAMP"/>
+        <result property="isDeleted" column="is_deleted" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,substance,created_by,
+        gmt_create,gmt_modified,is_deleted
+    </sql>
+</mapper>

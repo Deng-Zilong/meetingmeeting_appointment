@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfzt.meeting.mapper.MeetingRoomMapper">
+
+    <resultMap id="BaseResultMap" type="com.jfzt.meeting.entity.MeetingRoom">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="roomName" column="room_name" jdbcType="VARCHAR"/>
+        <result property="location" column="location" jdbcType="INTEGER"/>
+        <result property="capacity" column="capacity" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="gmtCreate" column="gmt_create" jdbcType="TIMESTAMP"/>
+        <result property="gmtModified" column="gmt_modified" jdbcType="TIMESTAMP"/>
+        <result property="createdBy" column="created_by" jdbcType="BIGINT"/>
+        <result property="isDeleted" column="is_deleted" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,room_name,location,
+        capacity,status,gmt_create,
+        gmt_modified,created_by,is_deleted
+    </sql>
+</mapper>
