@@ -17,6 +17,10 @@ mybatis-plus:
     map-underscore-to-camel-case: true
     # 打印sql
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+qywx:
+  corpid: ww942086e6c44abc4b
+  corpsecret: Rnf3LVxbAdTfvGVTirgwVbgsaDoBv_MTXrmawAu9qHQ
+  agentid: 1000002
 
 
   global-config:
