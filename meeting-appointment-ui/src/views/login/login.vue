@@ -53,6 +53,7 @@ import { h } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as ww from '@wecom/jssdk'
 import Cookies from "js-cookie"
+import errorImg from '@/assets/img/error.png'
 
 
 // const checkAge = (rule: any, value: any, callback: any) => {
@@ -131,7 +132,7 @@ const openVn = () => {
     message: h('div',
       { style: 'display: flex; align-items: center; justify-content: center; width: 26rem; height: 4.25rem; font-size: 1.375rem' }, [
       h('img', {
-        src: '../src/assets/img/error.png',
+        src: errorImg,
         style: 'width: 4.375rem; height: 4.375rem;'
       }),
       h('span', null, '域账号输入错误！')
