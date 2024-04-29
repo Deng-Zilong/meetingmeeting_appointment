@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
  *
  * @author zilong.deng
  * @TableName user_group
- * @date 2024/04/28
+ * @date 2024/04/29
  */
 @TableName(value = "user_group")
 @Data
@@ -27,9 +27,14 @@ public class UserGroup implements Serializable {
     private Long id;
 
     /**
-     * 用户id
+     * 成员企微id
      */
-    private Long userId;
+    private String userId;
+
+    /**
+     * 群组id
+     */
+    private Long groupId;
 
     /**
      * 添加时间
@@ -40,11 +45,6 @@ public class UserGroup implements Serializable {
      * 修改时间
      */
     private LocalDateTime gmtModified;
-
-    /**
-     * 群组id
-     */
-    private Long groupId;
 
     /**
      * 逻辑删除（0未删除 1删除）
@@ -69,9 +69,9 @@ public class UserGroup implements Serializable {
         UserGroup other = (UserGroup) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
                 && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
+                && (this.getGroupId() == null ? other.getGroupId() == null : this.getGroupId().equals(other.getGroupId()))
                 && (this.getGmtCreate() == null ? other.getGmtCreate() == null : this.getGmtCreate().equals(other.getGmtCreate()))
                 && (this.getGmtModified() == null ? other.getGmtModified() == null : this.getGmtModified().equals(other.getGmtModified()))
-                && (this.getGroupId() == null ? other.getGroupId() == null : this.getGroupId().equals(other.getGroupId()))
                 && (this.getIsDeleted() == null ? other.getIsDeleted() == null : this.getIsDeleted().equals(other.getIsDeleted()));
     }
 
@@ -81,9 +81,9 @@ public class UserGroup implements Serializable {
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
         result = prime * result + ((getUserId() == null) ? 0 : getUserId().hashCode());
+        result = prime * result + ((getGroupId() == null) ? 0 : getGroupId().hashCode());
         result = prime * result + ((getGmtCreate() == null) ? 0 : getGmtCreate().hashCode());
         result = prime * result + ((getGmtModified() == null) ? 0 : getGmtModified().hashCode());
-        result = prime * result + ((getGroupId() == null) ? 0 : getGroupId().hashCode());
         result = prime * result + ((getIsDeleted() == null) ? 0 : getIsDeleted().hashCode());
         return result;
     }
@@ -95,9 +95,9 @@ public class UserGroup implements Serializable {
                 "Hash = " + hashCode() +
                 ", id=" + id +
                 ", userId=" + userId +
+                ", groupId=" + groupId +
                 ", gmtCreate=" + gmtCreate +
                 ", gmtModified=" + gmtModified +
-                ", groupId=" + groupId +
                 ", isDeleted=" + isDeleted +
                 ", serialVersionUID=" + serialVersionUID +
                 "]";

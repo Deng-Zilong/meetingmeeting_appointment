@@ -16,6 +16,6 @@ public class MeetingRoomVO extends MeetingRoom {
     /**
      * 创建人id
      */
-    private Long userId;
+    private String userId;
 
 }

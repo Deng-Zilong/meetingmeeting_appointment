@@ -6,22 +6,22 @@
 
     <resultMap id="BaseResultMap" type="com.jfzt.meeting.entity.MeetingRecord">
         <id property="id" column="id" jdbcType="BIGINT"/>
-        <result property="gmtCreate" column="gmt_create" jdbcType="TIMESTAMP"/>
-        <result property="gmtModified" column="gmt_modified" jdbcType="TIMESTAMP"/>
         <result property="title" column="title" jdbcType="VARCHAR"/>
         <result property="description" column="description" jdbcType="VARCHAR"/>
         <result property="startTime" column="start_time" jdbcType="TIMESTAMP"/>
         <result property="endTime" column="end_time" jdbcType="TIMESTAMP"/>
         <result property="meetingRoomId" column="meeting_room_id" jdbcType="BIGINT"/>
         <result property="status" column="status" jdbcType="TINYINT"/>
-        <result property="createdBy" column="created_by" jdbcType="BIGINT"/>
+        <result property="createdBy" column="created_by" jdbcType="VARCHAR"/>
+        <result property="gmtCreate" column="gmt_create" jdbcType="TIMESTAMP"/>
+        <result property="gmtModified" column="gmt_modified" jdbcType="TIMESTAMP"/>
         <result property="isDeleted" column="is_deleted" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,gmt_create,gmt_modified,
-        title,description,start_time,
-        end_time,meeting_room_id,status,
-        created_by,is_deleted
+        id,title,description,
+        start_time,end_time,meeting_room_id,
+        status,created_by,gmt_create,
+        gmt_modified,is_deleted
     </sql>
 </mapper>

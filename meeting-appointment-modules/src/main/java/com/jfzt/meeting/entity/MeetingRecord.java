@@ -27,16 +27,6 @@ public class MeetingRecord implements Serializable {
     private Long id;
 
     /**
-     * 添加时间
-     */
-    private LocalDateTime gmtCreate;
-
-    /**
-     * 修改时间
-     */
-    private LocalDateTime gmtModified;
-
-    /**
      * 会议主题
      */
     private String title;
@@ -69,7 +59,17 @@ public class MeetingRecord implements Serializable {
     /**
      * 创建人id
      */
-    private Long createdBy;
+    private String createdBy;
+
+    /**
+     * 添加时间
+     */
+    private LocalDateTime gmtCreate;
+
+    /**
+     * 修改时间
+     */
+    private LocalDateTime gmtModified;
 
     /**
      * 0未删除 1删除
@@ -93,8 +93,6 @@ public class MeetingRecord implements Serializable {
         }
         MeetingRecord other = (MeetingRecord) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-                && (this.getGmtCreate() == null ? other.getGmtCreate() == null : this.getGmtCreate().equals(other.getGmtCreate()))
-                && (this.getGmtModified() == null ? other.getGmtModified() == null : this.getGmtModified().equals(other.getGmtModified()))
                 && (this.getTitle() == null ? other.getTitle() == null : this.getTitle().equals(other.getTitle()))
                 && (this.getDescription() == null ? other.getDescription() == null : this.getDescription().equals(other.getDescription()))
                 && (this.getStartTime() == null ? other.getStartTime() == null : this.getStartTime().equals(other.getStartTime()))
@@ -102,6 +100,8 @@ public class MeetingRecord implements Serializable {
                 && (this.getMeetingRoomId() == null ? other.getMeetingRoomId() == null : this.getMeetingRoomId().equals(other.getMeetingRoomId()))
                 && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
                 && (this.getCreatedBy() == null ? other.getCreatedBy() == null : this.getCreatedBy().equals(other.getCreatedBy()))
+                && (this.getGmtCreate() == null ? other.getGmtCreate() == null : this.getGmtCreate().equals(other.getGmtCreate()))
+                && (this.getGmtModified() == null ? other.getGmtModified() == null : this.getGmtModified().equals(other.getGmtModified()))
                 && (this.getIsDeleted() == null ? other.getIsDeleted() == null : this.getIsDeleted().equals(other.getIsDeleted()));
     }
 
@@ -110,8 +110,6 @@ public class MeetingRecord implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getGmtCreate() == null) ? 0 : getGmtCreate().hashCode());
-        result = prime * result + ((getGmtModified() == null) ? 0 : getGmtModified().hashCode());
         result = prime * result + ((getTitle() == null) ? 0 : getTitle().hashCode());
         result = prime * result + ((getDescription() == null) ? 0 : getDescription().hashCode());
         result = prime * result + ((getStartTime() == null) ? 0 : getStartTime().hashCode());
@@ -119,6 +117,8 @@ public class MeetingRecord implements Serializable {
         result = prime * result + ((getMeetingRoomId() == null) ? 0 : getMeetingRoomId().hashCode());
         result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
         result = prime * result + ((getCreatedBy() == null) ? 0 : getCreatedBy().hashCode());
+        result = prime * result + ((getGmtCreate() == null) ? 0 : getGmtCreate().hashCode());
+        result = prime * result + ((getGmtModified() == null) ? 0 : getGmtModified().hashCode());
         result = prime * result + ((getIsDeleted() == null) ? 0 : getIsDeleted().hashCode());
         return result;
     }
@@ -129,8 +129,6 @@ public class MeetingRecord implements Serializable {
                 " [" +
                 "Hash = " + hashCode() +
                 ", id=" + id +
-                ", gmtCreate=" + gmtCreate +
-                ", gmtModified=" + gmtModified +
                 ", title=" + title +
                 ", description=" + description +
                 ", startTime=" + startTime +
@@ -138,6 +136,8 @@ public class MeetingRecord implements Serializable {
                 ", meetingRoomId=" + meetingRoomId +
                 ", status=" + status +
                 ", createdBy=" + createdBy +
+                ", gmtCreate=" + gmtCreate +
+                ", gmtModified=" + gmtModified +
                 ", isDeleted=" + isDeleted +
                 ", serialVersionUID=" + serialVersionUID +
                 "]";

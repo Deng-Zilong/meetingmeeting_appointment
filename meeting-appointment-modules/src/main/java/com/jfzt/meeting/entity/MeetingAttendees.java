@@ -8,20 +8,20 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
- * 参会人员
+ * 参会人员表
  *
  * @author zilong.deng
  * @TableName meeting_attendees
- * @date 2024/04/28
+ * @date 2024/04/29
  */
 @TableName(value = "meeting_attendees")
 @Data
 public class MeetingAttendees implements Serializable {
     /**
-     * id
+     *
      */
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -29,7 +29,7 @@ public class MeetingAttendees implements Serializable {
     /**
      * 参与人id
      */
-    private Long userId;
+    private String userId;
 
     /**
      * 会议预约记录id
@@ -39,12 +39,12 @@ public class MeetingAttendees implements Serializable {
     /**
      * 添加时间
      */
-    private Date gmtCreate;
+    private LocalDateTime gmtCreate;
 
     /**
      * 修改时间
      */
-    private Date gmtModified;
+    private LocalDateTime gmtModified;
 
     /**
      * 逻辑删除（0未删除 1删除）
