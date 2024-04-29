@@ -1,0 +1,30 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: meeting-appointment-admin
+
+  profiles:
+    active: dev
+    include: db,log
+  # application.yml
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: UTC
+#    time-zone: Asia/Shanghai
+#    包含时区信息
+
+
+
+
+
+
+
+
+
+# application.yml
+#
+#swagger:
+#  base-path: classpath:/swagger/
+#  resource-path: swagger-ui.html
