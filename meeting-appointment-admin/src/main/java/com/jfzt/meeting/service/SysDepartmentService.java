@@ -10,4 +10,5 @@ import com.jfzt.meeting.entity.SysDepartment;
  */
 public interface SysDepartmentService extends IService<SysDepartment> {
 
+    void findDepartmentAll();
 }

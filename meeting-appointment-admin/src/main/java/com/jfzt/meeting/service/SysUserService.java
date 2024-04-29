@@ -10,4 +10,7 @@ import com.jfzt.meeting.entity.SysUser;
  */
 public interface SysUserService extends IService<SysUser> {
 
+    String findTocken();
+
+    void findDepartment(String access_token, String code);
 }
