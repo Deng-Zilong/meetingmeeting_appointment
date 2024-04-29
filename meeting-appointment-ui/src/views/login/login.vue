@@ -153,9 +153,9 @@ const changeLogin = () => {
 // 账号登录 
 const router = useRouter()
 const submitForm = (formEl: FormInstance | undefined) => {
-    // 暂时
-    Cookies.set('token', '1');
-    router.push('/home')
+  // 暂时
+  Cookies.set('token', '1');
+  router.push('/home')
 
   if (!formEl) return
   formEl.validate((valid) => {
