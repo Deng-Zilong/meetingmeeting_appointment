@@ -2,6 +2,7 @@ package com.jfzt.meeting.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.jfzt.meeting.entity.SysDepartment;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
  * @author zilong.deng
@@ -9,6 +10,7 @@ import com.jfzt.meeting.entity.SysDepartment;
  * @createDate 2024-04-28 16:04:11
  * @Entity com.jfzt.meeting.entity.SysDepartment
  */
+@Mapper
 public interface SysDepartmentMapper extends BaseMapper<SysDepartment> {
 
 }
