@@ -4,21 +4,27 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * 群组表
  *
  * @author zilong.deng
  * @TableName meeting_group
- * @date 2024/04/28
+ * @date 2024/04/29
  */
 @TableName(value = "meeting_group")
 @Data
+@AllArgsConstructor
+@Builder
+@NoArgsConstructor
 public class MeetingGroup implements Serializable {
     /**
      * 群组id
@@ -27,24 +33,24 @@ public class MeetingGroup implements Serializable {
     private Long id;
 
     /**
+     * 群组名称
+     */
+    private String groupName;
+
+    /**
      * 添加时间
      */
-    private Date gmtCreate;
+    private LocalDateTime gmtCreate;
 
     /**
      * 修改时间
      */
-    private Date gmtModified;
+    private LocalDateTime gmtModified;
 
     /**
      * 创建人id
      */
-    private Long createdBy;
-
-    /**
-     * 群组名称
-     */
-    private String groupName;
+    private String createdBy;
 
     /**
      * 逻辑删除（0未删除1删除）
@@ -68,10 +74,10 @@ public class MeetingGroup implements Serializable {
         }
         MeetingGroup other = (MeetingGroup) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
+                && (this.getGroupName() == null ? other.getGroupName() == null : this.getGroupName().equals(other.getGroupName()))
                 && (this.getGmtCreate() == null ? other.getGmtCreate() == null : this.getGmtCreate().equals(other.getGmtCreate()))
                 && (this.getGmtModified() == null ? other.getGmtModified() == null : this.getGmtModified().equals(other.getGmtModified()))
                 && (this.getCreatedBy() == null ? other.getCreatedBy() == null : this.getCreatedBy().equals(other.getCreatedBy()))
-                && (this.getGroupName() == null ? other.getGroupName() == null : this.getGroupName().equals(other.getGroupName()))
                 && (this.getIsDeleted() == null ? other.getIsDeleted() == null : this.getIsDeleted().equals(other.getIsDeleted()));
     }
 
@@ -80,10 +86,10 @@ public class MeetingGroup implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
+        result = prime * result + ((getGroupName() == null) ? 0 : getGroupName().hashCode());
         result = prime * result + ((getGmtCreate() == null) ? 0 : getGmtCreate().hashCode());
         result = prime * result + ((getGmtModified() == null) ? 0 : getGmtModified().hashCode());
         result = prime * result + ((getCreatedBy() == null) ? 0 : getCreatedBy().hashCode());
-        result = prime * result + ((getGroupName() == null) ? 0 : getGroupName().hashCode());
         result = prime * result + ((getIsDeleted() == null) ? 0 : getIsDeleted().hashCode());
         return result;
     }
@@ -94,10 +100,10 @@ public class MeetingGroup implements Serializable {
                 " [" +
                 "Hash = " + hashCode() +
                 ", id=" + id +
+                ", groupName=" + groupName +
                 ", gmtCreate=" + gmtCreate +
                 ", gmtModified=" + gmtModified +
                 ", createdBy=" + createdBy +
-                ", groupName=" + groupName +
                 ", isDeleted=" + isDeleted +
                 ", serialVersionUID=" + serialVersionUID +
                 "]";

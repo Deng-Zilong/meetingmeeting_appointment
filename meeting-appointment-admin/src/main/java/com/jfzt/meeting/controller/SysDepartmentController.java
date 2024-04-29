@@ -5,6 +5,7 @@ import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.service.SysDepartmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @email ${email}
  * @date 2024-04-28 16:38:52
  */
+
 @RestController
 @RequestMapping("department")
 public class SysDepartmentController {

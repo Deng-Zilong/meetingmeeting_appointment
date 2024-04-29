@@ -4,21 +4,27 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 会议室
+ * 会议室表
  *
  * @author zilong.deng
  * @TableName meeting_room
- * @date 2024/04/28
+ * @date 2024/04/29
  */
 @TableName(value = "meeting_room")
 @Data
+@AllArgsConstructor
+@Builder
+@NoArgsConstructor
 public class MeetingRoom implements Serializable {
     /**
      * id
@@ -42,7 +48,7 @@ public class MeetingRoom implements Serializable {
     private Integer capacity;
 
     /**
-     * 会议室状态（1空闲2使用中3暂停使用）
+     * 会议室状态（1可用，0暂停使用）
      */
     private Integer status;
 
@@ -57,9 +63,9 @@ public class MeetingRoom implements Serializable {
     private LocalDateTime gmtModified;
 
     /**
-     * 创建人id
+     * 创建人企微id
      */
-    private Long createdBy;
+    private String createdBy;
 
     /**
      * 0未删除 1删除
