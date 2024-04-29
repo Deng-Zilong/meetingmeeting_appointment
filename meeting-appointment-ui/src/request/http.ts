@@ -3,7 +3,7 @@ import service from './axios-config'
 const currying = () => {
   return {
 
-    POST: (url: string, data: {} = {}, headers?: any) => {
+    post: (url: string, data: {} = {}, headers?: any) => {
       return service.request({
         url,
         method: 'POST',
@@ -12,7 +12,7 @@ const currying = () => {
       })
     },
 
-    GET: (url: string, params: {} = {}, headers?: any) => {
+    get: (url: string, params: {} = {}, headers?: any) => {
       return service.request({
         url,
         method: 'GET',
@@ -20,7 +20,7 @@ const currying = () => {
         headers
       })
     },
-    PUT: (url: string, data: {} = {}, headers?: any) => {
+    put: (url: string, data: {} = {}, headers?: any) => {
       return service.request({
         url,
         method: 'PUT',
@@ -28,7 +28,7 @@ const currying = () => {
         headers
       })
     },
-    DELETE: (url: string, headers?: any) => {
+    delete: (url: string, headers?: any) => {
       return service.request({
         url,
         method: 'DELETE',

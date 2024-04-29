@@ -3,7 +3,7 @@
 </template>
 <script setup lang="ts">
 import Cookies from 'js-cookie';
-import { qwLogin } from '@/api/api';
+import { qwLogin } from '@/request/api/login';
 import {  onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -14,8 +14,16 @@ const route = useRoute();
         // if (!token) {
         //     router.replace('/login');
         // } else {
-            const request  = await qwLogin( {code} );
-            console.log(request, "request");
+            qwLogin({code})
+                .then((res: any) => {
+                    console.log(res, "request");
+                    
+                })
+                .catch((err: any) => { 
+                    console.log(err, "error");
+                    
+                })
+            
             
             
         // }
