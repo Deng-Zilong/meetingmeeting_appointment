@@ -6,15 +6,15 @@
 
     <resultMap id="BaseResultMap" type="com.jfzt.meeting.entity.UserGroup">
         <id property="id" column="id" jdbcType="BIGINT"/>
-        <result property="userId" column="user_id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="groupId" column="group_id" jdbcType="BIGINT"/>
         <result property="gmtCreate" column="gmt_create" jdbcType="TIMESTAMP"/>
         <result property="gmtModified" column="gmt_modified" jdbcType="TIMESTAMP"/>
-        <result property="groupId" column="group_id" jdbcType="BIGINT"/>
         <result property="isDeleted" column="is_deleted" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,user_id,gmt_create,
-        gmt_modified,group_id,is_deleted
+        id,user_id,group_id,
+        gmt_create,gmt_modified,is_deleted
     </sql>
 </mapper>

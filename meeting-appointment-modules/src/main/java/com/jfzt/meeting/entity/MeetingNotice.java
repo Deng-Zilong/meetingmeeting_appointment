@@ -4,21 +4,27 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
- * 会议公告
+ * 会议公告表
  *
  * @author zilong.deng
  * @TableName meeting_notice
- * @date 2024/04/28
+ * @date 2024/04/29
  */
 @TableName(value = "meeting_notice")
 @Data
+@AllArgsConstructor
+@Builder
+@NoArgsConstructor
 public class MeetingNotice implements Serializable {
     /**
      * 公告id
@@ -34,17 +40,17 @@ public class MeetingNotice implements Serializable {
     /**
      * 创建者
      */
-    private Long createdBy;
+    private String createdBy;
 
     /**
      * 创建时间
      */
-    private Date gmtCreate;
+    private LocalDateTime gmtCreate;
 
     /**
      * 更新时间
      */
-    private Date gmtModified;
+    private LocalDateTime gmtModified;
 
     /**
      * 是否删除（0 未删除1删除）

@@ -1,16 +1,16 @@
-
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 /* 中心*/
 .container {
-    width: 101rem;
-    height: 45.9rem;
-    border-radius: 15px;
-    background-color: #FFFFFF;
-    box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.08);
+  width: 101rem;
+  height: 45.9rem;
+  border-radius: 15px;
+  background-color: #FFFFFF;
+  box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.08);
 }
 
 .el-header {
@@ -21,50 +21,88 @@
 .el-menu {
   border-right: none !important;
 }
+
 /* 去除历史记录中时间线的padding */
 .history .el-timeline-item__wrapper {
-    padding-left: 0 !important;
+  padding-left: 0 !important;
 }
+
 /* 改变 时间线中日期的样式 */
 .history .el-timeline-item__timestamp {
-    display: inline;
-    position: absolute;
-    left: 1.125rem;
-    font-size: 1.25rem !important;
+  display: inline;
+  position: absolute;
+  left: 1.125rem;
+  font-size: 1.25rem !important;
 }
+
 /* 隐藏时间线的线条和节点 */
-.history .el-timeline-item__tail, .el-timeline-item__node {
-    display: none !important;
+.history .el-timeline-item__tail,
+.el-timeline-item__node {
+  display: none !important;
 }
+
 /* 去除时间线子节点的下padding */
 .history .el-timeline-item {
-    padding-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }
-/* .history .meeting-dialog .el-dialog, 
+/* 
+.history .meeting-dialog .el-dialog, 
 .group .delete-box .el-message-box {
-    width: 30rem !important;
-    height: 15rem !important;
-    border-radius: 15px;
-    opacity: 1;
-    background: rgba(255, 255, 255, 0.8);
-    box-sizing: border-box;
-    border: 3px solid rgba(50, 104, 220, 0.9);
-    box-shadow: 0px 3px 8px 0px rgba(0, 0, 0, 0.2);
-    border-radius: 1.25rem !important;
+  width: 30rem !important;
+  height: 15rem !important;
+  border-radius: 15px;
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.8);
+  box-sizing: border-box;
+  border: 3px solid rgba(50, 104, 220, 0.9);
+  box-shadow: 0px 3px 8px 0px rgba(0, 0, 0, 0.2);
+  border-radius: 1.25rem !important;
 } */
+
 /* 群组管理 修改群组名称输入框样式 */
 .group .left .el-input__wrapper {
-    box-shadow: none !important;
+  box-shadow: none !important;
 }
 
 a {
-    text-decoration: none;
+  text-decoration: none;
 }
 
-/* 会议室预约时间 */
+/* 会议室状态 日期 */
 .meeting-container {
   .left-date {
     height: 3rem !important;
     font-size: 1.5rem !important;
+  }
+}
+
+/* 会议室预约 */
+.appoint-container {
+
+  /* 统一调整预约表单中的label字体大小 */
+  .el-form-item__label {
+    font-size: 1.03rem;
+  }
+
+  .appoint-row {
+
+    /* 前三行 输入框与选择框 宽度 */
+    .el-form-item__content {
+      width: 17rem;
+    }
+
+    /* 日期选择框 内部宽度(不包含prefix与suffix宽度) */
+    .row-date {
+      .el-input__inner {
+        width: 14.25rem;
+      }
+    }
+  }
+
+  .fourth-row {
+    .el-checkbox__label {
+      font-size: 1.03rem;
+      font-weight: bold;
+    }
   }
 }

@@ -10,15 +10,15 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * 企微部门成员表
+ * 企微部门成员关联表
  *
  * @author zilong.deng
- * @TableName sys_user
- * @date 2024/04/28
+ * @TableName sys_department_user
+ * @date 2024/04/29
  */
-@TableName(value = "sys_user")
+@TableName(value = "sys_department_user")
 @Data
-public class SysUser implements Serializable {
+public class SysDepartmentUser implements Serializable {
     /**
      *
      */
@@ -40,6 +40,11 @@ public class SysUser implements Serializable {
      */
     private Long departmentId;
 
+    /**
+     * 用户密码
+     */
+    private String password;
+
     @Serial
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
@@ -55,11 +60,12 @@ public class SysUser implements Serializable {
         if (getClass() != that.getClass()) {
             return false;
         }
-        SysUser other = (SysUser) that;
+        SysDepartmentUser other = (SysDepartmentUser) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
                 && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
                 && (this.getUserName() == null ? other.getUserName() == null : this.getUserName().equals(other.getUserName()))
-                && (this.getDepartmentId() == null ? other.getDepartmentId() == null : this.getDepartmentId().equals(other.getDepartmentId()));
+                && (this.getDepartmentId() == null ? other.getDepartmentId() == null : this.getDepartmentId().equals(other.getDepartmentId()))
+                && (this.getPassword() == null ? other.getPassword() == null : this.getPassword().equals(other.getPassword()));
     }
 
     @Override
@@ -70,6 +76,7 @@ public class SysUser implements Serializable {
         result = prime * result + ((getUserId() == null) ? 0 : getUserId().hashCode());
         result = prime * result + ((getUserName() == null) ? 0 : getUserName().hashCode());
         result = prime * result + ((getDepartmentId() == null) ? 0 : getDepartmentId().hashCode());
+        result = prime * result + ((getPassword() == null) ? 0 : getPassword().hashCode());
         return result;
     }
 
@@ -82,6 +89,7 @@ public class SysUser implements Serializable {
                 ", userId=" + userId +
                 ", userName=" + userName +
                 ", departmentId=" + departmentId +
+                ", password=" + password +
                 ", serialVersionUID=" + serialVersionUID +
                 "]";
     }
