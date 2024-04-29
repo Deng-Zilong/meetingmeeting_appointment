@@ -3,6 +3,7 @@ package com.jfzt.meeting.controller;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.vo.MeetingRoomVO;
 import com.jfzt.meeting.service.MeetingRoomService;
+import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,13 +16,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/meeting/meetingRoom")
 public class MeetingRoomController {
 
-
+    @Resource
     private MeetingRoomService meetingRoomService;
 
-    @Autowired
-    public void setMeetingRoomService (MeetingRoomService meetingRoomService) {
-        this.meetingRoomService = meetingRoomService;
-    }
+
 
     @PostMapping("/addMeetingRoom")
     public Result<String> addMeetingRoom (@RequestBody @Valid MeetingRoomVO meetingRoomVO) {
