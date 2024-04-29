@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @email ${email}
  * @date 2024-04-28 16:38:52
  */
-@CrossOrigin
+
 @RestController
 @RequestMapping("department")
 public class SysDepartmentController {
