@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import Cookies from "js-cookie"
 
 const routes = [
@@ -16,6 +16,7 @@ const routes = [
     path: '/',
     name: "layout",
     component: () => import("@/layout/index.vue"),
+    redirect: '/home',
     children: [
       {
         // 首页
@@ -51,26 +52,26 @@ const routes = [
   }
 ];
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes,
 });
 
-router.beforeEach((to, from, next) => {
-  const token = Cookies.get('token');
-  console.log(token, "token");
-  // if (token) {
-  //     if(to.path == '/login') {
-  //         next('/');
-  //     } else {
-  //         next();
-  //     }
-  // } else {
-  //     if (to.path != '/login') {
-  //         next('/login');
-  //     } else {
-  //         next();
-  //     }
-  // }
-})
+// router.beforeEach((to, from, next) => {
+//   const token = Cookies.get('token');
+//   console.log(token, "token");
+//   // if (token) {
+//   //     if(to.path == '/login') {
+//   //         next('/');
+//   //     } else {
+//   //         next();
+//   //     }
+//   // } else {
+//   //     if (to.path != '/login') {
+//   //         next('/login');
+//   //     } else {
+//   //         next();
+//   //     }
+//   // }
+// })
 
 export default router
