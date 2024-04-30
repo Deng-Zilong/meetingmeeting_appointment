@@ -275,7 +275,11 @@ const infoArr = reactive([
         display: flex;
         justify-content: flex-end;
         margin: .5rem 0;
-        /* 日期input样式在main.css中 */
+
+        ::v-deep(.left-date) {
+          height: 3rem !important;
+          font-size: 1.5rem !important;
+        }
       }
 
       .left-table {

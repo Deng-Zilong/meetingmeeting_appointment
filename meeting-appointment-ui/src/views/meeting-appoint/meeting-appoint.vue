@@ -2,7 +2,15 @@
   <!-- 会议室预约 -->
   <div class="container appoint-container">
     <header>
-      <el-divider direction="vertical" />会议室预约
+      <div class="header-title">
+        <el-divider direction="vertical" />会议室预约
+      </div>
+      <div class="header-back" @click="goBack">
+        <el-icon>
+          <ArrowLeft />
+        </el-icon>
+        返回
+      </div>
     </header>
     <main>
       <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules">
@@ -11,7 +19,8 @@
             <el-input v-model="meetingTheme" placeholder="请输入" />
           </el-form-item>
           <el-form-item label="参会人" prop="meetingPeople">
-            <el-input v-model="meetingPeople" />
+            <el-input class="meeting-people" v-model="meetingPeople" readonly :prefix-icon="Plus" placeholder="添加参会人"
+              @click="handlePerson" />
           </el-form-item>
         </div>
         <div class="appoint-row">
@@ -62,6 +71,7 @@
 import { reactive, ref } from 'vue'
 import type { ComponentSize, FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 
 const meetingTheme = ref('')
 const meetingPeople = ref('')
@@ -72,6 +82,17 @@ const endTime = ref('')
 const checked = ref(false)
 const groupName = ref('')
 const meetingSummary = ref('')
+
+const goBack = () => {
+  window.history.go(-1)
+}
+const handlePerson = () => {
+  console.log("点击参会人");
+  // ElMessage({
+  //   message: '添加参会人',
+  //   type: 'success'
+  // })
+}
 
 const date = ref(new Date())
 // 禁止选择今日之前的日期
@@ -134,7 +155,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
   formEl.validate((valid) => {
     if (valid) {
       // router.push('/home')
-      ElMessage.success('登陆成功')
+      ElMessage.success('创建成功')
     } else {
       return false
     }
@@ -147,13 +168,30 @@ const submitForm = (formEl: FormInstance | undefined) => {
   padding: 2.5rem 3.5rem;
 
   header {
-    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-    .el-divider {
-      height: 3.125rem;
-      border: .25rem solid #1273DB;
-      border-radius: .25rem;
-      margin-right: 1.5rem;
+    .header-title {
+      font-size: 1.5rem;
+
+      .el-divider {
+        height: 3.125rem;
+        border: .25rem solid #1273DB;
+        border-radius: .25rem;
+        margin-right: 1.5rem;
+      }
+    }
+
+    .header-back {
+      display: flex;
+      align-items: center;
+      font-size: 1.1rem;
+      font-weight: 100;
+
+      .el-icon {
+        color: #3268DC;
+      }
     }
   }
 
@@ -165,6 +203,11 @@ const submitForm = (formEl: FormInstance | undefined) => {
     .el-form {
       width: 38rem;
 
+      /* 统一调整预约表单中的label字体大小 */
+      ::v-deep(.el-form-item__label) {
+        font-size: 1.03rem;
+      }
+
       .appoint-row {
         display: flex;
         justify-content: space-between;
@@ -172,7 +215,31 @@ const submitForm = (formEl: FormInstance | undefined) => {
         .el-form-item {
           flex-direction: column;
           align-items: flex-start;
-          /* 内部label与input样式 在main.css中 */
+
+          ::v-deep(.el-form-item__content) {
+            width: 17rem;
+          }
+        }
+
+        // 参会人 input内部样式
+        .meeting-people {
+          ::v-deep(.el-input__icon) {
+            width: 20px;
+            height: 20px;
+            color: #3268DC;
+            background: #ECF2FF;
+          }
+
+          ::v-deep(.el-input__inner) {
+            --el-input-placeholder-color: #3268DC;
+          }
+        }
+
+        /* 日期选择框 内部宽度(不包含prefix与suffix宽度) */
+        .row-date {
+          ::v-deep(.el-input__inner) {
+            width: 14.25rem;
+          }
         }
       }
 
@@ -181,7 +248,10 @@ const submitForm = (formEl: FormInstance | undefined) => {
         justify-content: space-between;
         margin-top: 10px;
 
-        /* 多选样式 在main.css中 */
+        ::v-deep(.el-checkbox__label) {
+          font-size: 1.03rem;
+          font-weight: bold;
+        }
 
         // 群组名称input宽度
         .el-form-item {
@@ -195,6 +265,14 @@ const submitForm = (formEl: FormInstance | undefined) => {
         .el-input {
           height: 5.75rem;
           margin-top: 8px;
+
+          ::v-deep(.el-input__wrapper) {
+            align-items: normal;
+          }
+
+          ::v-deep(.el-input__suffix) {
+            align-items: flex-end;
+          }
         }
       }
 

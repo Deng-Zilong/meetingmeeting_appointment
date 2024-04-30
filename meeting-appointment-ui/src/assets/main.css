@@ -45,6 +45,7 @@
 .history .el-timeline-item {
   padding-bottom: 0 !important;
 }
+
 /* 
 .history .meeting-dialog .el-dialog, 
 .group .delete-box .el-message-box {
@@ -66,43 +67,4 @@
 
 a {
   text-decoration: none;
-}
-
-/* 会议室状态 日期 */
-.meeting-container {
-  .left-date {
-    height: 3rem !important;
-    font-size: 1.5rem !important;
-  }
-}
-
-/* 会议室预约 */
-.appoint-container {
-
-  /* 统一调整预约表单中的label字体大小 */
-  .el-form-item__label {
-    font-size: 1.03rem;
-  }
-
-  .appoint-row {
-
-    /* 前三行 输入框与选择框 宽度 */
-    .el-form-item__content {
-      width: 17rem;
-    }
-
-    /* 日期选择框 内部宽度(不包含prefix与suffix宽度) */
-    .row-date {
-      .el-input__inner {
-        width: 14.25rem;
-      }
-    }
-  }
-
-  .fourth-row {
-    .el-checkbox__label {
-      font-size: 1.03rem;
-      font-weight: bold;
-    }
-  }
 }
