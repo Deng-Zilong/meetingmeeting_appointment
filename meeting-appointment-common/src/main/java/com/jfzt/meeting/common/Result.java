@@ -1,12 +1,15 @@
 package com.jfzt.meeting.common;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
 
 /**
  * @author zilong.deng
  */
 @Data
-public class Result<T> {
+public class Result<T> implements Serializable {
     private String code;
     private String msg;
     private T data;
@@ -14,6 +17,10 @@ public class Result<T> {
 
     public static <T> Result<T> success (T data) {
         return new Result<>("200", "success", data);
+    }
+
+    public static <T> Result<T> success() {
+        return new Result<>("200", "success", null);
     }
 
     public static <T> Result<T> success (String msg, T data) {
@@ -38,5 +45,6 @@ public class Result<T> {
         this.msg = msg;
         this.data = data;
     }
+
 
 }

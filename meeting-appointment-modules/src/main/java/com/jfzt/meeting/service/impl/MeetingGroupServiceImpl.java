@@ -4,17 +4,24 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingGroup;
 import com.jfzt.meeting.entity.SysDepartmentUser;
+import com.jfzt.meeting.entity.UserGroup;
+import com.jfzt.meeting.entity.dto.MeetingGroupDTO;
 import com.jfzt.meeting.entity.vo.MeetingGroupVO;
 import com.jfzt.meeting.mapper.MeetingGroupMapper;
 import com.jfzt.meeting.service.MeetingGroupService;
 
 import com.jfzt.meeting.service.SysDepartmentUserService;
+import com.jfzt.meeting.service.UserGroupService;
 import jakarta.annotation.Resource;
+import org.apache.catalina.User;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author zilong.deng
@@ -27,24 +34,98 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     @Resource
     private SysDepartmentUserService sysDepartmentUserService;
 
+    @Resource
+    private UserGroupService userGroupService;
+
+
+    /**
+     * @Description 群组查询
+     * @Param [userId]
+     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.MeetingGroupVO>>
+     * @exception
+     */
     @Override
     public Result<List<MeetingGroupVO>> checkGroup(String userId) {
+        ArrayList<MeetingGroup> joinList = new ArrayList<>();
         userId = "d";
-
+        //使用lambdaQuery查询SysDepartmentUser，并判断userId是否不为空，不为空则查询userId等于指定userId的用户
         SysDepartmentUser user = sysDepartmentUserService.lambdaQuery()
                 .eq(StringUtils.isNotBlank(userId), SysDepartmentUser::getUserId, userId)
                 .list()
                 .getFirst();
 
-        List<MeetingGroup> groupList = lambdaQuery().list();
-        List<MeetingGroupVO> collect = groupList.stream().map((item) -> {
+        // 定义一个UserGroup类型的List，通过userGroupService的lambdaQuery方法获取满足条件的UserGroup列表
+        List<UserGroup> userGroupList = userGroupService.lambdaQuery()
+                .eq(StringUtils.isNotBlank(userId), UserGroup::getUserId, userId)
+                .list();
+        // 定义一个List，用于存放满足条件的MeetingGroup
+        List<UserGroup> endList = userGroupList.stream().peek((item) -> {
+            // 通过lambdaQuery方法获取满足条件的MeetingGroup
+            MeetingGroup joinUser = lambdaQuery()
+                        .eq(item.getGroupId() != null, MeetingGroup::getId, item.getGroupId())
+                        .one();
+            // 将满足条件的MeetingGroup添加到endList中
+            joinList.add(joinUser);
+        }).toList();
+
+
+        // 定义一个List，用于存放满足条件的MeetingGroupVO
+        List<MeetingGroupVO> collect = joinList.stream().map((item) -> {
+            // 创建一个MeetingGroupVO实例
             MeetingGroupVO meetingGroupVO = new MeetingGroupVO();
+            // 使用BeanUtils.copyProperties方法将item复制到meetingGroupVO实例中
             BeanUtils.copyProperties(item, meetingGroupVO);
+            // 将user的userName添加到meetingGroupVO中
             meetingGroupVO.setUserName(user.getUserName());
+            // 返回meetingGroupVO实例
             return meetingGroupVO;
 
         }).toList();
+        // 返回Result.success(collect)
         return Result.success(collect);
+    }
+
+
+    /**
+     * @Description 群组添加
+     * @Param [meetingGroupDTO]
+     * @return com.jfzt.meeting.common.Result<java.lang.Object>
+     * @exception
+     */
+    @Override
+    @Transactional
+    public Result<Object> addMeetingGroup(MeetingGroupDTO meetingGroupDTO) {
+
+        // 创建一个新的MeetingGroup对象
+        MeetingGroup meetingGroup = new MeetingGroup();
+
+        // 将meetingGroupDTO中的属性复制到meetingGroup中
+        BeanUtils.copyProperties(meetingGroupDTO, meetingGroup);
+        // 保存meetingGroup
+        save(meetingGroup);
+
+        // 根据meetingGroupDTO中的groupName查询MeetingGroup表，获取groupId
+        Long groupId = lambdaQuery()
+                .eq(StringUtils.isNotBlank(meetingGroupDTO.getGroupName()), MeetingGroup::getGroupName, meetingGroupDTO.getGroupName())
+                .one()
+                .getId();
+
+        // 获取meetingGroupDTO中的用户列表
+        List<UserGroup> userList = meetingGroupDTO.getUsers();
+
+        // 对用户列表进行处理，将每个用户关联到meetingGroup中
+        List<UserGroup> list = userList.stream().peek((item) -> {
+            // 创建一个新的UserGroup对象
+            UserGroup group = UserGroup.builder()
+                    .userId(item.getUserId())
+                    .groupId(groupId)
+                    .build();
+            // 保存UserGroup
+            userGroupService.save(group);
+        }).toList();
+
+
+        return Result.success();
     }
 }
 

@@ -3,6 +3,7 @@ package com.jfzt.meeting.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingGroup;
+import com.jfzt.meeting.entity.dto.MeetingGroupDTO;
 import com.jfzt.meeting.entity.vo.MeetingGroupVO;
 
 import java.util.List;
@@ -16,4 +17,6 @@ public interface MeetingGroupService extends IService<MeetingGroup> {
 
 
     Result<List<MeetingGroupVO>> checkGroup(String userId);
+
+    Result<Object> addMeetingGroup(MeetingGroupDTO meetingGroupDTO);
 }

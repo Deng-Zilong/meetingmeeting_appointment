@@ -2,6 +2,7 @@ package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingGroup;
+import com.jfzt.meeting.entity.dto.MeetingGroupDTO;
 import com.jfzt.meeting.entity.vo.MeetingGroupVO;
 import com.jfzt.meeting.service.MeetingGroupService;
 import jakarta.annotation.Resource;
@@ -27,8 +28,8 @@ public class MeetingGroupController {
 
     }
 
-    @PostMapping
-    public Result<Object> addMeetingGroup(@RequestBody MeetingGroup meetingGroup) {
-        return null;
+    @PostMapping("/addMeetingGroup")
+    public Result<Object> addMeetingGroup(@RequestBody MeetingGroupDTO meetingGroupDTO) {
+        return meetingGroupService.addMeetingGroup(meetingGroupDTO);
     }
 }
