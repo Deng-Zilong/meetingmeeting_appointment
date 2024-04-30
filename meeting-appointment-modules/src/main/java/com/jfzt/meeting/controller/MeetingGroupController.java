@@ -28,7 +28,7 @@ public class MeetingGroupController {
     }
 
     @PostMapping
-    public Result<Object> addMeetingGroup(@RequestBody MeetingGroup meetingGroup){
+    public Result<Object> addMeetingGroup(@RequestBody MeetingGroup meetingGroup) {
         return null;
-
+    }
 }
