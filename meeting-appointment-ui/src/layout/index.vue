@@ -40,9 +40,9 @@
     /**
      * @description 退出登录
      */
-    const exitLogin = () => {
+    const exitLogin = async() => {
         // 重置用户信息
-        userStore.$reset();
+        await userStore.resetUserInfo();
         router.push('/login');
     };
     

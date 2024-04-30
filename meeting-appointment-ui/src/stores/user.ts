@@ -11,16 +11,20 @@ export const useUserStore = defineStore('user',()=>{
     interface IUserInfo{
         userId: string | number,
         access_token: string,
-        username: '',
-        img: '',
+        username: string,
+        img: string,
+        role: string | number,
     }
-    // 管理用户数据的state
-    let userInfo = reactive<IUserInfo>({
+    // 用户信息初始化
+    const initUserInfo = {
         userId:'',
         access_token: '',
         username: '',
         img: '',
-    })
+        role: '',
+    }
+    // 用户信息
+    let userInfo = reactive<IUserInfo>({...initUserInfo})
 
     /**
      * @description 企业微信扫码登录
@@ -57,11 +61,16 @@ export const useUserStore = defineStore('user',()=>{
                     return err;
                 })
     }
+    // 重置用户信息
+    const resetUserInfo = () => {
+        Object.assign(userInfo, initUserInfo);
+    }
     // 以对象的格式把state和action return 出去
     return {
         userInfo,
         getQWUserInfo,
-        getUserInfo
+        getUserInfo,
+        resetUserInfo,
     }
 },
     {
