@@ -1,4 +1,5 @@
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
+import { ElMessage } from "element-plus";
 // import router from "../router";
 // 请求拦截
 export function ReqResolve(config: InternalAxiosRequestConfig) {
@@ -24,11 +25,16 @@ export function ReqReject(error: AxiosError) {
 }
 // 响应拦截
 export function ResResolve(config: any) {
-  if (config.data.code == 401) {
-    // router.push("/403");
-  }
+//   if (config.data.code == 401) {
+//     // router.push("/403");
+//   }
   if (config.status === 200) {
-    return config;
+    if (config.data.code == 200) {
+        return config;
+    } else {
+        ElMessage.warning(config.data.msg);
+        return Promise.reject(config);
+    }
   }
 }
 // 相应拦截错误处理

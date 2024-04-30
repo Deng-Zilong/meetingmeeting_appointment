@@ -1,5 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import Cookies from "js-cookie"
+import { useUserStore } from '@/stores/user'
 
 const routes = [
   {
@@ -56,22 +56,22 @@ const router = createRouter({
   routes,
 });
 
-// router.beforeEach((to, from, next) => {
-//   const token = Cookies.get('token');
-//   console.log(token, "token");
-//   // if (token) {
-//   //     if(to.path == '/login') {
-//   //         next('/');
-//   //     } else {
-//   //         next();
-//   //     }
-//   // } else {
-//   //     if (to.path != '/login') {
-//   //         next('/login');
-//   //     } else {
-//   //         next();
-//   //     }
-//   // }
-// })
+router.beforeEach((to, from, next) => {
+    const userStore = useUserStore();
+    const token = userStore.userInfo.access_token;
+    if (token) {
+        if(to.path == '/login') {
+            next('/');
+        } else {
+            next();
+        }
+    } else {
+        if (to.path != '/login') {
+            next('/login');
+        } else {
+            next();
+        }
+    }
+})
 
 export default router

@@ -33,14 +33,16 @@
     import { useRouter } from 'vue-router'
     import Navbar from "@/layout/components/navbar.vue";
     import Sidebar from "@/layout/components/sidebar.vue";
-    import Cookies from "js-cookie"
-
+    import { useUserStore } from '@/stores/user'
+    // 用户信息
+    const userStore = useUserStore();
     const router = useRouter();
     /**
      * @description 退出登录
      */
     const exitLogin = () => {
-        Cookies.remove("token");
+        // 重置用户信息
+        userStore.$reset();
         router.push('/login');
     };
     
