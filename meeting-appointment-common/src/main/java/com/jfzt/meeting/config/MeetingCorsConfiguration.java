@@ -7,12 +7,11 @@ import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 /**
- * @Description: 解决跨域的配置
- * @Created: with IntelliJ IDEA.
- * @author: 夏沫止水
- * @createTime: 2020-05-23 23:02
- **/
-
+ * 解决跨域的配置
+ *
+ * @author zhenxing.lu
+ * @since 2024-04-30 10.13:51
+ */
 @Configuration
 public class MeetingCorsConfiguration {
 
@@ -28,7 +27,7 @@ public class MeetingCorsConfiguration {
         corsConfiguration.addAllowedOrigin("*");
         corsConfiguration.setAllowCredentials(true);
 
-        source.registerCorsConfiguration("/**",corsConfiguration);
+        source.registerCorsConfiguration("/**", corsConfiguration);
         return new CorsWebFilter(source);
     }
 }

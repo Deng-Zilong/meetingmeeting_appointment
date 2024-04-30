@@ -7,6 +7,7 @@ import com.jfzt.meeting.mapper.SysDepartmentMapper;
 import com.jfzt.meeting.mapper.SysDepartmentUserMapper;
 import com.jfzt.meeting.service.SysDepartmentUserService;
 import com.jfzt.meeting.utils.HttpClientUtil;
+import lombok.extern.slf4j.Slf4j;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author zilong.deng
@@ -21,6 +23,7 @@ import java.util.HashMap;
  * @createDate 2024-04-29 14:46:29
  */
 @Service
+@Slf4j
 public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserMapper, SysDepartmentUser>
         implements SysDepartmentUserService {
 
@@ -95,6 +98,29 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
         }
         int length = userList.size();
         return length;
+    }
+
+    @Override
+    public Map<String,String> findUserName(String access_token, String code) {
+        Map<String,String> userInfo = new HashMap<>();
+        //获取用户user_ticket
+        HttpClientUtil httpClientUtil = new HttpClientUtil();
+        HashMap<String, String> tokenCode = new HashMap<>();
+        tokenCode.put("access_token", access_token);
+        tokenCode.put("code", code);
+        String responseAll = httpClientUtil.doGet("https://qyapi.weixin.qq.com/cgi-bin/auth/getuserinfo", tokenCode);
+        JSONObject responseAllList = JSONObject.fromObject(responseAll);
+        String userid = responseAllList.getString("userid");
+        log.info("userid获取"+userid);
+        //获取用户详细信息
+        HashMap<String, String> tokenUserid = new HashMap<>();
+        tokenUserid.put("access_token", access_token);
+        tokenUserid.put("userid", userid);
+        String responseAllS = httpClientUtil.doGet("https://qyapi.weixin.qq.com/cgi-bin/user/get", tokenUserid);
+        JSONObject responseAllListS = JSONObject.fromObject(responseAllS);
+        userInfo.put("userId",responseAllListS.getString("userId"));
+        userInfo.put("username",responseAllListS.getString("name"));
+        return userInfo;
     }
 
 }

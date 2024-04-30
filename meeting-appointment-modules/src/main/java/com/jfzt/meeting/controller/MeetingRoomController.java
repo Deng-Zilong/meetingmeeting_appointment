@@ -20,16 +20,15 @@ public class MeetingRoomController {
     private MeetingRoomService meetingRoomService;
 
 
-
     @PostMapping("/addMeetingRoom")
-    public Result<String> addMeetingRoom (@RequestBody @Valid MeetingRoomVO meetingRoomVO) {
+    public Result<String> addMeetingRoom(@RequestBody @Valid MeetingRoomVO meetingRoomVO) {
 
         return meetingRoomService.addMeetingRoom(meetingRoomVO);
 
     }
 
     @DeleteMapping("/deleteMeetingRoom")
-    public Result<String> deleteMeetingRoom (@RequestBody @Valid MeetingRoomVO meetingRoomVO) {
+    public Result<String> deleteMeetingRoom(@RequestBody @Valid MeetingRoomVO meetingRoomVO) {
 
         Boolean result = meetingRoomService.deleteMeetingRoom(meetingRoomVO);
         if (result) {
