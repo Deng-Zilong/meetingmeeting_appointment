@@ -19,4 +19,8 @@ public interface MeetingGroupService extends IService<MeetingGroup> {
     Result<List<MeetingGroupVO>> checkGroup(String userId);
 
     Result<Object> addMeetingGroup(MeetingGroupDTO meetingGroupDTO);
+
+    Result<Object> updateMeetingGroup(MeetingGroupDTO meetingGroupDTO);
+
+    Result<Object> deleteMeetingGroup(String groupId);
 }

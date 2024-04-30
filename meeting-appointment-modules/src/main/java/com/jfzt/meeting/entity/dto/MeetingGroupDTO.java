@@ -1,5 +1,6 @@
 package com.jfzt.meeting.entity.dto;
 
+import com.jfzt.meeting.entity.MeetingGroup;
 import com.jfzt.meeting.entity.SysDepartmentUser;
 import com.jfzt.meeting.entity.UserGroup;
 import lombok.Data;

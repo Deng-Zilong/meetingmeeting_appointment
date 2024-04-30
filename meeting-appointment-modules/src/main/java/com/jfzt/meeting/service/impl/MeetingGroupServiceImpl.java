@@ -13,12 +13,15 @@ import com.jfzt.meeting.service.MeetingGroupService;
 import com.jfzt.meeting.service.SysDepartmentUserService;
 import com.jfzt.meeting.service.UserGroupService;
 import jakarta.annotation.Resource;
+import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import org.apache.catalina.User;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -77,6 +80,24 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
             BeanUtils.copyProperties(item, meetingGroupVO);
             // 将user的userName添加到meetingGroupVO中
             meetingGroupVO.setUserName(user.getUserName());
+            // 将会议创建人添加到参会人员
+            meetingGroupVO.getUsers().add(user.getUserName());
+            // 使用lambdaQuery查询出所有UserGroup，其中groupId为item.getId()
+            List<UserGroup> userGroups = userGroupService.lambdaQuery()
+                    .eq(item.getId() != null, UserGroup::getGroupId, item.getId())
+                    .list();
+            // 遍历userGroups，将每个userGroup的用户名添加到meetingGroupVO中
+            List<UserGroup> endList2 = userGroups.stream().peek((userGroup) -> {
+                // 使用lambdaQuery查询出SysDepartmentUser，其中用户ID为userGroup.getUserId()
+                SysDepartmentUser sysDepartmentUser = sysDepartmentUserService.lambdaQuery()
+                        .eq(StringUtils.isNotBlank(userGroup.getUserId()), SysDepartmentUser::getUserId, userGroup.getUserId())
+                        .list()
+                        .getFirst();
+                // 将sysDepartmentUser的用户名添加到meetingGroupVO中
+                meetingGroupVO.getUsers().add(sysDepartmentUser.getUserName());
+
+            }).toList();
+
             // 返回meetingGroupVO实例
             return meetingGroupVO;
 
@@ -125,6 +146,17 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         }).toList();
 
 
+        return Result.success();
+    }
+
+    @Override
+    public Result<Object> updateMeetingGroup(MeetingGroupDTO meetingGroupDTO) {
+
+        return Result.success();
+    }
+
+    @Override
+    public Result<Object> deleteMeetingGroup(String groupId) {
         return Result.success();
     }
 }

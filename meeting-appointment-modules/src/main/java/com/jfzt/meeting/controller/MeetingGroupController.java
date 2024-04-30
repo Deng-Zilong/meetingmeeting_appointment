@@ -34,4 +34,13 @@ public class MeetingGroupController {
     public Result<Object> addMeetingGroup(@RequestBody MeetingGroupDTO meetingGroupDTO) {
         return meetingGroupService.addMeetingGroup(meetingGroupDTO);
     }
+
+    @PutMapping("/updateMeetingGroup")
+    public Result<Object> updateMeetingGroup(@RequestBody MeetingGroupDTO meetingGroupDTO) {
+        return meetingGroupService.updateMeetingGroup(meetingGroupDTO);
+    }
+    @DeleteMapping("/deleteMeetingGroup/{groupId}")
+    public Result<Object> deleteMeetingGroup(@PathVariable("groupId") String groupId) {
+        return meetingGroupService.deleteMeetingGroup(groupId);
+    }
 }
