@@ -8,14 +8,21 @@ import com.jfzt.meeting.mapper.SysDepartmentUserMapper;
 import com.jfzt.meeting.service.SysDepartmentUserService;
 import com.jfzt.meeting.utils.HttpClientUtil;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.json.JSONArray;
+import me.chanjar.weixin.common.error.WxErrorException;
+
+import me.chanjar.weixin.cp.api.impl.WxCpDepartmentServiceImpl;
+import me.chanjar.weixin.cp.api.impl.WxCpServiceImpl;
+import me.chanjar.weixin.cp.api.impl.WxCpUserServiceImpl;
+import me.chanjar.weixin.cp.bean.WxCpDepart;
+import me.chanjar.weixin.cp.bean.WxCpUser;
+
 import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+
 
 /**
  * @author zilong.deng
@@ -27,12 +34,7 @@ import java.util.Map;
 public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserMapper, SysDepartmentUser>
         implements SysDepartmentUserService {
 
-    @Value("${qywx.corpid}")
-    private String corpid;
-    @Value("${qywx.corpsecret}")
-    private String corpsecret;
-    @Value("${qywx.agentid}")
-    private String agentid;
+
 //    @Autowired
 //    private StringRedisTemplate stringRedisTemplate;
 
@@ -40,88 +42,64 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     private SysDepartmentUserMapper sysDepartmentUserMapper;
     @Autowired
     private SysDepartmentMapper sysDepartmentMapper;
+    @Autowired
+    private WxCpServiceImpl wxCpService;
 
     @Override
-    public String findTocken() {
+    public String findTocken() throws WxErrorException {
         //获取token
-        HttpClientUtil httpClientUtil = new HttpClientUtil();
-        HashMap<String, String> mapParams = new HashMap<>();
-        mapParams.put("corpid", corpid);
-        mapParams.put("corpsecret", corpsecret);
-        String responseAll = httpClientUtil.doGet("https://qyapi.weixin.qq.com/cgi-bin/gettoken", mapParams);
-        JSONObject responseAllList = JSONObject.fromObject(responseAll);
-        String access_token = (String) responseAllList.get("access_token");
-//        stringRedisTemplate.opsForValue().set("access_token",map.get("access_token"),2, TimeUnit.HOURS);
-        return access_token;
+        return wxCpService.getAccessToken(true);
     }
 
     @Override
-    public void findDepartmentUser(String access_token,int departmentLength) {
-        HttpClientUtil httpClientUtil = new HttpClientUtil();
-        for (int s=0;s<departmentLength;s++){
-            HashMap<String, String> mapParams = new HashMap<>();
-            mapParams.put("access_token", access_token);
-            mapParams.put("department_id", String.valueOf(s));
-            String responseAll = httpClientUtil.doGet("https://qyapi.weixin.qq.com/cgi-bin/user/simplelist", mapParams);
-            JSONObject responseAllList = JSONObject.fromObject(responseAll);
-            JSONArray userList = responseAllList.getJSONArray("userlist");
-            for (int i = 0; i < userList.size(); i++) {
-                JSONArray departmentList = userList.getJSONObject(i).getJSONArray("department");
-                for (int j = 0; j < departmentList.size(); j++) {
-                    SysDepartmentUser sysDepartmentUser = new SysDepartmentUser();
-                    JSONObject info = userList.getJSONObject(i);
-                    sysDepartmentUser.setUserId(info.getString("userid"));
-                    sysDepartmentUser.setUserName(info.getString("name"));
-                    sysDepartmentUser.setDepartmentId(Long.valueOf(departmentList.getString(j)));
-                    sysDepartmentUserMapper.insert(sysDepartmentUser);
-                }
-            }
-        }
-
-    }
-
-    @Override
-    public int  findDepartment(String access_token) {
-        HttpClientUtil httpClientUtil = new HttpClientUtil();
-        HashMap<String, String> mapParams = new HashMap<>();
-        mapParams.put("access_token", access_token);
-        String responseAll = httpClientUtil.doGet("https://qyapi.weixin.qq.com/cgi-bin/department/list", mapParams);
-        JSONObject responseAllList = JSONObject.fromObject(responseAll);
-        JSONArray userList = responseAllList.getJSONArray("department");
-        for (int i = 0; i < userList.size(); i++) {
-            SysDepartment sysDepartment = new SysDepartment();
-            JSONObject info = userList.getJSONObject(i);
-            sysDepartment.setDepartmentId(Long.valueOf(info.getString("id")));
-            sysDepartment.setDepartmentName(info.getString("name"));
-            sysDepartment.setParentId(Long.valueOf(info.getString("parentid")));
-            sysDepartmentMapper.insert(sysDepartment);
-        }
-        int length = userList.size();
-        return length;
-    }
-
-    @Override
-    public Map<String,String> findUserName(String access_token, String code) {
-        Map<String,String> userInfo = new HashMap<>();
+    public WxCpUser findUserName(String accessToken, String code) throws WxErrorException {
         //获取用户user_ticket
         HttpClientUtil httpClientUtil = new HttpClientUtil();
-        HashMap<String, String> tokenCode = new HashMap<>();
-        tokenCode.put("access_token", access_token);
-        tokenCode.put("code", code);
+        HashMap<String, String> tokenCode = new HashMap<>(2);
+        tokenCode.put("access_token", accessToken);
+//        tokenCode.put("code", code);
         String responseAll = httpClientUtil.doGet("https://qyapi.weixin.qq.com/cgi-bin/auth/getuserinfo", tokenCode);
         JSONObject responseAllList = JSONObject.fromObject(responseAll);
         String userid = responseAllList.getString("userid");
-        log.info("userid获取"+userid);
         //获取用户详细信息
-        HashMap<String, String> tokenUserid = new HashMap<>();
-        tokenUserid.put("access_token", access_token);
-        tokenUserid.put("userid", userid);
-        String responseAllS = httpClientUtil.doGet("https://qyapi.weixin.qq.com/cgi-bin/user/get", tokenUserid);
-        JSONObject responseAllListS = JSONObject.fromObject(responseAllS);
-        userInfo.put("userId",responseAllListS.getString("userId"));
-        userInfo.put("username",responseAllListS.getString("name"));
-        return userInfo;
+        WxCpUserServiceImpl wxCpUserService = new WxCpUserServiceImpl(wxCpService);
+        return wxCpUserService.getById(userid);
     }
+
+    @Override
+    public Long findDepartment() throws WxErrorException {
+        WxCpDepartmentServiceImpl wxCpDepartmentService = new WxCpDepartmentServiceImpl(wxCpService);
+        List<WxCpDepart> listDepartmentList = wxCpDepartmentService.list(0L);
+        //存入信息
+        for (WxCpDepart listDepartment : listDepartmentList) {
+            SysDepartment sysDepartment = new SysDepartment();
+            sysDepartment.setDepartmentId(listDepartment.getId());
+            sysDepartment.setDepartmentName(listDepartment.getName());
+            sysDepartment.setParentId(listDepartment.getParentId());
+            sysDepartmentMapper.insert(sysDepartment);
+        }
+        return (long) listDepartmentList.size();
+    }
+
+    @Override
+    public void findDepartmentUser(Long departmentLength) throws WxErrorException {
+        WxCpUserServiceImpl wxCpUserService = new WxCpUserServiceImpl(wxCpService);
+        for (int i = 0; i < departmentLength; i++) {
+            List<WxCpUser> listDepartmentUserList = wxCpUserService.listSimpleByDepartment((long) i, true, 0);
+            for (WxCpUser departmentUser : listDepartmentUserList) {
+                SysDepartmentUser sysDepartmentUser = new SysDepartmentUser();
+                for (int s = 0; s < departmentUser.getDepartIds().length; i++) {
+                    sysDepartmentUser.setDepartmentId(departmentUser.getDepartIds()[s]);
+                    sysDepartmentUser.setUserId(departmentUser.getUserId());
+                    sysDepartmentUser.setUserName(departmentUser.getName());
+                    sysDepartmentUserMapper.insert(sysDepartmentUser);
+                }
+            }
+
+        }
+
+    }
+
 
 }
 

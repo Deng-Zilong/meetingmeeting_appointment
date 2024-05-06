@@ -2,6 +2,8 @@ package com.jfzt.meeting.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.entity.SysDepartmentUser;
+import me.chanjar.weixin.common.error.WxErrorException;
+import me.chanjar.weixin.cp.bean.WxCpUser;
 
 import java.util.Map;
 
@@ -12,11 +14,13 @@ import java.util.Map;
  */
 public interface SysDepartmentUserService extends IService<SysDepartmentUser> {
 
-    String findTocken();
+    String findTocken() throws WxErrorException;
 
-    void findDepartmentUser(String access_token,int departmentLength);
+    WxCpUser findUserName(String access_token, String code) throws WxErrorException;
 
-    int  findDepartment(String access_token);
+    Long findDepartment() throws WxErrorException;
 
-    Map<String,String> findUserName(String access_token, String code);
+    void findDepartmentUser(Long departmentLength) throws WxErrorException;
+
+
 }

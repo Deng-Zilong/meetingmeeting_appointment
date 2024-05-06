@@ -3,11 +3,12 @@ package com.jfzt.meeting.controller;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.service.SysDepartmentUserService;
 import jakarta.annotation.Resource;
+import me.chanjar.weixin.common.error.WxErrorException;
+import me.chanjar.weixin.cp.bean.WxCpUser;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -18,7 +19,6 @@ import java.util.Map;
  * @since 2024-04-30 10.13:51
  */
 
-@CrossOrigin
 @RestController
 @RequestMapping("login")
 public class SysUserController {
@@ -33,17 +33,21 @@ public class SysUserController {
      */
     @GetMapping(value = "logininfo")
     @Transactional
-    public Result login(@RequestParam("code") String code) {
+    public Result login(@RequestParam("code") String code) throws WxErrorException {
+        Map<String, String> userInfo = new HashMap<>();
         //获取登录tocken
-        String access_token = sysDepartmentUserService.findTocken();
+        String accessToken = sysDepartmentUserService.findTocken();
         //获取用户详细信息
-        Map<String,String> userinfo = sysDepartmentUserService.findUserName(access_token,code);
+        WxCpUser user = sysDepartmentUserService.findUserName(accessToken, code);
         //获取部门信息
-        int departmentLength = sysDepartmentUserService.findDepartment(access_token);
+        Long departmentLength = sysDepartmentUserService.findDepartment();
         //获取部门人员
-        sysDepartmentUserService.findDepartmentUser(access_token, departmentLength);
-        userinfo.put("access_token",access_token);
-        return Result.success(userinfo);
+        sysDepartmentUserService.findDepartmentUser(departmentLength);
+        userInfo.put("access_token", accessToken);
+        return Result.success(userInfo);
     }
+
+
+
 
 }
