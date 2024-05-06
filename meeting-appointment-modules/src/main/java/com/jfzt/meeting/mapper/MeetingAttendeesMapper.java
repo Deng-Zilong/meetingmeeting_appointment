@@ -3,6 +3,9 @@ package com.jfzt.meeting.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.jfzt.meeting.entity.MeetingAttendees;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
  * @author zilong.deng
@@ -13,6 +16,11 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface MeetingAttendeesMapper extends BaseMapper<MeetingAttendees> {
 
+    @Select("SELECT meeting_attendees.meeting_record_id FROM meeting_attendees WHERE user_id = #{user_id} order by meeting_attendees.gmt_create desc")
+    List<Long> selectRecordIdsByUserId (String userId);
+
+    @Select("SELECT meeting_attendees.user_id FROM meeting_attendees WHERE meeting_record_id = #{recordId} order by meeting_attendees.gmt_create desc")
+    List<String> selectUserIdsByRecordId (Long recordId);
 }
 
 

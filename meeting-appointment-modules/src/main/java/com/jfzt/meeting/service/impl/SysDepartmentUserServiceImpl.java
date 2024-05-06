@@ -1,5 +1,6 @@
 package com.jfzt.meeting.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.entity.SysDepartment;
 import com.jfzt.meeting.entity.SysDepartmentUser;
@@ -9,13 +10,11 @@ import com.jfzt.meeting.service.SysDepartmentUserService;
 import com.jfzt.meeting.utils.HttpClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
-
 import me.chanjar.weixin.cp.api.impl.WxCpDepartmentServiceImpl;
 import me.chanjar.weixin.cp.api.impl.WxCpServiceImpl;
 import me.chanjar.weixin.cp.api.impl.WxCpUserServiceImpl;
 import me.chanjar.weixin.cp.bean.WxCpDepart;
 import me.chanjar.weixin.cp.bean.WxCpUser;
-
 import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,8 +34,8 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
         implements SysDepartmentUserService {
 
 
-//    @Autowired
-//    private StringRedisTemplate stringRedisTemplate;
+    //    @Autowired
+    //    private StringRedisTemplate stringRedisTemplate;
 
     @Autowired
     private SysDepartmentUserMapper sysDepartmentUserMapper;
@@ -45,19 +44,46 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     @Autowired
     private WxCpServiceImpl wxCpService;
 
+
+    /**
+     * 根据用户id集合获取用户姓名凭借字符串
+     *
+     * @param userIds 用户id
+     * @return {@code String}
+     */
     @Override
-    public String findTocken() throws WxErrorException {
+    public String getNamesByIds (List<String> userIds) {
+        StringBuffer attendees = new StringBuffer();
+        userIds.forEach(userId -> {
+            List<SysDepartmentUser> userList = this.list(new LambdaQueryWrapper<SysDepartmentUser>().eq(SysDepartmentUser::getUserId, userId));
+            //拼接参会人姓名
+            if (userList != null) {
+                SysDepartmentUser first = this.lambdaQuery()
+                        .eq(SysDepartmentUser::getUserId, userId)
+                        .list()
+                        .getFirst();
+                attendees.append(first.getUserName());
+                if (userIds.indexOf(userId) != userIds.size() - 1) {
+                    attendees.append(",");
+                }
+            }
+        });
+        return attendees.toString();
+    }
+
+    @Override
+    public String findTocken () throws WxErrorException {
         //获取token
         return wxCpService.getAccessToken(true);
     }
 
     @Override
-    public WxCpUser findUserName(String accessToken, String code) throws WxErrorException {
+    public WxCpUser findUserName (String accessToken, String code) throws WxErrorException {
         //获取用户user_ticket
         HttpClientUtil httpClientUtil = new HttpClientUtil();
         HashMap<String, String> tokenCode = new HashMap<>(2);
         tokenCode.put("access_token", accessToken);
-//        tokenCode.put("code", code);
+        //        tokenCode.put("code", code);
         String responseAll = httpClientUtil.doGet("https://qyapi.weixin.qq.com/cgi-bin/auth/getuserinfo", tokenCode);
         JSONObject responseAllList = JSONObject.fromObject(responseAll);
         String userid = responseAllList.getString("userid");
@@ -67,7 +93,7 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     }
 
     @Override
-    public Long findDepartment() throws WxErrorException {
+    public Long findDepartment () throws WxErrorException {
         WxCpDepartmentServiceImpl wxCpDepartmentService = new WxCpDepartmentServiceImpl(wxCpService);
         List<WxCpDepart> listDepartmentList = wxCpDepartmentService.list(0L);
         //存入信息
@@ -82,7 +108,7 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     }
 
     @Override
-    public void findDepartmentUser(Long departmentLength) throws WxErrorException {
+    public void findDepartmentUser (Long departmentLength) throws WxErrorException {
         WxCpUserServiceImpl wxCpUserService = new WxCpUserServiceImpl(wxCpService);
         for (int i = 0; i < departmentLength; i++) {
             List<WxCpUser> listDepartmentUserList = wxCpUserService.listSimpleByDepartment((long) i, true, 0);

@@ -1,5 +1,5 @@
 server:
-#  port: 8080
+  #  port: 8080
   port: 8080
 
 spring:
@@ -13,10 +13,12 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: UTC
-#    time-zone: Asia/Shanghai
-#    包含时区信息
+  #    time-zone: Asia/Shanghai
+  #    包含时区信息
 
-
+  #允许循环依赖
+  main:
+    allow-circular-references: true
 
 
 

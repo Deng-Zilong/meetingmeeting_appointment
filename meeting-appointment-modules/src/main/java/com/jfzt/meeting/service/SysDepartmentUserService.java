@@ -5,7 +5,7 @@ import com.jfzt.meeting.entity.SysDepartmentUser;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.cp.bean.WxCpUser;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * @author zilong.deng
@@ -14,13 +14,21 @@ import java.util.Map;
  */
 public interface SysDepartmentUserService extends IService<SysDepartmentUser> {
 
-    String findTocken() throws WxErrorException;
+    String findTocken () throws WxErrorException;
 
-    WxCpUser findUserName(String access_token, String code) throws WxErrorException;
+    WxCpUser findUserName (String access_token, String code) throws WxErrorException;
 
-    Long findDepartment() throws WxErrorException;
+    Long findDepartment () throws WxErrorException;
 
-    void findDepartmentUser(Long departmentLength) throws WxErrorException;
+    void findDepartmentUser (Long departmentLength) throws WxErrorException;
 
+
+    /**
+     * 根据用户id集合获取用户姓名拼接字符串
+     *
+     * @param userIds 用户id
+     * @return {@code String}
+     */
+    String getNamesByIds (List<String> userIds);
 
 }
