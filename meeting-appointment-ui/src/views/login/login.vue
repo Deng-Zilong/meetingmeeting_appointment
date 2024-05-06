@@ -112,42 +112,18 @@ const changeLogin = () => {
   }
 }
 // 账号登录 
-const router = useRouter()
 const submitForm = async(formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.validate((valid) => {
     if (valid) {
         const {username, password} = ruleForm;
-        userStore.getUserInfo(username, password);     
+        userStore.getUserInfo(username, password);  
     } else {
       openVn()
       return false
     }
   })
 }
-
-// // 扫码登录
-// onMounted(() => {
-//   const wwLogin = ww.createWWLoginPanel({
-//     el: '#qr_login',
-//     params: {
-//       appid: 'ww942086e6c44abc4b',
-//     agentid: '1000002',
-//      redirect_uri: 'ggssyy.cn/login/logininfo',
-//       state: 'WWLogin',
-//       // redirect_type: 'callback'
-//     },
-//     onCheckWeComLogin({ isWeComLogin }) {
-//       console.log(isWeComLogin)
-//     },
-//     onLoginSuccess({ code }) {
-//       console.log({ code })
-//     },
-//     onLoginFail(err) {
-//       console.log(err)
-//     }
-//   })
-// })
 
 onMounted(() => {
   // changeCaptcha();

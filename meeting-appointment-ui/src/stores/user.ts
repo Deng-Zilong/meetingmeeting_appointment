@@ -38,6 +38,10 @@ export const useUserStore = defineStore('user',()=>{
                     ElMessage.success('登陆成功!');
                 })
                 .catch((err: any) => {
+                    router.replace('/login');
+                    ElMessage.warning('登陆失败!');
+                    console.log(err, 'err');
+                    return err;
                 })
     }
 
@@ -58,6 +62,7 @@ export const useUserStore = defineStore('user',()=>{
                     // 临时使用
                     userInfo.access_token = '11111';
                     router.push('/home');
+                    console.log(err, 'err');
                     return err;
                 })
     }

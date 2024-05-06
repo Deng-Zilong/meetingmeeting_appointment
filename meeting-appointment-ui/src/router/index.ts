@@ -59,19 +59,18 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
     const userStore = useUserStore();
     const token = userStore.userInfo.access_token;
-    if (token) {
-        if(to.path == '/login') {
-            next('/');
-        } else {
-            next();
-        }
-    } else {
-        if (to.path != '/login') {
-            next('/login');
-        } else {
-            next();
-        }
+    // 若目标路由为主页时（可能为扫码登录） 暂不判断token
+    if(to.path == '/home') {
+        return next();
     }
+    // 若token存在且目标路由为登录时 跳转到主页
+    if (token && to.path == '/login') {
+        return next('/');
+    }
+    // 若token不存在且目标路由不为登录时 跳转到登录页面
+    if (!token && to.path != '/login') {
+        return next('/login');
+    }
+    next();
 })
-
 export default router

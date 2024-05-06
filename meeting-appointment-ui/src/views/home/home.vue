@@ -48,12 +48,15 @@ const router = useRouter();
 onMounted(async () => {
   const code = decodeURIComponent(route.query.code as string);
   const token = userStore.userInfo.access_token;
+
+  // 若 code 不为 undefined 时为扫码登录
+  if (code != 'undefined') {
+    return await userStore.getQWUserInfo(code);
+  }
+  
+  // 若不是扫码登录则判断token  
   if (!token) {
     router.replace('/login');
-  } else {
-    if (code != 'undefined') {
-      await userStore.getQWUserInfo(code);
-    }
   }
 });
 
