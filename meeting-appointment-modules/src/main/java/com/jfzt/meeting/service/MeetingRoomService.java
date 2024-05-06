@@ -3,7 +3,10 @@ package com.jfzt.meeting.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingRoom;
+import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomVO;
+
+import java.util.List;
 
 /**
  * @author zilong.deng
@@ -18,5 +21,13 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      */
     Result<String> addMeetingRoom (MeetingRoomVO meetingRoomVO);
 
-    Boolean deleteMeetingRoom (MeetingRoom meetingRoom);
+
+    /**
+     * 查询会议室状态
+     *
+     * @return {@code Result<List<MeetingRoomStatusVO>>}
+     */
+    List<MeetingRoomStatusVO> getMeetingRoomStatus ();
+
+    Boolean deleteMeetingRoom (MeetingRoomVO meetingRoomVO);
 }

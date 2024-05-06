@@ -48,7 +48,7 @@ public class MeetingRoom implements Serializable {
     private Integer capacity;
 
     /**
-     * 会议室状态（1可用，0暂停使用）
+     * 会议室状态（0 暂停使用,1 可使用/空闲,2 使用中不保存至数据库，实时获取）
      */
     private Integer status;
 
