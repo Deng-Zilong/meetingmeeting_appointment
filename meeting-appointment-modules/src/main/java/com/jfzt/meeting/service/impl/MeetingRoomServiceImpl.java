@@ -5,13 +5,14 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingRoom;
+import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomVO;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
 import com.jfzt.meeting.mapper.MeetingRoomMapper;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MeetingRoomService;
-import com.jfzt.meeting.service.SysDepartmentUserService;
+import com.jfzt.meeting.service.SysUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     private MeetingRecordService meetingRecordService;
 
 
-    private SysDepartmentUserService userService;
+    private SysUserService userService;
 
     private MeetingAttendeesMapper attendeesMapper;
 
@@ -55,7 +56,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         room.setCapacity(meetingRoomVO.getCapacity());
         room.setRoomName(meetingRoomVO.getRoomName());
         room.setLocation(meetingRoomVO.getLocation());
-        room.setCreatedBy(meetingRoomVO.getUserId());
+        room.setCreatedBy(meetingRoomVO.getCreatedBy());
         boolean saved = this.save(room);
         if (saved) {
             return Result.success("添加成功");
@@ -115,8 +116,22 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 meetingRoomStatusVO.setMeetingStartTime(meetingRecord.getStartTime());
                 //插入参会人拼接字符串
                 List<String> userIds = attendeesMapper.selectUserIdsByRecordId(meetingRecord.getId());
-                String attendees = userService.getNamesByIds(userIds);
-                meetingRoomStatusVO.setAttendees(attendees);
+                StringBuffer attendees = new StringBuffer();
+                userIds.forEach(userId1 -> {
+                    SysUser user = userService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, userId1));
+                    //拼接参会人姓名
+                    if (user != null) {
+                        SysUser first = userService.lambdaQuery()
+                                .eq(SysUser::getUserId, userId1)
+                                .list()
+                                .getFirst();
+                        attendees.append(first.getUserName());
+                        if (userIds.indexOf(userId1) != userIds.size() - 1) {
+                            attendees.append(",");
+                        }
+                    }
+                });
+                meetingRoomStatusVO.setAttendees(attendees.toString());
             }
             return meetingRoomStatusVO;
         }).collect(Collectors.toList());
@@ -132,7 +147,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      * setter注入
      */
     @Autowired
-    public void setUserService (SysDepartmentUserService userService) {
+    public void setUserService (SysUserService userService) {
         this.userService = userService;
     }
 

@@ -17,7 +17,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/meeting/meetingRoom")
+@RequestMapping("/meeting")
 public class MeetingRoomController {
 
     @Resource
@@ -37,14 +37,14 @@ public class MeetingRoomController {
     }
 
     @PostMapping("/addMeetingRoom")
-    public Result<String> addMeetingRoom(@RequestBody @Valid MeetingRoomVO meetingRoomVO) {
+    public Result<String> addMeetingRoom (@RequestBody @Valid MeetingRoomVO meetingRoomVO) {
 
         return meetingRoomService.addMeetingRoom(meetingRoomVO);
 
     }
 
     @DeleteMapping("/deleteMeetingRoom")
-    public Result<String> deleteMeetingRoom(@RequestBody @Valid MeetingRoomVO meetingRoomVO) {
+    public Result<String> deleteMeetingRoom (@RequestBody @Valid MeetingRoomVO meetingRoomVO) {
 
         Boolean result = meetingRoomService.deleteMeetingRoom(meetingRoomVO);
         if (result) {
