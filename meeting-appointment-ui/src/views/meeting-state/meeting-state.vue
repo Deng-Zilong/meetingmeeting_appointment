@@ -93,106 +93,21 @@ interface Time {
   state: Number
 }
 const timeArr = reactive<Time[]>([
-  {
-    time: '1714114711',
-    state: 4
-  }, {
-    time: '8:30',
-    state: 4
-  }, {
-    time: '9:00',
-    state: 4
-  }, {
-    time: '9:30',
-    state: 1
-  }, {
-    time: '8:00',
-    state: 1
-  },
-  {
-    time: '8:30',
-    state: 2
-  }, {
-    time: '8:00',
-    state: 3
-  },
-  {
-    time: '8:30',
-    state: 4
-  }, {
-    time: '8:00',
-    state: 4
-  },
-  {
-    time: '8:30',
-    state: 1
-  }, {
-    time: '8:00',
-    state: 4
-  }, {
-    time: '8:30',
-    state: 4
-  }, {
-    time: '9:00',
-    state: 4
-  }, {
-    time: '9:30',
-    state: 1
-  }, {
-    time: '8:00',
-    state: 1
-  },
-  {
-    time: '8:30',
-    state: 2
-  }, {
-    time: '8:00',
-    state: 3
-  },
-  {
-    time: '8:30',
-    state: 4
-  }, {
-    time: '8:00',
-    state: 4
-  },
-  {
-    time: '8:30',
-    state: 1
-  }, {
-    time: '8:00',
-    state: 0
-  }, {
-    time: '8:30',
-    state: 0
-  }, {
-    time: '9:00',
-    state: 0
-  }, {
-    time: '9:30',
-    state: 1
-  }, {
-    time: '8:00',
-    state: 1
-  },
-  {
-    time: '8:30',
-    state: 2
-  }, {
-    time: '8:00',
-    state: 3
-  },
-  {
-    time: '8:30',
-    state: 4
-  }, {
-    time: '8:00',
-    state: 0
-  },
-  {
-    time: '8:30',
-    state: 1
-  },
+  { time: '8:00', state: 4 }, { time: '8:30', state: 4 },
+  { time: '9:00', state: 4 }, { time: '9:30', state: 1 },
+  { time: '10:00', state: 1 }, { time: '10:30', state: 2 },
+  { time: '11:00', state: 3 }, { time: '11:30', state: 4 },
+  { time: '12:00', state: 4 }, { time: '12:30', state: 1 },
+  { time: '13:00', state: 4 }, { time: '13:30', state: 4 },
+  { time: '14:00', state: 4 }, { time: '14:30', state: 1 },
+  { time: '15:00', state: 1 }, { time: '15:30', state: 2 },
+  { time: '16:00', state: 3 }, { time: '16:30', state: 4 },
+  { time: '17:00', state: 4 }, { time: '17:30', state: 1 },
+  { time: '18:00', state: 0 }, { time: '18:30', state: 0 },
+  { time: '19:00', state: 0 }, { time: '19:30', state: 1 },
+  { time: '20:00', state: 1 }, { time: '20:30', state: 2 },
+  { time: '21:00', state: 3 }, { time: '21:30', state: 4 },
+  { time: '22:00', state: 0 }, { time: '22:30', state: 1 }
 ])
 const color = computed(() => (state: any) => {
   switch (state) {
@@ -287,7 +202,7 @@ const infoArr = reactive([
           display: flex;
           justify-content: center;
           align-items: center;
-          height: 4.2rem;
+          height: 4rem;
           background: #FFF;
           border-radius: 15px 15px 0px 0px;
           box-shadow: inset 0px 1px 8px 0px #DBE9F7;
@@ -296,17 +211,19 @@ const infoArr = reactive([
         }
 
         .table-main {
-          display: flex;
-          flex-wrap: wrap;
+          display: grid;
+          grid-template-columns: repeat(6, 1fr);
+          grid-template-rows: repeat(5, auto);
+          gap: 4px;
+          border-radius: 0 0 15px 15px;
+          box-shadow: inset 0px 1px 8px 0px #DBE9F7;
+          padding: 5px;
 
           .table-items {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 11rem;
-            height: 5rem;
-            margin: 0.125rem;
+            padding: 29px;
+            text-align: center;
             background: #FFF;
+            overflow: hidden;
             border-radius: 5px;
             box-shadow: inset 0px 1px 8px 0px #DBE9F7;
             cursor: pointer;
