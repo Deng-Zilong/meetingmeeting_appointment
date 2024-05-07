@@ -5,8 +5,6 @@ import com.jfzt.meeting.entity.SysDepartmentUser;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.cp.bean.WxCpUser;
 
-import java.util.List;
-
 /**
  * @author zilong.deng
  * @description 针对表【sys_department_user(企微部门成员关联表)】的数据库操作Service
@@ -22,13 +20,5 @@ public interface SysDepartmentUserService extends IService<SysDepartmentUser> {
 
     void findDepartmentUser (Long departmentLength) throws WxErrorException;
 
-
-    /**
-     * 根据用户id集合获取用户姓名拼接字符串
-     *
-     * @param userIds 用户id
-     * @return {@code String}
-     */
-    String getNamesByIds (List<String> userIds);
 
 }

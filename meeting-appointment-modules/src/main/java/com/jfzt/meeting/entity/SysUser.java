@@ -10,15 +10,13 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * 企微部门成员关联表
- *
  * @author zilong.deng
- * @TableName sys_department_user
- * @date 2024/05/07
+ * @TableName sys_user
+ * @date 2024/05/06
  */
-@TableName(value = "sys_department_user")
+@TableName(value = "sys_user")
 @Data
-public class SysDepartmentUser implements Serializable {
+public class SysUser implements Serializable {
     /**
      *
      */
@@ -26,14 +24,29 @@ public class SysDepartmentUser implements Serializable {
     private Long id;
 
     /**
-     * 成员id（非成员user_id）
+     * 企微id
      */
     private String userId;
 
     /**
-     * 部门id
+     * 用户名
      */
-    private Long departmentId;
+    private String userName;
+
+    /**
+     * 密码
+     */
+    private String password;
+
+    /**
+     * 权限等级(0超级管理员，1 管理员，2 员工)
+     */
+    private Integer level;
+
+    /**
+     * 逻辑删除0否1是
+     */
+    private Integer isDeleted;
 
     @Serial
     @TableField(exist = false)
@@ -50,10 +63,13 @@ public class SysDepartmentUser implements Serializable {
         if (getClass() != that.getClass()) {
             return false;
         }
-        SysDepartmentUser other = (SysDepartmentUser) that;
+        SysUser other = (SysUser) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
                 && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
-                && (this.getDepartmentId() == null ? other.getDepartmentId() == null : this.getDepartmentId().equals(other.getDepartmentId()));
+                && (this.getUserName() == null ? other.getUserName() == null : this.getUserName().equals(other.getUserName()))
+                && (this.getPassword() == null ? other.getPassword() == null : this.getPassword().equals(other.getPassword()))
+                && (this.getLevel() == null ? other.getLevel() == null : this.getLevel().equals(other.getLevel()))
+                && (this.getIsDeleted() == null ? other.getIsDeleted() == null : this.getIsDeleted().equals(other.getIsDeleted()));
     }
 
     @Override
@@ -62,7 +78,10 @@ public class SysDepartmentUser implements Serializable {
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
         result = prime * result + ((getUserId() == null) ? 0 : getUserId().hashCode());
-        result = prime * result + ((getDepartmentId() == null) ? 0 : getDepartmentId().hashCode());
+        result = prime * result + ((getUserName() == null) ? 0 : getUserName().hashCode());
+        result = prime * result + ((getPassword() == null) ? 0 : getPassword().hashCode());
+        result = prime * result + ((getLevel() == null) ? 0 : getLevel().hashCode());
+        result = prime * result + ((getIsDeleted() == null) ? 0 : getIsDeleted().hashCode());
         return result;
     }
 
@@ -73,7 +92,10 @@ public class SysDepartmentUser implements Serializable {
                 "Hash = " + hashCode() +
                 ", id=" + id +
                 ", userId=" + userId +
-                ", departmentId=" + departmentId +
+                ", userName=" + userName +
+                ", password=" + password +
+                ", level=" + level +
+                ", isDeleted=" + isDeleted +
                 ", serialVersionUID=" + serialVersionUID +
                 "]";
     }

@@ -7,13 +7,10 @@
     <resultMap id="BaseResultMap" type="com.jfzt.meeting.entity.SysDepartmentUser">
         <id property="id" column="id" jdbcType="BIGINT"/>
         <result property="userId" column="user_id" jdbcType="VARCHAR"/>
-        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
         <result property="departmentId" column="department_id" jdbcType="BIGINT"/>
-        <result property="password" column="password" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,user_id,user_name,
-        department_id,password
+        id,user_id,department_id
     </sql>
 </mapper>

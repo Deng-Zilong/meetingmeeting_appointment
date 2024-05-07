@@ -1,6 +1,5 @@
 package com.jfzt.meeting.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.entity.SysDepartment;
 import com.jfzt.meeting.entity.SysDepartmentUser;
@@ -41,35 +40,9 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     private SysDepartmentUserMapper sysDepartmentUserMapper;
     @Autowired
     private SysDepartmentMapper sysDepartmentMapper;
-    @Autowired
+    @Autowired(required = false)
     private WxCpServiceImpl wxCpService;
 
-
-    /**
-     * 根据用户id集合获取用户姓名凭借字符串
-     *
-     * @param userIds 用户id
-     * @return {@code String}
-     */
-    @Override
-    public String getNamesByIds (List<String> userIds) {
-        StringBuffer attendees = new StringBuffer();
-        userIds.forEach(userId -> {
-            List<SysDepartmentUser> userList = this.list(new LambdaQueryWrapper<SysDepartmentUser>().eq(SysDepartmentUser::getUserId, userId));
-            //拼接参会人姓名
-            if (userList != null) {
-                SysDepartmentUser first = this.lambdaQuery()
-                        .eq(SysDepartmentUser::getUserId, userId)
-                        .list()
-                        .getFirst();
-                attendees.append(first.getUserName());
-                if (userIds.indexOf(userId) != userIds.size() - 1) {
-                    attendees.append(",");
-                }
-            }
-        });
-        return attendees.toString();
-    }
 
     @Override
     public String findTocken () throws WxErrorException {
