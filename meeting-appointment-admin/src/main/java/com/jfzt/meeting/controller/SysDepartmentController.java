@@ -16,9 +16,5 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("department")
 public class SysDepartmentController {
 
-    /**
-     * 更新部门信息
-     * @param code 入参
-     */
 
 }

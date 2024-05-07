@@ -3,8 +3,10 @@ package com.jfzt.meeting.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.entity.SysDepartment;
 import com.jfzt.meeting.entity.SysDepartmentUser;
+import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.mapper.SysDepartmentMapper;
 import com.jfzt.meeting.mapper.SysDepartmentUserMapper;
+import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.service.SysDepartmentUserService;
 import com.jfzt.meeting.utils.HttpClientUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -40,23 +42,25 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     private SysDepartmentUserMapper sysDepartmentUserMapper;
     @Autowired
     private SysDepartmentMapper sysDepartmentMapper;
-    @Autowired(required = false)
+    @Autowired
     private WxCpServiceImpl wxCpService;
+    @Autowired
+    private SysUserMapper sysUserMapper;
 
 
     @Override
-    public String findTocken () throws WxErrorException {
+    public String findTocken() throws WxErrorException {
         //获取token
         return wxCpService.getAccessToken(true);
     }
 
     @Override
-    public WxCpUser findUserName (String accessToken, String code) throws WxErrorException {
+    public WxCpUser findUserName(String accessToken, String code) throws WxErrorException {
         //获取用户user_ticket
         HttpClientUtil httpClientUtil = new HttpClientUtil();
         HashMap<String, String> tokenCode = new HashMap<>(2);
         tokenCode.put("access_token", accessToken);
-        //        tokenCode.put("code", code);
+        tokenCode.put("code", code);
         String responseAll = httpClientUtil.doGet("https://qyapi.weixin.qq.com/cgi-bin/auth/getuserinfo", tokenCode);
         JSONObject responseAllList = JSONObject.fromObject(responseAll);
         String userid = responseAllList.getString("userid");
@@ -66,7 +70,7 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     }
 
     @Override
-    public Long findDepartment () throws WxErrorException {
+    public Long findDepartment() throws WxErrorException {
         WxCpDepartmentServiceImpl wxCpDepartmentService = new WxCpDepartmentServiceImpl(wxCpService);
         List<WxCpDepart> listDepartmentList = wxCpDepartmentService.list(0L);
         //存入信息
@@ -81,16 +85,21 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     }
 
     @Override
-    public void findDepartmentUser (Long departmentLength) throws WxErrorException {
+    public void findDepartmentUser(Long departmentLength) throws WxErrorException {
         WxCpUserServiceImpl wxCpUserService = new WxCpUserServiceImpl(wxCpService);
         for (int i = 0; i < departmentLength; i++) {
             List<WxCpUser> listDepartmentUserList = wxCpUserService.listSimpleByDepartment((long) i, true, 0);
-            for (WxCpUser departmentUser : listDepartmentUserList) {
-                SysDepartmentUser sysDepartmentUser = new SysDepartmentUser();
-                for (int s = 0; s < departmentUser.getDepartIds().length; i++) {
-                    sysDepartmentUser.setDepartmentId(departmentUser.getDepartIds()[s]);
-                    sysDepartmentUser.setUserId(departmentUser.getUserId());
-                    sysDepartmentUser.setUserName(departmentUser.getName());
+            for (WxCpUser wxCpUser : listDepartmentUserList) {
+                SysUser sysUser = new SysUser();
+                sysUser.setUserId(wxCpUser.getUserId());
+                sysUser.setUserName(wxCpUser.getName());
+                sysUser.setPassword(wxCpUser.getName());
+                sysUser.setLevel(wxCpUser.getEnable());
+                sysUserMapper.insert(sysUser);
+                for (int s = 1; s < wxCpUser.getDepartIds().length+1; i++) {
+                    SysDepartmentUser sysDepartmentUser = new SysDepartmentUser();
+                    sysDepartmentUser.setUserId(wxCpUser.getUserId());
+                    sysDepartmentUser.setDepartmentId(wxCpUser.getDepartIds()[s]);
                     sysDepartmentUserMapper.insert(sysDepartmentUser);
                 }
             }

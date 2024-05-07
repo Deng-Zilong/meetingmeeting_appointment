@@ -1,9 +1,0 @@
-wechat:
-  cp:
-    corpId: ww942086e6c44abc4b
-    appConfigs:
-      - agentId: 1000002
-        secret: Rnf3LVxbAdTfvGVTirgwVbgsaDoBv_MTXrmawAu9qHQ
-#        token: 111 （应用中的 “接受消息” 部分的 “接收消息服务器配置” 里的Token值）
-#        aesKey: 111 （应用中的 “接受消息” 部分的 “接收消息服务器配置” 里的EncodingAESKey值）
-
