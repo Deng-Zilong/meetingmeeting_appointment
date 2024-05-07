@@ -22,6 +22,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -153,14 +154,47 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     }
 
     @Override
+    @Transactional
     public Result<Object> updateMeetingGroup(MeetingGroupDTO meetingGroupDTO) {
-
+        MeetingGroup beforeGroup = lambdaQuery()
+                .eq(meetingGroupDTO.getId() != null, MeetingGroup::getId, meetingGroupDTO.getId())
+                .one();
+        // 根据meetingGroupDTO中的groupName查询MeetingGroup表，获取groupId
+        MeetingGroup one = lambdaQuery()
+                .eq(StringUtils.isNotBlank(beforeGroup.getGroupName()), MeetingGroup::getGroupName, beforeGroup.getGroupName())
+                .one();
+        // 创建一个新的MeetingGroup对象
+        MeetingGroup meetingGroup = new MeetingGroup();
+        // 将meetingGroupDTO中的属性复制到meetingGroup中
+        BeanUtils.copyProperties(meetingGroupDTO, meetingGroup);
+        // 保存meetingGroup
+        updateById(meetingGroup);
+        // 获取meetingGroupDTO中的用户列表
+        List<UserGroup> userList = meetingGroupDTO.getUsers();
+        List<UserGroup> beforeList = userGroupService.lambdaQuery().eq(UserGroup::getGroupId, meetingGroupDTO.getId()).list();
+        userGroupService.removeBatchByIds(beforeList);
+        // 对用户列表进行处理，将每个用户关联到meetingGroup中
+        List<UserGroup> list = userList.stream().peek((item) -> {
+            // 创建一个新的UserGroup对象
+            UserGroup group = UserGroup.builder()
+                    .userId(item.getUserId())
+                    .groupId(one.getId())
+                    .build();
+            // 保存UserGroup
+            userGroupService.save(group);
+        }).toList();
 
         return Result.success();
     }
 
     @Override
-    public Result<Object> deleteMeetingGroup(String groupId) {
+    @Transactional
+    public Result<Object> deleteMeetingGroup(MeetingGroupDTO meetingGroupDTO) {
+        MeetingGroup meetingGroup = new MeetingGroup();
+        BeanUtils.copyProperties(meetingGroupDTO, meetingGroup);
+        removeById(meetingGroup);
+        List<UserGroup> beforeList = userGroupService.lambdaQuery().eq(UserGroup::getGroupId, meetingGroupDTO.getId()).list();
+        userGroupService.removeBatchByIds(beforeList);
         return Result.success();
     }
 }

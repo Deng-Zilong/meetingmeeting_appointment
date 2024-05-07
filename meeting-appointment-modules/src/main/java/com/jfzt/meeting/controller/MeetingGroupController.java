@@ -38,8 +38,8 @@ public class MeetingGroupController {
     public Result<Object> updateMeetingGroup(@RequestBody MeetingGroupDTO meetingGroupDTO) {
         return meetingGroupService.updateMeetingGroup(meetingGroupDTO);
     }
-    @DeleteMapping("/deleteMeetingGroup/{groupId}")
-    public Result<Object> deleteMeetingGroup(@PathVariable("groupId") String groupId) {
-        return meetingGroupService.deleteMeetingGroup(groupId);
+    @DeleteMapping("/deleteMeetingGroup")
+    public Result<Object> deleteMeetingGroup(@RequestBody MeetingGroupDTO meetingGroupDTO) {
+        return meetingGroupService.deleteMeetingGroup(meetingGroupDTO);
     }
 }

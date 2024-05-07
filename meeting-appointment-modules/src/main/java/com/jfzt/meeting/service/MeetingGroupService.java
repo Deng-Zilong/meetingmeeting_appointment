@@ -22,5 +22,5 @@ public interface MeetingGroupService extends IService<MeetingGroup> {
 
     Result<Object> updateMeetingGroup(MeetingGroupDTO meetingGroupDTO);
 
-    Result<Object> deleteMeetingGroup(String groupId);
+    Result<Object> deleteMeetingGroup(MeetingGroupDTO meetingGroupDTO);
 }
