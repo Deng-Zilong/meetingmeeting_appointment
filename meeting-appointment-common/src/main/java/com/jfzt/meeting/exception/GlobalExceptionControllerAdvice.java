@@ -24,13 +24,13 @@ public class GlobalExceptionControllerAdvice extends ResponseEntityExceptionHand
 
 
 
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Result<String> handleAllExceptions(Exception e) {
-
-        // 记录日志，处理异常信息
-        return Result.fail(e.getMessage());
-    }
+//    @ExceptionHandler(Exception.class)
+//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+//    public Result<String> handleAllExceptions(Exception e) {
+//
+//        // 记录日志，处理异常信息
+//        return Result.fail(e.getMessage());
+//    }
 
     @ExceptionHandler(value = WxErrorException.class)
     @ResponseBody

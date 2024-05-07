@@ -25,7 +25,6 @@ public class SysUserController {
 
     @Resource
     private SysDepartmentUserService sysDepartmentUserService;
-
     /**
      * 获取token，部门，部门人员
      *
@@ -34,23 +33,29 @@ public class SysUserController {
      */
     @GetMapping(value = "info")
     @Transactional
-    public Result<Map<String, String>> login(@RequestParam("code") String code) throws WxErrorException {
+    public Result<Map<String, String>> info(@RequestParam("code") String code) throws WxErrorException {
+        String testName = "admin";
         Map<String, String> userInfo = new HashMap<>(2);
         //获取登录token
         String accessToken = sysDepartmentUserService.findTocken();
         //获取用户详细信息
         WxCpUser wxUser = sysDepartmentUserService.findUserName(accessToken, code);
-        //获取部门信息
-        Long departmentLength = sysDepartmentUserService.findDepartment();
-        //获取部门人员
-        sysDepartmentUserService.findDepartmentUser(departmentLength);
+        if (wxUser.getUserId().equals(testName)){
+            //获取部门信息
+            Long departmentLength = sysDepartmentUserService.findDepartment();
+            //获取部门人员
+            sysDepartmentUserService.findDepartmentUser(departmentLength);
+        }
         userInfo.put("access_token", accessToken);
         userInfo.put("userId", wxUser.getUserId());
         userInfo.put("name", wxUser.getName());
         userInfo.put("email", wxUser.getEmail());
         return Result.success(userInfo);
     }
+    @GetMapping(value = "login")
+    public Result<Map<String, String>> login(){
+        return null;
 
-
+    }
 
 }

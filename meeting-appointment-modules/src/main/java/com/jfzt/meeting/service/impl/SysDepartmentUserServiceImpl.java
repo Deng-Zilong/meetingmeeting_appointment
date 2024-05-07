@@ -1,5 +1,6 @@
 package com.jfzt.meeting.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.entity.SysDepartment;
 import com.jfzt.meeting.entity.SysDepartmentUser;
@@ -20,8 +21,10 @@ import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -79,6 +82,8 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
             sysDepartment.setDepartmentId(listDepartment.getId());
             sysDepartment.setDepartmentName(listDepartment.getName());
             sysDepartment.setParentId(listDepartment.getParentId());
+            LambdaQueryWrapper<SysDepartment> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            sysDepartmentMapper.delete(lambdaQueryWrapper);
             sysDepartmentMapper.insert(sysDepartment);
         }
         return (long) listDepartmentList.size();
@@ -87,23 +92,31 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     @Override
     public void findDepartmentUser(Long departmentLength) throws WxErrorException {
         WxCpUserServiceImpl wxCpUserService = new WxCpUserServiceImpl(wxCpService);
-        for (int i = 0; i < departmentLength; i++) {
-            List<WxCpUser> listDepartmentUserList = wxCpUserService.listSimpleByDepartment((long) i, true, 0);
-            for (WxCpUser wxCpUser : listDepartmentUserList) {
-                SysUser sysUser = new SysUser();
-                sysUser.setUserId(wxCpUser.getUserId());
-                sysUser.setUserName(wxCpUser.getName());
-                sysUser.setPassword(wxCpUser.getName());
-                sysUser.setLevel(wxCpUser.getEnable());
-                sysUserMapper.insert(sysUser);
-                for (int s = 1; s < wxCpUser.getDepartIds().length+1; i++) {
-                    SysDepartmentUser sysDepartmentUser = new SysDepartmentUser();
-                    sysDepartmentUser.setUserId(wxCpUser.getUserId());
-                    sysDepartmentUser.setDepartmentId(wxCpUser.getDepartIds()[s]);
-                    sysDepartmentUserMapper.insert(sysDepartmentUser);
-                }
+        List<WxCpUser> listDepartmentUserList = new ArrayList<>();
+        for (int i = 1; i < departmentLength + 1; i++) {
+            List<WxCpUser> wxCpUser = wxCpUserService.listSimpleByDepartment((long) i, true, 0);
+            for (int j = 0; j < wxCpUser.size(); j++) {
+                listDepartmentUserList.add(wxCpUser.get(j));
             }
-
+        }
+        List<WxCpUser> wxCpUserList = listDepartmentUserList.stream().distinct().collect(Collectors.toList());
+        for (WxCpUser wxCpUser : wxCpUserList) {
+            SysUser sysUser = new SysUser();
+            sysUser.setUserId(wxCpUser.getUserId());
+            sysUser.setUserName(wxCpUser.getName());
+            sysUser.setPassword(wxCpUser.getUserId());
+            sysUser.setLevel(wxCpUser.getEnable());
+            LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            sysUserMapper.delete(lambdaQueryWrapper);
+            sysUserMapper.insert(sysUser);
+            for (int s = 0; s < wxCpUser.getDepartIds().length; s++) {
+                SysDepartmentUser sysDepartmentUser = new SysDepartmentUser();
+                sysDepartmentUser.setUserId(wxCpUser.getUserId());
+                sysDepartmentUser.setDepartmentId(wxCpUser.getDepartIds()[s]);
+                LambdaQueryWrapper<SysDepartmentUser> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
+                sysDepartmentUserMapper.delete(lambdaQueryWrapper1);
+                sysDepartmentUserMapper.insert(sysDepartmentUser);
+            }
         }
 
     }
