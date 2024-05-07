@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingGroup;
 import com.jfzt.meeting.entity.SysDepartmentUser;
+import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.UserGroup;
 import com.jfzt.meeting.entity.dto.MeetingGroupDTO;
 import com.jfzt.meeting.entity.vo.MeetingGroupVO;
@@ -11,6 +12,7 @@ import com.jfzt.meeting.mapper.MeetingGroupMapper;
 import com.jfzt.meeting.service.MeetingGroupService;
 
 import com.jfzt.meeting.service.SysDepartmentUserService;
+import com.jfzt.meeting.service.SysUserService;
 import com.jfzt.meeting.service.UserGroupService;
 import jakarta.annotation.Resource;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
@@ -38,6 +40,9 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     private SysDepartmentUserService sysDepartmentUserService;
 
     @Resource
+    private SysUserService sysUserService;
+
+    @Resource
     private UserGroupService userGroupService;
 
 
@@ -50,12 +55,11 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     @Override
     public Result<List<MeetingGroupVO>> checkGroup(String userId) {
         ArrayList<MeetingGroup> joinList = new ArrayList<>();
-        userId = "d";
+        userId = "dzl";
         //使用lambdaQuery查询SysDepartmentUser，并判断userId是否不为空，不为空则查询userId等于指定userId的用户
-        SysDepartmentUser user = sysDepartmentUserService.lambdaQuery()
-                .eq(StringUtils.isNotBlank(userId), SysDepartmentUser::getUserId, userId)
-                .list()
-                .getFirst();
+        SysUser user = sysUserService.lambdaQuery()
+                .eq(StringUtils.isNotBlank(userId), SysUser::getUserId, userId)
+                .one();
 
         // 定义一个UserGroup类型的List，通过userGroupService的lambdaQuery方法获取满足条件的UserGroup列表
         List<UserGroup> userGroupList = userGroupService.lambdaQuery()
@@ -89,12 +93,11 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
             // 遍历userGroups，将每个userGroup的用户名添加到meetingGroupVO中
             List<UserGroup> endList2 = userGroups.stream().peek((userGroup) -> {
                 // 使用lambdaQuery查询出SysDepartmentUser，其中用户ID为userGroup.getUserId()
-                SysDepartmentUser sysDepartmentUser = sysDepartmentUserService.lambdaQuery()
-                        .eq(StringUtils.isNotBlank(userGroup.getUserId()), SysDepartmentUser::getUserId, userGroup.getUserId())
-                        .list()
-                        .getFirst();
+                SysUser sysUser = sysUserService.lambdaQuery()
+                        .eq(StringUtils.isNotBlank(userGroup.getUserId()), SysUser::getUserId, userGroup.getUserId())
+                        .one();
                 // 将sysDepartmentUser的用户名添加到meetingGroupVO中
-                meetingGroupVO.getUsers().add(sysDepartmentUser.getUserName());
+                meetingGroupVO.getUsers().add(sysUser.getUserName());
 
             }).toList();
 
@@ -151,6 +154,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
 
     @Override
     public Result<Object> updateMeetingGroup(MeetingGroupDTO meetingGroupDTO) {
+
 
         return Result.success();
     }
