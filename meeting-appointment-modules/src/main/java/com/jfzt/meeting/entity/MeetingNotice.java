@@ -1,6 +1,8 @@
 package com.jfzt.meeting.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,16 +39,18 @@ public class MeetingNotice implements Serializable {
     /**
      * 创建者
      */
-    private String createdBy;
+    private String userId;
 
     /**
      * 创建时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime gmtCreate;
 
     /**
      * 更新时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime gmtModified;
 
     /**
@@ -73,7 +77,7 @@ public class MeetingNotice implements Serializable {
         MeetingNotice other = (MeetingNotice) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
                 && (this.getSubstance() == null ? other.getSubstance() == null : this.getSubstance().equals(other.getSubstance()))
-                && (this.getCreatedBy() == null ? other.getCreatedBy() == null : this.getCreatedBy().equals(other.getCreatedBy()))
+                && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
                 && (this.getGmtCreate() == null ? other.getGmtCreate() == null : this.getGmtCreate().equals(other.getGmtCreate()))
                 && (this.getGmtModified() == null ? other.getGmtModified() == null : this.getGmtModified().equals(other.getGmtModified()))
                 && (this.getIsDeleted() == null ? other.getIsDeleted() == null : this.getIsDeleted().equals(other.getIsDeleted()));
@@ -85,7 +89,7 @@ public class MeetingNotice implements Serializable {
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
         result = prime * result + ((getSubstance() == null) ? 0 : getSubstance().hashCode());
-        result = prime * result + ((getCreatedBy() == null) ? 0 : getCreatedBy().hashCode());
+        result = prime * result + ((getUserId() == null) ? 0 : getUserId().hashCode());
         result = prime * result + ((getGmtCreate() == null) ? 0 : getGmtCreate().hashCode());
         result = prime * result + ((getGmtModified() == null) ? 0 : getGmtModified().hashCode());
         result = prime * result + ((getIsDeleted() == null) ? 0 : getIsDeleted().hashCode());
@@ -99,7 +103,7 @@ public class MeetingNotice implements Serializable {
                 "Hash = " + hashCode() +
                 ", id=" + id +
                 ", substance=" + substance +
-                ", createdBy=" + createdBy +
+                ", createdBy=" + userId +
                 ", gmtCreate=" + gmtCreate +
                 ", gmtModified=" + gmtModified +
                 ", isDeleted=" + isDeleted +
