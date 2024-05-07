@@ -1,5 +1,7 @@
 package com.jfzt.meeting.entity.dto;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.jfzt.meeting.entity.MeetingGroup;
 import com.jfzt.meeting.entity.SysDepartmentUser;
 import com.jfzt.meeting.entity.UserGroup;
@@ -14,6 +16,11 @@ import java.util.List;
  */
 @Data
 public class MeetingGroupDTO {
+    /**
+     * 群组Id
+     */
+    @TableId(type = IdType.AUTO)
+    private Long id;
     /**
      * 群组名称
      */
