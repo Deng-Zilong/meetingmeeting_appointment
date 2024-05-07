@@ -5,14 +5,14 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.entity.MeetingAttendees;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingRoom;
-import com.jfzt.meeting.entity.SysDepartmentUser;
+import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
 import com.jfzt.meeting.mapper.MeetingRecordMapper;
 import com.jfzt.meeting.service.MeetingAttendeesService;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MeetingRoomService;
-import com.jfzt.meeting.service.SysDepartmentUserService;
+import com.jfzt.meeting.service.SysUserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,7 +35,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     private MeetingAttendeesService meetingAttendeesService;
     private MeetingRoomService meetingRoomService;
     @Autowired
-    private SysDepartmentUserService userService;
+    private SysUserService userService;
     @Autowired
     private MeetingAttendeesMapper attendeesMapper;
 
@@ -89,8 +89,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             //遍历参会人，拼接姓名，获取userIdList
             attendeesList.forEach(attendee -> {
                 userIdList.add(attendee.getUserId());
-                SysDepartmentUser first = userService.lambdaQuery()
-                        .eq(SysDepartmentUser::getUserId, attendee.getUserId())
+                SysUser first = userService.lambdaQuery()
+                        .eq(SysUser::getUserId, attendee.getUserId())
                         .list()
                         .getFirst();
                 attendees.append(first.getUserName());
@@ -112,10 +112,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                     meetingRecordVO.setLocation(meetingRoom.getLocation());
                 }
                 //插入会议创建人信息
-                List<SysDepartmentUser> userList = userService.list(new LambdaQueryWrapper<SysDepartmentUser>().eq(SysDepartmentUser::getUserId, meetingRecord.getCreatedBy()));
-                if (userList != null) {
-                    SysDepartmentUser first = userList.getFirst();
-                    meetingRecordVO.setAdminUserName(first.getUserName());
+                SysUser user = userService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, meetingRecord.getCreatedBy()));
+                if (user != null) {
+                    meetingRecordVO.setAdminUserName(user.getUserName());
                 }
                 //插入参会人信息
                 meetingRecordVO.setAttendees(String.valueOf(attendees));
@@ -146,8 +145,21 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             MeetingRecordVO meetingRecordVO = new MeetingRecordVO();
             //查询参会者id
             List<String> userIds = attendeesMapper.selectUserIdsByRecordId(recordId);
-
-            String attendees = userService.getNamesByIds(userIds);
+            StringBuffer attendees = new StringBuffer();
+            userIds.forEach(userId1 -> {
+                SysUser user = userService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, userId1));
+                //拼接参会人姓名
+                if (user != null) {
+                    SysUser first = userService.lambdaQuery()
+                            .eq(SysUser::getUserId, userId)
+                            .list()
+                            .getFirst();
+                    attendees.append(first.getUserName());
+                    if (userIds.indexOf(userId) != userIds.size() - 1) {
+                        attendees.append(",");
+                    }
+                }
+            });
             //更新会议状态
             updateRecordStatus(meetingRecord);
             //插入会议信息
@@ -159,9 +171,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 meetingRecordVO.setLocation(meetingRoom.getLocation());
             }
             //插入会议创建人信息
-            List<SysDepartmentUser> userList = userService.list(new LambdaQueryWrapper<SysDepartmentUser>().eq(SysDepartmentUser::getUserId, meetingRecord.getCreatedBy()));
+            List<SysUser> userList = userService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, meetingRecord.getCreatedBy()));
             if (userList != null) {
-                SysDepartmentUser first = userList.getFirst();
+                SysUser first = userList.getFirst();
                 meetingRecordVO.setAdminUserName(first.getUserName());
             }
             //插入参会人信息

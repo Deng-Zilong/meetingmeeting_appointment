@@ -46,12 +46,12 @@ public class MeetingRoomStatusVO {
     /**
      * 会议开始时间
      */
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime meetingStartTime;
     /**
      * 会议结束时间
      */
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime meetingEndTime;
     /**
      * 会议状态(0已预约1进行中2已结束3已取消)

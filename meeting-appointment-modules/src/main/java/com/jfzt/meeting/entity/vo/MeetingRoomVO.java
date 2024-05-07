@@ -1,21 +1,24 @@
 package com.jfzt.meeting.entity.vo;
 
-import com.jfzt.meeting.entity.MeetingRoom;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  * @author zilong.deng
  * @date 2024/04/28
  */
 
-@Setter
-@Getter
-public class MeetingRoomVO extends MeetingRoom {
+@Data
+public class MeetingRoomVO {
 
-    /**
-     * 创建人id
-     */
-    private String userId;
+    private Integer location;
+
+    private String roomName;
+
+    private Integer status;
+
+    private Integer capacity;
+
+    private String createdBy;
+
 
 }
