@@ -22,13 +22,6 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      */
     List<MeetingRecordVO> getRecordVoList (String userId);
 
-    /**
-     * 获取用户参与的所有会议
-     *
-     * @param userId 用户id
-     * @return {@code List<MeetingRecordVO>}
-     */
-    List<MeetingRecordVO> getAllRecordVoList (String userId);
 
     /**
      * 查询今日中心会议总次数
@@ -38,4 +31,22 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
     Integer getRecordNumber ();
 
     void updateRecordStatus (MeetingRecord meetingRecord);
+
+    void updateTodayRecordStatus ();
+
+    /**
+     * 分页获取用户参与的所有会议
+     *
+     * @param userId 用户id
+     * @return {@code List<MeetingRecordVO>}
+     */
+    List<MeetingRecordVO> getAllRecordVoListPage (String userId, Long pageNum, Long pageSize);
+
+    //    /**
+    //     * 获取用户参与的所有会议
+    //     *
+    //     * @param userId 用户id
+    //     * @return {@code List<MeetingRecordVO>}
+    //     */
+    //    List<MeetingRecordVO> getAllRecordVoList (String userId);
 }

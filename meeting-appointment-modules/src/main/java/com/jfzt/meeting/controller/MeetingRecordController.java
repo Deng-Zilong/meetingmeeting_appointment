@@ -46,9 +46,9 @@ public class MeetingRecordController {
      * @description 根据用户id查询用户所有历史会议记录
      */
     @GetMapping("/meetingRecord/allMeetingRecord")
-    public Result<List<MeetingRecordVO>> getRecordPage (@RequestParam String userId) {
+    public Result<List<MeetingRecordVO>> getRecordPage (@RequestParam String userId, @RequestParam Long page, @RequestParam Long limit) {
 
-        List<MeetingRecordVO> recordVoList = meetingRecordService.getAllRecordVoList(userId);
+        List<MeetingRecordVO> recordVoList = meetingRecordService.getAllRecordVoListPage(userId, page, limit);
         if (recordVoList == null) {
             log.info("用户{}没有历史会议记录", userId);
             return Result.success(null);
@@ -56,6 +56,7 @@ public class MeetingRecordController {
         log.info("用户{}当天会议记录:{}", userId, recordVoList);
         return Result.success(recordVoList);
     }
+
 
     /**
      * @param location 会议室位置

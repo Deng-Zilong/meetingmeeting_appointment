@@ -3,6 +3,7 @@ package com.jfzt.meeting.entity.vo;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -70,6 +71,9 @@ public class MeetingRecordVO {
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endTime;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate date;
 
     /**
      * 会议状态0未开始2进行中3已结束
