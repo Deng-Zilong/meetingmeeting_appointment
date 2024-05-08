@@ -205,9 +205,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
         recordQueryWrapper.between(MeetingRecord::getStartTime, startOfDay, endOfDay)
                 .or().between(MeetingRecord::getEndTime, startOfDay, endOfDay);
-        recordQueryWrapper.eq(MeetingRecord::getIsDeleted, 0);
+        recordQueryWrapper.and(queryWrapper -> queryWrapper.eq(MeetingRecord::getIsDeleted, 0));
         //展示未取消的会议
-        recordQueryWrapper.eq(MeetingRecord::getStatus, 0).or().eq(MeetingRecord::getStatus, 1).or().eq(MeetingRecord::getStatus, 2);
+        recordQueryWrapper.and(queryWrapper -> queryWrapper.eq(MeetingRecord::getStatus, 0).or().eq(MeetingRecord::getStatus, 1).or().eq(MeetingRecord::getStatus, 2));
         recordQueryWrapper.orderByDesc(MeetingRecord::getStartTime);
         //获取当天所有会议
         List<MeetingRecord> meetingRecords = this.list(recordQueryWrapper);
@@ -252,7 +252,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                     updateRecordStatus(meetingRecord);
                     //插入会议信息
                     BeanUtils.copyProperties(meetingRecord, meetingRecordVO);
-                    meetingRecordVO.setDate(meetingRecord.getStartTime().toLocalDate());
                     //插入会议室信息
                     MeetingRoom meetingRoom = meetingRoomService.getOne(new LambdaQueryWrapper<MeetingRoom>().eq(MeetingRoom::getId, meetingRecord.getMeetingRoomId()));
                     if (meetingRoom != null) {

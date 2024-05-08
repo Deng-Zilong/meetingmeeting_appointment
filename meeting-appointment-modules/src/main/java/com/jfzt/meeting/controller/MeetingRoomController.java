@@ -23,6 +23,16 @@ public class MeetingRoomController {
     @Resource
     private MeetingRoomService meetingRoomService;
 
+    /**
+     * 查询当日时间段会议占用状态（0：已过期1：已占用2：可预约）
+     *
+     * @return {@code Result<List<Integer>>}
+     */
+    @GetMapping("/index/isBusy")
+    public Result<List<Integer>> isBusy () {
+        List<Integer> result = meetingRoomService.isBusy();
+        return Result.success(result);
+    }
 
     /**
      * 查询会议室状态
