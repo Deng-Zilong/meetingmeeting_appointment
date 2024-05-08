@@ -12,7 +12,7 @@ import java.util.List;
  * @Author: chenyu.di
  * @since: 2024-05-07 15:02
  */
-@CrossOrigin
+
 @RestController
 @RequestMapping("/meeting/groupUserTree")
 public class GroupUserTreeController {

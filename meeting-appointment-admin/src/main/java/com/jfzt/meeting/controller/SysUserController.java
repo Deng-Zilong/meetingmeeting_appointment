@@ -8,14 +8,11 @@ import com.jfzt.meeting.service.SysUserService;
 import jakarta.annotation.Resource;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.cp.bean.WxCpUser;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -24,7 +21,7 @@ import java.util.Map;
  * @author zhenxing.lu
  * @since 2024-04-30 10.13:51
  */
-@CrossOrigin
+
 @RestController
 @RequestMapping("/meeting/user")
 public class SysUserController {

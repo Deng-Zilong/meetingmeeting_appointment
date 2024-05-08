@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author zilong.deng
  * @date 2024/04/25
  */
-@CrossOrigin
+
 @RestController
 @RequestMapping("/meeting")
 public class TestController {

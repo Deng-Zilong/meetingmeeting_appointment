@@ -15,7 +15,7 @@ import java.util.List;
  * @author zilong.deng
  * @date 2024/04/29
  */
-@CrossOrigin
+
 @Slf4j
 @RestController
 @RequestMapping("/meeting")

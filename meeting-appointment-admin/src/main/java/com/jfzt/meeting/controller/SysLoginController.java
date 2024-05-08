@@ -11,7 +11,6 @@ import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +28,7 @@ import java.security.NoSuchAlgorithmException;
  */
 
 
-@CrossOrigin
+
 @RestController
 @RequestMapping("/meeting/user")
 public class SysLoginController {
