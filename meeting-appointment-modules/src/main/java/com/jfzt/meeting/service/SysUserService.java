@@ -2,8 +2,10 @@ package com.jfzt.meeting.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.entity.SysUser;
+import com.jfzt.meeting.entity.vo.LoginVo;
 import org.apache.ibatis.annotations.Param;
 
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 /**
@@ -35,4 +37,7 @@ public interface SysUserService extends IService<SysUser> {
     boolean updateLevel(@Param("userName") String userName, @Param("level") Integer level);
 
 
+    BufferedImage getCaptcha(String uuid);
+
+    SysUser findUser(LoginVo loginVo);
 }

@@ -15,7 +15,7 @@ import java.util.List;
  * @Author: chenyu.di
  * @since: 2024-04-29 16:44
  */
-
+@CrossOrigin
 @RestController
 @RequestMapping("/meeting/meetingGroup")
 public class MeetingGroupController {

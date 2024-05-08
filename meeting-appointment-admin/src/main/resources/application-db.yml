@@ -5,11 +5,11 @@ spring:
     password: meetingmysql
     driver-class-name: com.mysql.cj.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
-#  data:
-#    redis:
-#      host: 1.94.57.107
-#      port: 6379
-#      database: 0
+  data:
+    redis:
+      host: 1.94.57.107
+      port: 6379
+      database: 0
 mybatis-plus:
   configuration:
     cache-enabled: true

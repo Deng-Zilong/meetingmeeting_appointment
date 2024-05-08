@@ -21,7 +21,7 @@ public class MeetingCorsConfiguration implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         // 映射服务器中那些http接口进行跨域访问
-        registry.addMapping("/cors/*")
+        registry.addMapping("/meeting/*")
                 // 配置哪些来源有权限跨域
                 .allowedOrigins("*")
                 // 配置运行跨域访问的请求方法

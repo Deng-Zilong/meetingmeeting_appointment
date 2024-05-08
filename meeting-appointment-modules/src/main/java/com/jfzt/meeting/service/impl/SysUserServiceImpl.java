@@ -1,13 +1,19 @@
 package com.jfzt.meeting.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.code.kaptcha.Producer;
 import com.jfzt.meeting.entity.SysUser;
+import com.jfzt.meeting.entity.vo.LoginVo;
 import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.service.SysUserService;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,6 +35,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
     @Autowired
     private SysUserMapper sysUserMapper;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private Producer producer;
 
 
     /**
@@ -67,6 +77,22 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     @Override
     public boolean updateLevel(String userName, Integer level) {
         return sysUserMapper.updateLevel(userName, level);
+    }
+
+    @Override
+    public BufferedImage getCaptcha(String uuid) {
+        //生成文字验证码
+        String code =uuid+"/"+producer.createText();
+        stringRedisTemplate.opsForValue().set("codeUuid"+uuid,code);
+        return producer.createImage(code);
+    }
+
+    @Override
+    public SysUser findUser(LoginVo loginVo) {
+        LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(SysUser::getUserId,loginVo.getName());
+        SysUser sysUser = sysUserMapper.selectOne(lambdaQueryWrapper);
+        return sysUser;
     }
 }
 

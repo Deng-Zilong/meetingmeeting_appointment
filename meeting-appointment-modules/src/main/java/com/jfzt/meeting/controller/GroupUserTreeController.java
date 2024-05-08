@@ -3,10 +3,7 @@ import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.SysDepartment;
 import com.jfzt.meeting.service.SysDepartmentUserService;
 import jakarta.annotation.Resource;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -15,6 +12,7 @@ import java.util.List;
  * @Author: chenyu.di
  * @since: 2024-05-07 15:02
  */
+@CrossOrigin
 @RestController
 @RequestMapping("/meeting/groupUserTree")
 public class GroupUserTreeController {
