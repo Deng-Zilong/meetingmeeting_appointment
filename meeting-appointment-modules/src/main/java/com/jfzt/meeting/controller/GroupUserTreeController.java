@@ -5,6 +5,7 @@ import com.jfzt.meeting.service.SysDepartmentUserService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -28,8 +29,8 @@ public class GroupUserTreeController {
      * @exception
      */
     @GetMapping("/getGroupUserTree")
-    private Result<List<SysDepartment>> getGroupUserTree(){
-        return sysDepartmentUserService.gainUsers();
+    private Result<List<SysDepartment>> getGroupUserTree(@RequestParam String userName){
+        return sysDepartmentUserService.gainUsers(userName);
     }
 
 }

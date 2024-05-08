@@ -30,7 +30,7 @@ public class MeetingGroupController {
      * @exception
      */
     @GetMapping("/getMeetingGroupList")
-    public Result<List<MeetingGroupVO>> getMeetingGroupList(String userId) {
+    public Result<List<MeetingGroupVO>> getMeetingGroupList(@RequestParam String userId) {
         return meetingGroupService.checkGroup(userId);
     }
 
@@ -62,8 +62,8 @@ public class MeetingGroupController {
      * @return com.jfzt.meeting.common.Result<java.lang.Object>
      * @exception
      */
-    @DeleteMapping("/deleteMeetingGroup")
-    public Result<Object> deleteMeetingGroup(@RequestBody MeetingGroupDTO meetingGroupDTO) {
-        return meetingGroupService.deleteMeetingGroup(meetingGroupDTO);
+    @DeleteMapping("/deleteMeetingGroup/{id}")
+    public Result<Object> deleteMeetingGroup(@PathVariable("id") Long id) {
+        return meetingGroupService.deleteMeetingGroup(id);
     }
 }

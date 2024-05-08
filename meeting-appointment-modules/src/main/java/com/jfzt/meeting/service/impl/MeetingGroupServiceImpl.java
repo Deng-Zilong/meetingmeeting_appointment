@@ -56,7 +56,6 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     @Override
     public Result<List<MeetingGroupVO>> checkGroup(String userId) {
         ArrayList<MeetingGroup> joinList = new ArrayList<>();
-        userId = "dzl";
         //使用lambdaQuery查询SysDepartmentUser，并判断userId是否不为空，不为空则查询userId等于指定userId的用户
         SysUser user = sysUserService.lambdaQuery()
                 .eq(StringUtils.isNotBlank(userId), SysUser::getUserId, userId)
@@ -201,17 +200,12 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
      */
     @Override
     @Transactional
-    public Result<Object> deleteMeetingGroup(MeetingGroupDTO meetingGroupDTO) {
-        // 创建一个新的MeetingGroup对象
-        MeetingGroup meetingGroup = new MeetingGroup();
-        // 将MeetingGroupDTO对象的内容复制到MeetingGroup对象
-        BeanUtils.copyProperties(meetingGroupDTO, meetingGroup);
-        // 按照MeetingGroupDTO对象的id删除MeetingGroup对象
-        removeById(meetingGroup);
+    public Result<Object> deleteMeetingGroup(Long id) {
+        removeById(id);
         // 查询出MeetingGroup对象之前的UserGroup对象列表
-        List<UserGroup> beforeList = userGroupService.lambdaQuery().eq(UserGroup::getGroupId, meetingGroupDTO.getId()).list();
+        List<UserGroup> userGroupList = userGroupService.lambdaQuery().eq(UserGroup::getGroupId, id).list();
         // 按照beforeList中的id删除UserGroup对象
-        userGroupService.removeBatchByIds(beforeList);
+        userGroupService.removeBatchByIds(userGroupList);
         return Result.success();
     }
 }
