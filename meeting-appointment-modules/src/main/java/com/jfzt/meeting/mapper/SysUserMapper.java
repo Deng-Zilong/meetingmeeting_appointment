@@ -3,6 +3,9 @@ package com.jfzt.meeting.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.jfzt.meeting.entity.SysUser;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author zilong.deng
@@ -12,6 +15,14 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface SysUserMapper extends BaseMapper<SysUser> {
+    
+    /**
+     * 修改用户的权限等级
+     * @param userName
+     * @param level
+     * @return
+     */
+    boolean updateLevel(@Param("userName") String userName, @Param("level") Integer level);
 
 }
 

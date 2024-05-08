@@ -1,14 +1,18 @@
 package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.service.SysDepartmentUserService;
+import com.jfzt.meeting.service.SysUserService;
 import jakarta.annotation.Resource;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.cp.bean.WxCpUser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -22,6 +26,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/meeting/user")
 public class SysUserController {
+
+
+    @Resource
+    private SysUserService sysUserService;
 
     @Resource
     private SysDepartmentUserService sysDepartmentUserService;
@@ -57,5 +65,44 @@ public class SysUserController {
         return null;
 
     }
+
+
+    /**
+     * 获取企业微信用户姓名
+     * @param sysUser
+     * @return
+     */
+    @GetMapping("/selectName")
+    public Result<List<String>> selectList(SysUser sysUser){
+        List<String> select = sysUserService.selectAll(sysUser);
+        return Result.success(select);
+    }
+
+    /**
+     * 根据权限等级查询企微用户是否为管理员
+     * @return
+     */
+    @GetMapping("/selectAdmin")
+    public Result<List<String>> selectAdmin(){
+        List<String> select = sysUserService.selectAdmin();
+        return Result.success(select);
+    }
+
+    /**
+     * 修改用户权限等级
+     * @param userName 企微id
+     * @param level 权限等级(0超级管理员，1管理员，2员工)
+     * @return
+     */
+    @PutMapping("/updateLevel")
+    public Result<Integer> updateStatus (@RequestParam("userName") String userName, @RequestParam("level") Integer level) {
+        boolean result = sysUserService.updateLevel(userName, level);
+        if (result) {
+            return Result.success("用户权限等级更新成功");
+        }
+        return Result.fail("用户权限等级更新失败!");
+    }
+
+
 
 }
