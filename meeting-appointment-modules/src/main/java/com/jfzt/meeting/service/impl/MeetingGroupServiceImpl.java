@@ -153,6 +153,12 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         return Result.success();
     }
 
+    /**
+     * @Description 群组修改
+     * @Param [meetingGroupDTO]
+     * @return com.jfzt.meeting.common.Result<java.lang.Object>
+     * @exception
+     */
     @Override
     @Transactional
     public Result<Object> updateMeetingGroup(MeetingGroupDTO meetingGroupDTO) {
@@ -187,13 +193,24 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         return Result.success();
     }
 
+    /**
+     * @Description 群组删除
+     * @Param [meetingGroupDTO]
+     * @return com.jfzt.meeting.common.Result<java.lang.Object>
+     * @exception
+     */
     @Override
     @Transactional
     public Result<Object> deleteMeetingGroup(MeetingGroupDTO meetingGroupDTO) {
+        // 创建一个新的MeetingGroup对象
         MeetingGroup meetingGroup = new MeetingGroup();
+        // 将MeetingGroupDTO对象的内容复制到MeetingGroup对象
         BeanUtils.copyProperties(meetingGroupDTO, meetingGroup);
+        // 按照MeetingGroupDTO对象的id删除MeetingGroup对象
         removeById(meetingGroup);
+        // 查询出MeetingGroup对象之前的UserGroup对象列表
         List<UserGroup> beforeList = userGroupService.lambdaQuery().eq(UserGroup::getGroupId, meetingGroupDTO.getId()).list();
+        // 按照beforeList中的id删除UserGroup对象
         userGroupService.removeBatchByIds(beforeList);
         return Result.success();
     }

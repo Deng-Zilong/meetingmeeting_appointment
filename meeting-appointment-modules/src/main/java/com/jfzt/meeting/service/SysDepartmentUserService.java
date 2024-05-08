@@ -1,9 +1,14 @@
 package com.jfzt.meeting.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.entity.SysDepartment;
 import com.jfzt.meeting.entity.SysDepartmentUser;
+import com.jfzt.meeting.entity.SysUser;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.cp.bean.WxCpUser;
+
+import java.util.List;
 
 /**
  * @author zilong.deng
@@ -21,4 +26,5 @@ public interface SysDepartmentUserService extends IService<SysDepartmentUser> {
     void findDepartmentUser (Long departmentLength) throws WxErrorException;
 
 
+    Result<List<SysDepartment>> gainUsers();
 }
