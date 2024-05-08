@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +35,9 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
     private MeetingRecordService meetingRecordService;
 
+
+    @Autowired
+    private MeetingRoomService meetingRoomService;
 
     private SysUserService userService;
 
@@ -142,6 +146,64 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         return null;
     }
 
+    /**
+     * 查询当天各个时间段会议室占用情况
+     *
+     * @return {@code List<Integer>}
+     */
+    @Override
+    public List<Integer> isBusy () {
+        List<Integer> timeStatus = new LinkedList<>();
+        LocalDateTime now = LocalDateTime.now();
+        //更新今日所有会议记录状态
+        meetingRecordService.updateTodayRecordStatus();
+        LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
+        LocalDateTime startTime = startOfDay.plusHours(8);
+        LocalDateTime endTime = startTime.plusMinutes(30);
+        //每段30分钟遍历时间，在当前时间之前的时间段状态为0已过期
+        for (int i = 0; i < 30; i++) {
+            if (now.isAfter(endTime)) {
+                timeStatus.add(i, 0);
+                startTime = startTime.plusMinutes(30);
+                endTime = endTime.plusMinutes(30);
+                continue;
+            }
+            //之后的时间，判断是否有会议的开始时间或结束时间包含在里面，有的话且包含所有的会议室则为1已预订
+            LambdaQueryWrapper<MeetingRecord> recordQueryWrapper = new LambdaQueryWrapper<>();
+            //开始时间或结束时间包含在时间段内
+            recordQueryWrapper
+                    .between(MeetingRecord::getStartTime, startTime, endTime)
+                    .or().between(MeetingRecord::getEndTime, startTime, endTime)
+                    .or().lt(MeetingRecord::getStartTime, startTime).gt(MeetingRecord::getEndTime, endTime);
+            //没有逻辑删除
+            recordQueryWrapper.and(recordQueryWrapper1 -> recordQueryWrapper1.eq(MeetingRecord::getStatus, 0)
+                    .or().eq(MeetingRecord::getStatus, 1));
+            recordQueryWrapper.and(recordQueryWrapper1 -> recordQueryWrapper1.eq(MeetingRecord::getStatus, 0)
+                    .or().eq(MeetingRecord::getStatus, 1));
+            List<MeetingRecord> meetingRecords = meetingRecordService.list(recordQueryWrapper);
+            //根据会议室id收集获得占用不同会议室的数量
+            long size = meetingRecords.stream().collect(Collectors.groupingBy(MeetingRecord::getMeetingRoomId))
+                    .size();
+            //获取可使用的会议室总数
+            long count = this.count(new LambdaQueryWrapper<MeetingRoom>()
+                    .eq(MeetingRoom::getIsDeleted, 0)
+                    .eq(MeetingRoom::getStatus, 1));
+            if (count == size) {
+                System.out.println(timeStatus);
+                //相同表示时间段全被占用
+                timeStatus.add(i, 1);
+                startTime = startTime.plusMinutes(30);
+                endTime = endTime.plusMinutes(30);
+                continue;
+            }
+            //没全部占用
+            timeStatus.add(i, 2);
+            System.out.println(timeStatus);
+            startTime = startTime.plusMinutes(30);
+            endTime = endTime.plusMinutes(30);
+        }
+        return timeStatus;
+    }
 
     /**
      * setter注入
