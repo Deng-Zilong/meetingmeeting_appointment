@@ -22,7 +22,6 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      */
     List<MeetingRecordVO> getRecordVoList (String userId);
 
-
     /**
      * 查询今日中心会议总次数
      *
@@ -43,13 +42,21 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
     List<MeetingRecordVO> getAllRecordVoListPage (String userId, Long pageNum, Long pageSize);
 
     /**
+     * 根据会议记录id删除会议（首页不展示，历史记录展示）
+     *
+     * @param userId    用户id
+     * @param meetingId 会议id
+     * @return {@code Boolean}
+     */
+    Boolean deleteMeetingRecord (String userId, Long meetingId);
+
+    /**
      * 根据会议记录id取消会议
      *
      * @param userId    用户id
      * @param meetingId 会议id
      * @return {@code Boolean}
      */
-    Boolean deleteMeetingRecord (String userId, Integer meetingId);
-
+    Boolean cancelMeetingRecord (String userId, Long meetingId);
 
 }

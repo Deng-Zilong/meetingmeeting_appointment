@@ -64,15 +64,33 @@ public class MeetingRecordController {
      * @param meetingId 会议id
      * @return {@code Result<String>}
      */
-    @DeleteMapping("/index/cancelMeetingRecord")
-    public Result<String> cancelMeetingRecord (@RequestParam String userId, @RequestParam Integer meetingId) {
-        Boolean result = meetingRecordService.deleteMeetingRecord(userId, meetingId);
+    @PostMapping("/index/cancelMeetingRecord")
+    public Result<String> cancelMeetingRecord (@RequestParam String userId, @RequestParam Long meetingId) {
+        Boolean result = meetingRecordService.cancelMeetingRecord(userId, meetingId);
         if (result) {
             log.info("用户{}取消会议{}成功", userId, meetingId);
             return Result.success("会议取消成功");
         }
         log.info("用户{}取消会议{}失败", userId, meetingId);
         return Result.fail("会议取消失败");
+    }
+
+    /**
+     * 删除会议
+     *
+     * @param userId    用户id
+     * @param meetingId 会议id
+     * @return {@code Result<String>}
+     */
+    @DeleteMapping("/index/deleteMeetingRecord")
+    public Result<String> deleteMeetingRecord (@RequestParam String userId, @RequestParam Long meetingId) {
+        Boolean result = meetingRecordService.deleteMeetingRecord(userId, meetingId);
+        if (result) {
+            log.info("用户{}删除会议{}成功", userId, meetingId);
+            return Result.success("会议删除成功");
+        }
+        log.info("用户{}删除会议{}失败", userId, meetingId);
+        return Result.fail("会议删除失败");
     }
 
 
