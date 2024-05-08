@@ -42,11 +42,14 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      */
     List<MeetingRecordVO> getAllRecordVoListPage (String userId, Long pageNum, Long pageSize);
 
-    //    /**
-    //     * 获取用户参与的所有会议
-    //     *
-    //     * @param userId 用户id
-    //     * @return {@code List<MeetingRecordVO>}
-    //     */
-    //    List<MeetingRecordVO> getAllRecordVoList (String userId);
+    /**
+     * 根据会议记录id取消会议
+     *
+     * @param userId    用户id
+     * @param meetingId 会议id
+     * @return {@code Boolean}
+     */
+    Boolean deleteMeetingRecord (String userId, Integer meetingId);
+
+
 }

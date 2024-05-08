@@ -222,13 +222,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         Page<MeetingAttendees> meetingAttendeesPage = attendeesMapper.selectPage(new Page<>(pageNum, pageSize), new LambdaQueryWrapper<MeetingAttendees>().eq(MeetingAttendees::getUserId, userId).orderByAsc(MeetingAttendees::getGmtModified));
         List<Long> recordIds = meetingAttendeesPage.getRecords().stream().map(MeetingAttendees::getMeetingRecordId).toList();
 
-
         if (recordIds.isEmpty()) {
             return null;
         }
         //遍历会议
         return recordIds.stream().map(recordId -> {
-
             MeetingRecord meetingRecord = this.baseMapper.selectById(recordId);
             MeetingRecordVO meetingRecordVO = new MeetingRecordVO();
             //查询参会者id
@@ -256,6 +254,30 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             return meetingRecordVO;
         }).sorted((o1, o2) -> o1.getStartTime().isBefore(o2.getStartTime()) ? 1 : -1).toList();
     }
+
+    /**
+     * 根据会议记录id取消会议
+     *
+     * @param userId    用户id
+     * @param meetingId 会议id
+     * @return {@code Boolean}
+     */
+    @Override
+    public Boolean deleteMeetingRecord (String userId, Integer meetingId) {
+
+        //查询会议记录
+        MeetingRecord meetingRecord = this.baseMapper.selectById(meetingId);
+
+        //会议不是未开始状态或者会议创建人不是当前用户无法删除
+        if (meetingRecord.getStatus() == 0 && meetingRecord.getCreatedBy().equals(userId)) {
+            //更新会议状态
+            meetingRecord.setStatus(3);
+            this.baseMapper.updateById(meetingRecord);
+            return true;
+        }
+        return false;
+    }
+
 
 }
 
