@@ -11,7 +11,7 @@ import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.imageio.ImageIO;
@@ -35,8 +35,9 @@ public class SysLoginController {
 
     @Autowired
     private SysUserService sysUserService;
+
     @Resource
-    private StringRedisTemplate stringRedisTemplate;
+    private RedisTemplate<String,String> redisTemplate;
 
 
     /**
@@ -59,7 +60,7 @@ public class SysLoginController {
     @PostMapping(value = "login")
     public Result<UserInfoVO> login(@RequestBody LoginVo loginVo) throws NoSuchAlgorithmException {
         //判断验证码是否正确,需要获取redis中的验证码
-        String codeUuids = stringRedisTemplate.opsForValue().get("codeUuid" + loginVo.getUuid());
+        String codeUuids = redisTemplate.opsForValue().get("codeUuid" + loginVo.getUuid());
         String[] codeUuid = codeUuids.split("/");
 
         if (!loginVo.getUuid().equals(codeUuid[0]) || !loginVo.getCode().equals(codeUuid[1])) {
@@ -71,14 +72,14 @@ public class SysLoginController {
         }
         //生成一个token
         String accessToken = TokenGenerator.generateValue();
-        //存入到redis中
-        stringRedisTemplate.opsForValue().set("token1", accessToken, 60 * 60);
         //获取用户信息
         UserInfoVO userInfo = new UserInfoVO();
         userInfo.setAccessToken(accessToken);
         userInfo.setUserId(sysUser.getUserId());
         userInfo.setName(sysUser.getUserName());
         userInfo.setLevel(sysUser.getLevel());
+        //存入到redis中
+        redisTemplate.opsForValue().set("userInfo"+userInfo.getUserId(), String.valueOf(userInfo));
         return Result.success(userInfo);
     }
 

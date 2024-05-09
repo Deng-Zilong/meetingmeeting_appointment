@@ -8,10 +8,11 @@ import com.jfzt.meeting.service.SysUserService;
 import jakarta.annotation.Resource;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.cp.bean.WxCpUser;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.util.List;
 
 
@@ -29,8 +30,9 @@ public class SysUserController {
 
     @Resource
     private SysUserService sysUserService;
+
     @Resource
-    private StringRedisTemplate stringRedisTemplate;
+    private RedisTemplate<String,String> redisTemplate;
 
     @Resource
     private SysDepartmentUserService sysDepartmentUserService;
@@ -59,7 +61,7 @@ public class SysUserController {
         userInfoVO.setUserId(wxUser.getUserId());
         userInfoVO.setName(wxUser.getName());
         userInfoVO.setLevel(wxUser.getIsLeader());
-        stringRedisTemplate.opsForValue().set("userInfo", String.valueOf(userInfoVO));
+        redisTemplate.opsForValue().set("userInfo"+wxUser.getUserId(), String.valueOf(userInfoVO), Duration.ofHours(2));
         return Result.success(userInfoVO);
     }
 
