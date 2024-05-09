@@ -18,7 +18,6 @@ import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MeetingRoomService;
 import com.jfzt.meeting.service.SysUserService;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,8 +30,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.jfzt.meeting.constant.MessageConstant.STRAT_TIME_GT_END_TiME;
-import static com.jfzt.meeting.constant.MessageConstant.STRAT_TIME_LT_NOW;
+import static com.jfzt.meeting.constant.MessageConstant.START_TIME_GT_END_TiME;
+import static com.jfzt.meeting.constant.MessageConstant.START_TIME_LT_NOW;
 import java.util.*;
 
 import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
@@ -350,10 +349,10 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         BeanUtils.copyProperties(meetingRecordDTO, meetingRecord);
         // 判断meetingRecord的结束时间是否早于开始时间，如果是，则返回错误信息
         if (meetingRecord.getEndTime().isBefore(meetingRecord.getStartTime())) {
-            return Result.fail(STRAT_TIME_GT_END_TiME);
+            return Result.fail(START_TIME_GT_END_TiME);
         }else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())){
             // 判断meetingRecord的开始时间是否早于当前时间，如果是，则返回错误信息
-            return Result.fail(STRAT_TIME_LT_NOW);
+            return Result.fail(START_TIME_LT_NOW);
         }
         // 保存meetingRecord
         save(meetingRecord);
@@ -370,6 +369,12 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         return Result.success();
     }
 
+    /**
+     * @Description 更新会议
+     * @Param [meetingRecordDTO]
+     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.MeetingRecordVO>>
+     * @exception
+     */
     @Override
     @Transactional
     public Result<List<MeetingRecordVO>> updateMeeting(MeetingRecordDTO meetingRecordDTO) {
@@ -379,10 +384,10 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         BeanUtils.copyProperties(meetingRecordDTO, meetingRecord);
         // 判断meetingRecord的结束时间是否早于开始时间，如果是，则返回错误信息
         if (meetingRecord.getEndTime().isBefore(meetingRecord.getStartTime())) {
-            return Result.fail(STRAT_TIME_GT_END_TiME);
+            return Result.fail(START_TIME_GT_END_TiME);
         }else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())){
             // 判断meetingRecord的开始时间是否早于当前时间，如果是，则返回错误信息
-            return Result.fail(STRAT_TIME_LT_NOW);
+            return Result.fail(START_TIME_LT_NOW);
         }
         // 使用meetingRecord中的数据更新数据库中的数据
         updateById(meetingRecord);

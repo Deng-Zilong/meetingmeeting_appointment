@@ -27,7 +27,6 @@ public class MeetingGroupController {
      * @Description 群组查询
      * @Param [userId]
      * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.MeetingGroupVO>>
-     * @exception
      */
     @GetMapping("/getMeetingGroupList")
     public Result<List<MeetingGroupVO>> getMeetingGroupList() {
@@ -38,7 +37,6 @@ public class MeetingGroupController {
      * @Description 群组添加
      * @Param [meetingGroupDTO]
      * @return com.jfzt.meeting.common.Result<java.lang.Object>
-     * @exception
      */
     @PostMapping("/addMeetingGroup")
     public Result<Object> addMeetingGroup(@RequestBody MeetingGroupDTO meetingGroupDTO) {
@@ -49,7 +47,6 @@ public class MeetingGroupController {
      * @Description 群组修改
      * @Param [meetingGroupDTO]
      * @return com.jfzt.meeting.common.Result<java.lang.Object>
-     * @exception
      */
 
     @PutMapping("/updateMeetingGroup")
@@ -60,7 +57,6 @@ public class MeetingGroupController {
      * @Description 群组删除
      * @Param [meetingGroupDTO]
      * @return com.jfzt.meeting.common.Result<java.lang.Object>
-     * @exception
      */
     @DeleteMapping("/deleteMeetingGroup/{id}")
     public Result<Object> deleteMeetingGroup(@PathVariable(value = "id") Long id) {

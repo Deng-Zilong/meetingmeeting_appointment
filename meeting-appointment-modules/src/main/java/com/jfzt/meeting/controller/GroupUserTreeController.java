@@ -29,10 +29,9 @@ public class GroupUserTreeController {
      * @Description 获取部门成员树
      * @Param [userName]
      * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.SysDepartment>>
-     * @exception
      */
     @GetMapping("/getGroupUserTree")
-    public Result<List<SysDepartment>> getGroupUserTree(@RequestParam String id){
+    public Result<List<SysDepartment>> getGroupUserTree(String id){
         return sysDepartmentUserService.gainUsers(id);
     }
 
@@ -40,10 +39,9 @@ public class GroupUserTreeController {
      * @Description 模糊查询成员
      * @Param [name]
      * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.SysUserVO>>
-     * @exception
      */
     @GetMapping("/likeByName")
-    public Result<List<SysUserVO>> likeByName (@RequestParam String name){
+    public Result<List<SysUserVO>> likeByName (String name){
         return sysUserService.findByName(name);
     }
 

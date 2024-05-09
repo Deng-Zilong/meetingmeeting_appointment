@@ -108,6 +108,12 @@ public class MeetingRecordController {
     public Result<Objects> addMeetingRecord (@RequestBody MeetingRecordDTO meetingRecordDTO) {
         return meetingRecordService.addMeeting(meetingRecordDTO);
     }
+    /**
+     * @Description 更新会议
+     * @Param [meetingRecordDTO]
+     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.MeetingRecordVO>>
+     * @exception
+     */
     @PutMapping("/index/updateMeetingRecord")
     public Result<List<MeetingRecordVO>> updateMeetingRecord (@RequestBody MeetingRecordDTO meetingRecordDTO) {
         return meetingRecordService.updateMeeting(meetingRecordDTO);

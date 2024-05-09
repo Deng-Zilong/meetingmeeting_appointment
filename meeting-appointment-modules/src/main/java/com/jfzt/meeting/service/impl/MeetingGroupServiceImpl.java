@@ -50,6 +50,9 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     @Override
     public Result<List<MeetingGroupVO>> checkGroup() {
         String userId = BaseContext.getCurrentId();
+        // 移除当前的ID
+        BaseContext.removeCurrentId();
+        // 返回Result.success(collect)
         ArrayList<MeetingGroup> joinList = new ArrayList<>();
         //使用lambdaQuery查询SysDepartmentUser，并判断userId是否不为空，不为空则查询userId等于指定userId的用户
         SysUser user = sysUserService.lambdaQuery()
@@ -72,7 +75,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
 
 
         // 定义一个List，用于存放满足条件的MeetingGroupVO
-        List<MeetingGroupVO> collect = joinList.stream().map((item) -> {
+        List<MeetingGroupVO> collectVO = joinList.stream().map((item) -> {
             // 创建一个MeetingGroupVO实例
             MeetingGroupVO meetingGroupVO = new MeetingGroupVO();
             // 使用BeanUtils.copyProperties方法将item复制到meetingGroupVO实例中
@@ -96,13 +99,12 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
                 meetingGroupVO.getUsers().add(sysUser.getUserName());
 
             }).toList();
-
             // 返回meetingGroupVO实例
             return meetingGroupVO;
 
         }).toList();
-        // 返回Result.success(collect)
-        return Result.success(collect);
+
+        return Result.success(collectVO);
     }
 
 
@@ -142,7 +144,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         List<UserGroup> userList = meetingGroupDTO.getUsers();
 
         // 对用户列表进行处理，将每个用户关联到meetingGroup中
-        List<UserGroup> list = userList.stream().peek((item) -> {
+        userList.stream().peek((item) -> {
             // 创建一个新的UserGroup对象
             UserGroup group = UserGroup.builder()
                     .userId(item.getUserId())
@@ -183,7 +185,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         List<UserGroup> beforeList = userGroupService.lambdaQuery().eq(UserGroup::getGroupId, meetingGroupDTO.getId()).list();
         userGroupService.removeBatchByIds(beforeList);
         // 对用户列表进行处理，将每个用户关联到meetingGroup中
-        List<UserGroup> list = userList.stream().peek((item) -> {
+        userList.stream().peek((item) -> {
             // 创建一个新的UserGroup对象
             UserGroup group = UserGroup.builder()
                     .userId(item.getUserId())

@@ -70,6 +70,11 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      * @exception
      */
     Result<Objects> addMeeting(MeetingRecordDTO meetingRecordDTO);
-
+    /**
+     * @Description 更新会议
+     * @Param [meetingRecordDTO]
+     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.MeetingRecordVO>>
+     * @exception
+     */
     Result<List<MeetingRecordVO>> updateMeeting(MeetingRecordDTO meetingRecordDTO);
 }
