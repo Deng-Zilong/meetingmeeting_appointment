@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * @Author dw
  * @ClassName HttpClientUtil
  * @Description
  * @Date 2020/8/28 11:32

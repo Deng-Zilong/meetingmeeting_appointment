@@ -58,7 +58,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     const userStore = useUserStore();
-    const token = userStore.userInfo.access_token;
+    const token = userStore.userInfo.accessToken;
     // 若目标路由为主页时（可能为扫码登录） 暂不判断token
     if(to.path == '/home') {
         return next();

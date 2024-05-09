@@ -1,9 +1,10 @@
 package com.jfzt.meeting.controller;
 
 
-import org.springframework.web.bind.annotation.CrossOrigin;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 
 /**
  * 部门处理
@@ -11,9 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
  * @author zhenxing.lu
  * @since 2024-04-30 10.13:51
  */
-@CrossOrigin
+
 @RestController
-@RequestMapping("department")
+@RequestMapping("meeting/department")
 public class SysDepartmentController {
 
 

@@ -15,6 +15,7 @@ import java.util.List;
  * @author zilong.deng
  * @date 2024/04/29
  */
+
 @Slf4j
 @RestController
 @RequestMapping("/meeting")
@@ -46,9 +47,9 @@ public class MeetingRecordController {
      * @description 根据用户id查询用户所有历史会议记录
      */
     @GetMapping("/meetingRecord/allMeetingRecord")
-    public Result<List<MeetingRecordVO>> getRecordPage (@RequestParam String userId) {
+    public Result<List<MeetingRecordVO>> getRecordPage (@RequestParam String userId, @RequestParam Long page, @RequestParam Long limit) {
 
-        List<MeetingRecordVO> recordVoList = meetingRecordService.getAllRecordVoList(userId);
+        List<MeetingRecordVO> recordVoList = meetingRecordService.getAllRecordVoListPage(userId, page, limit);
         if (recordVoList == null) {
             log.info("用户{}没有历史会议记录", userId);
             return Result.success(null);
@@ -56,6 +57,43 @@ public class MeetingRecordController {
         log.info("用户{}当天会议记录:{}", userId, recordVoList);
         return Result.success(recordVoList);
     }
+
+    /**
+     * 取消会议
+     *
+     * @param userId    用户id
+     * @param meetingId 会议id
+     * @return {@code Result<String>}
+     */
+    @PostMapping("/index/cancelMeetingRecord")
+    public Result<String> cancelMeetingRecord (@RequestParam String userId, @RequestParam Long meetingId) {
+        Boolean result = meetingRecordService.cancelMeetingRecord(userId, meetingId);
+        if (result) {
+            log.info("用户{}取消会议{}成功", userId, meetingId);
+            return Result.success("会议取消成功");
+        }
+        log.info("用户{}取消会议{}失败", userId, meetingId);
+        return Result.fail("会议取消失败");
+    }
+
+    /**
+     * 删除会议
+     *
+     * @param userId    用户id
+     * @param meetingId 会议id
+     * @return {@code Result<String>}
+     */
+    @DeleteMapping("/index/deleteMeetingRecord")
+    public Result<String> deleteMeetingRecord (@RequestParam String userId, @RequestParam Long meetingId) {
+        Boolean result = meetingRecordService.deleteMeetingRecord(userId, meetingId);
+        if (result) {
+            log.info("用户{}删除会议{}成功", userId, meetingId);
+            return Result.success("会议删除成功");
+        }
+        log.info("用户{}删除会议{}失败", userId, meetingId);
+        return Result.fail("会议删除失败");
+    }
+
 
     /**
      * @param location 会议室位置

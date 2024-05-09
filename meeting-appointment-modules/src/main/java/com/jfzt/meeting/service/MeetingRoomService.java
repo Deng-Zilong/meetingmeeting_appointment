@@ -30,4 +30,11 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
     List<MeetingRoomStatusVO> getMeetingRoomStatus ();
 
     Boolean deleteMeetingRoom (MeetingRoomVO meetingRoomVO);
+
+    /**
+     * 查询当天各个时间段会议室占用情况
+     *
+     * @return {@code List<Integer>}
+     */
+    List<Integer> isBusy ();
 }
