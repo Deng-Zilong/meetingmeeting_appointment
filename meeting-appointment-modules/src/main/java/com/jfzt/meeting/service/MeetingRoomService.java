@@ -5,7 +5,9 @@ import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomVO;
+import com.jfzt.meeting.entity.vo.TimePeriodStatusVO;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -37,4 +39,13 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      * @return {@code List<Integer>}
      */
     List<Integer> isBusy ();
+
+    /**
+     * 查询指定会议室当天各个时间段占用情况
+     *
+     * @param id   会议室id
+     * @param date 日期
+     * @return {@code Result<List<TimePeriodStatusVO>>}
+     */
+    Result<List<TimePeriodStatusVO>> isBusyByIdAndDate (Long id, LocalDate date);
 }

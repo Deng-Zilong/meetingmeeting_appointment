@@ -3,6 +3,7 @@ package com.jfzt.meeting.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.jfzt.meeting.constant.MeetingRecordStatusConstant;
 import com.jfzt.meeting.entity.MeetingAttendees;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingRoom;
@@ -19,10 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+
+import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
 
 /**
  * @author zilong.deng
@@ -35,17 +35,13 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     @Autowired
     private MeetingAttendeesService meetingAttendeesService;
+    @Autowired
     private MeetingRoomService meetingRoomService;
     @Autowired
     private SysUserService userService;
     @Autowired
     private MeetingAttendeesMapper attendeesMapper;
 
-
-    @Autowired
-    public void setMeetingRoomService (MeetingRoomService meetingRoomService) {
-        this.meetingRoomService = meetingRoomService;
-    }
 
     /**
      * 获取当天用户参与的所有会议
@@ -72,9 +68,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         //展示未取消的会议
         recordQueryWrapper
                 .and(wq -> wq
-                        .eq(MeetingRecord::getStatus, 0)
-                        .or().eq(MeetingRecord::getStatus, 1)
-                        .or().eq(MeetingRecord::getStatus, 2));
+                        .eq(MeetingRecord::getStatus, MeetingRecordStatusConstant.MEETING_RECORD_STATUS_NOT_START)
+                        .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING)
+                        .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_END));
         recordQueryWrapper.orderByDesc(MeetingRecord::getStartTime);
         //获取当天所有会议
         List<MeetingRecord> meetingRecords = this.list(recordQueryWrapper);
@@ -181,11 +177,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     public void updateRecordStatus (MeetingRecord meetingRecord) {
         if (meetingRecord.getStartTime().isBefore(LocalDateTime.now()) && meetingRecord.getEndTime().isAfter(LocalDateTime.now())) {
             //会议进行中
-            meetingRecord.setStatus(1);
+            meetingRecord.setStatus(MEETING_RECORD_STATUS_PROCESSING);
             this.updateById(meetingRecord);
         } else if (meetingRecord.getEndTime().isBefore(LocalDateTime.now())) {
             //会议已结束
-            meetingRecord.setStatus(2);
+            meetingRecord.setStatus(MEETING_RECORD_STATUS_END);
             this.updateById(meetingRecord);
         }
     }
@@ -207,7 +203,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .or().between(MeetingRecord::getEndTime, startOfDay, endOfDay);
         recordQueryWrapper.and(queryWrapper -> queryWrapper.eq(MeetingRecord::getIsDeleted, 0));
         //展示未取消的会议
-        recordQueryWrapper.and(queryWrapper -> queryWrapper.eq(MeetingRecord::getStatus, 0).or().eq(MeetingRecord::getStatus, 1).or().eq(MeetingRecord::getStatus, 2));
+        recordQueryWrapper.and(queryWrapper -> queryWrapper.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START).or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING).or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_END));
         recordQueryWrapper.orderByDesc(MeetingRecord::getStartTime);
         //获取当天所有会议
         List<MeetingRecord> meetingRecords = this.list(recordQueryWrapper);
@@ -241,7 +237,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         //遍历会议
         return recordIds.stream().map(recordId -> {
                     MeetingRecord meetingRecord = this.baseMapper.selectById(recordId);
-                    if (meetingRecord.getStatus() == 3) {
+                    if (Objects.equals(meetingRecord.getStatus(), MEETING_RECORD_STATUS_CANCEL)) {
                         return null;
                     }
                     MeetingRecordVO meetingRecordVO = new MeetingRecordVO();
@@ -268,7 +264,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                     meetingRecordVO.setMeetingNumber(userIds.size());
                     return meetingRecordVO;
                 }).filter(Objects::nonNull)
-                .sorted((o1, o2) -> o1.getStartTime().isBefore(o2.getStartTime()) ? 1 : -1)
+                .sorted(Comparator.comparing(MeetingRecordVO::getStartTime).reversed())
                 .toList();
     }
 
@@ -312,7 +308,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         //会议不是未开始状态或者会议创建人不是当前用户无法取消
         if (meetingRecord.getStatus() == 0 && meetingRecord.getCreatedBy().equals(userId)) {
             //更新会议状态
-            meetingRecord.setStatus(3);
+            meetingRecord.setStatus(MEETING_RECORD_STATUS_CANCEL);
             this.baseMapper.updateById(meetingRecord);
             return true;
         }
