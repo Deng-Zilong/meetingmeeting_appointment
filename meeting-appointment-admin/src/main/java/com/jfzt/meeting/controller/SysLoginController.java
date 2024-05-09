@@ -1,6 +1,7 @@
 package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.vo.LoginVo;
 import com.jfzt.meeting.entity.vo.UserInfoVO;
@@ -80,6 +81,8 @@ public class SysLoginController {
         userInfo.setLevel(sysUser.getLevel());
         //存入到redis中
         redisTemplate.opsForValue().set("userInfo"+userInfo.getUserId(), String.valueOf(userInfo));
+        //存入当前登录用户到ThreadLocal中
+        BaseContext.setCurrentUserId(sysUser.getUserId());
         return Result.success(userInfo);
     }
 
