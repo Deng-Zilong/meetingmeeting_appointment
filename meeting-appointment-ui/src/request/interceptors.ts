@@ -1,14 +1,13 @@
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
-import { ElMessage } from "element-plus";
+import { useUserStore } from "@/stores/user";
 // import router from "../router";
 // 请求拦截
 export function ReqResolve(config: InternalAxiosRequestConfig) {
   if (config.url === "/login" || config.url === "/codeImage") {
     return config;
   }
-  const token = localStorage.getItem("token")
-    ? localStorage.getItem("token")
-    : "";
+  const userStore = useUserStore();
+  const token = userStore.userInfo.accessToken ? userStore.userInfo.accessToken : "";
   // if (!token) {
   //   return Promise.reject({ code: 401, message: "登录已过期，请重新登录！" });
   // }
@@ -32,7 +31,6 @@ export function ResResolve(config: any) {
     if (config.data.code == 200) {
         return config;
     } else {
-        ElMessage.warning(config.data.msg);
         return Promise.reject(config);
     }
   }

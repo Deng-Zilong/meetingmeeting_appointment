@@ -120,7 +120,7 @@ const router = useRouter();
 onMounted(async () => {
   /* 判断扫码登录状态 */
   const code = decodeURIComponent(route.query.code as string);
-  const token = userStore.userInfo.access_token;
+  const token = userStore.userInfo.accessToken;
 
   // 若 code 不为 undefined 时为扫码登录
   if (code != 'undefined') {

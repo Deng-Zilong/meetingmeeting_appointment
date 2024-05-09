@@ -10,7 +10,7 @@ export const useUserStore = defineStore('user',()=>{
     const router = useRouter()
     interface IUserInfo{
         userId: string | number,
-        access_token: string,
+        accessToken: string,
         username: string,
         img: string,
         role: string | number,
@@ -18,7 +18,7 @@ export const useUserStore = defineStore('user',()=>{
     // 用户信息初始化
     const initUserInfo = {
         userId:'',
-        access_token: '',
+        accessToken: '',
         username: '',
         img: '',
         role: '',
@@ -60,7 +60,7 @@ export const useUserStore = defineStore('user',()=>{
                 })
                 .catch((err: any) => {
                     // 临时使用
-                    userInfo.access_token = '11111';
+                    userInfo.accessToken = '11111';
                     router.push('/home');
                     console.log(err, 'err');
                     return err;
