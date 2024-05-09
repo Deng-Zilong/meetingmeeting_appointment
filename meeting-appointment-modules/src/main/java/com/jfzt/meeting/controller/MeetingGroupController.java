@@ -63,7 +63,7 @@ public class MeetingGroupController {
      * @exception
      */
     @DeleteMapping("/deleteMeetingGroup/{id}")
-    public Result<Object> deleteMeetingGroup(@PathVariable("id") Long id) {
+    public Result<Object> deleteMeetingGroup(@PathVariable(value = "id") Long id) {
         return meetingGroupService.deleteMeetingGroup(id);
     }
 }

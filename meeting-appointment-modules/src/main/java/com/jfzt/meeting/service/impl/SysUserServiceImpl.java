@@ -4,11 +4,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.code.kaptcha.Producer;
+import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.vo.LoginVo;
+import com.jfzt.meeting.entity.vo.SysUserVO;
 import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.service.SysUserService;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -37,7 +40,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     private SysUserMapper sysUserMapper;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
-    @Autowired
+
+    @Resource
     private Producer producer;
 
 
@@ -89,10 +93,39 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
     @Override
     public SysUser findUser(LoginVo loginVo) {
+
         LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(SysUser::getUserId,loginVo.getName());
         SysUser sysUser = sysUserMapper.selectOne(lambdaQueryWrapper);
         return sysUser;
+    }
+
+    /**
+     * @Description 模糊查询成员
+     * @Param [name]
+     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.SysUserVO>>
+     * @exception
+     */
+    @Override
+    public Result<List<SysUserVO>> findByName(String name) {
+        // 根据用户名查询用户信息，并将其转换为SysUserVO对象
+        return Result.success(lambdaQuery()
+                // 判断用户名是否为空
+                .like(StringUtils.isNotBlank(name), SysUser::getUserName, name)
+                // 获取查询结果
+                .list()
+                // 将查询结果转换为流
+                .stream()
+                // 遍历流，将每个用户信息转换为SysUserVO对象
+                .map(sysUser -> SysUserVO.builder()
+                        // 调用builder的userId方法，传入用户id
+                        .userId(sysUser.getUserId())
+                        // 调用builder的userName方法，传入用户名
+                        .userName(sysUser.getUserName())
+                        // 调用builder的build方法，构建SysUserVO对象
+                        .build())
+                // 将SysUserVO对象collect到列表中
+                .collect(Collectors.toList()));
     }
 }
 

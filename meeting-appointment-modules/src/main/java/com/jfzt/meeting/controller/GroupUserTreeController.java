@@ -1,7 +1,10 @@
 package com.jfzt.meeting.controller;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.SysDepartment;
+import com.jfzt.meeting.entity.SysUser;
+import com.jfzt.meeting.entity.vo.SysUserVO;
 import com.jfzt.meeting.service.SysDepartmentUserService;
+import com.jfzt.meeting.service.SysUserService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,16 +22,29 @@ public class GroupUserTreeController {
 
     @Resource
     private SysDepartmentUserService sysDepartmentUserService;
+    @Resource
+    private SysUserService sysUserService;
 
     /**
      * @Description 获取部门成员树
-     * @Param []
+     * @Param [userName]
      * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.SysDepartment>>
      * @exception
      */
     @GetMapping("/getGroupUserTree")
-    private Result<List<SysDepartment>> getGroupUserTree(@RequestParam String userName){
-        return sysDepartmentUserService.gainUsers(userName);
+    private Result<List<SysDepartment>> getGroupUserTree(@RequestParam String id){
+        return sysDepartmentUserService.gainUsers(id);
+    }
+
+    /**
+     * @Description 模糊查询成员
+     * @Param [name]
+     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.SysUserVO>>
+     * @exception
+     */
+    @GetMapping("/likeByName")
+    private Result<List<SysUserVO>> likeByName (@RequestParam String name){
+        return sysUserService.findByName(name);
     }
 
 }

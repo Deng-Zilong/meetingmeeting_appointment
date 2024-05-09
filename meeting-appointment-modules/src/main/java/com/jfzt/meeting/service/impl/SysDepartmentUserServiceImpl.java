@@ -141,7 +141,7 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
      * @exception
      */
     @Override
-    public Result<List<SysDepartment>> gainUsers(String userName) {
+    public Result<List<SysDepartment>> gainUsers(String id) {
         // 获取所有部门列表
         List<SysDepartment> departmentList = sysDepartmentService.list();
         // 获取成员树
@@ -151,12 +151,17 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
                 // 排序
                 .sorted((node1, node2) -> Math.toIntExact(node1.getDepartmentId() - node2.getDepartmentId()))
                 // 递归设置子部门
-                .peek(topNode -> topNode.setChildrenPart(getChildren(topNode, departmentList,userName)))
+                .peek(topNode -> topNode.setChildrenPart(getChildren(topNode, departmentList,id)))
                 .collect(Collectors.toList());
         return Result.success(departments);
     }
 
-    private List<SysDepartment> getChildren(SysDepartment root, List<SysDepartment> all,String userName) {
+    /**
+     * @Description 递归获取子部门
+     * @Param SysDepartment root, List<SysDepartment> all,String userName
+     * @return List<SysDepartment>
+     */
+    private List<SysDepartment> getChildren(SysDepartment root, List<SysDepartment> all,String id) {
         return all.stream()
                 // 过滤出父部门ID等于根部门ID的部门
                 .filter(sysDepartment -> Objects.equals(sysDepartment.getParentId(), root.getDepartmentId()))
@@ -165,7 +170,7 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
                     // 创建一个用户列表
                     ArrayList<SysUser> sysUsers = new ArrayList<>();
                     // 获取子部门的用户
-                    childrenNode.setChildrenPart(getChildren(childrenNode, all,userName));
+                    childrenNode.setChildrenPart(getChildren(childrenNode, all,id));
                     // 获取部门用户
                     List<SysDepartmentUser> departmentUsers = sysDepartmentUserService.lambdaQuery()
                             .eq(SysDepartmentUser::getDepartmentId , childrenNode.getDepartmentId())
@@ -175,7 +180,7 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
                         // 根据用户ID获取用户
                         List<SysUser> userList = sysUserService.lambdaQuery()
                                 .eq(StringUtils.isNotBlank(sysDepartmentUser.getUserId()), SysUser::getUserId, sysDepartmentUser.getUserId())
-                                .eq(StringUtils.isNotBlank(userName), SysUser::getUserName, userName)
+                                .eq(StringUtils.isNotBlank(id), SysUser::getUserName, id)
                                 .list();
                         // 将用户添加到用户列表中
                         sysUsers.addAll(userList);

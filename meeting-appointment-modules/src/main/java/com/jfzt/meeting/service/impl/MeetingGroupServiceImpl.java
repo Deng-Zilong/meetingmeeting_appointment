@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.jfzt.meeting.constant.MessageConstant.SAME_NAME;
+
 /**
  * @author zilong.deng
  * @description 针对表【meeting_group(群组表)】的数据库操作Service实现
@@ -125,9 +127,17 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
 
         // 将meetingGroupDTO中的属性复制到meetingGroup中
         BeanUtils.copyProperties(meetingGroupDTO, meetingGroup);
-        // 保存meetingGroup
-        save(meetingGroup);
-
+        // 使用lambdaQuery查询 MeetingGroup 表中 GroupName 字段等于 meetingGroupDTO 中 getGroupName() 字段的数量
+        Long sameName = lambdaQuery()
+                .eq(meetingGroupDTO.getGroupName() != null
+                        , MeetingGroup::getGroupName, meetingGroupDTO.getGroupName())
+                .count();
+        if (sameName > 0) {
+            // 保存meetingGroup
+            save(meetingGroup);
+        }else {
+            return Result.fail(SAME_NAME);
+        }
         // 根据meetingGroupDTO中的groupName查询MeetingGroup表，获取groupId
         Long groupId = lambdaQuery()
                 .eq(StringUtils.isNotBlank(meetingGroupDTO.getGroupName()), MeetingGroup::getGroupName, meetingGroupDTO.getGroupName())

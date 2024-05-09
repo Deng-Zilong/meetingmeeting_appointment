@@ -1,7 +1,9 @@
 package com.jfzt.meeting.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.SysUser;
+import com.jfzt.meeting.entity.vo.SysUserVO;
 import com.jfzt.meeting.entity.vo.LoginVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -40,4 +42,12 @@ public interface SysUserService extends IService<SysUser> {
     BufferedImage getCaptcha(String uuid);
 
     SysUser findUser(LoginVo loginVo);
+
+    /**
+     * @Description 模糊查询成员
+     * @Param [name]
+     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.SysUserVO>>
+     * @exception
+     */
+    Result<List<SysUserVO>> findByName(String name);
 }
