@@ -28,7 +28,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class MeetingRecord implements Serializable {
     /**
-     *
+     * id
      */
     @TableId(type = IdType.AUTO)
     private Long id;

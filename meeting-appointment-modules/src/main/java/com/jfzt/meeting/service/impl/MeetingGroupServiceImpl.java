@@ -2,32 +2,26 @@ package com.jfzt.meeting.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.context.BaseContext;
+import com.jfzt.meeting.entity.MeetingAttendees;
 import com.jfzt.meeting.entity.MeetingGroup;
-import com.jfzt.meeting.entity.SysDepartmentUser;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.UserGroup;
 import com.jfzt.meeting.entity.dto.MeetingGroupDTO;
 import com.jfzt.meeting.entity.vo.MeetingGroupVO;
+import com.jfzt.meeting.entity.vo.UserInfoVO;
 import com.jfzt.meeting.mapper.MeetingGroupMapper;
 import com.jfzt.meeting.service.MeetingGroupService;
-
-import com.jfzt.meeting.service.SysDepartmentUserService;
 import com.jfzt.meeting.service.SysUserService;
 import com.jfzt.meeting.service.UserGroupService;
 import jakarta.annotation.Resource;
-import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
-import org.apache.catalina.User;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 import static com.jfzt.meeting.constant.MessageConstant.SAME_NAME;
 
@@ -39,8 +33,6 @@ import static com.jfzt.meeting.constant.MessageConstant.SAME_NAME;
 @Service
 public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, MeetingGroup>
         implements MeetingGroupService {
-    @Resource
-    private SysDepartmentUserService sysDepartmentUserService;
 
     @Resource
     private SysUserService sysUserService;
@@ -56,7 +48,8 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
      * @exception
      */
     @Override
-    public Result<List<MeetingGroupVO>> checkGroup(String userId) {
+    public Result<List<MeetingGroupVO>> checkGroup() {
+        String userId = BaseContext.getCurrentId();
         ArrayList<MeetingGroup> joinList = new ArrayList<>();
         //使用lambdaQuery查询SysDepartmentUser，并判断userId是否不为空，不为空则查询userId等于指定userId的用户
         SysUser user = sysUserService.lambdaQuery()
@@ -68,7 +61,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
                 .eq(StringUtils.isNotBlank(userId), UserGroup::getUserId, userId)
                 .list();
         // 定义一个List，用于存放满足条件的MeetingGroup
-        List<UserGroup> endList = userGroupList.stream().peek((item) -> {
+        userGroupList.stream().peek((item) -> {
             // 通过lambdaQuery方法获取满足条件的MeetingGroup
             MeetingGroup joinUser = lambdaQuery()
                         .eq(item.getGroupId() != null, MeetingGroup::getId, item.getGroupId())
@@ -91,9 +84,10 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
             // 使用lambdaQuery查询出所有UserGroup，其中groupId为item.getId()
             List<UserGroup> userGroups = userGroupService.lambdaQuery()
                     .eq(item.getId() != null, UserGroup::getGroupId, item.getId())
+                    .orderByAsc(UserGroup::getGmtModified)
                     .list();
             // 遍历userGroups，将每个userGroup的用户名添加到meetingGroupVO中
-            List<UserGroup> endList2 = userGroups.stream().peek((userGroup) -> {
+            userGroups.stream().peek((userGroup) -> {
                 // 使用lambdaQuery查询出SysDepartmentUser，其中用户ID为userGroup.getUserId()
                 SysUser sysUser = sysUserService.lambdaQuery()
                         .eq(StringUtils.isNotBlank(userGroup.getUserId()), SysUser::getUserId, userGroup.getUserId())
@@ -211,9 +205,10 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     @Override
     @Transactional
     public Result<Object> deleteMeetingGroup(Long id) {
-        removeById(id);
         // 查询出MeetingGroup对象之前的UserGroup对象列表
         List<UserGroup> userGroupList = userGroupService.lambdaQuery().eq(UserGroup::getGroupId, id).list();
+        // 删除MeetingGroup对象
+        removeById(id);
         // 按照beforeList中的id删除UserGroup对象
         userGroupService.removeBatchByIds(userGroupList);
         return Result.success();

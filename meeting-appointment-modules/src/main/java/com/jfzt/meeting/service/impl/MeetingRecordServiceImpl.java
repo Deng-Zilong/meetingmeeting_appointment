@@ -3,11 +3,13 @@ package com.jfzt.meeting.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MeetingRecordStatusConstant;
 import com.jfzt.meeting.entity.MeetingAttendees;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.SysUser;
+import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
 import com.jfzt.meeting.mapper.MeetingRecordMapper;
@@ -15,11 +17,22 @@ import com.jfzt.meeting.service.MeetingAttendeesService;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MeetingRoomService;
 import com.jfzt.meeting.service.SysUserService;
+import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static com.jfzt.meeting.constant.MessageConstant.STRAT_TIME_GT_END_TiME;
+import static com.jfzt.meeting.constant.MessageConstant.STRAT_TIME_LT_NOW;
 import java.util.*;
 
 import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
@@ -33,14 +46,22 @@ import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
 public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, MeetingRecord>
         implements MeetingRecordService {
 
-    @Autowired
+    @Resource
     private MeetingAttendeesService meetingAttendeesService;
     @Autowired
     private MeetingRoomService meetingRoomService;
-    @Autowired
+    @Resource
     private SysUserService userService;
-    @Autowired
+    @Resource
     private MeetingAttendeesMapper attendeesMapper;
+
+
+
+    @Autowired
+    public void setMeetingRoomService (MeetingRoomService meetingRoomService) {
+        this.meetingRoomService = meetingRoomService;
+    }
+
 
 
     /**
@@ -313,6 +334,73 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             return true;
         }
         return false;
+    }
+
+    /**
+     * @Description 新增会议
+     * @Param [meetingRecordDTO]
+     * @return com.jfzt.meeting.common.Result<java.util.Objects>
+     */
+    @Override
+    @Transactional
+    public Result<Objects> addMeeting(MeetingRecordDTO meetingRecordDTO) {
+        // 创建一个新的MeetingRecord对象
+        MeetingRecord meetingRecord = new MeetingRecord();
+        // 将meetingRecordDTO中的属性复制到meetingRecord中
+        BeanUtils.copyProperties(meetingRecordDTO, meetingRecord);
+        // 判断meetingRecord的结束时间是否早于开始时间，如果是，则返回错误信息
+        if (meetingRecord.getEndTime().isBefore(meetingRecord.getStartTime())) {
+            return Result.fail(STRAT_TIME_GT_END_TiME);
+        }else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())){
+            // 判断meetingRecord的开始时间是否早于当前时间，如果是，则返回错误信息
+            return Result.fail(STRAT_TIME_LT_NOW);
+        }
+        // 保存meetingRecord
+        save(meetingRecord);
+        // 创建一个MeetingAttendees的列表，并将meetingRecordDTO中的用户信息转换为MeetingAttendees对象
+        List<MeetingAttendees> attendeesList = meetingRecordDTO.getUsers()
+                .stream()
+                .map(user -> MeetingAttendees.builder()
+                        .userId(user.getUserId())
+                        .meetingRecordId(meetingRecord.getId())
+                        .build())
+                .collect(Collectors.toList());
+        // 保存MeetingAttendees列表
+        meetingAttendeesService.saveBatch(attendeesList);
+        return Result.success();
+    }
+
+    @Override
+    @Transactional
+    public Result<List<MeetingRecordVO>> updateMeeting(MeetingRecordDTO meetingRecordDTO) {
+        // 创建一个新的MeetingRecord对象
+        MeetingRecord meetingRecord = new MeetingRecord();
+        // 将meetingRecordDTO中的属性复制到meetingRecord中
+        BeanUtils.copyProperties(meetingRecordDTO, meetingRecord);
+        // 判断meetingRecord的结束时间是否早于开始时间，如果是，则返回错误信息
+        if (meetingRecord.getEndTime().isBefore(meetingRecord.getStartTime())) {
+            return Result.fail(STRAT_TIME_GT_END_TiME);
+        }else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())){
+            // 判断meetingRecord的开始时间是否早于当前时间，如果是，则返回错误信息
+            return Result.fail(STRAT_TIME_LT_NOW);
+        }
+        // 使用meetingRecord中的数据更新数据库中的数据
+        updateById(meetingRecord);
+        List<MeetingAttendees> meetingAttendees = meetingAttendeesService.lambdaQuery()
+                .eq(meetingRecord.getId() != null, MeetingAttendees::getMeetingRecordId, meetingRecord.getId())
+                .list();
+        attendeesMapper.deleteBatchIds(meetingAttendees);
+        // 创建一个MeetingAttendees的列表，并将meetingRecordDTO中的用户信息转换为MeetingAttendees对象
+        List<MeetingAttendees> attendeesList = meetingRecordDTO.getUsers()
+                .stream()
+                .map(user -> MeetingAttendees.builder()
+                        .userId(user.getUserId())
+                        .meetingRecordId(meetingRecord.getId())
+                        .build())
+                .collect(Collectors.toList());
+        // 更新MeetingAttendees列表
+        meetingAttendeesService.saveBatch(attendeesList);
+        return Result.success();
     }
 
 

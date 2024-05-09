@@ -30,8 +30,8 @@ public class MeetingGroupController {
      * @exception
      */
     @GetMapping("/getMeetingGroupList")
-    public Result<List<MeetingGroupVO>> getMeetingGroupList(@RequestParam String userId) {
-        return meetingGroupService.checkGroup(userId);
+    public Result<List<MeetingGroupVO>> getMeetingGroupList() {
+        return meetingGroupService.checkGroup();
     }
 
     /**

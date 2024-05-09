@@ -32,7 +32,7 @@ public class GroupUserTreeController {
      * @exception
      */
     @GetMapping("/getGroupUserTree")
-    private Result<List<SysDepartment>> getGroupUserTree(@RequestParam String id){
+    public Result<List<SysDepartment>> getGroupUserTree(@RequestParam String id){
         return sysDepartmentUserService.gainUsers(id);
     }
 
@@ -43,7 +43,7 @@ public class GroupUserTreeController {
      * @exception
      */
     @GetMapping("/likeByName")
-    private Result<List<SysUserVO>> likeByName (@RequestParam String name){
+    public Result<List<SysUserVO>> likeByName (@RequestParam String name){
         return sysUserService.findByName(name);
     }
 

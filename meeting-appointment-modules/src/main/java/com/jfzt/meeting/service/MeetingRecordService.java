@@ -1,10 +1,13 @@
 package com.jfzt.meeting.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingRecord;
+import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author zilong.deng
@@ -12,6 +15,8 @@ import java.util.List;
  * @since 2024-04-28 11:47:39
  */
 public interface MeetingRecordService extends IService<MeetingRecord> {
+
+
 
 
     /**
@@ -58,5 +63,13 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      * @return {@code Boolean}
      */
     Boolean cancelMeetingRecord (String userId, Long meetingId);
+    /**
+     * @Description 新增会议
+     * @Param [meetingRecordDTO]
+     * @return com.jfzt.meeting.common.Result<java.util.Objects>
+     * @exception
+     */
+    Result<Objects> addMeeting(MeetingRecordDTO meetingRecordDTO);
 
+    Result<List<MeetingRecordVO>> updateMeeting(MeetingRecordDTO meetingRecordDTO);
 }

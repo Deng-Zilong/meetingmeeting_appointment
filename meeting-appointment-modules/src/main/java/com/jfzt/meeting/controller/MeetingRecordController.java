@@ -2,6 +2,7 @@ package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingRecord;
+import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
 import com.jfzt.meeting.service.MeetingRecordService;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+
+import static com.jfzt.meeting.constant.MessageConstant.DELETE_FAIL;
 
 /**
  * @author zilong.deng
@@ -91,8 +95,24 @@ public class MeetingRecordController {
             return Result.success("会议删除成功");
         }
         log.info("用户{}删除会议{}失败", userId, meetingId);
-        return Result.fail("会议删除失败");
+        return Result.fail(DELETE_FAIL);
     }
+
+    /**
+     * @Description 新增会议
+     * @Param [meetingRecordDTO]
+     * @return com.jfzt.meeting.common.Result<java.util.Objects>
+     * @exception
+     */
+    @PostMapping("/index/addMeetingRecord")
+    public Result<Objects> addMeetingRecord (@RequestBody MeetingRecordDTO meetingRecordDTO) {
+        return meetingRecordService.addMeeting(meetingRecordDTO);
+    }
+    @PutMapping("/index/updateMeetingRecord")
+    public Result<List<MeetingRecordVO>> updateMeetingRecord (@RequestBody MeetingRecordDTO meetingRecordDTO) {
+        return meetingRecordService.updateMeeting(meetingRecordDTO);
+    }
+
 
 
     /**
