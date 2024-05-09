@@ -9,19 +9,17 @@ export const useUserStore = defineStore('user',()=>{
     // 声明路由
     const router = useRouter()
     interface IUserInfo{
-        userId: string | number,
+        userId: string,
         accessToken: string,
-        username: string,
-        img: string,
-        role: string | number,
+        name: string,
+        level: number,
     }
     // 用户信息初始化
     const initUserInfo = {
         userId:'',
         accessToken: '',
-        username: '',
-        img: '',
-        role: '',
+        name: '',
+        level: 0,
     }
     // 用户信息
     let userInfo = reactive<IUserInfo>({...initUserInfo})
