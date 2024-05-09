@@ -26,7 +26,7 @@
           <el-icon><ChatRound /></el-icon>
           <div class="info-text">
             <div class="text-scroll">
-              <span>告示信息滚动告示信息滚动告示信息滚动告示信息滚动告示信息滚动</span>
+              告示信息滚动告示信息滚动告示信息滚动告示信息滚动告示信息滚动信息滚动告示信息滚动告示信息滚动告示信息滚动结束🔚
             </div>
           </div>
         </div>
@@ -91,13 +91,16 @@
             <div class="title">操作</div>
           </div>
           <div class="table-main">
-            <div class="table-tr" v-for="item in tableData">
-              <div class="tr-cell">{{ item.theme }}</div>
+            <div class="table-tr" v-for="(item, index) in tableData">
+              <div class="tr-cell">{{ item.title }}</div>
               <div class="tr-cell">{{ item.name }}</div>
               <div class="tr-cell">{{ item.time }}</div>
-              <div class="tr-cell">{{ item.status }}</div>
-              <div class="tr-cell">{{ item.persons }}</div>
-              <div class="tr-cell" :style="{ 'color': (item.operate === '修改' ? '#3268DC' : '') }">{{ item.operate }}</div>
+              <div class="tr-cell">{{ statusName(item.status) }}</div>
+              <div class="tr-cell">{{ item.meetingNumber }}</div>
+              <div class="tr-cell" :style="{ 'color': (operate(item) === '修改' ? '#3268DC' : '') }"
+              @click="operate(item) === '修改' ? modifyMeeting(item) : delMeeting(index) ">
+                {{ operate(item) }}
+              </div>
             </div>
           </div>
         </div>
@@ -110,8 +113,11 @@ import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user'
 import { reactive, ref } from 'vue'
+import { getTodayMeetingRecordData } from '@/request/api/home'
+
 import Clock from '@/views/home/component/clock.vue'
 import GuageChart from '@/views/home/component/guageChart.vue'
+import { ElMessage, ElMessageBox } from 'element-plus';
 
 const userStore = useUserStore();
 const route = useRoute();
@@ -184,22 +190,114 @@ const selectTime = (item: any) => {
 /* 会议室预约情况 */
 const tableData = reactive([
   {
-    theme: '11',
-    name: '11',
+    title: '会议室主题内容信息展示',
+    name: '会议室主题内容信息展',
     time: '11',
-    status: '11',
-    persons: '11',
-    operate: '删除'
+    status: 0,
+    createdBy: '1',
+    meetingNumber: '11'
   },
   {
-    theme: '11',
+    title: '11',
     name: '11',
     time: '11',
-    status: '11',
-    persons: '11',
-    operate: '修改'
+    status: 1,
+    createdBy: '2',
+    meetingNumber: '11'
+  },
+  {
+    title: '112',
+    name: '11',
+    time: '11',
+    status: 2,
+    createdBy: '2',
+    meetingNumber: '11'
+  },
+  {
+    title: '113',
+    name: '11',
+    time: '11',
+    status: 2,
+    createdBy: '2',
+    meetingNumber: '11'
+  },
+  {
+    title: '114',
+    name: '11',
+    time: '11',
+    status: 2,
+    createdBy: '2',
+    meetingNumber: '11'
   }
 ]);
+// 监听会议室状态
+const statusName = computed(() => (status: any) => {
+  switch (status) {
+    case 0:
+      return '未开始';
+    case 1:
+      return '进行中';
+    case 2:
+      return '已结束';
+    default :
+      return '已预约';
+  }
+})
+const operate = computed(() => (item: any) => {
+  // 会议-未开始 且 登陆人员=创建者时(item.createdBy === userStore.userInfo.userId) 才可以修改
+  if (item.status === 0 && item.createdBy === '1') {
+    return '修改';
+  } else if (item.status === 1) {
+    return '';
+  } else {
+    return '删除';
+  }
+})
+// 点击修改会议
+const modifyMeeting = (item: any) => {
+  if (item.status === 0 && item.createdBy === '1') {
+    router.push('/meeting-appoint')
+  }
+}
+// 点击删除
+const delMeeting = (index: number) => {
+  ElMessageBox.confirm('是否确定删除会议？')
+  .then(() => {
+    tableData.splice(index, 1);
+    ElMessage.success('删除成功')
+  })
+  .catch(() => {
+    ElMessage.info('取消删除')
+  })
+}
+// onMounted(() => {
+//   getTodayMeetingRecord({ userId: userStore.userInfo.userId })
+// })
+// interface RecordType {
+//     "title": string,
+//     "name": string,
+//     "time": string,
+//     "status": number,
+//     "createdBy": string,
+//     "meetingNumber": string
+//   }
+// const getTodayMeetingRecord = (data: { userId: number | string }) => {
+//   let todayRecordList = []
+//   const tableData = reactive({})
+//   getTodayMeetingRecordData({ userId: userStore.userInfo.userId }).then(res => {
+//     todayRecordList = res.data;
+//     todayRecordList.forEach((item: { title: any; name: any; time: any; status: any; createdBy: any; meetingNumber: any; }) => {
+//       tableData.push({
+//         title: item.title,
+//         name: item.name,
+//         time: item.time,
+//         status: item.status,
+//         createdBy: item.createdBy,
+//         meetingNumber: item.meetingNumber
+//       })
+//     })
+//   })
+// }
 
 </script>
 
@@ -292,20 +390,19 @@ const tableData = reactive([
 
         .info-text {
           width: 94%;
-          // width: fit-content;
           overflow: hidden;
-          white-space: nowrap;
           @keyframes scrollX {
             0% {
-              transform: translateX(100%);
+              transform: translateX(47.55rem);
             }
             100% {
               transform: translateX(-100%);
             }
           }
           .text-scroll {
-            display: inline-block;
-            animation: scrollX 15s linear infinite;
+            width: max-content;
+            white-space: nowrap;
+            animation: scrollX 20s linear infinite;
           }
           // 鼠标 悬停时停止滚动
           :hover {
@@ -396,20 +493,20 @@ const tableData = reactive([
               overflow: hidden; // 滚动溢出隐藏
               @keyframes scrollY {
                 0% {
-                  transform: translateY(100%);
+                  transform: translateY(7.5rem);
                 }
                 100% {
                   transform: translateY(-100%);
                 }
               }
               .rule-scroll {
-                // height: 120px;
+                // height: fit-content;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 font-size: 0.7rem;
                 color: #676767;
-                animation: scrollY 15s linear infinite; // 滚动动画
+                animation: scrollY 20s linear infinite; // 滚动动画
                 .scroll-item {
                   width: 12.5rem;
                   height: 1.25rem;
@@ -535,7 +632,14 @@ const tableData = reactive([
             margin: 10px 0;
             padding: 11px 0;
             .tr-cell {
-              width: 180px;
+              width: 130px;
+              text-wrap: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              padding: 0 10px;
+              &:last-child {
+                cursor: pointer;
+              }
             }
           }
         }
