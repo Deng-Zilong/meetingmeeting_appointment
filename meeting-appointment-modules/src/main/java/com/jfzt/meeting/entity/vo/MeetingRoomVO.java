@@ -10,15 +10,9 @@ import lombok.Data;
 @Data
 public class MeetingRoomVO {
 
-    private Integer location;
+    private Long meetingRoomId;
 
     private String roomName;
-
-    private Integer status;
-
-    private Integer capacity;
-
-    private String createdBy;
 
 
 }

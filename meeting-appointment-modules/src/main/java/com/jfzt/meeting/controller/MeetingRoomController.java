@@ -1,6 +1,7 @@
 package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.entity.dto.TimePeriodDTO;
 import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomVO;
 import com.jfzt.meeting.entity.vo.TimePeriodStatusVO;
@@ -34,7 +35,7 @@ public class MeetingRoomController {
      * @return {@code Result<List<TimePeriodStatusVO>>}
      */
     @GetMapping("/index/isBusyByIdAndDate")
-    public Result<List<TimePeriodStatusVO>> isBusyByLocationAndDate (@RequestParam Long id, @RequestParam LocalDate date) {
+    public Result<List<TimePeriodStatusVO>> isBusyByIdAndDate (@RequestParam Long id, @RequestParam LocalDate date) {
         return meetingRoomService.isBusyByIdAndDate(id, date);
     }
 
@@ -60,6 +61,17 @@ public class MeetingRoomController {
         return Result.success(meetingRoomStatusVOList);
     }
 
+    /**
+     * 根据时间段查询可用会议室
+     *
+     * @param timePeriodDTO 时间段
+     * @return {@code Result<List<MeetingRoomVO>>}
+     */
+    @PostMapping("/createMeeting/availableMeetingRooms")
+    public Result<List<MeetingRoomVO>> getAvailableMeetingRooms (@RequestBody TimePeriodDTO timePeriodDTO) {
+        return meetingRoomService.getAvailableMeetingRooms(timePeriodDTO.getStartTime(), timePeriodDTO.getEndTime());
+    }
+
     @PostMapping("/addMeetingRoom")
     public Result<String> addMeetingRoom (@RequestBody @Valid MeetingRoomVO meetingRoomVO) {
         return meetingRoomService.addMeetingRoom(meetingRoomVO);
@@ -68,12 +80,11 @@ public class MeetingRoomController {
 
     @DeleteMapping("/deleteMeetingRoom")
     public Result<String> deleteMeetingRoom (@RequestBody @Valid MeetingRoomVO meetingRoomVO) {
-
-        Boolean result = meetingRoomService.deleteMeetingRoom(meetingRoomVO);
-        if (result) {
-            return Result.success("添加成功");
+        if (meetingRoomService.deleteMeetingRoom(meetingRoomVO)) {
+            return Result.success("删除成功");
         }
-        return Result.fail("添加失败!");
+        return Result.fail("删除失败");
+
     }
 
 }

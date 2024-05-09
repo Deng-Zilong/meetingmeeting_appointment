@@ -8,6 +8,7 @@ import com.jfzt.meeting.entity.vo.MeetingRoomVO;
 import com.jfzt.meeting.entity.vo.TimePeriodStatusVO;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -48,4 +49,13 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      * @return {@code Result<List<TimePeriodStatusVO>>}
      */
     Result<List<TimePeriodStatusVO>> isBusyByIdAndDate (Long id, LocalDate date);
+
+    /**
+     * 根据时间段获取可用的会议室
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return {@code Result<List<MeetingRoomVO>>}
+     */
+    Result<List<MeetingRoomVO>> getAvailableMeetingRooms (LocalDateTime startTime, LocalDateTime endTime);
 }

@@ -23,12 +23,13 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.MEETING_RECORD_STATUS_NOT_START;
-import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.MEETING_RECORD_STATUS_PROCESSING;
+import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
 import static com.jfzt.meeting.constant.TimePeriodStatusConstant.*;
 
 /**
@@ -44,7 +45,6 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     @Autowired
     private MeetingRecordService meetingRecordService;
 
-
     @Autowired
     private SysUserService userService;
 
@@ -58,24 +58,16 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      */
     @Override
     public Result<String> addMeetingRoom (MeetingRoomVO meetingRoomVO) {
-        List<MeetingRoom> list = this.list(new LambdaQueryWrapper<MeetingRoom>().eq(MeetingRoom::getLocation, meetingRoomVO.getLocation()));
-        if (!list.isEmpty()) {
-            //location重复，添加失败
-            log.error("{}:location重复，添加失败", meetingRoomVO);
-            return Result.fail("location重复，添加失败");
-        }
-        MeetingRoom room = new MeetingRoom();
-        room.setCapacity(meetingRoomVO.getCapacity());
-        room.setRoomName(meetingRoomVO.getRoomName());
-        room.setLocation(meetingRoomVO.getLocation());
-        room.setCreatedBy(meetingRoomVO.getCreatedBy());
-        boolean saved = this.save(room);
-        if (saved) {
-            return Result.success("添加成功");
-        } else {
-            return Result.fail("添加失败");
+        return null;
+    }
 
-        }
+    /**
+     * @param meetingRoomVO 会议室对象
+     * @return {@code Boolean}
+     */
+    @Override
+    public Boolean deleteMeetingRoom (MeetingRoomVO meetingRoomVO) {
+        return null;
     }
 
 
@@ -147,11 +139,6 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             }
             return meetingRoomStatusVO;
         }).collect(Collectors.toList());
-    }
-
-    @Override
-    public Boolean deleteMeetingRoom (MeetingRoomVO meetingRoomVO) {
-        return null;
     }
 
     /**
@@ -263,6 +250,50 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             endTime = endTime.plusMinutes(30);
         }
         return Result.success(timePeriodStatusVOList);
+    }
+
+    /**
+     * 根据时间段获取可用的会议室
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return {@code Result<List<MeetingRoomVO>>}
+     */
+    @Override
+    public Result<List<MeetingRoomVO>> getAvailableMeetingRooms (LocalDateTime startTime, LocalDateTime endTime) {
+
+
+        //根据时间段把占用的会议查出来
+        LambdaQueryWrapper<MeetingRecord> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.notIn(MeetingRecord::getStatus, MEETING_RECORD_STATUS_CANCEL);
+        //开始时间或结束时间在时间段内 或 开始时间与结束时间之间包含时间段
+        queryWrapper.and(recordQueryWrapper -> recordQueryWrapper.between(MeetingRecord::getStartTime, startTime, endTime)
+                .or().between(MeetingRecord::getEndTime, startTime, endTime)
+                .or().lt(MeetingRecord::getStartTime, startTime).gt(MeetingRecord::getEndTime, endTime));
+        List<MeetingRecord> meetingRecords = meetingRecordService.list(queryWrapper);
+        List<MeetingRoom> meetingRooms = this.list(new LambdaQueryWrapper<MeetingRoom>()
+                .notIn(MeetingRoom::getStatus, 0));
+        Iterator<MeetingRoom> iterator = meetingRooms.iterator();
+        while (iterator.hasNext()) {
+            MeetingRoom meetingRoom = iterator.next();
+            for (MeetingRecord meetingRecord : meetingRecords) {
+                if (meetingRoom.getId().equals(meetingRecord.getMeetingRoomId())) {
+                    //删除被占用的会议室
+                    iterator.remove();
+                    break;
+                }
+            }
+        }
+        List<MeetingRoomVO> meetingRoomVOList = new ArrayList<>();
+        for (MeetingRoom meetingRoom : meetingRooms) {
+            MeetingRoomVO meetingRoomVO = new MeetingRoomVO();
+            meetingRoomVO.setMeetingRoomId(meetingRoom.getId());
+            meetingRoomVO.setRoomName(meetingRoom.getRoomName());
+            meetingRoomVOList.add(meetingRoomVO);
+        }
+
+        return Result.success(meetingRoomVOList);
+
     }
 
 }
