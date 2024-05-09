@@ -2,14 +2,18 @@ package com.jfzt.meeting.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.SysDepartment;
 import com.jfzt.meeting.entity.SysDepartmentUser;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.mapper.SysDepartmentMapper;
 import com.jfzt.meeting.mapper.SysDepartmentUserMapper;
 import com.jfzt.meeting.mapper.SysUserMapper;
+import com.jfzt.meeting.service.SysDepartmentService;
 import com.jfzt.meeting.service.SysDepartmentUserService;
+import com.jfzt.meeting.service.SysUserService;
 import com.jfzt.meeting.utils.HttpClientUtil;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.cp.api.impl.WxCpDepartmentServiceImpl;
@@ -18,12 +22,12 @@ import me.chanjar.weixin.cp.api.impl.WxCpUserServiceImpl;
 import me.chanjar.weixin.cp.bean.WxCpDepart;
 import me.chanjar.weixin.cp.bean.WxCpUser;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 
@@ -49,6 +53,13 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     private WxCpServiceImpl wxCpService;
     @Autowired
     private SysUserMapper sysUserMapper;
+    @Resource
+    private SysDepartmentUserService sysDepartmentUserService;
+    @Resource
+    private SysDepartmentService sysDepartmentService;
+    @Resource
+    private SysUserService sysUserService;
+
 
 
     @Override
@@ -119,6 +130,64 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
             }
         }
 
+    }
+
+
+
+    /**
+     * @Description 获取部门成员树
+     * @Param []
+     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.SysDepartment>>
+     * @exception
+     */
+    @Override
+    public Result<List<SysDepartment>> gainUsers(String id) {
+        // 获取所有部门列表
+        List<SysDepartment> departmentList = sysDepartmentService.list();
+        // 获取成员树
+        List<SysDepartment> departments = departmentList.stream()
+                // 过滤顶级部门
+                .filter(sysDepartment -> sysDepartment.getParentId() == 0)
+                // 排序
+                .sorted((node1, node2) -> Math.toIntExact(node1.getDepartmentId() - node2.getDepartmentId()))
+                // 递归设置子部门
+                .peek(topNode -> topNode.setChildrenPart(getChildren(topNode, departmentList,id)))
+                .collect(Collectors.toList());
+        return Result.success(departments);
+    }
+
+    /**
+     * @Description 递归获取子部门
+     * @Param SysDepartment root, List<SysDepartment> all,String userName
+     * @return List<SysDepartment>
+     */
+    private List<SysDepartment> getChildren(SysDepartment root, List<SysDepartment> all,String id) {
+        return all.stream()
+                // 过滤出父部门ID等于根部门ID的部门
+                .filter(sysDepartment -> Objects.equals(sysDepartment.getParentId(), root.getDepartmentId()))
+                // 对每个子部门进行操作
+                .peek(childrenNode -> {
+                    // 创建一个用户列表
+                    ArrayList<SysUser> sysUsers = new ArrayList<>();
+                    // 获取子部门的用户
+                    childrenNode.setChildrenPart(getChildren(childrenNode, all,id));
+                    // 获取部门用户
+                    List<SysDepartmentUser> departmentUsers = sysDepartmentUserService.lambdaQuery()
+                            .eq(SysDepartmentUser::getDepartmentId , childrenNode.getDepartmentId())
+                            .list();
+                    // 对每个部门用户进行操作
+                    List<SysDepartmentUser> endList = departmentUsers.stream().peek(sysDepartmentUser -> {
+                        // 根据用户ID获取用户
+                        List<SysUser> userList = sysUserService.lambdaQuery()
+                                .eq(StringUtils.isNotBlank(sysDepartmentUser.getUserId()), SysUser::getUserId, sysDepartmentUser.getUserId())
+                                .eq(StringUtils.isNotBlank(id), SysUser::getUserName, id)
+                                .list();
+                        // 将用户添加到用户列表中
+                        sysUsers.addAll(userList);
+                    }).toList();
+                    // 设置部门用户的树状结构
+                    childrenNode.setTreeUsers(sysUsers);
+                }).collect(Collectors.toList());
     }
 
 

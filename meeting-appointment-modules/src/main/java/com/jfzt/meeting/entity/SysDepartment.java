@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author zilong.deng
@@ -45,9 +46,13 @@ public class SysDepartment implements Serializable {
     private Long parentId;
 
     /**
-     *
+     *子部门
      */
-    private Integer isDeleted;
+    @TableField(exist = false)
+    private List<SysDepartment> childrenPart;
+
+    @TableField(exist = false)
+    private List<SysUser> treeUsers;
 
     @Serial
     @TableField(exist = false)
@@ -68,8 +73,7 @@ public class SysDepartment implements Serializable {
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
                 && (this.getDepartmentId() == null ? other.getDepartmentId() == null : this.getDepartmentId().equals(other.getDepartmentId()))
                 && (this.getDepartmentName() == null ? other.getDepartmentName() == null : this.getDepartmentName().equals(other.getDepartmentName()))
-                && (this.getParentId() == null ? other.getParentId() == null : this.getParentId().equals(other.getParentId()))
-                && (this.getIsDeleted() == null ? other.getIsDeleted() == null : this.getIsDeleted().equals(other.getIsDeleted()));
+                && (this.getParentId() == null ? other.getParentId() == null : this.getParentId().equals(other.getParentId()));
     }
 
     @Override
@@ -80,7 +84,6 @@ public class SysDepartment implements Serializable {
         result = prime * result + ((getDepartmentId() == null) ? 0 : getDepartmentId().hashCode());
         result = prime * result + ((getDepartmentName() == null) ? 0 : getDepartmentName().hashCode());
         result = prime * result + ((getParentId() == null) ? 0 : getParentId().hashCode());
-        result = prime * result + ((getIsDeleted() == null) ? 0 : getIsDeleted().hashCode());
         return result;
     }
 
@@ -93,7 +96,6 @@ public class SysDepartment implements Serializable {
                 ", departmentId=" + departmentId +
                 ", departmentName=" + departmentName +
                 ", parentId=" + parentId +
-                ", isDeleted=" + isDeleted +
                 ", serialVersionUID=" + serialVersionUID +
                 "]";
     }

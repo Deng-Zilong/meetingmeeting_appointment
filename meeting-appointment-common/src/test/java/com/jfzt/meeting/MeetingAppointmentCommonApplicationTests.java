@@ -1,13 +1,12 @@
-//package com.jfzt.meeting;
-//
-//import org.junit.jupiter.api.Test;
-//import org.springframework.boot.test.context.SpringBootTest;
-//
-//@SpringBootTest
-//class MeetingAppointmentCommonApplicationTests {
-//
-//    @Test
-//    void contextLoads () {
-//    }
-//
-//}
+package com.jfzt.meeting;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
+
+@SpringBootTest
+class MeetingAppointmentCommonApplicationTests {
+
+
+}
