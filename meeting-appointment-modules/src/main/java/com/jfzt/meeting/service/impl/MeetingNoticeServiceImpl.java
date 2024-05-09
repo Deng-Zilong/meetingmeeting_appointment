@@ -2,6 +2,7 @@ package com.jfzt.meeting.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.MeetingNotice;
 import com.jfzt.meeting.mapper.MeetingNoticeMapper;
 import com.jfzt.meeting.service.MeetingNoticeService;
@@ -31,7 +32,9 @@ public class MeetingNoticeServiceImpl extends ServiceImpl<MeetingNoticeMapper, M
      */
     @Override
     public int addNotice(MeetingNotice meetingNotice) {
-        // meetingNotice.setUserId();
+        //String currentId = BaseContext.getCurrentId();
+        String currentId = "yxc11";
+        meetingNotice.setUserId(currentId);
         return meetingNoticeMapper.insert(meetingNotice);
     }
 

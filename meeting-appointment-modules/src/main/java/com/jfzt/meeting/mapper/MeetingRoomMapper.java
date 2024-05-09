@@ -3,6 +3,7 @@ package com.jfzt.meeting.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.jfzt.meeting.entity.MeetingRoom;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * @author zilong.deng
@@ -12,6 +13,8 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface MeetingRoomMapper extends BaseMapper<MeetingRoom> {
+
+    boolean updateStatus(@Param("id") Long id, @Param("status") Integer status);
 
 }
 

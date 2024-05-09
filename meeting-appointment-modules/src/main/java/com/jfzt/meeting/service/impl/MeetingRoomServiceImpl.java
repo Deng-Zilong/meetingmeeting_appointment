@@ -43,12 +43,13 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         implements MeetingRoomService {
 
     @Autowired
+    private MeetingRoomMapper meetingRoomMapper;
+
     private MeetingRecordService meetingRecordService;
 
     @Autowired
     private SysUserService userService;
 
-    @Autowired
     private MeetingAttendeesMapper attendeesMapper;
 
 
@@ -68,6 +69,17 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     @Override
     public Boolean deleteMeetingRoom (MeetingRoomVO meetingRoomVO) {
         return null;
+    }
+
+    /**
+     * 修改会议室状态
+     * @param id 会议室id
+     * @param status 会议室状态
+     * @return
+     */
+    @Override
+    public boolean updateStatus(Long id, Integer status) {
+        return meetingRoomMapper.updateStatus(id, status);
     }
 
 

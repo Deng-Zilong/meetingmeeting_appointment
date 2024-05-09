@@ -12,10 +12,25 @@ import java.util.List;
  */
 public interface MeetingNoticeService extends IService<MeetingNotice> {
 
+    /**
+     * 新增公告
+     * @param meetingNotice
+     * @return
+     */
     int addNotice(MeetingNotice meetingNotice);
 
+    /**
+     * 删除公告
+     * @param id
+     * @return
+     */
     int deleteNotice(Long id);
 
+    /**
+     * 查询所有公告
+     * @param meetingNotice
+     * @return
+     */
     List<String> selectAll(MeetingNotice meetingNotice);
 
 }

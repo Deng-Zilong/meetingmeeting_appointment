@@ -7,14 +7,14 @@
     <resultMap id="BaseResultMap" type="com.jfzt.meeting.entity.MeetingNotice">
         <id property="id" column="id" jdbcType="BIGINT"/>
         <result property="substance" column="substance" jdbcType="VARCHAR"/>
-        <result property="createdBy" column="created_by" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="BIGINT"/>
         <result property="gmtCreate" column="gmt_create" jdbcType="TIMESTAMP"/>
         <result property="gmtModified" column="gmt_modified" jdbcType="TIMESTAMP"/>
         <result property="isDeleted" column="is_deleted" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,substance,created_by,
+        id,substance,user_id,
         gmt_create,gmt_modified,is_deleted
     </sql>
 </mapper>

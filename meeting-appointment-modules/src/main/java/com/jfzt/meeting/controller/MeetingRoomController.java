@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.jfzt.meeting.service.impl.SysUserServiceImpl.ADMIN_LEVEL;
+import static com.jfzt.meeting.service.impl.SysUserServiceImpl.SUPER_ADMIN_LEVEL;
+
 /**
  * @author zilong.deng
  * @date 2024/04/28
@@ -87,4 +90,25 @@ public class MeetingRoomController {
 
     }
 
+    /**
+     * 修改会议室状态
+     * @param id 会议室id
+     * @param status 会议室状态（0暂停使用,1可使用/空闲 2为使用中不保存至数据库，实时获取）
+     * @return
+     */
+    @PutMapping("/updateStatus")
+    public Result<Integer> updateStatus (@RequestParam("id") Long id, @RequestParam("status") Integer status) {
+        // 获取当前登录用户的权限等级
+        //Integer level = BaseContext.getCurrentLevel();
+        Integer level = 1;
+        if (SUPER_ADMIN_LEVEL.equals(level) || ADMIN_LEVEL.equals(level)){
+            boolean result = meetingRoomService.updateStatus(id, status);
+            if (result) {
+                return Result.success("会议室状态修改成功!");
+            }
+            return Result.fail("会议室状态修改失败!");
+        }
+        return Result.fail("修改失败，请联系管理员获取权限！");
+
+    }
 }

@@ -58,4 +58,12 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      * @return {@code Result<List<MeetingRoomVO>>}
      */
     Result<List<MeetingRoomVO>> getAvailableMeetingRooms (LocalDateTime startTime, LocalDateTime endTime);
+
+    /**
+     * 更新会议室状态
+     * @param id 会议室ID
+     * @param status 会议室状态
+     * @return
+     */
+    boolean updateStatus(Long id, Integer status);
 }
