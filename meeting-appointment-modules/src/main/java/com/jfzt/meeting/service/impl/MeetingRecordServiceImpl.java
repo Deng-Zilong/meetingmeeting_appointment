@@ -24,17 +24,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.jfzt.meeting.constant.IsDeletedConstant.IS_DELETED;
+import static com.jfzt.meeting.constant.IsDeletedConstant.NOT_DELETED;
+import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
 import static com.jfzt.meeting.constant.MessageConstant.START_TIME_GT_END_TiME;
 import static com.jfzt.meeting.constant.MessageConstant.START_TIME_LT_NOW;
-import java.util.*;
-
-import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
 
 /**
  * @author zilong.deng
@@ -55,12 +52,10 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     private MeetingAttendeesMapper attendeesMapper;
 
 
-
     @Autowired
     public void setMeetingRoomService (MeetingRoomService meetingRoomService) {
         this.meetingRoomService = meetingRoomService;
     }
-
 
 
     /**
@@ -84,7 +79,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         recordQueryWrapper
                 .and(wq -> wq
                         //删除的不展示
-                        .eq(MeetingRecord::getIsDeleted, 0));
+                        .eq(MeetingRecord::getIsDeleted, NOT_DELETED));
         //展示未取消的会议
         recordQueryWrapper
                 .and(wq -> wq
@@ -221,7 +216,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
         recordQueryWrapper.between(MeetingRecord::getStartTime, startOfDay, endOfDay)
                 .or().between(MeetingRecord::getEndTime, startOfDay, endOfDay);
-        recordQueryWrapper.and(queryWrapper -> queryWrapper.eq(MeetingRecord::getIsDeleted, 0));
+        recordQueryWrapper.and(queryWrapper -> queryWrapper.eq(MeetingRecord::getIsDeleted, NOT_DELETED));
         //展示未取消的会议
         recordQueryWrapper.and(queryWrapper -> queryWrapper.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START).or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING).or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_END));
         recordQueryWrapper.orderByDesc(MeetingRecord::getStartTime);
@@ -304,7 +299,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         List<String> userIds = attendeesMapper.selectUserIdsByRecordId(meetingId);
         if (userIds.contains(userId)) {
             //删除
-            meetingRecord.setIsDeleted(1);
+            meetingRecord.setIsDeleted(IS_DELETED);
             this.baseMapper.updateById(meetingRecord);
             return true;
         }
@@ -326,7 +321,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         MeetingRecord meetingRecord = this.baseMapper.selectById(meetingId);
 
         //会议不是未开始状态或者会议创建人不是当前用户无法取消
-        if (meetingRecord.getStatus() == 0 && meetingRecord.getCreatedBy().equals(userId)) {
+        if (Objects.equals(meetingRecord.getStatus(), MEETING_RECORD_STATUS_NOT_START) && meetingRecord.getCreatedBy().equals(userId)) {
             //更新会议状态
             meetingRecord.setStatus(MEETING_RECORD_STATUS_CANCEL);
             this.baseMapper.updateById(meetingRecord);
@@ -336,13 +331,13 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
+     * @return com.jfzt.meeting.common.Result<java.util.Objects>
      * @Description 新增会议
      * @Param [meetingRecordDTO]
-     * @return com.jfzt.meeting.common.Result<java.util.Objects>
      */
     @Override
     @Transactional
-    public Result<Objects> addMeeting(MeetingRecordDTO meetingRecordDTO) {
+    public Result<Objects> addMeeting (MeetingRecordDTO meetingRecordDTO) {
         // 创建一个新的MeetingRecord对象
         MeetingRecord meetingRecord = new MeetingRecord();
         // 将meetingRecordDTO中的属性复制到meetingRecord中
@@ -350,7 +345,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         // 判断meetingRecord的结束时间是否早于开始时间，如果是，则返回错误信息
         if (meetingRecord.getEndTime().isBefore(meetingRecord.getStartTime())) {
             return Result.fail(START_TIME_GT_END_TiME);
-        }else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())){
+        } else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())) {
             // 判断meetingRecord的开始时间是否早于当前时间，如果是，则返回错误信息
             return Result.fail(START_TIME_LT_NOW);
         }
@@ -370,14 +365,13 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
+     * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingRecordVO>>
      * @Description 更新会议
      * @Param [meetingRecordDTO]
-     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.MeetingRecordVO>>
-     * @exception
      */
     @Override
     @Transactional
-    public Result<List<MeetingRecordVO>> updateMeeting(MeetingRecordDTO meetingRecordDTO) {
+    public Result<List<MeetingRecordVO>> updateMeeting (MeetingRecordDTO meetingRecordDTO) {
         // 创建一个新的MeetingRecord对象
         MeetingRecord meetingRecord = new MeetingRecord();
         // 将meetingRecordDTO中的属性复制到meetingRecord中
@@ -385,7 +379,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         // 判断meetingRecord的结束时间是否早于开始时间，如果是，则返回错误信息
         if (meetingRecord.getEndTime().isBefore(meetingRecord.getStartTime())) {
             return Result.fail(START_TIME_GT_END_TiME);
-        }else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())){
+        } else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())) {
             // 判断meetingRecord的开始时间是否早于当前时间，如果是，则返回错误信息
             return Result.fail(START_TIME_LT_NOW);
         }

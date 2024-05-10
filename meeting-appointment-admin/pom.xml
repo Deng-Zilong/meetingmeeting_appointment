@@ -27,6 +27,12 @@
             <groupId>com.jfzt</groupId>
             <artifactId>meeting-appointment-quartz</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.jfzt</groupId>
+                    <artifactId>meeting-appointment-common</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -52,8 +58,6 @@
             <artifactId>druid-spring-boot-starter</artifactId>
             <version>1.2.22</version>
         </dependency>
-
-
     </dependencies>
 
     <packaging>jar</packaging>

@@ -11,6 +11,7 @@ spring:
       port: 6379
       password: meetingredis
       database: 0
+
 mybatis-plus:
   configuration:
     cache-enabled: true
@@ -20,11 +21,9 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
-      #      logic-delete-field: is_deleted
+      #     logic-delete-field: is_deleted 逻辑删除，需要的在实体类具体字段加@TableLogic
       logic-delete-value: 1
       logic-not-delete-value: 0
-
-
 
 
 

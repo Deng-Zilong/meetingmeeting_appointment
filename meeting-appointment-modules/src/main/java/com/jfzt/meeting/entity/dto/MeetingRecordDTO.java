@@ -18,7 +18,7 @@ public class MeetingRecordDTO {
     /**
      * 会议id
      */
-    private Long Id;
+    private Long id;
     /**
      * 会议主题
      */

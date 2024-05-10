@@ -16,19 +16,12 @@
         <java.version>21</java.version>
     </properties>
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-            <version>3.2.5</version>
-        </dependency>
         <!--        通用模块-->
         <dependency>
             <groupId>com.jfzt</groupId>
             <artifactId>meeting-appointment-common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
-
     </dependencies>
 
     <build>

@@ -8,7 +8,7 @@ spring:
 
   profiles:
     active: dev
-    include: db,log
+    include: db,log,common,modules,quartz
   # application.yml
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
@@ -21,13 +21,3 @@ spring:
     allow-circular-references: true
 
 
-
-
-
-
-
-# application.yml
-#
-#swagger:
-#  base-path: classpath:/swagger/
-#  resource-path: swagger-ui.html
