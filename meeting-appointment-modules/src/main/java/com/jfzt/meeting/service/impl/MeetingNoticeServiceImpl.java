@@ -44,9 +44,12 @@ public class MeetingNoticeServiceImpl extends ServiceImpl<MeetingNoticeMapper, M
             String currentId = "QianRuoXiaMo";
             meetingNotice.setUserId(currentId);
             int insert = meetingNoticeMapper.insert(meetingNotice);
-            return Result.success(insert);
+            if (insert > 0){
+                return Result.success(MessageConstant.SUCCESS);
+            }
+            return Result.fail(MessageConstant.FAIL);
         }
-        return Result.fail(MessageConstant.FAIL);
+        return Result.success(MessageConstant.HAVE_NO_AUTHORITY);
 
 
     }
