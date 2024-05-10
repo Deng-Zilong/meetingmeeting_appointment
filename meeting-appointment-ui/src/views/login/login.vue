@@ -51,47 +51,11 @@ import type { FormInstance, FormRules } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { h } from 'vue'
 import { ElMessage } from 'element-plus'
-import * as ww from '@wecom/jssdk'
-import Cookies from "js-cookie"
+import errorImg from '@/assets/img/error.png'
+import { useUserStore } from '@/stores/user'
 
-
-// const checkAge = (rule: any, value: any, callback: any) => {
-//   if (!value) {
-//     return callback(new Error('Please input the age'))
-//   }
-//   setTimeout(() => {
-//     if (!Number.isInteger(value)) {
-//       callback(new Error('Please input digits'))
-//     } else {
-//       if (value < 18) {
-//         callback(new Error('Age must be greater than 18'))
-//       } else {
-//         callback()
-//       }
-//     }
-//   }, 1000)
-// }
-
-// const validatePass = (rule: any, value: any, callback: any) => {
-//   if (value === '') {
-//     callback(new Error('Please input the password'))
-//   } else {
-//     if (ruleForm.checkPass !== '') {
-//       if (!ruleFormRef.value) return
-//       ruleFormRef.value.validateField('checkPass', () => null)
-//     }
-//     callback()
-//   }
-// }
-// const validatePass2 = (rule: any, value: any, callback: any) => {
-//   if (value === '') {
-//     callback(new Error('Please input the password again'))
-//   } else if (value !== ruleForm.pass) {
-//     callback(new Error("Two inputs don't match!"))
-//   } else {
-//     callback()
-//   }
-// }
+// 用户信息
+const userStore = useUserStore();
 const ruleFormRef = ref<FormInstance>()
 // 登录验证
 const ruleForm = reactive({
@@ -101,9 +65,6 @@ const ruleForm = reactive({
 })
 
 const rules = reactive<FormRules<typeof ruleForm>>({
-  // username: [{ validator: validatePass2, trigger: 'blur' }],
-  // password: [{ validator: validatePass, trigger: 'blur' }],
-  // captcha: [{ validator: checkAge, trigger: 'blur' }],
   username: [
     { required: true, message: "请输入域名", trigger: "blur" },
     { min: 5, max: 18, message: "域名必须是5-18位字符", trigger: "blur" }
@@ -131,7 +92,7 @@ const openVn = () => {
     message: h('div',
       { style: 'display: flex; align-items: center; justify-content: center; width: 26rem; height: 4.25rem; font-size: 1.375rem' }, [
       h('img', {
-        src: '../src/assets/img/error.png',
+        src: errorImg,
         style: 'width: 4.375rem; height: 4.375rem;'
       }),
       h('span', null, '域账号输入错误！')
@@ -151,47 +112,18 @@ const changeLogin = () => {
   }
 }
 // 账号登录 
-const router = useRouter()
-const submitForm = (formEl: FormInstance | undefined) => {
-    // 暂时
-    Cookies.set('token', '1');
-    router.push('/')
-
+const submitForm = async(formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.validate((valid) => {
     if (valid) {
-      router.push('/')
-      ElMessage.success('登陆成功')
+        const {username, password} = ruleForm;
+        userStore.getUserInfo(username, password);  
     } else {
       openVn()
       return false
     }
   })
 }
-
-// // 扫码登录
-// onMounted(() => {
-//   const wwLogin = ww.createWWLoginPanel({
-//     el: '#qr_login',
-//     params: {
-//       appid: 'ww942086e6c44abc4b',
-//     agentid: '1000002',
-//      redirect_uri: 'ggssyy.cn/login/logininfo',
-//       state: 'WWLogin',
-//       // redirect_type: 'callback'
-//     },
-//     onCheckWeComLogin({ isWeComLogin }) {
-//       console.log(isWeComLogin)
-//     },
-//     onLoginSuccess({ code }) {
-//       console.log({ code })
-//     },
-//     onLoginFail(err) {
-//       console.log(err)
-//     }
-//   })
-// })
-
 
 onMounted(() => {
   // changeCaptcha();
@@ -203,8 +135,9 @@ const code = () => {
     "id": "login-scan",
     appid: 'ww942086e6c44abc4b',
     agentid: '1000002',
-    redirect_uri: 'http%3A%2F%2Fggssyy.cn%2Flogin%2Fuser',
-    "state": Math.ceil(Math.random() * 1000),
+    login_type: 'CorpApp',
+    redirect_uri: 'http%3A%2F%2Fggssyy.cn%2F%23%2Fhome',
+    state: 'WWLogin',
     "lang": "zh",
   });
 }

@@ -17,6 +17,12 @@
 
     <dependencies>
         <!--        启动类所在模块，引入其他模块-->
+
+        <dependency>
+            <groupId>com.jfzt</groupId>
+            <artifactId>meeting-appointment-common</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>com.jfzt</groupId>
             <artifactId>meeting-appointment-quartz</artifactId>

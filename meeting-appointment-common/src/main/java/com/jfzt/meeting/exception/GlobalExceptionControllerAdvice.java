@@ -1,32 +1,41 @@
 package com.jfzt.meeting.exception;
 
+import com.jfzt.meeting.common.Result;
+import lombok.extern.slf4j.Slf4j;
+import me.chanjar.weixin.common.error.WxErrorException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+
 
 /**
- * 集中处理所有异常
+ * 全局异常处理
+ *
+ * @author zilong.deng
+ * @since 2024-04-30 10.13:51
  */
-@RestControllerAdvice(basePackages = "com.iam.roomappointment.controller")
-public class GlobalExceptionControllerAdvice {
+@Slf4j
+@RestControllerAdvice(basePackages = "com.jfzt.meeting.controller")
+public class GlobalExceptionControllerAdvice extends ResponseEntityExceptionHandler {
 
 
-    //    @ExceptionHandler(value= MethodArgumentNotValidException.class)
-    //    public R handleVaildException(MethodArgumentNotValidException e){
-    //        log.error("数据校验出现问题{}，异常类型：{}",e.getMessage(),e.getClass());
-    //        BindingResult bindingResult = e.getBindingResult();
-    //
-    //        Map<String,String> errorMap = new HashMap<>();
-    //        bindingResult.getFieldErrors().forEach((fieldError)->{
-    //            errorMap.put(fieldError.getField(),fieldError.getDefaultMessage());
-    //        });
-    //        return R.error(ErrorCodeEnum.VAILD_EXCEPTION.getCode(), ErrorCodeEnum.VAILD_EXCEPTION.getMsg()).put("data",errorMap);
-    //    }
-    //
-    //    @ExceptionHandler(value = Throwable.class)
-    //    public R handleException(Throwable throwable){
-    //
-    //        log.error("错误：",throwable);
-    //        return R.error(ErrorCodeEnume.UNKNOW_EXCEPTION.getCode(), ErrorCodeEnume.UNKNOW_EXCEPTION.getMsg());
-    //    }
 
+//    @ExceptionHandler(Exception.class)
+//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+//    public Result<String> handleAllExceptions(Exception e) {
+//
+//        // 记录日志，处理异常信息
+//        return Result.fail(e.getMessage());
+//    }
 
+    @ExceptionHandler(value = WxErrorException.class)
+    @ResponseBody
+    public Result<String> handleWxErrorException(WxErrorException e) {
+        // 根据 WxErrorException 中的错误码和错误信息进行处理，返回友好的错误信息
+        return Result.fail(String.valueOf(e.getError().getErrorCode()),e.getError().getErrorMsg());
+    }
 }

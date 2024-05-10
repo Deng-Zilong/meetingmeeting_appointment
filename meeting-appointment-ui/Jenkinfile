@@ -1,0 +1,149 @@
+def sendNotification(String message) {
+    sh """
+        curl -H "Content-Type: application/json; charset=utf-8" -X POST -d '${message}' '${webhookUrl}'
+    """
+}
+pipeline {
+    //指定任务在哪个集群节点上执行
+    agent {
+        kubernetes {
+            cloud "kubernetes"  //选择名字是kubernetes的cloud,这里不要修改
+            inheritFrom "jenkins-agent" //pod模板名称
+        }
+    }
+	//声明环境变量，方便后面使用
+	environment {
+		//【请修改】Git仓库
+	    APP_CODE = 'http://192.168.212.39:53380/softwarepublic/meeting_appointment.git'
+
+		//【请修改】构建分支
+	    CODE_BRANCH = 'feature'
+
+		//【请修改】1 项目名称 不能使用_用-代替,2【前端】项目用web或app结尾，前、后端 "PROJECT_NAME" 不一样；
+		// 正例：前端jf-training-web 后端jf-training
+		// 反例：前端jf___training-web 后端jf___training
+		// 反例：前端jf-training 后端jf-training  前、后端不能一样
+		// 反例：前端JF-TRAINING 后端JF-TRAINING  不能使用大写
+	    PROJECT_NAME='不知道'
+
+		//【请修改】前端文件夹名称,文件夹名称请与gitlab仓库中的目录名称保持一致。
+	    FRONT_PATH= 'meeting_appointment'
+
+		//【请修改】打包方式环境  示例：npm run build:develop
+		ENVIRONMENT= 'develop'
+
+		//【请修改】请修改机器人webhook地址
+		webhookUrl = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=38436aff-e9b3-467e-b12b-9a1730c4d0b7'
+
+        REGISTRY = '172.17.34.143:30002'
+        DOCKERHUB_NAMESPACE = 'service_images'
+        NAMESPACE= 'all-service'
+        HARBOR_SECRET= 'harbor'
+	}
+
+    stages {
+		stage('拉取代码') {
+			steps {
+				echo "1.拉取代码"
+				git branch: "$CODE_BRANCH", credentialsId: 'ee160b28-28db-4d0d-9044-caada7ad090d', url: "$APP_CODE"
+			}
+		}
+		stage('通过nodejs打包前端项目') {
+			steps {
+				container('base-package-image') {
+					sh '''
+					    ls
+					    cd ./${FRONT_PATH}
+						npm install --no-frozen-lockfile --registry=https://registry.npmmirror.com/
+						npm run build:${ENVIRONMENT}
+					'''
+				}
+			}
+		}
+		stage('通过docker制作自定义镜像') {
+			steps {
+				container('base-package-image') {
+					sh '''
+						ls ./${FRONT_PATH}/
+
+						cd ./${FRONT_PATH}/
+
+						sed -i 's/<VSERSION>/'SNAPSHOT-${BUILD_NUMBER}'/' Dockerfile
+
+						docker build -t ${PROJECT_NAME}:SNAPSHOT-$BUILD_NUMBER .
+
+						rm -r dist
+					'''
+				}
+			}
+		}
+		stage('将自定义镜像推送到harbor仓库中') {
+			steps {
+				container('base-package-image') {
+					withCredentials([usernamePassword(credentialsId: '486a8bcb-9125-4a17-ab93-855ac4b4f184',usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+						sh '''
+							docker login -u ${USERNAME} -p ${PASSWORD} $REGISTRY
+							docker tag ${PROJECT_NAME}:SNAPSHOT-${BUILD_NUMBER} ${REGISTRY}/${DOCKERHUB_NAMESPACE}/${PROJECT_NAME}:SNAPSHOT-${BUILD_NUMBER}
+							docker rmi ${PROJECT_NAME}:SNAPSHOT-${BUILD_NUMBER}
+							docker push ${REGISTRY}/${DOCKERHUB_NAMESPACE}/${PROJECT_NAME}:SNAPSHOT-$BUILD_NUMBER
+							docker rmi ${REGISTRY}/${DOCKERHUB_NAMESPACE}/${PROJECT_NAME}:SNAPSHOT-$BUILD_NUMBER
+						'''
+					}
+
+				}
+			}
+		}
+		stage('K8S部署-开发环境') {
+            steps {
+                container('base-package-image') {
+                    sh '''
+                        ls
+                        sed -i 's/<PROJECT_NAME>/'${PROJECT_NAME}'/' deploy_front.yaml
+                        sed -i 's/<NAMESPACE>/'${NAMESPACE}'/' deploy_front.yaml
+                        sed -i 's/<REGISTRY>/'${REGISTRY}'/' deploy_front.yaml
+                        sed -i 's/<DOCKERHUB_NAMESPACE>/'${DOCKERHUB_NAMESPACE}'/' deploy_front.yaml
+                        sed -i 's/<BUILD_NUMBER>/'${BUILD_NUMBER}'/' deploy_front.yaml
+                        sed -i 's/<HARBOR_SECRET>/'${HARBOR_SECRET}'/' deploy_front.yaml
+                        kubectl apply -f deploy_front.yaml
+                    '''
+                }
+            }
+        }
+    }
+
+
+	post {
+        always {
+            script {
+                def stageStatus = []
+
+                if (currentBuild.currentResult == 'SUCCESS') {
+                        stageStatus.add("****<font color='info'>develop分支构建成功(o?ω`o)</font>****")
+                } else {
+                        stageStatus.add("****<font color='warning'>develop分支构建失败┭┮﹏┭┮</font>****")
+                }
+
+
+
+
+
+
+                def message_after = """
+                {
+                    "msgtype": "markdown",
+                    "markdown": {
+                        "content": "<font color=\\"info\\">【${env.JOB_NAME}】</font>构建完成\n
+                        >${stageStatus.join(' ? ')}
+                        >分支:${CODE_BRANCH}
+
+						>jenkins任务编号：${BUILD_DISPLAY_NAME}
+						>构建时间:<font color=\\"warning\\">${currentBuild.duration / 1000}</font>秒
+                        >任务执行人: ${env.gitlabUserName}。"
+                    }
+                }
+                """
+                sendNotification(message_after)
+            }
+        }
+    }
+}

@@ -2,7 +2,7 @@
   <!-- 会议室状态 -->
   <div class="container meeting-container">
     <header>
-      <el-divider direction="vertical" />会议室名称
+      <el-divider direction="vertical" />{{ title }}
     </header>
     <main>
       <div class="meeting-left">
@@ -54,11 +54,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
-import { useRouter } from 'vue-router';
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
-/* 会议日期选择 */
+// 导入图片地址
+import chamber from '@/assets/img/chamber.png'
+import address from '@/assets/img/address.png'
+import capacity from '@/assets/img/capacity.png'
+import device from '@/assets/img/device.png'
+
+// 用于传数据
+const routes = useRoute();
+
+// 用于选择时间段
+const router = useRouter()
+
+// 会议室名称
+const title = ref(routes.query.title || '暂无');
+
+// 会议日期选择
 const date = ref(new Date())
+
 // 禁止选择今日之前的日期
 const disabledDate = (date: any) => {
   return date.getTime() < Date.now() - 8.64e7
@@ -77,106 +93,21 @@ interface Time {
   state: Number
 }
 const timeArr = reactive<Time[]>([
-  {
-    time: '1714114711',
-    state: 4
-  }, {
-    time: '8:30',
-    state: 4
-  }, {
-    time: '9:00',
-    state: 4
-  }, {
-    time: '9:30',
-    state: 1
-  }, {
-    time: '8:00',
-    state: 1
-  },
-  {
-    time: '8:30',
-    state: 2
-  }, {
-    time: '8:00',
-    state: 3
-  },
-  {
-    time: '8:30',
-    state: 4
-  }, {
-    time: '8:00',
-    state: 4
-  },
-  {
-    time: '8:30',
-    state: 1
-  }, {
-    time: '8:00',
-    state: 4
-  }, {
-    time: '8:30',
-    state: 4
-  }, {
-    time: '9:00',
-    state: 4
-  }, {
-    time: '9:30',
-    state: 1
-  }, {
-    time: '8:00',
-    state: 1
-  },
-  {
-    time: '8:30',
-    state: 2
-  }, {
-    time: '8:00',
-    state: 3
-  },
-  {
-    time: '8:30',
-    state: 4
-  }, {
-    time: '8:00',
-    state: 4
-  },
-  {
-    time: '8:30',
-    state: 1
-  }, {
-    time: '8:00',
-    state: 0
-  }, {
-    time: '8:30',
-    state: 0
-  }, {
-    time: '9:00',
-    state: 0
-  }, {
-    time: '9:30',
-    state: 1
-  }, {
-    time: '8:00',
-    state: 1
-  },
-  {
-    time: '8:30',
-    state: 2
-  }, {
-    time: '8:00',
-    state: 3
-  },
-  {
-    time: '8:30',
-    state: 4
-  }, {
-    time: '8:00',
-    state: 0
-  },
-  {
-    time: '8:30',
-    state: 1
-  },
+  { time: '8:00', state: 4 }, { time: '8:30', state: 4 },
+  { time: '9:00', state: 4 }, { time: '9:30', state: 1 },
+  { time: '10:00', state: 1 }, { time: '10:30', state: 2 },
+  { time: '11:00', state: 3 }, { time: '11:30', state: 4 },
+  { time: '12:00', state: 4 }, { time: '12:30', state: 1 },
+  { time: '13:00', state: 4 }, { time: '13:30', state: 4 },
+  { time: '14:00', state: 4 }, { time: '14:30', state: 1 },
+  { time: '15:00', state: 1 }, { time: '15:30', state: 2 },
+  { time: '16:00', state: 3 }, { time: '16:30', state: 4 },
+  { time: '17:00', state: 4 }, { time: '17:30', state: 1 },
+  { time: '18:00', state: 0 }, { time: '18:30', state: 0 },
+  { time: '19:00', state: 0 }, { time: '19:30', state: 1 },
+  { time: '20:00', state: 1 }, { time: '20:30', state: 2 },
+  { time: '21:00', state: 3 }, { time: '21:30', state: 4 },
+  { time: '22:00', state: 0 }, { time: '22:30', state: 1 }
 ])
 const color = computed(() => (state: any) => {
   switch (state) {
@@ -188,34 +119,33 @@ const color = computed(() => (state: any) => {
 })
 
 // 选择时间段
-const routes = useRouter()
 const selectTime = (item: any) => {
   if ([1, 2].includes(item.state)) {
     return;
   } else {
-    routes.push('/meeting-appoint')
+    router.push('/meeting-appoint')
   }
 }
 
 // 会议室信息
 const infoArr = reactive([
   {
-    src: '../src/assets/img/chamber.png',
+    src: chamber,
     title: '会议室名称',
-    info: '至和通宝'
+    info: title
   },
   {
-    src: '../src/assets/img/address.png',
+    src: address,
     title: '第3层',
     info: '西北裙-3F-至和通宝'
   },
   {
-    src: '../src/assets/img/capacity.png',
+    src: capacity,
     title: '会议室容量',
     info: '8人'
   },
   {
-    src: '../src/assets/img/device.png',
+    src: device,
     title: '设备',
     info: '投屏TV'
   }
@@ -225,14 +155,6 @@ const infoArr = reactive([
 
 <style scoped lang="scss">
 .meeting-container {
-  // 公共样式 上传时删除
-  width: 101rem;
-  height: 45.9rem;
-  border-radius: 15px;
-  background-color: #ffffff;
-  box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.08);
-  // 公共样式结束
-
   padding: 2.5rem 3.5rem;
 
   // 预约时间模块颜色 && 状态样式颜色
@@ -268,6 +190,11 @@ const infoArr = reactive([
         display: flex;
         justify-content: flex-end;
         margin: .5rem 0;
+
+        ::v-deep(.left-date) {
+          height: 3rem !important;
+          font-size: 1.5rem !important;
+        }
       }
 
       .left-table {
@@ -275,7 +202,7 @@ const infoArr = reactive([
           display: flex;
           justify-content: center;
           align-items: center;
-          height: 4.2rem;
+          height: 4rem;
           background: #FFF;
           border-radius: 15px 15px 0px 0px;
           box-shadow: inset 0px 1px 8px 0px #DBE9F7;
@@ -284,23 +211,27 @@ const infoArr = reactive([
         }
 
         .table-main {
-          display: flex;
-          flex-wrap: wrap;
+          display: grid;
+          grid-template-columns: repeat(6, 1fr);
+          grid-template-rows: repeat(5, auto);
+          gap: 4px;
+          border-radius: 0 0 15px 15px;
+          box-shadow: inset 0px 1px 8px 0px #DBE9F7;
+          padding: 5px;
 
           .table-items {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 11rem;
-            height: 5rem;
-            margin: 0.125rem;
+            padding: 29px;
+            text-align: center;
             background: #FFF;
+            overflow: hidden;
             border-radius: 5px;
             box-shadow: inset 0px 1px 8px 0px #DBE9F7;
             cursor: pointer;
+            transition: transform 0.2s ease;
 
             &:hover {
               background-color: #1273DB;
+              transform: scale(1.06);
             }
           }
         }
@@ -335,7 +266,6 @@ const infoArr = reactive([
           }
         }
       }
-
     }
 
     .meeting-right {

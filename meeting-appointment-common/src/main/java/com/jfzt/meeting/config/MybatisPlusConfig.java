@@ -7,15 +7,18 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+
 /**
+ * mybatis-plus分页设置
+ *
  * @author zilong.deng
- * @date 2024/04/17
- * @description mybatis-plus配置
+ * @since 2024-04-30 10.13:51
  */
+
 @Configuration
 public class MybatisPlusConfig {
     @Bean
-    public MybatisPlusInterceptor mybatisPlusInterceptor () {
+    public MybatisPlusInterceptor mybatisPlusInterceptor() {
 
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         // 添加分页插件
