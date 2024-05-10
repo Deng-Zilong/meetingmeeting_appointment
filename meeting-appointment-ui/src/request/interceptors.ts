@@ -1,5 +1,6 @@
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { useUserStore } from "@/stores/user";
+import { ElMessage } from "element-plus";
 // import router from "../router";
 // 请求拦截
 export function ReqResolve(config: InternalAxiosRequestConfig) {
@@ -29,8 +30,9 @@ export function ResResolve(config: any) {
 //   }
   if (config.status === 200) {
     if (config.data.code == 200) {
-        return config;
+        return config.data;
     } else {
+        ElMessage.error(config.data.msg);
         return Promise.reject(config);
     }
   }
