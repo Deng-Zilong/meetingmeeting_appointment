@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.code.kaptcha.Producer;
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.constant.MessageConstant;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.vo.LoginVo;
 import com.jfzt.meeting.entity.vo.SysUserVO;
@@ -15,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.awt.image.BufferedImage;
 import java.time.Duration;
@@ -30,12 +32,6 @@ import java.util.stream.Collectors;
 public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         implements SysUserService {
 
-    /**
-     * 定义权限等级(0超级管理员，1管理员，2员工)
-     */
-    public static final Integer SUPER_ADMIN_LEVEL = 0;
-    public static final Integer ADMIN_LEVEL = 1;
-    public static final Integer EMPLOYEE_LEVEL= 2;
 
     @Autowired
     private SysUserMapper sysUserMapper;
@@ -46,18 +42,27 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     private Producer producer;
 
 
+
     /**
      * 获取所有不是管理员的企业微信用户的姓名
      * @param sysUser
      * @return
      */
     @Override
-    public List<String> selectAll(SysUser sysUser) {
-        List<SysUser> sysUsers = sysUserMapper.selectList(new QueryWrapper<>());
-        return sysUsers.stream()
-                .filter(user -> !ADMIN_LEVEL.equals(user.getLevel()) && !SUPER_ADMIN_LEVEL.equals(user.getLevel()))
-                .map(SysUser::getUserName)
-                .collect(Collectors.toList());
+    public Result<List<String>> selectAll(SysUser sysUser) {
+        // 获取当前登录用户的权限等级
+        //Integer level = BaseContext.getCurrentLevel();
+        Integer level = 0;
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level)){
+            // 获取所有的用户信息
+            List<SysUser> sysUsers = sysUserMapper.selectList(new QueryWrapper<>());
+            return Result.success(sysUsers.stream()
+                    .filter(user -> !MessageConstant.ADMIN_LEVEL.equals(user.getLevel()) && !MessageConstant.SUPER_ADMIN_LEVEL.equals(user.getLevel()))
+                    .map(SysUser::getUserName)
+                    .collect(Collectors.toList()));
+        }
+        return Result.fail(MessageConstant.HAVE_NO_AUTHORITY);
+
     }
 
     /**
@@ -65,23 +70,36 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
      * @return
      */
     @Override
-    public List<String> selectAdmin() {
-        List<SysUser> sysUsers = sysUserMapper.selectList(new QueryWrapper<>());
-        return sysUsers.stream()
-                .filter(user -> ADMIN_LEVEL.equals(user.getLevel()) || SUPER_ADMIN_LEVEL.equals(user.getLevel()))
-                .map(SysUser::getUserName)
-                .collect(Collectors.toList());
+    public Result<List<String>> selectAdmin() {
+        // 获取当前登录用户的权限等级
+        //Integer level = BaseContext.getCurrentLevel();
+        Integer level = 0;
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level)){
+            List<SysUser> sysUsers = sysUserMapper.selectList(new QueryWrapper<>());
+            return Result.success(sysUsers.stream()
+                    .filter(user -> MessageConstant.ADMIN_LEVEL.equals(user.getLevel()) || MessageConstant.SUPER_ADMIN_LEVEL.equals(user.getLevel()))
+                    .map(SysUser::getUserName)
+                    .collect(Collectors.toList()));
+        }
+        return Result.fail(MessageConstant.HAVE_NO_AUTHORITY);
     }
 
     /**
      * 修改用户权限等级
-     * @param userName
-     * @param level
+     * @param userId 用户id
+     * @param level 权限等级(0超级管理员，1管理员，2员工)
      * @return
      */
     @Override
-    public boolean updateLevel(String userName, Integer level) {
-        return sysUserMapper.updateLevel(userName, level);
+    public Result<Object> updateLevel(String userId, Integer level) {
+        // 获取当前登录用户的权限等级
+        //Integer currentLevel = BaseContext.getCurrentLevel();
+        Integer currentLevel = 0;
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)){
+            int row = sysUserMapper.updateLevel(userId, level);
+            return Result.success(row);
+        }
+        return Result.fail(MessageConstant.HAVE_NO_AUTHORITY);
     }
 
     @Override

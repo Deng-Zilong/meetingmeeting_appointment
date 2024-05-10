@@ -20,17 +20,19 @@ public interface SysUserService extends IService<SysUser> {
     /**
      * 获取所有的企业微信用户的姓名
      */
-    List<String> selectAll(SysUser sysUser);
+    Result<List<String>> selectAll(SysUser sysUser);
 
     /**
      * 根据权限等级查询企微用户是否为管理员
      */
-    List<String> selectAdmin();
+    Result<List<String>> selectAdmin();
 
     /**
      * 修改用户的权限等级
+     * @param userId
+     * @param level
      */
-    boolean updateLevel(@Param("userName") String userName, @Param("level") Integer level);
+    Result<Object> updateLevel(@Param("userId") String userId, @Param("level") Integer level);
 
 
     BufferedImage getCaptcha(String uuid);

@@ -1,10 +1,12 @@
 package com.jfzt.meeting.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MeetingRecordStatusConstant;
+import com.jfzt.meeting.constant.MessageConstant;
 import com.jfzt.meeting.entity.MeetingAttendees;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingRoom;
@@ -24,17 +26,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.jfzt.meeting.constant.IsDeletedConstant.IS_DELETED;
+import static com.jfzt.meeting.constant.IsDeletedConstant.NOT_DELETED;
+import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
 import static com.jfzt.meeting.constant.MessageConstant.START_TIME_GT_END_TiME;
 import static com.jfzt.meeting.constant.MessageConstant.START_TIME_LT_NOW;
-import java.util.*;
-
-import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
 
 /**
  * @author zilong.deng
@@ -55,12 +54,10 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     private MeetingAttendeesMapper attendeesMapper;
 
 
-
     @Autowired
     public void setMeetingRoomService (MeetingRoomService meetingRoomService) {
         this.meetingRoomService = meetingRoomService;
     }
-
 
 
     /**
@@ -84,7 +81,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         recordQueryWrapper
                 .and(wq -> wq
                         //删除的不展示
-                        .eq(MeetingRecord::getIsDeleted, 0));
+                        .eq(MeetingRecord::getIsDeleted, NOT_DELETED));
         //展示未取消的会议
         recordQueryWrapper
                 .and(wq -> wq
@@ -221,7 +218,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
         recordQueryWrapper.between(MeetingRecord::getStartTime, startOfDay, endOfDay)
                 .or().between(MeetingRecord::getEndTime, startOfDay, endOfDay);
-        recordQueryWrapper.and(queryWrapper -> queryWrapper.eq(MeetingRecord::getIsDeleted, 0));
+        recordQueryWrapper.and(queryWrapper -> queryWrapper.eq(MeetingRecord::getIsDeleted, NOT_DELETED));
         //展示未取消的会议
         recordQueryWrapper.and(queryWrapper -> queryWrapper.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START).or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING).or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_END));
         recordQueryWrapper.orderByDesc(MeetingRecord::getStartTime);
@@ -289,6 +286,59 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
+     * 分页获取所有的会议
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    @Override
+    public Result<List<MeetingRecordVO>> getAllMeetingRecordVoListPage(Long pageNum, Long pageSize) {
+        // 获取当前登录用户的权限等级
+        //Integer level = BaseContext.getCurrentLevel();
+        Integer level = 2;
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)){
+            if (pageNum == null || pageSize == null) {
+                return null;
+            }
+            // 查询出来所有的会议记录
+            Page<MeetingRecord> meetingRecordPage = this.baseMapper.selectPage(new Page<>(pageNum, pageSize), new QueryWrapper<>());
+            // 查询出所有的会议预约的id
+            List<Long> longList = meetingRecordPage.getRecords().stream().map(MeetingRecord::getId).toList();
+            if (longList.isEmpty()) {
+                return null;
+            }
+            return Result.success(longList.stream().map(id -> {
+                // 通过会议记录id获取到参会人员的信息
+                List<String> userIds = attendeesMapper.selectUserIdsByRecordId(id);
+                StringBuffer attendees = getStringBuffer(userIds);
+                //更新会议状态
+                MeetingRecord meetingRecord = this.baseMapper.selectById(id);
+                updateRecordStatus(meetingRecord);
+                //插入会议信息
+                MeetingRecordVO meetingRecordVO = new MeetingRecordVO();
+                BeanUtils.copyProperties(meetingRecord, meetingRecordVO);
+                //插入会议室信息
+                MeetingRoom meetingRoom = meetingRoomService.getOne(new LambdaQueryWrapper<MeetingRoom>().eq(MeetingRoom::getId, meetingRecord.getMeetingRoomId()));
+                if (meetingRoom != null) {
+                    meetingRecordVO.setMeetingRoomName(meetingRoom.getRoomName());
+                    meetingRecordVO.setLocation(meetingRoom.getLocation());
+                }
+                //插入会议创建人信息
+                SysUser user = userService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, meetingRecord.getCreatedBy()));
+                if (user != null) {
+                    meetingRecordVO.setAdminUserName(user.getUserName());
+                }
+                //插入参会人信息
+                meetingRecordVO.setAttendees(String.valueOf(attendees));
+                meetingRecordVO.setMeetingNumber(userIds.size());
+                return meetingRecordVO;
+            }).sorted((o1, o2) -> o1.getStartTime().isBefore(o2.getStartTime()) ? 1 : -1).toList());
+        }
+        return Result.fail(MessageConstant.HAVE_NO_AUTHORITY);
+    }
+
+
+    /**
      * 根据会议记录id取消会议
      *
      * @param userId    用户id
@@ -304,7 +354,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         List<String> userIds = attendeesMapper.selectUserIdsByRecordId(meetingId);
         if (userIds.contains(userId)) {
             //删除
-            meetingRecord.setIsDeleted(1);
+            meetingRecord.setIsDeleted(IS_DELETED);
             this.baseMapper.updateById(meetingRecord);
             return true;
         }
@@ -326,7 +376,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         MeetingRecord meetingRecord = this.baseMapper.selectById(meetingId);
 
         //会议不是未开始状态或者会议创建人不是当前用户无法取消
-        if (meetingRecord.getStatus() == 0 && meetingRecord.getCreatedBy().equals(userId)) {
+        if (Objects.equals(meetingRecord.getStatus(), MEETING_RECORD_STATUS_NOT_START) && meetingRecord.getCreatedBy().equals(userId)) {
             //更新会议状态
             meetingRecord.setStatus(MEETING_RECORD_STATUS_CANCEL);
             this.baseMapper.updateById(meetingRecord);
@@ -336,13 +386,13 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
+     * @return com.jfzt.meeting.common.Result<java.util.Objects>
      * @Description 新增会议
      * @Param [meetingRecordDTO]
-     * @return com.jfzt.meeting.common.Result<java.util.Objects>
      */
     @Override
     @Transactional
-    public Result<Objects> addMeeting(MeetingRecordDTO meetingRecordDTO) {
+    public Result<Objects> addMeeting (MeetingRecordDTO meetingRecordDTO) {
         // 创建一个新的MeetingRecord对象
         MeetingRecord meetingRecord = new MeetingRecord();
         // 将meetingRecordDTO中的属性复制到meetingRecord中
@@ -350,7 +400,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         // 判断meetingRecord的结束时间是否早于开始时间，如果是，则返回错误信息
         if (meetingRecord.getEndTime().isBefore(meetingRecord.getStartTime())) {
             return Result.fail(START_TIME_GT_END_TiME);
-        }else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())){
+        } else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())) {
             // 判断meetingRecord的开始时间是否早于当前时间，如果是，则返回错误信息
             return Result.fail(START_TIME_LT_NOW);
         }
@@ -370,14 +420,13 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
+     * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingRecordVO>>
      * @Description 更新会议
      * @Param [meetingRecordDTO]
-     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.MeetingRecordVO>>
-     * @exception
      */
     @Override
     @Transactional
-    public Result<List<MeetingRecordVO>> updateMeeting(MeetingRecordDTO meetingRecordDTO) {
+    public Result<List<MeetingRecordVO>> updateMeeting (MeetingRecordDTO meetingRecordDTO) {
         // 创建一个新的MeetingRecord对象
         MeetingRecord meetingRecord = new MeetingRecord();
         // 将meetingRecordDTO中的属性复制到meetingRecord中
@@ -385,7 +434,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         // 判断meetingRecord的结束时间是否早于开始时间，如果是，则返回错误信息
         if (meetingRecord.getEndTime().isBefore(meetingRecord.getStartTime())) {
             return Result.fail(START_TIME_GT_END_TiME);
-        }else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())){
+        } else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())) {
             // 判断meetingRecord的开始时间是否早于当前时间，如果是，则返回错误信息
             return Result.fail(START_TIME_LT_NOW);
         }
