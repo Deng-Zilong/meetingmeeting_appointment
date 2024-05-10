@@ -1,10 +1,12 @@
 package com.jfzt.meeting.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MeetingRecordStatusConstant;
+import com.jfzt.meeting.constant.MessageConstant;
 import com.jfzt.meeting.entity.MeetingAttendees;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingRoom;
@@ -282,6 +284,59 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .sorted(Comparator.comparing(MeetingRecordVO::getStartTime).reversed())
                 .toList();
     }
+
+    /**
+     * 分页获取所有的会议
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    @Override
+    public Result<List<MeetingRecordVO>> getAllMeetingRecordVoListPage(Long pageNum, Long pageSize) {
+        // 获取当前登录用户的权限等级
+        //Integer level = BaseContext.getCurrentLevel();
+        Integer level = 2;
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)){
+            if (pageNum == null || pageSize == null) {
+                return null;
+            }
+            // 查询出来所有的会议记录
+            Page<MeetingRecord> meetingRecordPage = this.baseMapper.selectPage(new Page<>(pageNum, pageSize), new QueryWrapper<>());
+            // 查询出所有的会议预约的id
+            List<Long> longList = meetingRecordPage.getRecords().stream().map(MeetingRecord::getId).toList();
+            if (longList.isEmpty()) {
+                return null;
+            }
+            return Result.success(longList.stream().map(id -> {
+                // 通过会议记录id获取到参会人员的信息
+                List<String> userIds = attendeesMapper.selectUserIdsByRecordId(id);
+                StringBuffer attendees = getStringBuffer(userIds);
+                //更新会议状态
+                MeetingRecord meetingRecord = this.baseMapper.selectById(id);
+                updateRecordStatus(meetingRecord);
+                //插入会议信息
+                MeetingRecordVO meetingRecordVO = new MeetingRecordVO();
+                BeanUtils.copyProperties(meetingRecord, meetingRecordVO);
+                //插入会议室信息
+                MeetingRoom meetingRoom = meetingRoomService.getOne(new LambdaQueryWrapper<MeetingRoom>().eq(MeetingRoom::getId, meetingRecord.getMeetingRoomId()));
+                if (meetingRoom != null) {
+                    meetingRecordVO.setMeetingRoomName(meetingRoom.getRoomName());
+                    meetingRecordVO.setLocation(meetingRoom.getLocation());
+                }
+                //插入会议创建人信息
+                SysUser user = userService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, meetingRecord.getCreatedBy()));
+                if (user != null) {
+                    meetingRecordVO.setAdminUserName(user.getUserName());
+                }
+                //插入参会人信息
+                meetingRecordVO.setAttendees(String.valueOf(attendees));
+                meetingRecordVO.setMeetingNumber(userIds.size());
+                return meetingRecordVO;
+            }).sorted((o1, o2) -> o1.getStartTime().isBefore(o2.getStartTime()) ? 1 : -1).toList());
+        }
+        return Result.fail(MessageConstant.HAVE_NO_AUTHORITY);
+    }
+
 
     /**
      * 根据会议记录id取消会议

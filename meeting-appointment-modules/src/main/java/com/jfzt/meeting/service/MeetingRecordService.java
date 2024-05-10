@@ -46,6 +46,13 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      */
     List<MeetingRecordVO> getAllRecordVoListPage (String userId, Long pageNum, Long pageSize);
 
+
+    /**
+     * 分页获取所有会议记录
+     * @return {@code List<MeetingRecordVO>}
+     */
+    Result<List<MeetingRecordVO>> getAllMeetingRecordVoListPage (Long pageNum, Long pageSize);
+
     /**
      * 根据会议记录id删除会议（首页不展示，历史记录展示）
      *

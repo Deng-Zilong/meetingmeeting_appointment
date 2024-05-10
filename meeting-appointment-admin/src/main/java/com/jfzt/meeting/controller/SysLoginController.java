@@ -83,6 +83,7 @@ public class SysLoginController {
         redisTemplate.opsForValue().set("userInfo"+userInfo.getUserId(), String.valueOf(userInfo));
         //存入当前登录用户到ThreadLocal中
         BaseContext.setCurrentUserId(sysUser.getUserId());
+        BaseContext.setCurrentLevel(sysUser.getLevel());
         return Result.success(userInfo);
     }
 
