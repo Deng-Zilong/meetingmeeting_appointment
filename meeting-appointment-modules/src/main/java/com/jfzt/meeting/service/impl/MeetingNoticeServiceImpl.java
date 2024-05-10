@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MessageConstant;
+import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.MeetingNotice;
 import com.jfzt.meeting.mapper.MeetingNoticeMapper;
 import com.jfzt.meeting.service.MeetingNoticeService;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.jfzt.meeting.context.BaseContext.removeCurrentLevel;
 
 /**
  * @author zilong.deng
@@ -34,8 +37,8 @@ public class MeetingNoticeServiceImpl extends ServiceImpl<MeetingNoticeMapper, M
     @Override
     public Result<Integer> addNotice(MeetingNotice meetingNotice) {
         // 获取当前登录用户的权限等级
-        //Integer level = BaseContext.getCurrentLevel();
-        Integer level = 1;
+        Integer level = BaseContext.getCurrentLevel();
+        removeCurrentLevel();
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)){
             //String currentId = BaseContext.getCurrentId();
             String currentId = "QianRuoXiaMo";

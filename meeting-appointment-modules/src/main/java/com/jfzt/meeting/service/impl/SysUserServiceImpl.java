@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.code.kaptcha.Producer;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MessageConstant;
+import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.vo.LoginVo;
 import com.jfzt.meeting.entity.vo.SysUserVO;
@@ -22,6 +23,8 @@ import java.awt.image.BufferedImage;
 import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.jfzt.meeting.context.BaseContext.removeCurrentLevel;
 
 /**
  * @author zilong.deng
@@ -51,8 +54,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     @Override
     public Result<List<String>> selectAll(SysUser sysUser) {
         // 获取当前登录用户的权限等级
-        //Integer level = BaseContext.getCurrentLevel();
-        Integer level = 0;
+        Integer level = BaseContext.getCurrentLevel();
+        removeCurrentLevel();
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level)){
             // 获取所有的用户信息
             List<SysUser> sysUsers = sysUserMapper.selectList(new QueryWrapper<>());
@@ -72,8 +75,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     @Override
     public Result<List<String>> selectAdmin() {
         // 获取当前登录用户的权限等级
-        //Integer level = BaseContext.getCurrentLevel();
-        Integer level = 0;
+        Integer level = BaseContext.getCurrentLevel();
+        removeCurrentLevel();
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level)){
             List<SysUser> sysUsers = sysUserMapper.selectList(new QueryWrapper<>());
             return Result.success(sysUsers.stream()
@@ -93,8 +96,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     @Override
     public Result<Object> updateLevel(String userId, Integer level) {
         // 获取当前登录用户的权限等级
-        //Integer currentLevel = BaseContext.getCurrentLevel();
-        Integer currentLevel = 0;
+        Integer currentLevel = BaseContext.getCurrentLevel();
+        removeCurrentLevel();
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)){
             int row = sysUserMapper.updateLevel(userId, level);
             return Result.success(row);

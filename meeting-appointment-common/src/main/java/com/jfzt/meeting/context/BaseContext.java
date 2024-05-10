@@ -21,6 +21,9 @@ public class BaseContext {
     public static void removeCurrentId() {
         threadLocal.remove();
     }
+    public static void removeCurrentLevel() {
+        threadLocal1.remove();
+    }
 
 
 }
