@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MeetingRecordStatusConstant;
+import com.jfzt.meeting.constant.MessageConstant;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.SysUser;
@@ -45,11 +46,13 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     @Autowired
     private MeetingRoomMapper meetingRoomMapper;
 
+    @Autowired
     private MeetingRecordService meetingRecordService;
 
     @Autowired
     private SysUserService userService;
 
+    @Autowired
     private MeetingAttendeesMapper attendeesMapper;
 
 
@@ -75,11 +78,20 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      * 修改会议室状态
      * @param id 会议室id
      * @param status 会议室状态
-     * @return
      */
     @Override
-    public boolean updateStatus(Long id, Integer status) {
-        return meetingRoomMapper.updateStatus(id, status);
+    public Result<Integer> updateStatus(Long id, Integer status) {
+        // 获取当前登录用户的权限等级
+        //Integer level = BaseContext.getCurrentLevel();
+        Integer level = 2;
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)){
+            boolean result = meetingRoomMapper.updateStatus(id, status);
+            if (result) {
+                return Result.success(MessageConstant.SUCCESS);
+            }
+            return Result.fail(MessageConstant.FAIL);
+        }
+        return Result.fail(MessageConstant.HAVE_NO_AUTHORITY);
     }
 
 

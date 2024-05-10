@@ -11,5 +11,19 @@ public class MessageConstant {
     public static final String DELETE_FAIL = "会议删除失败";
     public static final String START_TIME_LT_NOW = "开始时间不能小于当前时间";
 
+    /**
+     * 权限处理提示信息
+     */
+    public static final String HAVE_NO_AUTHORITY = "请联系管理员获取权限!";
+    public static final String SUCCESS = "成功！";
+    public static final String FAIL = "失败！";
+
+    /**
+     * 定义权限等级(0超级管理员，1管理员，2员工)
+     */
+    public static final Integer SUPER_ADMIN_LEVEL = 0;
+    public static final Integer ADMIN_LEVEL = 1;
+    public static final Integer EMPLOYEE_LEVEL= 2;
+
 
 }

@@ -19,7 +19,7 @@
     </sql>
 
     <update id="updateLevel" parameterType="map">
-        update sys_user set level = #{level} where user_name = #{userName}
+        update sys_user set level = #{level} where user_id = #{userId}
     </update>
 
 </mapper>

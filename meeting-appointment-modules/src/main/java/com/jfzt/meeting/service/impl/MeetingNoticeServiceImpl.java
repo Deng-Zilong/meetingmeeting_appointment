@@ -2,7 +2,8 @@ package com.jfzt.meeting.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.jfzt.meeting.context.BaseContext;
+import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.constant.MessageConstant;
 import com.jfzt.meeting.entity.MeetingNotice;
 import com.jfzt.meeting.mapper.MeetingNoticeMapper;
 import com.jfzt.meeting.service.MeetingNoticeService;
@@ -31,11 +32,20 @@ public class MeetingNoticeServiceImpl extends ServiceImpl<MeetingNoticeMapper, M
      * @return
      */
     @Override
-    public int addNotice(MeetingNotice meetingNotice) {
-        //String currentId = BaseContext.getCurrentId();
-        String currentId = "yxc11";
-        meetingNotice.setUserId(currentId);
-        return meetingNoticeMapper.insert(meetingNotice);
+    public Result<Integer> addNotice(MeetingNotice meetingNotice) {
+        // 获取当前登录用户的权限等级
+        //Integer level = BaseContext.getCurrentLevel();
+        Integer level = 1;
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)){
+            //String currentId = BaseContext.getCurrentId();
+            String currentId = "QianRuoXiaMo";
+            meetingNotice.setUserId(currentId);
+            int insert = meetingNoticeMapper.insert(meetingNotice);
+            return Result.success(insert);
+        }
+        return Result.fail(MessageConstant.FAIL);
+
+
     }
 
 

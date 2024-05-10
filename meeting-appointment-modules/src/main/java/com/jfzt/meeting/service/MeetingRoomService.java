@@ -65,5 +65,5 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      * @param status 会议室状态
      * @return
      */
-    boolean updateStatus(Long id, Integer status);
+    Result<Integer> updateStatus(Long id, Integer status);
 }
