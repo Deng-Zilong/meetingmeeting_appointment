@@ -139,6 +139,10 @@ onMounted(async () => {
   }
 });
 
+onMounted(() => {
+  getTodayRecord()
+})
+
 /* 会议室大屏 */
 // echarts数据展示
 const gaugeData = ref([
@@ -188,48 +192,113 @@ const selectTime = (item: any) => {
 }
 
 /* 会议室预约情况 */
-const tableData = reactive([
-  {
-    title: '会议室主题内容信息展示',
-    name: '会议室主题内容信息展',
-    time: '11',
-    status: 0,
-    createdBy: '1',
-    meetingNumber: '11'
-  },
-  {
-    title: '11',
-    name: '11',
-    time: '11',
-    status: 1,
-    createdBy: '2',
-    meetingNumber: '11'
-  },
-  {
-    title: '112',
-    name: '11',
-    time: '11',
-    status: 2,
-    createdBy: '2',
-    meetingNumber: '11'
-  },
-  {
-    title: '113',
-    name: '11',
-    time: '11',
-    status: 2,
-    createdBy: '2',
-    meetingNumber: '11'
-  },
-  {
-    title: '114',
-    name: '11',
-    time: '11',
-    status: 2,
-    createdBy: '2',
-    meetingNumber: '11'
-  }
-]);
+interface RecordType {
+  "title": string,
+  "name": string,
+  "time": string,
+  "status": number,
+  "createdBy": string,
+  "meetingNumber": string
+}
+let tableData = reactive<RecordType[]>([])
+const res = {
+
+code: "200",
+msg: "success",
+data: [
+
+    {
+
+        id: 1,
+
+        title: "test会议1",
+
+        description: "会议内容1",
+
+        startTime: "2024-04-30 11:22:10",
+
+        endTime: "2024-04-30 11:23:11",
+
+        meetingRoomId: 4,
+
+        status: 2,
+
+        createdBy: "dzl",
+
+        gmtCreate: "2024-04-29 15:23:21",
+
+        gmtModified: "2024-04-30 03:59:30",
+
+        isDeleted: 0,
+
+        adminUserName: "邓子龙",
+
+        meetingRoomName: "会议室4",
+
+        meetingNumber: 3,
+
+        attendees: "邓子龙,zhangsan,lisi",
+
+        location: 4
+
+    }
+
+]
+
+}
+// const tableData = reactive([
+//   {
+//     title: '会议室主题内容信息展示',
+//     name: '会议室主题内容信息展',
+//     time: '11',
+//     status: 0,
+//     createdBy: '1',
+//     meetingNumber: '11'
+//   },
+//   {
+//     title: '11',
+//     name: '11',
+//     time: '11',
+//     status: 1,
+//     createdBy: '2',
+//     meetingNumber: '11'
+//   },
+//   {
+//     title: '112',
+//     name: '11',
+//     time: '11',
+//     status: 2,
+//     createdBy: '2',
+//     meetingNumber: '11'
+//   },
+//   {
+//     title: '113',
+//     name: '11',
+//     time: '11',
+//     status: 2,
+//     createdBy: '2',
+//     meetingNumber: '11'
+//   },
+//   {
+//     title: '114',
+//     name: '11',
+//     time: '11',
+//     status: 2,
+//     createdBy: '2',
+//     meetingNumber: '11'
+//   }
+// ]);
+
+const getTodayRecord = async () => {
+  const res = await getTodayMeetingRecordData({ userId: userStore.userInfo.userId });
+  tableData = res.data
+  // tableData.values = res.data
+  // if (res.data.code === 200) {
+  //   tableData.splice(0, tableData.length, ...res.data);
+  // }
+  console.log(tableData,'res');
+  
+}
 // 监听会议室状态
 const statusName = computed(() => (status: any) => {
   switch (status) {
@@ -240,7 +309,7 @@ const statusName = computed(() => (status: any) => {
     case 2:
       return '已结束';
     default :
-      return '已预约';
+      return '未开始';
   }
 })
 const operate = computed(() => (item: any) => {
