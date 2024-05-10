@@ -5,7 +5,6 @@ server:
 spring:
   application:
     name: meeting-appointment-admin
-
   profiles:
     active: dev
     include: db,log,common,modules,quartz
@@ -20,4 +19,18 @@ spring:
   main:
     allow-circular-references: true
 
-
+mybatis-plus:
+  configuration:
+    cache-enabled: true
+    # 配置下划线转驼峰
+    map-underscore-to-camel-case: true
+    # 打印sql
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      #     logic-delete-field: is_deleted 逻辑删除，需要的在实体类具体字段加@TableLogic
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+logging:
+  level:
+    com.atguigu.gulimall: debug

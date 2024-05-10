@@ -109,8 +109,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     public BufferedImage getCaptcha(String uuid) {
         //生成文字验证码
         String code =uuid+"/"+producer.createText();
-        redisTemplate.opsForValue().set("codeUuid"+uuid,code, Duration.ofSeconds(60));
-        return producer.createImage(code);
+        redisTemplate.opsForValue().set(uuid,code, Duration.ofSeconds(60));
+        return producer.createImage(producer.createText());
     }
 
     @Override

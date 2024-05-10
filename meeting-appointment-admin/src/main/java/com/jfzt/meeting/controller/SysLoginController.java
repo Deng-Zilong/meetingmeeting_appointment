@@ -45,7 +45,7 @@ public class SysLoginController {
      * 验证码
      */
     @GetMapping("captcha.jpg")
-    public void captcha(HttpServletResponse response, String uuid) throws IOException {
+    public void captcha(HttpServletResponse response,@RequestParam("uuid") String uuid) throws IOException {
         response.setHeader("Cache-Control", "no-store, no-cache");
         response.setContentType("image/jpeg");
         //获取图片验证码
