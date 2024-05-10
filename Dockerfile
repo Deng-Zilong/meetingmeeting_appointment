@@ -2,7 +2,7 @@ FROM openjdk:21
 
 LABEL version=<version>
 
-ADD meeting-appointment-quartz<JAR_NAME> /opt/
+ADD ./meeting-appointment-admin/target/<JAR_NAME> /opt/
 
 COPY ./SourceHanSerifSC-Bold.otf /usr/share/fonts/dejavu
 
