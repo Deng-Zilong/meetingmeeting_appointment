@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MeetingRecordStatusConstant;
 import com.jfzt.meeting.constant.MessageConstant;
+import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.MeetingAttendees;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingRoom;
@@ -34,6 +35,7 @@ import static com.jfzt.meeting.constant.IsDeletedConstant.NOT_DELETED;
 import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
 import static com.jfzt.meeting.constant.MessageConstant.START_TIME_GT_END_TiME;
 import static com.jfzt.meeting.constant.MessageConstant.START_TIME_LT_NOW;
+import static com.jfzt.meeting.context.BaseContext.removeCurrentLevel;
 
 /**
  * @author zilong.deng
@@ -294,8 +296,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     @Override
     public Result<List<MeetingRecordVO>> getAllMeetingRecordVoListPage(Long pageNum, Long pageSize) {
         // 获取当前登录用户的权限等级
-        //Integer level = BaseContext.getCurrentLevel();
-        Integer level = 2;
+        Integer level = BaseContext.getCurrentLevel();
+        removeCurrentLevel();
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)){
             if (pageNum == null || pageSize == null) {
                 return null;
