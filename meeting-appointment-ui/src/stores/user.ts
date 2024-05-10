@@ -31,13 +31,11 @@ export const useUserStore = defineStore('user',()=>{
     const getQWUserInfo= (code: string)=>{
         qwLogin({code})
                 .then((res: any) => {
-                    console.log(res, "request, 企业微信扫码登录");
                     userInfo = res.data;
                     ElMessage.success('登陆成功!');
                 })
                 .catch((err: any) => {
                     router.replace('/login');
-                    console.log(err, 'err');
                     return err;
                 })
     }
@@ -47,19 +45,15 @@ export const useUserStore = defineStore('user',()=>{
      * @param username 用户名
      * @param password 密码
      */
-    const getUserInfo= (username: string, password: string)=>{
-        Login({username, password})
+    const getUserInfo= (data:{username: string, password: string, uuid: string, code: string})=>{
+        Login(data)
                 .then((res: any) => {
-                    console.log(res.data, "request, 账号密码登录");
                     userInfo = res.data;
                     ElMessage.success('登陆成功!'); 
                     router.push('/home');
                 })
                 .catch((err: any) => {
                     // 临时使用
-                    userInfo.accessToken = '11111';
-                    router.push('/home');
-                    console.log(err, 'err');
                     return err;
                 })
     }

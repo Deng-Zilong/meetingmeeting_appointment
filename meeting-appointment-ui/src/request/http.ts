@@ -12,12 +12,13 @@ const currying = () => {
       })
     },
 
-    get: (url: string, params: {} = {}, headers?: any) => {
+    get: (url: string, params: {} = {}, responseType?: any, headers?: any) => {
       return service.request({
         url,
         method: 'GET',
         params,
-        headers
+        headers,
+        responseType
       })
     },
     put: (url: string, data: {} = {}, headers?: any) => {
