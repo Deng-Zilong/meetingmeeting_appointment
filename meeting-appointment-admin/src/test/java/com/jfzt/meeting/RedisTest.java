@@ -5,18 +5,20 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
 import com.jfzt.meeting.service.MeetingRecordService;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 
 import java.util.List;
 
 @Slf4j
 @SpringBootTest
 public class RedisTest {
-    @Autowired
+    @Resource
     RedisTemplate<String, String> redisTemplate;
     @Autowired
     MeetingRecordService meetingRecordService;
@@ -24,7 +26,6 @@ public class RedisTest {
 
     @Test
     void test () {
-
         redisTemplate.opsForValue().set("name", "dzl");
         String string = redisTemplate.opsForValue().get("name");
         System.out.println(string);
