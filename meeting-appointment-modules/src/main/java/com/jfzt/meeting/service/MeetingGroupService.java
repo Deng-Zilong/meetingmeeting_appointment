@@ -16,11 +16,11 @@ import java.util.List;
 public interface MeetingGroupService extends IService<MeetingGroup> {
 
 
-    Result<List<MeetingGroupVO>> checkGroup();
+    Result<List<MeetingGroupVO>> checkGroup (Integer pageNum, Integer pageSize);
 
-    Result<Object> addMeetingGroup(MeetingGroupDTO meetingGroupDTO);
+    Result<Object> addMeetingGroup (MeetingGroupDTO meetingGroupDTO);
 
-    Result<Object> updateMeetingGroup(MeetingGroupDTO meetingGroupDTO);
+    Result<Object> updateMeetingGroup (MeetingGroupDTO meetingGroupDTO);
 
-    Result<Object> deleteMeetingGroup(Long id);
+    Result<Object> deleteMeetingGroup (Long id);
 }

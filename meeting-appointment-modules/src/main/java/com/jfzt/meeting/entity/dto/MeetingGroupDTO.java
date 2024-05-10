@@ -2,8 +2,6 @@ package com.jfzt.meeting.entity.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.jfzt.meeting.entity.MeetingGroup;
-import com.jfzt.meeting.entity.SysDepartmentUser;
 import com.jfzt.meeting.entity.UserGroup;
 import lombok.Data;
 
