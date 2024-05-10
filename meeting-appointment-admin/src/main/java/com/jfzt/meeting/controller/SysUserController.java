@@ -40,7 +40,6 @@ public class SysUserController {
      * 获取token，部门，部门人员
      *
      * @param code 入参
-     * @return
      */
     @GetMapping(value = "info")
     @Transactional
@@ -67,8 +66,6 @@ public class SysUserController {
 
     /**
      * 获取企业微信用户姓名
-     * @param sysUser
-     * @return
      */
     @GetMapping("/selectName")
     public Result<List<String>> selectList(SysUser sysUser){
@@ -78,7 +75,6 @@ public class SysUserController {
 
     /**
      * 根据权限等级查询企微用户是否为管理员
-     * @return
      */
     @GetMapping("/selectAdmin")
     public Result<List<String>> selectAdmin(){
@@ -90,7 +86,6 @@ public class SysUserController {
      * 修改用户权限等级
      * @param userName 企微id
      * @param level 权限等级(0超级管理员，1管理员，2员工)
-     * @return
      */
     @PutMapping("/updateLevel")
     public Result<Integer> updateStatus (@RequestParam("userName") String userName, @RequestParam("level") Integer level) {

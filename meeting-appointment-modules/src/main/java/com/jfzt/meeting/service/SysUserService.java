@@ -19,22 +19,16 @@ public interface SysUserService extends IService<SysUser> {
 
     /**
      * 获取所有的企业微信用户的姓名
-     * @param sysUser
-     * @return
      */
     List<String> selectAll(SysUser sysUser);
 
     /**
      * 根据权限等级查询企微用户是否为管理员
-     * @return
      */
     List<String> selectAdmin();
 
     /**
      * 修改用户的权限等级
-     * @param userName
-     * @param level
-     * @return
      */
     boolean updateLevel(@Param("userName") String userName, @Param("level") Integer level);
 
@@ -47,7 +41,6 @@ public interface SysUserService extends IService<SysUser> {
      * @Description 模糊查询成员
      * @Param [name]
      * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.SysUserVO>>
-     * @exception
      */
     Result<List<SysUserVO>> findByName(String name);
 }
