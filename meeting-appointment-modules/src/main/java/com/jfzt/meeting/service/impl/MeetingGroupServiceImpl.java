@@ -176,11 +176,9 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     }
 
     /**
-     * @return com.jfzt.meeting.common.Result<java.lang.Object>
      * @Description 群组修改
      * @Param [meetingGroupDTO]
      * @return com.jfzt.meeting.common.Result<java.lang.Object>
-     * @exception
      */
     @Override
     @Transactional

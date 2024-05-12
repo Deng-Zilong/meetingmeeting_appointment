@@ -18,7 +18,7 @@ public class RRException extends RuntimeException {
 
     @Setter
     private String msg;
-    private String code = "500";
+    private String code;
 
     public RRException(String msg) {
         super(msg);
