@@ -13,7 +13,7 @@ public enum ErrorCodeEnum {
     /**
      * 成功
      */
-    SUCCESS("00000", "一切 ok"),
+    SUCCESS("00000", "成功"),
     /**
      * 一级宏观错误码
      */
@@ -53,23 +53,27 @@ public enum ErrorCodeEnum {
      */
     SERVICE_ERROR_C0100("C0100", "中间件服务出错"),
     SERVICE_ERROR_C0110("C0110", "RPC 服务出错"),
-    SERVICE_ERROR_C0111("C0111", "RPC 服务未找到");
+    SERVICE_ERROR_C0111("C0111", "RPC 服务未找到"),
 
-
+    /**
+     * 用户请求参数错误
+     */
+    SERVICE_ERROR_A0410("A0410", "请求必填参数为空"),
+    SERVICE_ERROR_A0421("A0410", "参数格式不匹配");
 
     private final String code;
     private final String description;
 
-    private ErrorCodeEnum(String code, String description) {
+    private ErrorCodeEnum (String code, String description) {
         this.code = code;
         this.description = description;
     }
 
-    public String getCode() {
+    public String getCode () {
         return code;
     }
 
-    public String getDescription() {
+    public String getDescription () {
         return description;
     }
 }
