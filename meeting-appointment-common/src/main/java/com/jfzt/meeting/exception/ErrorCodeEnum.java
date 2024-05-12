@@ -1,5 +1,7 @@
 package com.jfzt.meeting.exception;
 
+import lombok.Getter;
+
 /**
  * 错误码：
  * 1. 五位组成
@@ -9,6 +11,7 @@ package com.jfzt.meeting.exception;
  * 4. 若无法确定具体错误，选择宏观错误
  * 6. 大的错误类间的步长间距预留100
  */
+@Getter
 public enum ErrorCodeEnum {
     /**
      * 成功
@@ -62,21 +65,14 @@ public enum ErrorCodeEnum {
      * 用户请求参数错误
      */
     SERVICE_ERROR_A0410("A0410", "请求必填参数为空"),
-    SERVICE_ERROR_A0421("A0410", "参数格式不匹配");
+    SERVICE_ERROR_A0421("A0421", "参数格式不匹配");
 
     private final String code;
     private final String description;
 
-    private ErrorCodeEnum (String code, String description) {
+    ErrorCodeEnum(String code, String description) {
         this.code = code;
         this.description = description;
     }
 
-    public String getCode () {
-        return code;
-    }
-
-    public String getDescription () {
-        return description;
-    }
 }

@@ -1,12 +1,22 @@
 package com.jfzt.meeting.exception;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.io.Serial;
+
 /**
  * 自定义异常
- *
  */
+@EqualsAndHashCode(callSuper = true)
+@Getter
 public class RRException extends RuntimeException {
+    @Serial
     private static final long serialVersionUID = 1L;
 
+    @Setter
     private String msg;
     private String code = "500";
 
@@ -36,18 +46,6 @@ public class RRException extends RuntimeException {
         super(errorCodeEnum.getDescription());
         this.msg = errorCodeEnum.getDescription();
         this.code = errorCodeEnum.getCode();
-    }
-
-    public String getMsg() {
-        return msg;
-    }
-
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
-
-    public String getCode() {
-        return code;
     }
 
     public void setCode(int String) {

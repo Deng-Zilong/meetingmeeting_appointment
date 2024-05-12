@@ -13,7 +13,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-import static com.jfzt.meeting.constant.MessageConstant.DELETE_FAIL;
+import static com.jfzt.meeting.constant.MessageConstant.*;
 
 /**
  * @author zilong.deng
@@ -56,7 +56,7 @@ public class MeetingRecordController {
         List<MeetingRecordVO> recordVoList = meetingRecordService.getAllRecordVoListPage(userId, page, limit);
         if (recordVoList == null) {
             log.info("用户{}没有历史会议记录", userId);
-            return Result.success(null);
+            return Result.success();
         }
         log.info("用户{}当天会议记录:{}", userId, recordVoList);
         return Result.success(recordVoList);
@@ -74,10 +74,10 @@ public class MeetingRecordController {
         Boolean result = meetingRecordService.cancelMeetingRecord(userId, meetingId);
         if (result) {
             log.info("用户{}取消会议{}成功", userId, meetingId);
-            return Result.success("会议取消成功");
+            return Result.success(CANCEL_SUCCESS);
         }
         log.info("用户{}取消会议{}失败", userId, meetingId);
-        return Result.fail("会议取消失败");
+        return Result.fail(CANCEL_FAIL);
     }
 
     /**
@@ -92,7 +92,7 @@ public class MeetingRecordController {
         Boolean result = meetingRecordService.deleteMeetingRecord(userId, meetingId);
         if (result) {
             log.info("用户{}删除会议{}成功", userId, meetingId);
-            return Result.success("会议删除成功");
+            return Result.success(DELETE_SUCCESS);
         }
         log.info("用户{}删除会议{}失败", userId, meetingId);
         return Result.fail(DELETE_FAIL);
@@ -118,22 +118,6 @@ public class MeetingRecordController {
     public Result<List<MeetingRecordVO>> updateMeetingRecord (@RequestBody MeetingRecordDTO meetingRecordDTO) {
         return meetingRecordService.updateMeeting(meetingRecordDTO);
     }
-
-
-
-    /**
-     * @param location 会议室位置
-     * @param date     日期
-     * @return {@code Result<List<MeetingRecord>>}
-     */
-    @PostMapping("/index/queryRecordByLocation")
-    public Result<List<MeetingRecord>> queryRecordByLocation (@RequestBody String location, Date date) {
-
-
-        return null;
-    }
-
-
 
     /**
      * @return {@code Result<Page<MeetingRecordVO>>}

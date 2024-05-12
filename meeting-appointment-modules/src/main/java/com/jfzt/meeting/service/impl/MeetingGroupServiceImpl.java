@@ -11,6 +11,8 @@ import com.jfzt.meeting.entity.UserGroup;
 import com.jfzt.meeting.entity.dto.MeetingGroupDTO;
 import com.jfzt.meeting.entity.vo.MeetingGroupVO;
 import com.jfzt.meeting.entity.vo.UserInfoVO;
+import com.jfzt.meeting.exception.ErrorCodeEnum;
+import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingGroupMapper;
 import com.jfzt.meeting.service.MeetingGroupService;
 import com.jfzt.meeting.service.SysUserService;
@@ -123,7 +125,8 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     public Result<Object> addMeetingGroup (MeetingGroupDTO meetingGroupDTO) {
 
         if (meetingGroupDTO.getUsers().isEmpty()) {
-            return Result.fail(NO_USER);
+            log.error(NO_USER + EXCEPTION_TYPE,RRException.class);
+            throw new RRException(NO_USER,ErrorCodeEnum.SERVICE_ERROR_A0410.getCode());
         }
         // 创建一个新的MeetingGroup对象
         MeetingGroup meetingGroup = new MeetingGroup();
@@ -139,7 +142,8 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
             // 保存meetingGroup
             save(meetingGroup);
         } else {
-            return Result.fail(SAME_NAME);
+            log.error(SAME_NAME + EXCEPTION_TYPE,RRException.class);
+            throw new RRException(SAME_NAME,ErrorCodeEnum.SERVICE_ERROR_A0421.getCode());
         }
         // 根据meetingGroupDTO中的groupName查询MeetingGroup表，获取groupId
         Long groupId = lambdaQuery()
@@ -186,8 +190,8 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
                 .eq(meetingGroupDTO.getId() != null, MeetingGroup::getId, meetingGroupDTO.getId())
                 .one();
         if (beforeGroup == null){
-            log.info(GROUP_NOT_EXIST);
-            return Result.fail(GROUP_NOT_EXIST);
+            log.info(GROUP_NOT_EXIST + EXCEPTION_TYPE,RRException.class);
+            throw new RRException(GROUP_NOT_EXIST,ErrorCodeEnum.SERVICE_ERROR_C0111.getCode());
         }
         // 根据meetingGroupDTO中的groupName查询MeetingGroup表，获取groupId
         MeetingGroup one = lambdaQuery()
@@ -228,11 +232,15 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     public Result<Object> deleteMeetingGroup (Long id) {
         // 查询出MeetingGroup对象之前的UserGroup对象列表
         List<UserGroup> userGroupList = userGroupService.lambdaQuery().eq(UserGroup::getGroupId, id).list();
+        if (userGroupList == null){
+            log.info(DELETE_FAIL + EXCEPTION_TYPE,RRException.class);
+            throw new RRException(DELETE_FAIL,ErrorCodeEnum.SERVICE_ERROR_C0111.getCode());
+        }
         // 删除MeetingGroup对象
         removeById(id);
         // 按照beforeList中的id删除UserGroup对象
         userGroupService.removeBatchByIds(userGroupList);
-        return Result.success(DELETE_FAIL);
+        return Result.success(DELETE_SUCCESS);
     }
 }
 

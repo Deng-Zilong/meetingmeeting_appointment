@@ -54,6 +54,6 @@ public class MeetingNoticeController {
         if (!stringList.isEmpty()){
             return Result.success(stringList);
         }
-        return Result.success(null);
+        return Result.success();
     }
 }
