@@ -6,6 +6,8 @@ import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MessageConstant;
 import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.MeetingNotice;
+import com.jfzt.meeting.exception.ErrorCodeEnum;
+import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingNoticeMapper;
 import com.jfzt.meeting.service.MeetingNoticeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.jfzt.meeting.constant.MessageConstant.EXCEPTION_TYPE;
+import static com.jfzt.meeting.constant.MessageConstant.SAME_NAME;
 import static com.jfzt.meeting.context.BaseContext.removeCurrentLevel;
 
 /**
@@ -40,19 +44,16 @@ public class MeetingNoticeServiceImpl extends ServiceImpl<MeetingNoticeMapper, M
         Integer level = BaseContext.getCurrentLevel();
         removeCurrentLevel();
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)){
-            //String currentId = BaseContext.getCurrentId();
-            String currentId = "QianRuoXiaMo";
+            String currentId = BaseContext.getCurrentId();
             meetingNotice.setUserId(currentId);
             int insert = meetingNoticeMapper.insert(meetingNotice);
             if (insert > 0){
-                return Result.success(MessageConstant.SUCCESS);
+                return Result.success();
             }
-            return Result.fail(MessageConstant.FAIL);
         }
-        return Result.success(MessageConstant.HAVE_NO_AUTHORITY);
-
-
+        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
     }
+
 
 
     /**

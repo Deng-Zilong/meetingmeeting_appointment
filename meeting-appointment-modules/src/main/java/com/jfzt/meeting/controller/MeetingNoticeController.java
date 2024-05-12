@@ -1,7 +1,6 @@
 package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
-import com.jfzt.meeting.constant.MessageConstant;
 import com.jfzt.meeting.entity.MeetingNotice;
 import com.jfzt.meeting.service.MeetingNoticeService;
 import jakarta.annotation.Resource;
@@ -51,9 +50,7 @@ public class MeetingNoticeController {
     @GetMapping("/getNotice")
     public Result<List<String>> getNotice(MeetingNotice meetingNotice){
         List<String> stringList = meetingNoticeService.selectAll(meetingNotice);
-        if (!stringList.isEmpty()){
-            return Result.success(stringList);
-        }
-        return Result.success();
+        return Result.success(stringList);
+
     }
 }
