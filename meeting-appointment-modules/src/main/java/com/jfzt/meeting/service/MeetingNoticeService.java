@@ -1,6 +1,7 @@
 package com.jfzt.meeting.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingNotice;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public interface MeetingNoticeService extends IService<MeetingNotice> {
      * @param meetingNotice
      * @return
      */
-    int addNotice(MeetingNotice meetingNotice);
+    Result<Integer> addNotice(MeetingNotice meetingNotice);
 
     /**
      * 删除公告

@@ -12,12 +12,13 @@ const currying = () => {
       })
     },
 
-    get: (url: string, params: {} = {}, headers?: any) => {
+    get: (url: string, params: {} = {}, responseType?: any, headers?: any) => {
       return service.request({
         url,
         method: 'GET',
         params,
-        headers
+        headers,
+        responseType
       })
     },
     put: (url: string, data: {} = {}, headers?: any) => {
@@ -28,10 +29,11 @@ const currying = () => {
         headers
       })
     },
-    delete: (url: string, headers?: any) => {
+    delete: (url: string, params: {} = {}, headers?: any) => {
       return service.request({
         url,
         method: 'DELETE',
+        params,
         headers
       })
     }

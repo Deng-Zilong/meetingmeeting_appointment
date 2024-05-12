@@ -37,6 +37,12 @@ const routes = [
         component: () => import("@/views/group/group.vue")
       },
       {
+        // 后台管理
+        path: "/manage",
+        name: "manage",
+        component: () => import("@/views/manage/manage.vue")
+      },
+      {
         // 会议室状态
         path: "/meeting-state",
         name: "meeting-state",

@@ -3,6 +3,8 @@ package com.jfzt.meeting.common;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 返回状态定义
@@ -11,7 +13,7 @@ import java.io.Serializable;
  * @since 2024-04-30 10.13:51
  */
 @Data
-public class Result<T> implements Serializable {
+public class Result<T> extends HashMap<String, Object> implements Serializable {
     private String code;
     private String msg;
     private T data;
@@ -40,8 +42,6 @@ public class Result<T> implements Serializable {
     public static <T> Result<T> fail (String code, String msg) {
         return new Result<>(code, msg, null);
     }
-
-
     public Result (String code, String msg, T data) {
         this.code = code;
         this.msg = msg;

@@ -1,5 +1,6 @@
 package com.jfzt.meeting.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.context.BaseContext;
@@ -15,14 +16,16 @@ import com.jfzt.meeting.service.MeetingGroupService;
 import com.jfzt.meeting.service.SysUserService;
 import com.jfzt.meeting.service.UserGroupService;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 
-
+import static com.jfzt.meeting.constant.MessageConstant.*;
 import static com.jfzt.meeting.constant.MessageConstant.SAME_NAME;
 
 /**
@@ -31,6 +34,7 @@ import static com.jfzt.meeting.constant.MessageConstant.SAME_NAME;
  * @since 2024-04-28 11:33:49
  */
 @Service
+@Slf4j
 public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, MeetingGroup>
         implements MeetingGroupService {
 
@@ -42,19 +46,18 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
 
 
     /**
+     * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingGroupVO>>
      * @Description 群组查询
      * @Param [userId]
-     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.MeetingGroupVO>>
-     * @exception
      */
     @Override
-    public Result<List<MeetingGroupVO>> checkGroup() {
+    public Result<List<MeetingGroupVO>> checkGroup (Integer pageNum, Integer pageSize) {
         String userId = BaseContext.getCurrentId();
         // 移除当前的ID
         BaseContext.removeCurrentId();
         // 返回Result.success(collect)
         ArrayList<MeetingGroup> joinList = new ArrayList<>();
-        //使用lambdaQuery查询SysDepartmentUser，并判断userId是否不为空，不为空则查询userId等于指定userId的用户
+        // 查询创建人姓名
         SysUser user = sysUserService.lambdaQuery()
                 .eq(StringUtils.isNotBlank(userId), SysUser::getUserId, userId)
                 .one();
@@ -67,8 +70,8 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         userGroupList.stream().peek((item) -> {
             // 通过lambdaQuery方法获取满足条件的MeetingGroup
             MeetingGroup joinUser = lambdaQuery()
-                        .eq(item.getGroupId() != null, MeetingGroup::getId, item.getGroupId())
-                        .one();
+                    .eq(item.getGroupId() != null, MeetingGroup::getId, item.getGroupId())
+                    .one();
             // 将满足条件的MeetingGroup添加到endList中
             joinList.add(joinUser);
         }).toList();
@@ -81,7 +84,10 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
             // 使用BeanUtils.copyProperties方法将item复制到meetingGroupVO实例中
             BeanUtils.copyProperties(item, meetingGroupVO);
             // 将user的userName添加到meetingGroupVO中
-            meetingGroupVO.setUserName(user.getUserName());
+            SysUser one = sysUserService.getOne(
+                    new LambdaQueryWrapper<SysUser>()
+                            .eq(SysUser::getUserId, item.getCreatedBy()));
+            meetingGroupVO.setUserName(one.getUserName());
             // 将会议创建人添加到参会人员
             meetingGroupVO.getUsers().add(user.getUserName());
             // 使用lambdaQuery查询出所有UserGroup，其中groupId为item.getId()
@@ -109,15 +115,16 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
 
 
     /**
-     * @Description 群组添加
-     * @Param [meetingGroupDTO]
      * @return com.jfzt.meeting.common.Result<java.lang.Object>
-     * @exception
+     * @Description 群组添加
      */
     @Override
     @Transactional
-    public Result<Object> addMeetingGroup(MeetingGroupDTO meetingGroupDTO) {
+    public Result<Object> addMeetingGroup (MeetingGroupDTO meetingGroupDTO) {
 
+        if (meetingGroupDTO.getUsers().isEmpty()) {
+            return Result.fail(NO_USER);
+        }
         // 创建一个新的MeetingGroup对象
         MeetingGroup meetingGroup = new MeetingGroup();
 
@@ -131,7 +138,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         if (sameName > 0) {
             // 保存meetingGroup
             save(meetingGroup);
-        }else {
+        } else {
             return Result.fail(SAME_NAME);
         }
         // 根据meetingGroupDTO中的groupName查询MeetingGroup表，获取groupId
@@ -153,12 +160,19 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
             // 保存UserGroup
             userGroupService.save(group);
         }).toList();
+        UserGroup group = UserGroup.builder()
+                .userId(meetingGroupDTO.getCreatedBy())
+                .groupId(groupId)
+                .build();
+        // 保存UserGroup
+        userGroupService.save(group);
 
 
-        return Result.success();
+        return Result.success(ADD_SUCCESS);
     }
 
     /**
+     * @return com.jfzt.meeting.common.Result<java.lang.Object>
      * @Description 群组修改
      * @Param [meetingGroupDTO]
      * @return com.jfzt.meeting.common.Result<java.lang.Object>
@@ -166,10 +180,15 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
      */
     @Override
     @Transactional
-    public Result<Object> updateMeetingGroup(MeetingGroupDTO meetingGroupDTO) {
+    public Result<Object> updateMeetingGroup (MeetingGroupDTO meetingGroupDTO) {
+
         MeetingGroup beforeGroup = lambdaQuery()
                 .eq(meetingGroupDTO.getId() != null, MeetingGroup::getId, meetingGroupDTO.getId())
                 .one();
+        if (beforeGroup == null){
+            log.info(GROUP_NOT_EXIST);
+            return Result.fail(GROUP_NOT_EXIST);
+        }
         // 根据meetingGroupDTO中的groupName查询MeetingGroup表，获取groupId
         MeetingGroup one = lambdaQuery()
                 .eq(StringUtils.isNotBlank(beforeGroup.getGroupName()), MeetingGroup::getGroupName, beforeGroup.getGroupName())
@@ -195,7 +214,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
             userGroupService.save(group);
         }).toList();
 
-        return Result.success();
+        return Result.success(UPDATE_SUCCESS);
     }
 
     /**
@@ -206,14 +225,14 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
      */
     @Override
     @Transactional
-    public Result<Object> deleteMeetingGroup(Long id) {
+    public Result<Object> deleteMeetingGroup (Long id) {
         // 查询出MeetingGroup对象之前的UserGroup对象列表
         List<UserGroup> userGroupList = userGroupService.lambdaQuery().eq(UserGroup::getGroupId, id).list();
         // 删除MeetingGroup对象
         removeById(id);
         // 按照beforeList中的id删除UserGroup对象
         userGroupService.removeBatchByIds(userGroupList);
-        return Result.success();
+        return Result.success(DELETE_FAIL);
     }
 }
 

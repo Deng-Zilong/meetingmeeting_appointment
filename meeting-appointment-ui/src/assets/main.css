@@ -60,10 +60,7 @@
   border-radius: 1.25rem !important;
 } */
 
-/* 群组管理 修改群组名称输入框样式 */
-.group .left .el-input__wrapper {
-  box-shadow: none !important;
-}
+
 
 a {
   text-decoration: none;

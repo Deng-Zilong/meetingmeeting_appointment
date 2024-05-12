@@ -27,6 +27,12 @@
             <groupId>com.jfzt</groupId>
             <artifactId>meeting-appointment-quartz</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.jfzt</groupId>
+                    <artifactId>meeting-appointment-common</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -52,28 +58,26 @@
             <artifactId>druid-spring-boot-starter</artifactId>
             <version>1.2.22</version>
         </dependency>
-
-
     </dependencies>
 
     <packaging>jar</packaging>
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.2.5</version>
                 <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>com.jfzt.meeting.MeetingAppointmentApplication</mainClass>
-                        </manifest>
-                    </archive>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+
 
 </project>

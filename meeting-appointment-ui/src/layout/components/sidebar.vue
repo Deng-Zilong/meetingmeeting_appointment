@@ -10,8 +10,12 @@
                 <span>历史记录</span>
             </el-menu-item>
             <el-menu-item index="/group" class="menu-item" :class="currentPath == '/group' ? 'active menu-item' : ' menu-item'">
-                <img src="@/assets/img/manageicon.png" alt="">
+                <img src="@/assets/img/groupicon.png" alt="">
                 <span>群组管理</span>
+            </el-menu-item>
+            <el-menu-item index="/manage" class="menu-item" :class="currentPath == '/manage' ? 'active menu-item' : ' menu-item'">
+                <img src="@/assets/img/manageicon.png" alt="">
+                <span>后台管理</span>
             </el-menu-item>
         </el-menu>
     </div>

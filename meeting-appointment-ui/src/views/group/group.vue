@@ -2,15 +2,15 @@
     <div class="container group">
         <div class="theme">
             <div class="left">
-                <el-input v-model="input" style="width: 240px" placeholder="请输入" />
-                <div>请输入群组名称</div>
+                <el-input v-model="groupTitle" style="width: 240px" placeholder="请输入" />
+                <div>群组名称</div>
             </div>
             <div class="center">
-                <el-icon class="plus-icon"><Plus /></el-icon>
-                <span></span>
+                <el-input class="meeting-people" v-model="groupPeopleNames" clearable readonly :prefix-icon="Plus" placeholder="请添加群组人员"
+              @click="handleAddPerson" />
                 <div>添加人员</div>
             </div>
-            <div class="right"> 创建成功</div>
+            <div class="right" @click="handleCreateGroup">创 建</div>
         </div>
         <div class="content">
             <div class="title">
@@ -20,132 +20,267 @@
                 <div>群组人员</div>
                 <div>操作</div>
             </div>
-            <div class="list-container" ref="listRef">
+            <div class="list-container">
                 <div class="timeline-item">
                     <div v-for="(item, index) in data" :key="index" class="card-item">
-                        <div>{{ item.create }}</div>
-                        <div>{{ item.time }}</div>
+                        <div>{{ item.userName }}</div>
+                        <div>{{ item.gmtCreate }}</div>
                         <div v-if="item.isEdit"> 
-                            <el-icon @click="editGroupName(index)"> <Edit /></el-icon>
+                            <el-icon @click="item.isEdit = false"> <Edit /></el-icon>
                             {{ item.groupName }}
                         </div>
                         <div v-else>
-                            <el-input v-model="groupName" @blur="handleEditGroupName(index, groupName)"/>
+                            <el-input v-model="item.groupName" @blur="handleEditGroupName(index, item)"/>
                         </div>
-                        <div><el-icon @click="editAttendees"> <Edit /></el-icon> <p class="ellipsis">{{ item.attendees }}</p></div>
-                        <!-- <div @click="handleCancelMeeting('time', index)"><span v-show="item.status == '未开始'">{{ item.operate }}</span></div> -->
-                        <div @click="handleDeleteMeeting(index)"><span>{{ item.operate }}</span></div>
+                        <div><el-icon @click="editAttendees(item)"> <Edit /></el-icon> <p class="ellipsis">{{ item.members }}</p></div>
+                        <div @click="handleDeleteMeeting(item.id)"><span>删除</span></div>
                     </div>
                 </div>
-                <div class="loading" v-show="fetchingData">数据加载中......</div>
             </div>
         </div>
+        <!-- 添加群组成员弹窗 -->
+        <personDialog
+            v-model="addGroupForm.visible"
+            :title="addGroupForm.title"
+            :type="type"
+            :data="addGroupForm.list"
+            :groupPeopleIds="groupPeopleIds"
+            @close-dialog="closeAddGroupDialog"
+            @submit-dialog="handleCheckedNodes"
+        />
     </div>
 </template>
 <script lang="ts" setup>
-    import { ref, reactive } from 'vue'
-    import { useInfiniteScroll } from '@vueuse/core'
-import { ElMessage, ElMessageBox } from 'element-plus';
+    import { ref, reactive, onMounted, getCurrentInstance } from 'vue'
+    import { ElMessage, ElMessageBox, ElTree  } from 'element-plus'
+    import { useUserStore } from '@/stores/user'
+    import { Plus } from '@element-plus/icons-vue'
+    import { getGroupList, deleteMeetingGroup, updateMeetingGroup, addMeetingGroup, getGroupUserTree, likeByName } from '@/request/api/group'
+    import personDialog from "@/views/group/components/person-dialog.vue";
 
-    const input = ref('');
-    const listRef = ref(null); // 获取dom节点
-    let limit = ref(10); // 默认限制条数 10
-    let page = ref(1); // 默认页数 1
-    let fetchingData = ref(false); // 控制数据加载中是否显示
-    let canLoadMore = ref(true); // 是否 继续请求数据
+    const userStore = useUserStore(); // 获取用户信息
+    onMounted(() => {
+        // 初始化数据
+        handleGroupList();
+    })
+
+    /************************** 创建群组开始 **************************/
+    let groupTitle = ref<string>(''); // 群组名称
+    let groupPeopleNames = ref<string>(''); // 群组成员名称
+    let groupPeopleIds = ref<any>([]); // 群组成员id
+    let groups = ref<any>([]); // 选中的群组成员信息、
+    let type = ref<number>(1); // 1 创建群组 2 修改群组
+    let search = ref<string>('');// 搜索人员
+    // 添加群组人员弹窗数据
+    let addGroupForm = ref({
+        visible: false,
+        title: '添加群组人员',
+        list:<any> [],
+    })
+    
+    // 打开添加群组人员弹窗
+    const handleAddPerson = () => {
+        if (type.value == 2) {
+            groupPeopleIds.value = [];
+        }
+        type.value = 1;
+        handleAddGroupReq();
+    }
+
+    /**
+     * @description 处理群组成员数据结构
+     */
+    const treeUserListToChildren = (data: any) => {
+        data.forEach((item: any) => {
+            // 如果当前节点有 treeUsers，则创建一个代表 treeUsers 的虚拟节点
+            if (item.treeUsers && item.treeUsers.length > 0) {
+                const userListNode = item.treeUsers.map((user: any) => {
+                    user.departmentName = user.userName;
+                    user.isTreeUsersNode = true;
+                    return user;
+                })
+                // 将这个虚拟节点插入到 childrenPart 的最前面
+                item.childrenPart.unshift(...userListNode);
+            }
+            // 递归处理子节点
+            if (item.childrenPart && item.childrenPart.length > 0) {
+                treeUserListToChildren(item.childrenPart);
+            }
+        });
+        return data;
+    }
+    /**
+     * @description 获取群组成员数据
+     */
+    const handleAddGroupReq = () => {
+        getGroupUserTree()
+            .then(res => {
+                addGroupForm.value.list = treeUserListToChildren(res.data);
+            })
+            .catch(err => {
+                console.log(err, "err");
+            })
+            .finally(() => {
+                addGroupForm.value.visible = true;
+            })
+    }
+    /**
+     * @description 提交需要添加的群组人员
+     */
+    const handleCheckedNodes = (type: number, treeRef: any) => {
+        const selectedPeople = treeRef.value!.getCheckedNodes(false, false).filter(((el: any) => el.parentId == undefined))
+        // 获取被选中成员的id
+        groupPeopleIds.value.push(...new Set(selectedPeople.map((item: any) => item.userId)));
+        /// 获取被选中人员的 信息并去重
+        groups.value = Array.from(
+            new Map(
+                selectedPeople.map((item: any) => [item.userId, {
+                    userId: item.userId,
+                    userName: item.userName,
+                }])
+            ).values()
+        );
+        
+        // 创建群组
+        if (type == 1) {
+            // 处理被选中成员的名称 用，隔开
+            groupPeopleNames.value = Array.from(new Set(selectedPeople.map((item: any) => item.userName))).join(',');
+        }
+        // 修改群组成员
+        if (type == 2) {
+            updateGroupInfo({id: groupInfo.value.id, groupName: groupInfo.value.groupName, users: groups.value});
+        }
+        // 关闭弹窗
+        closeAddGroupDialog();
+    }
+    /**
+     * @description 关闭添加群组人员弹窗
+     */
+     const closeAddGroupDialog = () => {
+        addGroupForm.value.visible = false;
+        search.value = '';
+        addGroupForm.value.list = [];
+    }
+    /**
+     * 创建群组
+     */
+    const handleCreateGroup = () => {
+        if (groupTitle.value === '') {
+            ElMessage.warning('请输入群组名称！')
+            return
+        }
+        if (groupPeopleNames.value === '') {
+            ElMessage.warning('请添加群组人员！')
+            return
+        }
+        addMeetingGroup({
+            groupName: groupTitle.value, 
+            createdBy: userStore.userInfo.userId, 
+            userName: userStore.userInfo.name, 
+            users: groups.value,
+        })
+            .then(res => {
+                ElMessage.success('创建成功!');
+                groupTitle.value = '';
+                groupPeopleNames.value = '';
+                groups.value = [];
+            })
+            .catch(err => {
+                console.log(err, "err");
+            })
+    }
+    /************************** 创建群组结束 **************************/
+
+    let data = ref<any>([]); // 列表数据
+    let groupInfo = ref<any>({}); // 群组信息
     // 数据接口
     interface IData {
-        create: string;
-        time: string;
-        groupName: string;
-        attendees: string;
-        operate: string;
-        isEdit: boolean
+        id: string; // id
+        gmtCreate: string;   // 创建时间
+        gmtModified: string; // 修改时间
+        createdBy: string;   // 创建人id
+        isDeleted: boolean;  // 是否删除
+        userName: string;    // 创建人名称
+        groupName: string;   // 群组名
+        users: [],            // 群组成员
+        member?: string,
     }
-    // 数据列表
-    let data = reactive<IData[]>([
-        {
-            groupName: '哈哈', create: '哈哈', time: "15:00", attendees: "EN-2F-02 恰谈室会议室,", operate:"删除", isEdit: true,
-        },
-        {
-            groupName: '哈哈', create: '哈哈', time: "15:00", attendees: "EN-2F-02 恰谈室会议室, EN-2F-02 恰谈室会议室, EN-2F-02 恰谈室会议室", operate:"删除", isEdit: true,
-        },
-        {
-            groupName: '哈哈', create: '哈哈', time: "15:00", attendees: "EN-2F-02 恰谈室会议室, EN-2F-02 恰谈室会议室, EN-2F-02 恰谈室会议室", operate:"删除", isEdit: true,
-        },
-        {
-            groupName: '哈哈', create: '哈哈', time: "15:00", attendees: "EN-2F-02 恰谈室会议室, EN-2F-02 恰谈室会议室, EN-2F-02 恰谈室会议室", operate:"删除", isEdit: true,
-        },
-        {
-            groupName: '哈哈', create: '哈哈', time: "15:00", attendees: "EN-2F-02 恰谈室会议室, EN-2F-02 恰谈室会议室, EN-2F-02 恰谈室会议室", operate:"删除", isEdit: true,
-        },
-        {
-            groupName: '哈哈', create: '哈哈', time: "15:00", attendees: "EN-2F-02 恰谈室会议室, EN-2F-02 恰谈室会议室, EN-2F-02 恰谈室会议室", operate:"删除", isEdit: true,
-        },
-        
-    ])
-    // 滚动加载
-    const getDataOnScroll = async () => {
-        // 中断处理
-        if (!canLoadMore.value || fetchingData.value) return;
-        console.log(11111)
-        fetchingData.value = true;
-        // 延迟请求
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        // 发送请求
-        // const newPhotos = await getPhotos(page.value, limit.value);
-        // 返回数据
-        const newData = reactive<IData[]>([]);
-        // 返回数组长度
-        const length = ref<number>(newData.length)
-        // 若返回数据长度小于限制 停止加载
-        if(length < limit) {
-            canLoadMore.value = false;
-        }
-        data = [...data, ...newData];
-        page.value++;
-        fetchingData.value = false;
-    };
-    // 滚动加载插件
-    useInfiniteScroll(
-        listRef, // 容器
-        async () => {
-            await getDataOnScroll();
-        },
-        {
-            distance: 15, // 距离底部的长度
-        }
-    );
 
-    let groupName = ref<string>('');
+    /**
+     * @description 获取群组列表
+     */
+    const handleGroupList = () =>{
+        getGroupList({userId: userStore.userInfo.userId})
+            .then(res => {
+                data.value = res.data.map((item: any) => {
+                    // 获取成员名称并用逗号连接
+                    item.members = item.users.map((user: any) => user.userName).join(',');
+                    // 群组名称是否可编辑
+                    item.isEdit = true;
+                    return item
+                });
+            })
+            .catch((err) => {
+                console.log(err, "err")
+            })
+    }
+
+    /**
+     * @description: 更新群组信息
+     * @param {object} data 群组信息 {id: 群组id, groupName: 群组名称, users: 群组成员}
+     * @return {*}
+     */
+    const updateGroupInfo = (data:{id: string; groupName: string; users: []}) =>{
+        updateMeetingGroup(data)
+            .then(res => {
+                ElMessage.success('修改成功');
+            })
+            .catch(err => {})
+            .finally(() =>{
+                handleGroupList();
+            })
+    }
     /**
      * @description 修改群组名称
      * @param index 下标
      */
-    const editGroupName = (index:number) => {
-        data[index].isEdit = false;
+    const handleEditGroupName = (index: number, item: any) => {
+        data.value[index].isEdit = true;
+        updateGroupInfo({id: item.id, groupName: item.groupName, users: item.users});
     }
-    const handleEditGroupName = (index: number, name: string) => {
-        data[index].isEdit = true;
-        data[index].groupName = name;
-        ElMessage.success('修改成功');
-        
+    /**
+     * @description 编辑群组人员
+     */
+    const editAttendees = (row: any) => {
+        if (type.value == 1) {
+            groupPeopleIds.value = [];
+        }
+        type.value = 2;
+        groupPeopleIds.value = row.users.map((item: any) => item.userId);
+        groupInfo.value = {
+            id: row.id,
+            groupName: row.groupName,
+        }
+        handleAddGroupReq();
     }
-    const editAttendees = () => {}
 
     /**
      * @description 删除群组会议
-     * @param index 要删除会议下标
+     * @param id 要删除群组的id
      */
-    const handleDeleteMeeting = (index: number) => {
+    const handleDeleteMeeting = (id: string,) => {
         ElMessageBox.confirm('是否确定删除群组', {
             customClass: 'delete-box'
         })
             .then(() => {
-                data.splice(index, 1);
-                ElMessage.success('删除成功');
+                deleteMeetingGroup({id}).then(res => {
+                    handleGroupList();
+                    ElMessage.success('删除成功!');
+                }).catch(err => {});
             })
-            .catch(() => {})
+            .catch(() => {
+                ElMessage.info('已取消删除！');
+            })
     }
 
 </script>
@@ -157,30 +292,44 @@ import { ElMessage, ElMessageBox } from 'element-plus';
             justify-content: space-around;
             align-items: center;
             .left {
-                width: 55rem;
+                width: 47rem;
                 div {
-                    width: 12.5rem;
+                    width: 7.5rem;
                 }
             }
             .center {
-                width: 32.5rem;
-                padding-left: .625rem;
-                .plus-icon {
-                    width: 1.875rem;
-                    height: 1.875rem;
-                    color: #409EFF;
-                    background: #ECF2FF;
-                    cursor: pointer;
+                width: 38.5rem;
+                // 参会人 input内部样式
+                .meeting-people {
+                    width: 32rem;
+                    ::v-deep(.el-input__prefix .el-input__icon) {
+                        width: 20px;
+                        height: 20px;
+                        color: #3268DC;
+                        background: #ECF2FF;
+                    }
+
+                    ::v-deep(.el-input__inner) {
+                        font-size: .875rem;
+                        letter-spacing: .04rem;
+                        font-weight: 200;
+                        cursor: pointer;
+                        --el-input-placeholder-color: #3268DC;
+                    }
                 }
             }
             .left, .center {
-                height: 2.8125rem;
+                height: 2.5rem;
                 border-radius: .5rem;
                 background: #FFFFFF;
                 box-shadow: 0 .1875rem .375rem 0 rgba(0, 0, 0, 0.08);
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
+                /* 群组管理 修改群组名称输入框样式 */
+                ::v-deep(.el-input__wrapper ){
+                    box-shadow: none !important;
+                }
             }
             .right {
                 transition: transform 0.2s ease;
@@ -190,11 +339,11 @@ import { ElMessage, ElMessageBox } from 'element-plus';
                 }
             }
             .right, .center div {
-                width: 9.375rem;
+                width: 6.375rem;
             }
             .right, .left div, .center div {
-                height: 2.8125rem;
-                line-height: 2.8125rem;
+                height: 2.5rem;
+                line-height: 2.5rem;
                 text-align: center;
                 color: #FFFFFF;
                 border-radius: .5rem;
@@ -252,12 +401,8 @@ import { ElMessage, ElMessageBox } from 'element-plus';
                         font-weight: 350;
                         line-height: 1.25rem;
                         color: #666666;
-                        &:nth-child(4) {
-                            width: 28.1875rem;
-                            flex: 3;
-                        }
                         &:last-child {
-                            color: #F56C6C;
+                            color: #409EFF;
                             cursor: pointer;
                         }
                         .ellipsis {
@@ -290,10 +435,15 @@ import { ElMessage, ElMessageBox } from 'element-plus';
                     display: flex;
                     flex: 1;
                     justify-content: center;
+                    &:nth-child(3) {
+                        width: 15.1875rem;
+                        padding: 0 1rem;
+                        flex: 1.5;
+                    }
                     &:nth-child(4) {
-                        width: 27.1875rem;
-                        padding: 0 4rem;
-                        flex: 3;
+                        width: 20.1875rem;
+                        padding: 0 2rem;
+                        flex: 1.5;
                     }
                 }
             }

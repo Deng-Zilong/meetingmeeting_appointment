@@ -132,4 +132,15 @@ public class MeetingRecordController {
 
         return null;
     }
+
+
+
+    /**
+     * @return {@code Result<Page<MeetingRecordVO>>}
+     * @description 查询所有会议记录
+     */
+    @GetMapping("/meetingRecord/selectAllMeetingRecord")
+    public Result<List<MeetingRecordVO>> getRecordPage (@RequestParam Long page, @RequestParam Long limit) {
+        return meetingRecordService.getAllMeetingRecordVoListPage(page, limit);
+    }
 }

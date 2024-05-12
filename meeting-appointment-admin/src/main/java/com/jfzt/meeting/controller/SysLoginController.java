@@ -45,7 +45,7 @@ public class SysLoginController {
      * 验证码
      */
     @GetMapping("captcha.jpg")
-    public void captcha(HttpServletResponse response, String uuid) throws IOException {
+    public void captcha(HttpServletResponse response,@RequestParam("uuid") String uuid) throws IOException {
         response.setHeader("Cache-Control", "no-store, no-cache");
         response.setContentType("image/jpeg");
         //获取图片验证码
@@ -83,6 +83,7 @@ public class SysLoginController {
         redisTemplate.opsForValue().set("userInfo"+userInfo.getUserId(), String.valueOf(userInfo));
         //存入当前登录用户到ThreadLocal中
         BaseContext.setCurrentUserId(sysUser.getUserId());
+        BaseContext.setCurrentLevel(sysUser.getLevel());
         return Result.success(userInfo);
     }
 

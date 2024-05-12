@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MeetingRecordStatusConstant;
+import com.jfzt.meeting.constant.MessageConstant;
+import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.SysUser;
@@ -23,14 +25,14 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.jfzt.meeting.constant.IsDeletedConstant.NOT_DELETED;
 import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
+import static com.jfzt.meeting.constant.MeetingRoomStatusConstant.*;
 import static com.jfzt.meeting.constant.TimePeriodStatusConstant.*;
+import static com.jfzt.meeting.context.BaseContext.removeCurrentLevel;
 
 /**
  * @author zilong.deng
@@ -45,11 +47,13 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     @Autowired
     private MeetingRoomMapper meetingRoomMapper;
 
+    @Autowired
     private MeetingRecordService meetingRecordService;
 
     @Autowired
     private SysUserService userService;
 
+    @Autowired
     private MeetingAttendeesMapper attendeesMapper;
 
 
@@ -73,13 +77,23 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
     /**
      * 修改会议室状态
-     * @param id 会议室id
+     *
+     * @param id     会议室id
      * @param status 会议室状态
-     * @return
      */
     @Override
-    public boolean updateStatus(Long id, Integer status) {
-        return meetingRoomMapper.updateStatus(id, status);
+    public Result<Integer> updateStatus (Long id, Integer status) {
+        // 获取当前登录用户的权限等级
+        Integer level = BaseContext.getCurrentLevel();
+        removeCurrentLevel();
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)) {
+            boolean result = meetingRoomMapper.updateStatus(id, status);
+            if (result) {
+                return Result.success(MessageConstant.SUCCESS);
+            }
+            return Result.fail(MessageConstant.FAIL);
+        }
+        return Result.fail(MessageConstant.HAVE_NO_AUTHORITY);
     }
 
 
@@ -95,14 +109,14 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         //查询所有会议室
         List<MeetingRoom> meetingRoomList = list(
                 new LambdaQueryWrapper<MeetingRoom>()
-                        .eq(MeetingRoom::getIsDeleted, 0)
+                        .eq(MeetingRoom::getIsDeleted, NOT_DELETED)
                         .orderByAsc(MeetingRoom::getLocation));
 
         return meetingRoomList.stream().map(meetingRoom -> {
             MeetingRoomStatusVO meetingRoomStatusVO = new MeetingRoomStatusVO();
             BeanUtils.copyProperties(meetingRoom, meetingRoomStatusVO);
             //暂停使用直接返回
-            if (meetingRoomStatusVO.getStatus() == 0) {
+            if (Objects.equals(meetingRoomStatusVO.getStatus(), MEETINGROOM_STATUS_PAUSE)) {
                 return meetingRoomStatusVO;
             }
             LambdaQueryWrapper<MeetingRecord> recordQueryWrapper = new LambdaQueryWrapper<>();
@@ -110,18 +124,18 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                     .lt(MeetingRecord::getStartTime, LocalDateTime.now())
                     .gt(MeetingRecord::getEndTime, LocalDateTime.now())
                     .eq(MeetingRecord::getMeetingRoomId, meetingRoom.getId());
-            recordQueryWrapper.and(wrapper -> wrapper.eq(MeetingRecord::getStatus, 0)
-                    .or().eq(MeetingRecord::getStatus, 1)
-                    .or().eq(MeetingRecord::getStatus, 2));
+            recordQueryWrapper.and(wrapper -> wrapper.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
+                    .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING)
+                    .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_END));
 
             List<MeetingRecord> meetingRecords = meetingRecordService.list(recordQueryWrapper);
             if (meetingRecords.isEmpty()) {
                 //当前没有会议
-                meetingRoomStatusVO.setStatus(1);
+                meetingRoomStatusVO.setStatus(MEETINGROOM_STATUS_AVAILABLE);
             } else {
                 MeetingRecord meetingRecord = meetingRecords.getFirst();
                 //更新会议室状态
-                meetingRoomStatusVO.setStatus(2);
+                meetingRoomStatusVO.setStatus(MEETINGROOM_STATUS_USING);
                 //更新会议状态
                 meetingRecordService.updateRecordStatus(meetingRecord);
                 //有会议将会议信息返回
@@ -188,8 +202,8 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                         .size();
                 //获取可使用的会议室总数
                 long count = this.count(new LambdaQueryWrapper<MeetingRoom>()
-                        .eq(MeetingRoom::getIsDeleted, 0)
-                        .eq(MeetingRoom::getStatus, 1));
+                        .eq(MeetingRoom::getIsDeleted, NOT_DELETED)
+                        .eq(MeetingRoom::getStatus, MEETINGROOM_STATUS_AVAILABLE));
                 if (count == size) {
                     System.out.println(timeStatus);
                     //相同表示时间段全被占用
@@ -284,7 +298,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 .or().lt(MeetingRecord::getStartTime, startTime).gt(MeetingRecord::getEndTime, endTime));
         List<MeetingRecord> meetingRecords = meetingRecordService.list(queryWrapper);
         List<MeetingRoom> meetingRooms = this.list(new LambdaQueryWrapper<MeetingRoom>()
-                .notIn(MeetingRoom::getStatus, 0));
+                .notIn(MeetingRoom::getStatus, MEETINGROOM_STATUS_PAUSE));
         Iterator<MeetingRoom> iterator = meetingRooms.iterator();
         while (iterator.hasNext()) {
             MeetingRoom meetingRoom = iterator.next();

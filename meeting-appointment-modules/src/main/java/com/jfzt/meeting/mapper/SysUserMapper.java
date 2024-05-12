@@ -18,11 +18,11 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
     
     /**
      * 修改用户的权限等级
-     * @param userName
+     * @param userId
      * @param level
      * @return
      */
-    boolean updateLevel(@Param("userName") String userName, @Param("level") Integer level);
+    int updateLevel(@Param("userId") String userId, @Param("level") Integer level);
 
 }
 

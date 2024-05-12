@@ -1,17 +1,13 @@
 package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.constant.MessageConstant;
 import com.jfzt.meeting.entity.MeetingNotice;
 import com.jfzt.meeting.service.MeetingNoticeService;
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
-import static com.jfzt.meeting.service.impl.SysUserServiceImpl.ADMIN_LEVEL;
-import static com.jfzt.meeting.service.impl.SysUserServiceImpl.SUPER_ADMIN_LEVEL;
 
 /**
  * 会议群组控制类
@@ -33,19 +29,8 @@ public class MeetingNoticeController {
      * @return
      */
     @PostMapping("/addNotice")
-    public Result<Object> addNotice(@RequestBody MeetingNotice meetingNotice) {
-        // 获取当前登录用户的权限等级
-        //Integer level = BaseContext.getCurrentLevel();
-        Integer level = 1;
-        if (SUPER_ADMIN_LEVEL.equals(level) || ADMIN_LEVEL.equals(level)){
-            int row = meetingNoticeService.addNotice(meetingNotice);
-            if (row > 0){
-                return Result.success("新增成功!");
-            }else {
-                return Result.fail("新增失败!");
-            }
-        }
-        return Result.fail("新增失败，请联系管理员获取权限！");
+    public Result<Integer> addNotice(@RequestBody MeetingNotice meetingNotice) {
+        return meetingNoticeService.addNotice(meetingNotice);
     }
 
     /**
