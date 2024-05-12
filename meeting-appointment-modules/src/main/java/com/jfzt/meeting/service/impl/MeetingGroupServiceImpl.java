@@ -4,16 +4,19 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.context.BaseContext;
+import com.jfzt.meeting.entity.MeetingAttendees;
 import com.jfzt.meeting.entity.MeetingGroup;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.UserGroup;
 import com.jfzt.meeting.entity.dto.MeetingGroupDTO;
 import com.jfzt.meeting.entity.vo.MeetingGroupVO;
+import com.jfzt.meeting.entity.vo.UserInfoVO;
 import com.jfzt.meeting.mapper.MeetingGroupMapper;
 import com.jfzt.meeting.service.MeetingGroupService;
 import com.jfzt.meeting.service.SysUserService;
 import com.jfzt.meeting.service.UserGroupService;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -22,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.jfzt.meeting.constant.MessageConstant.NO_USER;
+import static com.jfzt.meeting.constant.MessageConstant.*;
 import static com.jfzt.meeting.constant.MessageConstant.SAME_NAME;
 
 /**
@@ -31,6 +34,7 @@ import static com.jfzt.meeting.constant.MessageConstant.SAME_NAME;
  * @since 2024-04-28 11:33:49
  */
 @Service
+@Slf4j
 public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, MeetingGroup>
         implements MeetingGroupService {
 
@@ -164,13 +168,15 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         userGroupService.save(group);
 
 
-        return Result.success();
+        return Result.success(ADD_SUCCESS);
     }
 
     /**
      * @return com.jfzt.meeting.common.Result<java.lang.Object>
      * @Description 群组修改
      * @Param [meetingGroupDTO]
+     * @return com.jfzt.meeting.common.Result<java.lang.Object>
+     * @exception
      */
     @Override
     @Transactional
@@ -179,6 +185,10 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         MeetingGroup beforeGroup = lambdaQuery()
                 .eq(meetingGroupDTO.getId() != null, MeetingGroup::getId, meetingGroupDTO.getId())
                 .one();
+        if (beforeGroup == null){
+            log.info(GROUP_NOT_EXIST);
+            return Result.fail(GROUP_NOT_EXIST);
+        }
         // 根据meetingGroupDTO中的groupName查询MeetingGroup表，获取groupId
         MeetingGroup one = lambdaQuery()
                 .eq(StringUtils.isNotBlank(beforeGroup.getGroupName()), MeetingGroup::getGroupName, beforeGroup.getGroupName())
@@ -204,14 +214,14 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
             userGroupService.save(group);
         }).toList();
 
-
-        return Result.success();
+        return Result.success(UPDATE_SUCCESS);
     }
 
     /**
-     * @return com.jfzt.meeting.common.Result<java.lang.Object>
      * @Description 群组删除
      * @Param [meetingGroupDTO]
+     * @return com.jfzt.meeting.common.Result<java.lang.Object>
+     * @exception
      */
     @Override
     @Transactional
@@ -222,7 +232,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         removeById(id);
         // 按照beforeList中的id删除UserGroup对象
         userGroupService.removeBatchByIds(userGroupList);
-        return Result.success();
+        return Result.success(DELETE_FAIL);
     }
 }
 
