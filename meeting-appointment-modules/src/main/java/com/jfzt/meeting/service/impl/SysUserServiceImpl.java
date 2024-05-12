@@ -105,12 +105,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return Result.fail(MessageConstant.HAVE_NO_AUTHORITY);
     }
 
+    /**
+     * 返回验证码图片，存储到redis
+     * @param uuid
+     * @return
+     */
     @Override
     public BufferedImage getCaptcha(String uuid) {
-        //生成文字验证码
-        String code =uuid+"/"+producer.createText();
-        redisTemplate.opsForValue().set(uuid,code, Duration.ofSeconds(60));
-        return producer.createImage(producer.createText());
+        String code =producer.createText();
+        redisTemplate.opsForValue().set(uuid,code, Duration.ofHours(60));
+        return producer.createImage(code);
     }
 
     @Override

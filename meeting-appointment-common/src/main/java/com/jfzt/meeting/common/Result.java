@@ -14,9 +14,8 @@ import java.util.HashMap;
  * @author zhenxing.lu
  * @since 2024-04-30 10.13:51
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
-public class Result<T> extends HashMap<String, Object> implements Serializable {
+public class Result<T> implements Serializable {
     private String code;
     private String msg;
     private T data;
