@@ -1,10 +1,12 @@
 package com.jfzt.meeting.common;
 
+import com.jfzt.meeting.exception.ErrorCodeEnum;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Map;
+
 
 /**
  * 返回状态定义
@@ -12,17 +14,23 @@ import java.util.Map;
  * @author zhenxing.lu
  * @since 2024-04-30 10.13:51
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class Result<T> extends HashMap<String, Object> implements Serializable {
     private String code;
     private String msg;
     private T data;
-
-
-    public static <T> Result<T> success (T data) {
-        return new Result<>("200", "success", data);
+    public Result() {
     }
-
+    public static <T> Result<T> success(ErrorCodeEnum success) {
+        return new Result<>(success.getCode(), success.getDescription(), null);
+    }
+    public static <T> Result<T> success(T data) {
+        return new Result<>(ErrorCodeEnum.SUCCESS.getCode(),ErrorCodeEnum.SUCCESS.getDescription(), data);
+    }
+    public static <T> Result<T> fail (ErrorCodeEnum fails) {
+        return new Result<>(fails.getCode(), fails.getDescription(), null);
+    }
     public static <T> Result<T> success() {
         return new Result<>("200", "success", null);
     }
