@@ -34,9 +34,17 @@ public interface SysUserService extends IService<SysUser> {
      */
     Result<Object> updateLevel(@Param("userId") String userId, @Param("level") Integer level);
 
-
+    /**
+     * uuid+生成验证码存储
+     * @param uuid
+     */
     BufferedImage getCaptcha(String uuid);
 
+    /**
+     * 查询用户信息
+     * @param loginVo
+     * @return
+     */
     SysUser findUser(LoginVo loginVo);
 
     /**

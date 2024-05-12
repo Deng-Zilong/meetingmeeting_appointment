@@ -24,6 +24,9 @@ public enum ErrorCodeEnum {
     USER_ERROR_A0100("A0100", "用户注册错误"),
     USER_ERROR_A0101("A0101", "用户未同意隐私协议"),
     SERVICE_ERROR_A0240("A0240", "用户验证码错误"),
+    SERVICE_ERROR_A0201("A0201", "用户账户不存在"),
+    SERVICE_ERROR_A0210("A0210", "用户密码错误"),
+
 
     /**
      * 系统异常
@@ -53,8 +56,8 @@ public enum ErrorCodeEnum {
      */
     SERVICE_ERROR_C0100("C0100", "中间件服务出错"),
     SERVICE_ERROR_C0110("C0110", "RPC 服务出错"),
-    SERVICE_ERROR_C0111("C0111", "RPC 服务未找到"),
-
+    SERVICE_ERROR_C0111("C0200", "RPC 服务未找到"),
+    SERVICE_ERROR_C0200("C0200", "第三方系统执行超时"),
     /**
      * 用户请求参数错误
      */
