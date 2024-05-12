@@ -65,7 +65,14 @@ public enum ErrorCodeEnum {
      * 用户请求参数错误
      */
     SERVICE_ERROR_A0410("A0410", "请求必填参数为空"),
-    SERVICE_ERROR_A0421("A0421", "参数格式不匹配");
+    SERVICE_ERROR_A0421("A0421", "参数格式不匹配"),
+
+
+    /**
+     * 用户访问权限异常
+     */
+    SERVICE_ERROR_A0301("A0301", "访问未授权");
+
 
     private final String code;
     private final String description;
