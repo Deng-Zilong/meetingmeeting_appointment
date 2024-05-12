@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
      * 处理自定义异常
      */
     @ExceptionHandler(RRException.class)
-    public Result<String> handleRRException(RRException e){
+    public Result<String> handleRRException (RRException e) {
         log.error(e.getMessage(), e);
         Result<String> result = new Result<>();
         result.setCode(e.getCode());
@@ -40,26 +40,38 @@ public class GlobalExceptionHandler {
         result.setMsg(e.getMessage());
         return result;
     }
+
     /**
      * 处理token生成异常
      */
     @ExceptionHandler(NoSuchAlgorithmException.class)
-    public Result<String> handleRRException(NoSuchAlgorithmException e){
+    public Result<String> handleRRException (NoSuchAlgorithmException e) {
         log.error("accessToken生成异常", e);
         Result<String> result = new Result<>();
         result.setMsg("accessToken生成异常");
         return result;
     }
+
     /**
      * 调用企业微信接口异常
      */
     @ExceptionHandler(WxErrorException.class)
-    public Result<String> handleRRException(WxErrorException e){
+    public Result<String> handleRRException (WxErrorException e) {
         log.error(ErrorCodeEnum.SERVICE_ERROR_C0200.getCode(), ErrorCodeEnum.SERVICE_ERROR_C0200.getDescription());
         Result<String> result = new Result<>();
         result.setCode(ErrorCodeEnum.SERVICE_ERROR_C0200.getCode());
         result.setMsg(ErrorCodeEnum.SERVICE_ERROR_C0200.getDescription());
         return result;
+    }
+
+    /**
+     * 处理其他未知异常
+     *
+     * @return {@code Result<String>}
+     */
+    @ExceptionHandler(Exception.class)
+    public Result<String> handleException () {
+        return Result.fail(ErrorCodeEnum.SYSTEM_ERROR_B0001);
     }
 
 

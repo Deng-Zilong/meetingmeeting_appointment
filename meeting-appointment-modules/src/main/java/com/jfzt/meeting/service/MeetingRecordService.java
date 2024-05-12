@@ -17,8 +17,6 @@ import java.util.Objects;
 public interface MeetingRecordService extends IService<MeetingRecord> {
 
 
-
-
     /**
      * 获取当天用户参与的所有会议
      *
@@ -49,6 +47,7 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
 
     /**
      * 分页获取所有会议记录
+     *
      * @return {@code List<MeetingRecordVO>}
      */
     Result<List<MeetingRecordVO>> getAllMeetingRecordVoListPage (Long pageNum, Long pageSize);
@@ -69,19 +68,21 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      * @param meetingId 会议id
      * @return {@code Boolean}
      */
-    Boolean cancelMeetingRecord (String userId, Long meetingId);
+    Result<String> cancelMeetingRecord (String userId, Long meetingId);
+
     /**
+     * @return com.jfzt.meeting.common.Result<java.util.Objects>
+     * @throws
      * @Description 新增会议
      * @Param [meetingRecordDTO]
-     * @return com.jfzt.meeting.common.Result<java.util.Objects>
-     * @exception
      */
-    Result<Objects> addMeeting(MeetingRecordDTO meetingRecordDTO);
+    Result<Objects> addMeeting (MeetingRecordDTO meetingRecordDTO);
+
     /**
+     * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingRecordVO>>
+     * @throws
      * @Description 更新会议
      * @Param [meetingRecordDTO]
-     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.MeetingRecordVO>>
-     * @exception
      */
-    Result<List<MeetingRecordVO>> updateMeeting(MeetingRecordDTO meetingRecordDTO);
+    Result<List<MeetingRecordVO>> updateMeeting (MeetingRecordDTO meetingRecordDTO);
 }

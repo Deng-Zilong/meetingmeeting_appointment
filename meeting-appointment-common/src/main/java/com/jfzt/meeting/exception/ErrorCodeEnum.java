@@ -10,6 +10,8 @@ import lombok.Getter;
  * 4. C代表第三方服务异常
  * 4. 若无法确定具体错误，选择宏观错误
  * 6. 大的错误类间的步长间距预留100
+ *
+ * @date 2024/05/12
  */
 @Getter
 public enum ErrorCodeEnum {
@@ -64,6 +66,7 @@ public enum ErrorCodeEnum {
     /**
      * 用户请求参数错误
      */
+    SERVICE_ERROR_A0400("A0400", "用户请求参数错误"),
     SERVICE_ERROR_A0410("A0410", "请求必填参数为空"),
     SERVICE_ERROR_A0421("A0421", "参数格式不匹配"),
 

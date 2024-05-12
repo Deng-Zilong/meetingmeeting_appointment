@@ -14,6 +14,8 @@ import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
+import com.jfzt.meeting.exception.ErrorCodeEnum;
+import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
 import com.jfzt.meeting.mapper.MeetingRecordMapper;
 import com.jfzt.meeting.service.MeetingAttendeesService;
@@ -70,6 +72,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      */
     @Override
     public List<MeetingRecordVO> getRecordVoList (String userId) {
+        if (Objects.isNull(userId)) {
+            throw new RRException("用户id不能为空", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+        }
         LambdaQueryWrapper<MeetingRecord> recordQueryWrapper = new LambdaQueryWrapper<>();
         // 获取当前时间
         LocalDateTime now = LocalDateTime.now();
@@ -127,11 +132,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                     attendees.append(",");
                 }
             });
-
+            //当前用户参与会议
             if (userIdList.contains(userId)) {
                 //更新会议状态
-
                 updateRecordStatus(meetingRecord);
+                meetingRecord = this.getById(meetingRecord.getId());
                 //插入会议信息
                 BeanUtils.copyProperties(meetingRecord, meetingRecordVO);
                 //插入会议室信息
@@ -289,16 +294,17 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 分页获取所有的会议
+     *
      * @param pageNum
      * @param pageSize
      * @return
      */
     @Override
-    public Result<List<MeetingRecordVO>> getAllMeetingRecordVoListPage(Long pageNum, Long pageSize) {
+    public Result<List<MeetingRecordVO>> getAllMeetingRecordVoListPage (Long pageNum, Long pageSize) {
         // 获取当前登录用户的权限等级
         Integer level = BaseContext.getCurrentLevel();
         removeCurrentLevel();
-        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)){
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)) {
             if (pageNum == null || pageSize == null) {
                 return null;
             }
@@ -372,19 +378,23 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      * @return {@code Boolean}
      */
     @Override
-    public Boolean cancelMeetingRecord (String userId, Long meetingId) {
+    public Result<String> cancelMeetingRecord (String userId, Long meetingId) {
 
         //查询会议记录
         MeetingRecord meetingRecord = this.baseMapper.selectById(meetingId);
-
+        updateRecordStatus(meetingRecord);
+        meetingRecord = this.baseMapper.selectById(meetingId);
+        //更新会议状态
         //会议不是未开始状态或者会议创建人不是当前用户无法取消
-        if (Objects.equals(meetingRecord.getStatus(), MEETING_RECORD_STATUS_NOT_START) && meetingRecord.getCreatedBy().equals(userId)) {
-            //更新会议状态
-            meetingRecord.setStatus(MEETING_RECORD_STATUS_CANCEL);
-            this.baseMapper.updateById(meetingRecord);
-            return true;
+        if (!Objects.equals(meetingRecord.getStatus(), MEETING_RECORD_STATUS_NOT_START)) {
+            throw new RRException("会议当前状态不可取消！", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
         }
-        return false;
+        if (!meetingRecord.getCreatedBy().equals(userId)) {
+            throw new RRException("当前用户没有修改权限！", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+        }
+        meetingRecord.setStatus(MEETING_RECORD_STATUS_CANCEL);
+        this.baseMapper.updateById(meetingRecord);
+        return Result.success();
     }
 
     /**

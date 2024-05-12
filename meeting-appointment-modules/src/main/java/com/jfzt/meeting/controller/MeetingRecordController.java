@@ -1,7 +1,6 @@
 package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
-import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
 import com.jfzt.meeting.service.MeetingRecordService;
@@ -9,11 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-import static com.jfzt.meeting.constant.MessageConstant.*;
+import static com.jfzt.meeting.constant.MessageConstant.DELETE_FAIL;
 
 /**
  * @author zilong.deng
@@ -28,6 +26,11 @@ public class MeetingRecordController {
     @Autowired
     private MeetingRecordService meetingRecordService;
 
+
+    /**
+     * @return {@code Result<Integer>}
+     * @description 查询当日会议总数
+     */
     @GetMapping("/index/queryRecordNumber")
     public Result<Integer> queryRecordNumber () {
         return Result.success(meetingRecordService.getRecordNumber());
@@ -71,13 +74,7 @@ public class MeetingRecordController {
      */
     @PostMapping("/index/cancelMeetingRecord")
     public Result<String> cancelMeetingRecord (@RequestParam String userId, @RequestParam Long meetingId) {
-        Boolean result = meetingRecordService.cancelMeetingRecord(userId, meetingId);
-        if (result) {
-            log.info("用户{}取消会议{}成功", userId, meetingId);
-            return Result.success(CANCEL_SUCCESS);
-        }
-        log.info("用户{}取消会议{}失败", userId, meetingId);
-        return Result.fail(CANCEL_FAIL);
+        return meetingRecordService.cancelMeetingRecord(userId, meetingId);
     }
 
     /**
@@ -92,27 +89,27 @@ public class MeetingRecordController {
         Boolean result = meetingRecordService.deleteMeetingRecord(userId, meetingId);
         if (result) {
             log.info("用户{}删除会议{}成功", userId, meetingId);
-            return Result.success(DELETE_SUCCESS);
+            return Result.success();
         }
         log.info("用户{}删除会议{}失败", userId, meetingId);
         return Result.fail(DELETE_FAIL);
     }
 
     /**
+     * @return com.jfzt.meeting.common.Result<java.util.Objects>
      * @Description 新增会议
      * @Param [meetingRecordDTO]
-     * @return com.jfzt.meeting.common.Result<java.util.Objects>
-     * @exception
      */
     @PostMapping("/index/addMeetingRecord")
     public Result<Objects> addMeetingRecord (@RequestBody MeetingRecordDTO meetingRecordDTO) {
         return meetingRecordService.addMeeting(meetingRecordDTO);
     }
+
     /**
+     * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingRecordVO>>
+     * @throws
      * @Description 更新会议
      * @Param [meetingRecordDTO]
-     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.MeetingRecordVO>>
-     * @exception
      */
     @PutMapping("/index/updateMeetingRecord")
     public Result<List<MeetingRecordVO>> updateMeetingRecord (@RequestBody MeetingRecordDTO meetingRecordDTO) {
@@ -120,7 +117,9 @@ public class MeetingRecordController {
     }
 
     /**
-     * @return {@code Result<Page<MeetingRecordVO>>}
+     * @param page  页码
+     * @param limit 每页显示条数
+     * @return {@code Result<List<MeetingRecordVO>>}
      * @description 查询所有会议记录
      */
     @GetMapping("/meetingRecord/selectAllMeetingRecord")

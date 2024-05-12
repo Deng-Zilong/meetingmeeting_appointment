@@ -19,10 +19,10 @@ import java.util.List;
 public interface MeetingRoomService extends IService<MeetingRoom> {
 
     /**
-     * @param meetingRoomVO 会议室
+     * @param meetingRoom 会议室
      * @return {@code Boolean}
      */
-    Result<String> addMeetingRoom (MeetingRoomVO meetingRoomVO);
+    Result<String> addMeetingRoom (MeetingRoom meetingRoom);
 
 
     /**
@@ -61,9 +61,10 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
 
     /**
      * 更新会议室状态
-     * @param id 会议室ID
+     *
+     * @param id     会议室ID
      * @param status 会议室状态
      * @return
      */
-    Result<Integer> updateStatus(Long id, Integer status);
+    Result<Integer> updateStatus (Long id, Integer status);
 }

@@ -58,12 +58,16 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
 
     /**
-     * @param meetingRoomVO 会议室对象
+     * @param meetingRoom 会议室对象
      * @return {@code Boolean}
      */
     @Override
-    public Result<String> addMeetingRoom (MeetingRoomVO meetingRoomVO) {
-        return null;
+    public Result<String> addMeetingRoom (MeetingRoom meetingRoom) {
+        int result = meetingRoomMapper.insert(meetingRoom);
+        if (result > 0) {
+            return Result.success(MessageConstant.SUCCESS);
+        }
+        return Result.fail(MessageConstant.FAIL);
     }
 
     /**

@@ -2,10 +2,8 @@ package com.jfzt.meeting.common;
 
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
-import java.util.HashMap;
 
 
 /**

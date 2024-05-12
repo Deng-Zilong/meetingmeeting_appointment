@@ -1,6 +1,7 @@
 package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.dto.TimePeriodDTO;
 import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomVO;
@@ -73,8 +74,8 @@ public class MeetingRoomController {
     }
 
     @PostMapping("/addMeetingRoom")
-    public Result<String> addMeetingRoom (@RequestBody @Valid MeetingRoomVO meetingRoomVO) {
-        return meetingRoomService.addMeetingRoom(meetingRoomVO);
+    public Result<String> addMeetingRoom (@RequestBody MeetingRoom meetingRoom) {
+        return meetingRoomService.addMeetingRoom(meetingRoom);
 
     }
 
@@ -89,9 +90,10 @@ public class MeetingRoomController {
 
     /**
      * 修改会议室状态
-     * @param id 会议室id
+     *
+     * @param id     会议室id
      * @param status 会议室状态（0暂停使用,1可使用/空闲 2为使用中不保存至数据库，实时获取）
-     * @return
+     * @return {@code Result<Integer>}
      */
     @PutMapping("/updateStatus")
     public Result<Integer> updateStatus (@RequestParam("id") Long id, @RequestParam("status") Integer status) {
