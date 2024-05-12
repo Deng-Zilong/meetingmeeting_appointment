@@ -59,7 +59,7 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      * @param meetingId 会议id
      * @return {@code Boolean}
      */
-    Boolean deleteMeetingRecord (String userId, Long meetingId);
+    Result<String> deleteMeetingRecord (String userId, Long meetingId);
 
     /**
      * 根据会议记录id取消会议

@@ -12,6 +12,8 @@ import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomVO;
 import com.jfzt.meeting.entity.vo.TimePeriodStatusVO;
+import com.jfzt.meeting.exception.ErrorCodeEnum;
+import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
 import com.jfzt.meeting.mapper.MeetingRoomMapper;
 import com.jfzt.meeting.service.MeetingRecordService;
@@ -142,6 +144,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 meetingRoomStatusVO.setStatus(MEETINGROOM_STATUS_USING);
                 //更新会议状态
                 meetingRecordService.updateRecordStatus(meetingRecord);
+                meetingRecord = meetingRecordService.getById(meetingRecord.getId());
                 //有会议将会议信息返回
                 meetingRoomStatusVO.setTitle(meetingRecord.getTitle());
                 meetingRoomStatusVO.setDescription(meetingRecord.getDescription());
@@ -232,6 +235,9 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      */
     @Override
     public Result<List<TimePeriodStatusVO>> isBusyByIdAndDate (Long id, LocalDate date) {
+        if (id == null || date == null) {
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
+        }
         LocalDateTime now = LocalDateTime.now();
         List<TimePeriodStatusVO> timePeriodStatusVOList = new LinkedList<>();
         LocalDateTime startTime = LocalDateTime.of(date, LocalTime.of(8, 0));

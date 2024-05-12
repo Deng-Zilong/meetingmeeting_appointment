@@ -245,7 +245,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     public List<MeetingRecordVO> getAllRecordVoListPage (String userId, Long pageNum, Long pageSize) {
 
         if (pageNum == null || pageSize == null) {
-            return null;
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
         }
         //通过参会表查询用户参与的所有会议id
         Page<MeetingAttendees> meetingAttendeesPage = attendeesMapper
@@ -254,7 +254,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                                 .eq(MeetingAttendees::getUserId, userId)
                                 .orderByAsc(MeetingAttendees::getGmtModified));
         List<Long> recordIds = meetingAttendeesPage.getRecords().stream().map(MeetingAttendees::getMeetingRecordId).toList();
-
         if (recordIds.isEmpty()) {
             return null;
         }
@@ -270,6 +269,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                     StringBuffer attendees = getStringBuffer(userIds);
                     //更新会议状态
                     updateRecordStatus(meetingRecord);
+                    meetingRecord = this.baseMapper.selectById(recordId);
                     //插入会议信息
                     BeanUtils.copyProperties(meetingRecord, meetingRecordVO);
                     //插入会议室信息
@@ -306,7 +306,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         removeCurrentLevel();
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)) {
             if (pageNum == null || pageSize == null) {
-                return null;
+                throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
             }
             // 查询出来所有的会议记录
             Page<MeetingRecord> meetingRecordPage = this.baseMapper.selectPage(new Page<>(pageNum, pageSize), new QueryWrapper<>());
@@ -322,6 +322,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 //更新会议状态
                 MeetingRecord meetingRecord = this.baseMapper.selectById(id);
                 updateRecordStatus(meetingRecord);
+                meetingRecord = this.baseMapper.selectById(id);
                 //插入会议信息
                 MeetingRecordVO meetingRecordVO = new MeetingRecordVO();
                 BeanUtils.copyProperties(meetingRecord, meetingRecordVO);
@@ -354,20 +355,23 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      * @return {@code Boolean}
      */
     @Override
-    public Boolean deleteMeetingRecord (String userId, Long meetingId) {
-
+    public Result<String> deleteMeetingRecord (String userId, Long meetingId) {
         //查询会议记录
         MeetingRecord meetingRecord = this.baseMapper.selectById(meetingId);
+        updateRecordStatus(meetingRecord);
+        meetingRecord = this.baseMapper.selectById(meetingId);
+        if (meetingRecord.getStatus().equals(MEETING_RECORD_STATUS_NOT_START)) {
+            throw new RRException("当前会议状态无法删除！", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+        }
         //判断用户是否为参会人
         List<String> userIds = attendeesMapper.selectUserIdsByRecordId(meetingId);
         if (userIds.contains(userId)) {
             //删除
             meetingRecord.setIsDeleted(IS_DELETED);
             this.baseMapper.updateById(meetingRecord);
-            return true;
+            return Result.success();
         }
-        return false;
-
+        throw new RRException("当前用户没有删除权限！", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
     }
 
     /**

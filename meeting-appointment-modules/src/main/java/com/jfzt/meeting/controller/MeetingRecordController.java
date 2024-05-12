@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Objects;
 
-import static com.jfzt.meeting.constant.MessageConstant.DELETE_FAIL;
-
 /**
  * @author zilong.deng
  * @date 2024/04/29
@@ -44,7 +42,6 @@ public class MeetingRecordController {
     @GetMapping("/index/todayMeetingRecord")
     public Result<List<MeetingRecordVO>> queryRecordVoList (@RequestParam String userId) {
         List<MeetingRecordVO> recordvoList = meetingRecordService.getRecordVoList(userId);
-        log.info("用户{}当天会议记录:{}", userId, recordvoList);
         return Result.success(recordvoList);
     }
 
@@ -55,13 +52,7 @@ public class MeetingRecordController {
      */
     @GetMapping("/meetingRecord/allMeetingRecord")
     public Result<List<MeetingRecordVO>> getRecordPage (@RequestParam String userId, @RequestParam Long page, @RequestParam Long limit) {
-
         List<MeetingRecordVO> recordVoList = meetingRecordService.getAllRecordVoListPage(userId, page, limit);
-        if (recordVoList == null) {
-            log.info("用户{}没有历史会议记录", userId);
-            return Result.success();
-        }
-        log.info("用户{}当天会议记录:{}", userId, recordVoList);
         return Result.success(recordVoList);
     }
 
@@ -86,13 +77,7 @@ public class MeetingRecordController {
      */
     @DeleteMapping("/index/deleteMeetingRecord")
     public Result<String> deleteMeetingRecord (@RequestParam String userId, @RequestParam Long meetingId) {
-        Boolean result = meetingRecordService.deleteMeetingRecord(userId, meetingId);
-        if (result) {
-            log.info("用户{}删除会议{}成功", userId, meetingId);
-            return Result.success();
-        }
-        log.info("用户{}删除会议{}失败", userId, meetingId);
-        return Result.fail(DELETE_FAIL);
+        return meetingRecordService.deleteMeetingRecord(userId, meetingId);
     }
 
     /**
