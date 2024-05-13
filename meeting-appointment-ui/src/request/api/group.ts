@@ -1,6 +1,6 @@
 import http from "@/request/http";
 // 获取群组列表数据
-export const getGroupList = (data: {userId: string}) => {
+export const getGroupList = (data: {pageSize: number, pageNum: number}) => {
     return http.get("/meeting/meetingGroup/getMeetingGroupList", data)
 }
 // 删除群组

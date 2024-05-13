@@ -21,7 +21,7 @@
                 <div>操作</div>
             </div>
             <div class="list-container">
-                <div class="timeline-item">
+                <div class="timeline-item" ref="timelineRef">
                     <div v-for="(item, index) in data" :key="index" class="card-item">
                         <div>{{ item.userName }}</div>
                         <div>{{ item.gmtCreate }}</div>
@@ -36,6 +36,7 @@
                         <div @click="handleDeleteMeeting(item.id)"><span>删除</span></div>
                     </div>
                 </div>
+                <div class="loading" v-show="isLoading">数据加载中......</div>
             </div>
         </div>
         <!-- 添加群组成员弹窗 -->
@@ -57,11 +58,14 @@
     import { Plus } from '@element-plus/icons-vue'
     import { getGroupList, deleteMeetingGroup, updateMeetingGroup, addMeetingGroup, getGroupUserTree, likeByName } from '@/request/api/group'
     import personDialog from "@/views/group/components/person-dialog.vue";
+    import { useInfiniteScroll } from '@vueuse/core'
 
     const userStore = useUserStore(); // 获取用户信息
+    const userInfo = ref();
     onMounted(() => {
+        userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '');
         // 初始化数据
-        handleGroupList();
+        data.value = handleGroupList({pageSize: page.value, pageNum: limit.value});
     })
 
     /************************** 创建群组开始 **************************/
@@ -71,6 +75,11 @@
     let groups = ref<any>([]); // 选中的群组成员信息、
     let type = ref<number>(1); // 1 创建群组 2 修改群组
     let search = ref<string>('');// 搜索人员
+    const timelineRef = ref(null); // 获取dom节点
+    let limit = ref(10); // 默认限制条数 10
+    let page = ref(1); // 默认页数 1
+    let isLoading = ref(false); // 控制数据加载中是否显示
+    let canLoadMore = ref(true); // 是否 继续请求数据
     // 添加群组人员弹窗数据
     let addGroupForm = ref({
         visible: false,
@@ -124,6 +133,7 @@
                 addGroupForm.value.visible = true;
             })
     }
+    
     /**
      * @description 提交需要添加的群组人员
      */
@@ -209,10 +219,11 @@
     /**
      * @description 获取群组列表
      */
-    const handleGroupList = () =>{
-        getGroupList({userId: userStore.userInfo.userId})
+    const handleGroupList = async(data: {pageSize: number, pageNum: number}) =>{
+        let list:any = [];
+        await getGroupList(data)
             .then(res => {
-                data.value = res.data.map((item: any) => {
+                list = res.data.map((item: any) => {
                     // 获取成员名称并用逗号连接
                     item.members = item.users.map((user: any) => user.userName).join(',');
                     // 群组名称是否可编辑
@@ -223,7 +234,42 @@
             .catch((err) => {
                 console.log(err, "err")
             })
+            return list;
     }
+    // 滚动加载
+    const getDataOnScroll = async () => {
+        // 中断处理
+        if (!canLoadMore.value || isLoading.value) return;
+        // 打开loading
+        isLoading.value = true;
+        // 延迟请求
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        // 发送请求
+        const newData = await handleGroupList({pageSize: page.value, pageNum: limit.value});
+        // 返回数组长度
+        const length = ref<number>(newData.length)
+        // 若返回数据长度小于限制 停止加载
+        if(length < limit) {
+            canLoadMore.value = false;
+        }
+        // 合并数据
+        data.value = [...data.value, ...newData];
+        // page + 1
+        page.value++;
+        // 关闭loading
+        isLoading.value = false;
+    };
+
+    // 滚动加载插件
+    useInfiniteScroll(
+        timelineRef, // 容器
+        async () => {
+            await getDataOnScroll();
+        },
+        {
+            distance: 15, // 距离底部的长度
+        }
+    );
 
     /**
      * @description: 更新群组信息
@@ -237,7 +283,7 @@
             })
             .catch(err => {})
             .finally(() =>{
-                handleGroupList();
+                handleGroupList({pageSize: page.value, pageNum: limit.value});
             })
     }
     /**
@@ -274,7 +320,7 @@
         })
             .then(() => {
                 deleteMeetingGroup({id}).then(res => {
-                    handleGroupList();
+                    handleGroupList({pageSize: page.value, pageNum: limit.value});
                     ElMessage.success('删除成功!');
                 }).catch(err => {});
             })

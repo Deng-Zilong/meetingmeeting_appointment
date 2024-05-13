@@ -1,5 +1,5 @@
 <template>
-    <div class="container history">
+    <div class="container history" v-loading="loading">
         <div class="theme" > 会议历史记录查看 </div>
         <div class="content">
             <div class="title">
@@ -21,7 +21,7 @@
                         <div v-for="(item, key) in value.list" :key="index" class="card-item">
                             <!-- 会议主题 -->
                             <div>
-                                <img src="@/assets/img/transmit-icon.png" alt="" class="transmit-icon" @click="transmitMeeting">
+                                <img src="@/assets/img/transmit-icon.png" alt="" class="transmit-icon" @click="transmitMeeting(item)">
                                 <el-popover
                                     placement="bottom"
                                     :disabled="item.title.length < 18"
@@ -38,7 +38,7 @@
                             <div>
                                 <el-popover
                                 placement="bottom"
-                                :disabled="item.meetingRoomName.length < 10"
+                                :disabled="item.meetingRoomName?.length < 10"
                                 :width="150"
                                 trigger="hover"
                                 :content="item.meetingRoomName"
@@ -69,7 +69,12 @@
                             <!-- 会议状态 -->
                             <div>{{ item.stateValue }}</div>
                             <!-- 操作 -->
-                            <div @click="handleCancelMeeting('time', index)"><span v-show="item.status == 0">取消会议</span></div>
+                            <div>
+                                <!-- <p @click="handleEditMeeting(item)" v-show="item.status == 0">修改</p>
+                                <p @click="handleCancelMeeting(item.id)" v-show="item.status == 0">取消</p> -->
+                                <p @click="handleEditMeeting(item)" >修改</p>
+                                <p @click="handleCancelMeeting(item.id)" v-show="item.status == 0">取消</p>
+                            </div>
                         </div>
                     </el-timeline-item>
                     <div class="loading" v-show="isLoading">数据加载中......</div>
@@ -111,14 +116,19 @@
 </template>
 <script setup lang="ts">
     import { ElMessage, ElMessageBox, dayjs } from 'element-plus'
-    import { onMounted, reactive, ref } from 'vue';
+    import { onMounted, ref } from 'vue';
+    import { useRouter } from 'vue-router';
     import { useInfiniteScroll } from '@vueuse/core'
-    import { getHistoryList } from '@/request/api/history'
+    import { cancelMeetingRecord, getHistoryList } from '@/request/api/history'
     import { meetingState } from '@/utils/types'
     import { useUserStore } from '@/stores/user'
     
     const userStore = useUserStore(); // 获取用户信息
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    const router = useRouter();
+
     const timelineRef = ref(null); // 获取dom节点
+    let loading = ref(true); // 页面loading
     let data = ref<any>([]);
     let limit = ref(10); // 默认限制条数 10
     let page = ref(1); // 默认页数 1
@@ -139,63 +149,64 @@
     //     operate: string;
     // }
     // 数据列表
-    let list = ref([
-         {
-            id: 1,
-            title: "test会议1",
-            description: "会议内容1",
-            createdBy: "dzl",
-            adminUserName: "邓子龙",
-            meetingRoomId: 4,
-            meetingRoomName: "会议室4",
-            location: 4,
-            meetingNumber: 3,
-            attendees: "邓子龙,邓子龙,邓子龙,邓子龙,邓",
-            startTime: "2024-04-30 11:22:10",
-            endTime: "2024-04-30 11:23:11",
-            status: 0,
-            isDeleted: 0,
-            date: '2024-04-30'
-        },
-        {
-            id: 1,
-            title: "test会议1111111111111111111111",
-            description: "会议内容1",
-            createdBy: "dzl",
-            adminUserName: "邓子龙",
-            meetingRoomId: 4,
-            meetingRoomName: "会议室4",
-            location: 4,
-            meetingNumber: 3,
-            attendees: "卢振兴,翟臣宇,杨家乐,寇梦梦,杨家乐,寇梦梦,杨家乐,寇梦梦,杨家乐,杨家乐,寇梦梦,杨家乐杨家乐,寇梦梦,杨家乐",
-            startTime: "2024-04-30 11:22:10",
-            endTime: "2024-04-30 11:23:11",
-            status: 2,
-            isDeleted: 0,
-            date: '2024-04-30'
-        },
-        {
-            id: 1,
-            title: "test会议1",
-            description: "会议内容1",
-            createdBy: "dzl",
-            adminUserName: "邓子龙",
-            meetingRoomId: 4,
-            meetingRoomName: "EN-2F-02 恰谈室会议室是事实会",
-            location: 4,
-            meetingNumber: 3,
-            attendees: "邓子龙,zhangsan,lisi",
-            startTime: "2024-12-29 11:22:10",
-            endTime: "2024-04-30 11:23:11",
-            status: 2,
-            isDeleted: 0,
-            date: '2024-04-29'
-        },
+    // let list = ref([
+    //      {
+    //         id: 1,
+    //         title: "test会议1",
+    //         description: "会议内容1",
+    //         createdBy: "dzl",
+    //         adminUserName: "邓子龙",
+    //         meetingRoomId: 4,
+    //         meetingRoomName: "会议室4",
+    //         location: 4,
+    //         meetingNumber: 3,
+    //         attendees: "邓子龙,邓子龙,邓子龙,邓子龙,邓",
+    //         startTime: "2024-04-30 11:22:10",
+    //         endTime: "2024-04-30 11:23:11",
+    //         status: 0,
+    //         isDeleted: 0,
+    //         date: '2024-04-30'
+    //     },
+    //     {
+    //         id: 1,
+    //         title: "test会议1111111111111111111111",
+    //         description: "会议内容1",
+    //         createdBy: "dzl",
+    //         adminUserName: "邓子龙",
+    //         meetingRoomId: 4,
+    //         meetingRoomName: "会议室4",
+    //         location: 4,
+    //         meetingNumber: 3,
+    //         attendees: "卢振兴,翟臣宇,杨家乐,寇梦梦,杨家乐,寇梦梦,杨家乐,寇梦梦,杨家乐,杨家乐,寇梦梦,杨家乐杨家乐,寇梦梦,杨家乐",
+    //         startTime: "2024-04-30 11:22:10",
+    //         endTime: "2024-04-30 11:23:11",
+    //         status: 2,
+    //         isDeleted: 0,
+    //         date: '2024-04-30'
+    //     },
+    //     {
+    //         id: 1,
+    //         title: "test会议1",
+    //         description: "会议内容1",
+    //         createdBy: "dzl",
+    //         adminUserName: "邓子龙",
+    //         meetingRoomId: 4,
+    //         meetingRoomName: "EN-2F-02 恰谈室会议室是事实会",
+    //         location: 4,
+    //         meetingNumber: 3,
+    //         attendees: "邓子龙,zhangsan,lisi",
+    //         startTime: "2024-12-29 11:22:10",
+    //         endTime: "2024-04-30 11:23:11",
+    //         status: 2,
+    //         isDeleted: 0,
+    //         date: '2024-04-29'
+    //     },
         
-    ])
+    // ])
     
-    onMounted(() => {
-        data.value = getData({userId: userStore.userInfo.userId, page: page.value, limit: limit.value});
+    onMounted(async() => {
+        data.value = await getData({userId: userInfo.userId, page: page.value, limit: limit.value});
+        loading.value = false;
     })
 
     /**
@@ -204,12 +215,13 @@
      */
     const processData = (data: any[]) => {
          return data.reduce((acc: any, current: any) => {
+            current.date = dayjs(current.startTime).format('YYYY-MM-DD')
             const obj = acc.find((group: any) => group.date === current.date);
             const month = dayjs(current.startTime).format('M');
             const day = dayjs(current.startTime).format('D');
             current.time = `${dayjs(current.startTime).format('HH:mm')} - ${dayjs(current.endTime).format('HH:mm')}`;
             current.stateValue = meetingState.find((item: any) => item.value === current.status)?.label;
-            
+
             if (obj) {
                 obj.list.push(current);
             } else {
@@ -225,15 +237,12 @@
      * @param {number} page 页码
      * @param {number} limit 每页条数
      */
-    const getData = (data: {userId: number | string, page: number, limit: number}) => {
+    const getData = async(data: {userId: number | string, page: number, limit: number}) => {
         let list:any = [];
-        getHistoryList(data)
-            .then((res) => {
-                list = processData(res.data);
-            })
-            .catch((err) => {
-                console.log(err, "err");
-            });
+        let res = await getHistoryList(data);
+        if (res.data) {
+            list = processData(res.data);
+        } 
         return list;
     }
 
@@ -247,10 +256,8 @@
         await new Promise((resolve) => setTimeout(resolve, 2000));
         // 发送请求
         const newData = await getData({userId: userStore.userInfo.userId, page: page.value, limit: limit.value});
-        // 返回数组长度
-        const length = ref<number>(newData.length)
         // 若返回数据长度小于限制 停止加载
-        if(length < limit) {
+        if(newData.length < limit.value) {
             canLoadMore.value = false;
         }
         // 合并数据
@@ -272,18 +279,40 @@
         }
     );
 
+    const handleEditMeeting = (item: any) => {
+        router.push({
+            path: 'meeting-appoint',
+            query: {
+                id: item.id,
+                meetingRoomId: item.meetingRoomId,
+                title: item.title,
+                description: item.description,
+                startTime: item.startTime,
+                endTime: item.endTime,
+                meetingRoomName: item.meetingRoomName,
+                status: item.status,
+                createdBy: item.createdBy,
+                users: item.users,
+            }
+        })
+    }
+
     /**
      * @description 打开取消会议弹窗
      * @param time 
      * @param index 
      */
-    const handleCancelMeeting = (time: string, index: number) => {
+    const handleCancelMeeting = (id: number) => {
         // isCancelMeeting.value = true;
         ElMessageBox.confirm('是否确定取消会议？', {
             buttonSize: 'small',
         })
         .then(() => {
-            ElMessage.success('取消成功!');
+            cancelMeetingRecord({userId: userInfo.userId, meetingId: id})
+            .then((res) => {
+                ElMessage.success('取消成功!');
+            })
+            .catch(err => {})
         })
         .catch(() => {})
     }
@@ -297,11 +326,13 @@
 
     let isTransmitMeeting = ref<boolean>(false);
     let message = ref<string>('已成功复制到剪贴板');
-    let address = ref<string>(`会议主题: 测试\n发起人: 周颖\n会议日期: 2024-04-26\n会议时间: 16:00-16:15\n会议地点: EN-2F-02 恰谈室\nURL: https://it-web.jifuinfo.com/meeting_h5/#/login `)
+    let address = ref<string>('');
     /**
      * @description 转发会议
      */
-    const transmitMeeting = () => {
+    const transmitMeeting = (item: any) => {
+        address.value = 
+        `会议主题: ${item.title}\n发起人: ${item.adminUserName}\n会议日期: ${item.date}\n会议时间: ${item.time}\n会议地点: ${item.meetingRoomName}\nURL: http://ggssyy.cn/#/login`;
         isTransmitMeeting.value = true;
         navigator.clipboard.writeText(address.value).then(() => {})
         .catch(() => {
@@ -400,7 +431,13 @@
                             position: relative;
                         }
                         &:nth-child(7) {
-                            color: #F56C6C;
+                            &>p:nth-child(1) {
+                                color: #409EFF;
+                            }
+                            &>p:nth-child(2) {
+                                margin-left: .625rem;
+                                color: #F56C6C;
+                            }
                             cursor: pointer;
                         }
                         .ellipsis {

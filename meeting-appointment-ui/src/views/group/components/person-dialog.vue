@@ -17,6 +17,10 @@
                 :value="item.userId"
             />
         </el-select>
+        <div class="group-people-title">
+            <span @click="handleChangeGroupType(1)" :class=" active === 1 ? 'active' : ''">从通讯录中选择</span>/
+            <span @click="handleChangeGroupType(2)" :class=" active === 2 ? 'active' : ''">从群组中选择</span>
+        </div>
         <el-scrollbar height="25rem">
             <el-tree
                 ref="treeRef"
@@ -68,6 +72,11 @@
         visible.value = newValue
     })
 
+    let active = ref<number>(1);
+    const handleChangeGroupType = (type: number) => {
+        active.value = type;
+    }
+
     /**
      * @description 获取选中人员信息
      */
@@ -114,5 +123,17 @@
     }
     .el-select {
         margin-bottom: .5rem;
+    }
+    .group-people-title {
+        color: #606266;
+        font-size: 14px;
+        font-weight: 250;
+        cursor: pointer;
+        .active {
+            font-size: .875rem;
+            font-weight: 250;
+            letter-spacing: 0;
+            color: #3268dc;
+        }
     }
 </style>
