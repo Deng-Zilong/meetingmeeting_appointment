@@ -45,9 +45,10 @@ export const useUserStore = defineStore('user',()=>{
      * @param username 用户名
      * @param password 密码
      */
-    const getUserInfo= (data:{username: string, password: string, uuid: string, code: string})=>{
+    const getUserInfo= (data:{name: string, password: string, uuid: string, code: string})=>{
         Login(data)
                 .then((res: any) => {
+                    localStorage.setItem('userInfo', JSON.stringify(res.data));
                     userInfo = res.data;
                     ElMessage.success('登陆成功!'); 
                     router.push('/home');
@@ -60,6 +61,7 @@ export const useUserStore = defineStore('user',()=>{
     // 重置用户信息
     const resetUserInfo = () => {
         Object.assign(userInfo, initUserInfo);
+        delete localStorage.userInfo;
     }
     // 以对象的格式把state和action return 出去
     return {
