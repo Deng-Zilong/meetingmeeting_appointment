@@ -40,7 +40,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     private SysUserMapper sysUserMapper;
 
     @Resource
-    private RedisTemplate<String,String> redisTemplate;
+    private RedisTemplate<String,Object> redisTemplate;
     @Resource
     private Producer producer;
 
@@ -113,7 +113,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     @Override
     public BufferedImage getCaptcha(String uuid) {
         String code =producer.createText();
-        redisTemplate.opsForValue().set(uuid,code, Duration.ofHours(60));
+        redisTemplate.opsForValue().set(uuid,code, Duration.ofSeconds(60));
         return producer.createImage(code);
     }
 
