@@ -1,6 +1,6 @@
 <template>
   <!-- 会议室状态 -->
-  <div class="container meeting-container">
+  <div class="container meeting-container" v-loading="loading">
     <header>
       <el-divider direction="vertical" />{{ title }}
     </header>
@@ -13,7 +13,7 @@
         <div class="left-table">
           <div class="table-title">会议预约时间选择</div>
           <div class="table-main">
-            <div class="table-items" :class="color(item.state)" v-for="item in timeArr" @click.stop="selectTime(item)">
+            <div class="table-items" :class="timeColor(item.state)" v-for="item in timeArr" @click.stop="selectTime(item)">
               {{ item.time }}
             </div>
           </div>
@@ -41,7 +41,7 @@
         <div class="right-title">{{ time }}</div>
         <div class="right-table">
           <div class="right-items" v-for="item in infoArr">
-            <img class="items-left" style="width: 40px;height: 40px;" :src="item.src" alt="">
+            <img class="items-left" style="width: 40px; height: 40px;" :src="item.src" alt="">
             <div class="items-right">
               <div class="items-right-title">{{ item.title }}</div>
               <div class="items-right-info">{{ item.info }}</div>
@@ -62,70 +62,16 @@ import chamber from '@/assets/img/chamber.png'
 import address from '@/assets/img/address.png'
 import capacity from '@/assets/img/capacity.png'
 import device from '@/assets/img/device.png'
+import { getTimeBusyData } from '@/request/api/home'
 
-// 用于传数据
-const routes = useRoute();
+const loading = ref(true)  // 获取数据loading
+const routes = useRoute();  // 用于传数据
+const router = useRouter() // 用于选择时间段
 
-// 用于选择时间段
-const router = useRouter()
-
-// 会议室名称
-const title = ref(routes.query.title || '暂无');
-
-// 会议日期选择
-const date = ref(new Date())
-
-// 禁止选择今日之前的日期
-const disabledDate = (date: any) => {
-  return date.getTime() < Date.now() - 8.64e7
-}
-
-// 显示当前时间点
-const time = ref(new Date().toLocaleTimeString().substring(0, 5))
-setInterval(() => {
-  time.value = new Date().toLocaleTimeString().substring(0, 5)
-}, 1000)
-
-
-// 会议时间点
-interface Time {
-  time: String,
-  state: Number
-}
-const timeArr = reactive<Time[]>([
-  { time: '8:00', state: 4 }, { time: '8:30', state: 4 },
-  { time: '9:00', state: 4 }, { time: '9:30', state: 1 },
-  { time: '10:00', state: 1 }, { time: '10:30', state: 2 },
-  { time: '11:00', state: 3 }, { time: '11:30', state: 4 },
-  { time: '12:00', state: 4 }, { time: '12:30', state: 1 },
-  { time: '13:00', state: 4 }, { time: '13:30', state: 4 },
-  { time: '14:00', state: 4 }, { time: '14:30', state: 1 },
-  { time: '15:00', state: 1 }, { time: '15:30', state: 2 },
-  { time: '16:00', state: 3 }, { time: '16:30', state: 4 },
-  { time: '17:00', state: 4 }, { time: '17:30', state: 1 },
-  { time: '18:00', state: 0 }, { time: '18:30', state: 0 },
-  { time: '19:00', state: 0 }, { time: '19:30', state: 1 },
-  { time: '20:00', state: 1 }, { time: '20:30', state: 2 },
-  { time: '21:00', state: 3 }, { time: '21:30', state: 4 },
-  { time: '22:00', state: 0 }, { time: '22:30', state: 1 }
-])
-const color = computed(() => (state: any) => {
-  switch (state) {
-    case 1:
-      return 'color-one';
-    case 2:
-      return 'color-two';
-  }
-})
-
-// 选择时间段
-const selectTime = (item: any) => {
-  if ([1, 2].includes(item.state)) {
-    return;
-  } else {
-    router.push('/meeting-appoint')
-  }
-}
+const date = ref(new Date())  // 会议日期选择
+const title = ref(routes.query.title);  // 会议室名称
+const locate = ref(routes.query.address);  // 会议室位置
+const time = ref(new Date().toLocaleTimeString().substring(0, 5))  // 显示当前时间点
 
 // 会议室信息
 const infoArr = reactive([
@@ -136,20 +82,86 @@ const infoArr = reactive([
   },
   {
     src: address,
-    title: '第3层',
-    info: '西北裙-3F-至和通宝'
+    title: '位置',
+    info: locate
   },
   {
     src: capacity,
     title: '会议室容量',
-    info: '8人'
+    info: '10人'
   },
   {
     src: device,
     title: '设备',
-    info: '投屏TV'
+    info: '投屏器'
   }
 ])
+
+// 会议时间点
+const timeArr = ref([
+  { time: '8:00', state: 3 }, { time: '8:30', state: 3 },
+  { time: '9:00', state: 3 }, { time: '9:30', state: 3 },
+  { time: '10:00', state: 3 }, { time: '10:30', state: 3 },
+  { time: '11:00', state: 3 }, { time: '11:30', state: 3 },
+  { time: '12:00', state: 3 }, { time: '12:30', state: 3 },
+  { time: '13:00', state: 3 }, { time: '13:30', state: 3 },
+  { time: '14:00', state: 3 }, { time: '14:30', state: 3 },
+  { time: '15:00', state: 3 }, { time: '15:30', state: 3 },
+  { time: '16:00', state: 3 }, { time: '16:30', state: 3 },
+  { time: '17:00', state: 3 }, { time: '17:30', state: 3 },
+  { time: '18:00', state: 3 }, { time: '18:30', state: 3 },
+  { time: '19:00', state: 3 }, { time: '19:30', state: 3 },
+  { time: '20:00', state: 3 }, { time: '20:30', state: 3 },
+  { time: '21:00', state: 3 }, { time: '21:30', state: 3 },
+  { time: '22:00', state: 3 }, { time: '22:30', state: 3 }
+])
+
+
+const disabledDate = (date: any) => {  // 禁止选择今日之前的日期
+  return date.getTime() < Date.now() - 8.64e7
+}
+
+setInterval(() => {  // 更新 时间 会议室名称、位置
+  time.value = new Date().toLocaleTimeString().substring(0, 5) 
+
+  title.value = routes.query.title
+  locate.value = routes.query.address
+}, 100)
+
+onMounted(() => {
+  getTimeBusy()
+  loading.value = false
+})
+
+const getTimeBusy = async () => {
+  let res:any = await getTimeBusyData()
+  timeArr.value.forEach((item: any, index: number) => {
+    item.state = res.data[index];
+  })
+}
+// 时间段状态
+const timeColor = computed(() => (state: any) => {
+  switch (state) {
+    case 0:
+      return 'color-one';
+    case 1:
+      return 'color-two';
+  }
+})
+
+// 选择时间段
+const selectTime = (item: any) => {
+  if ([0, 1].includes(item.state)) {
+    return;
+  } else {
+    router.push({
+    path: '/meeting-appoint',
+    query: {
+      meetingRoomId: item.id
+    }
+  })
+  }
+}
 
 </script>
 
@@ -308,6 +320,7 @@ const infoArr = reactive([
             }
 
             .items-right-info {
+              font-size: 1.2rem;
               color: #585858;
             }
           }

@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 // 使用 ECharts 提供的按需引入的接口来打包必须的组件
 // 引入 echarts 核心模块，核心模块提供了 echarts 使用必须要的接口
 import * as echarts from 'echarts/core'
@@ -40,7 +40,6 @@ const gradient = ref({ // 自定义渐变色
   ],
   global: false // 缺省为 false
 })
-var option
 
 interface Gauge {
   name: string // 数据项名称
@@ -71,13 +70,11 @@ const chartHeight = computed(() => {
     return props.height
   }
 })
-onMounted(() => {
-  initChart() // 初始化图标示例
-})
-function initChart () {
-  // 等价于使用 Canvas 渲染器（默认）：echarts.init(containerDom, null, { renderer: 'canvas' })
-  gaugeChart.value = echarts.init(chart.value)
-  option = {
+
+// 刷新 chart 渲染
+const refreshChart = () => {
+  if (!gaugeChart.value) return
+  const option = {
     tooltip: { // 提示框浮层设置
       trigger: 'item',
       triggerOn: 'mousemove', // 提示框触发条件
@@ -198,6 +195,16 @@ function initChart () {
       }
     ]
   }
-  option && gaugeChart.value.setOption(option)
+  gaugeChart.value.setOption(option)
 }
+
+// 监听 gaugeData 变化刷新 chart 渲染
+watch(() => props.gaugeData, () => refreshChart(), { deep: true })
+
+onMounted(() => {
+  // 初始化 chart
+  gaugeChart.value = echarts.init(chart.value)
+  // 刷新chart
+  refreshChart()
+})
 </script>
