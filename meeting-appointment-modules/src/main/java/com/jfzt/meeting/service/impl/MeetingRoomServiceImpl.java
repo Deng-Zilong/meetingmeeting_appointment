@@ -46,18 +46,34 @@ import static com.jfzt.meeting.context.BaseContext.removeCurrentLevel;
 public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, MeetingRoom>
         implements MeetingRoomService {
 
-    @Autowired
     private MeetingRoomMapper meetingRoomMapper;
 
-    @Autowired
     private MeetingRecordService meetingRecordService;
 
-    @Autowired
     private SysUserService userService;
 
-    @Autowired
+
     private MeetingAttendeesMapper attendeesMapper;
 
+    @Autowired
+    public void setMeetingRoomMapper (MeetingRoomMapper meetingRoomMapper) {
+        this.meetingRoomMapper = meetingRoomMapper;
+    }
+
+    @Autowired
+    public void setMeetingRecordService (MeetingRecordService meetingRecordService) {
+        this.meetingRecordService = meetingRecordService;
+    }
+
+    @Autowired
+    public void setUserService (SysUserService userService) {
+        this.userService = userService;
+    }
+
+    @Autowired
+    public void setAttendeesMapper (MeetingAttendeesMapper attendeesMapper) {
+        this.attendeesMapper = attendeesMapper;
+    }
 
     /**
      * @param meetingRoom 会议室对象
@@ -73,12 +89,25 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     }
 
     /**
-     * @param meetingRoomVO 会议室对象
+     * @param meetingRoomId 会议室id
      * @return {@code Boolean}
      */
     @Override
-    public Boolean deleteMeetingRoom (MeetingRoomVO meetingRoomVO) {
-        return null;
+    public Result<String> deleteMeetingRoom (Long meetingRoomId) {
+        // 获取当前登录用户的权限等级
+        Integer level = BaseContext.getCurrentLevel();
+        removeCurrentLevel();
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)) {
+            // 删除会议室
+            if (meetingRoomId != null) {
+                int result = meetingRoomMapper.deleteById(meetingRoomId);
+                if (result > 0) {
+                    return Result.success();
+                }
+            }
+            return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0400);
+        }
+        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0312);
     }
 
     /**
@@ -120,6 +149,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
         return meetingRoomList.stream().map(meetingRoom -> {
             MeetingRoomStatusVO meetingRoomStatusVO = new MeetingRoomStatusVO();
+            //复制到VO
             BeanUtils.copyProperties(meetingRoom, meetingRoomStatusVO);
             //暂停使用直接返回
             if (Objects.equals(meetingRoomStatusVO.getStatus(), MEETINGROOM_STATUS_PAUSE)) {
@@ -297,8 +327,6 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      */
     @Override
     public Result<List<MeetingRoomVO>> getAvailableMeetingRooms (LocalDateTime startTime, LocalDateTime endTime) {
-
-
         //根据时间段把占用的会议查出来
         LambdaQueryWrapper<MeetingRecord> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.notIn(MeetingRecord::getStatus, MEETING_RECORD_STATUS_CANCEL);
@@ -327,11 +355,8 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             meetingRoomVO.setRoomName(meetingRoom.getRoomName());
             meetingRoomVOList.add(meetingRoomVO);
         }
-
         return Result.success(meetingRoomVOList);
-
     }
-
 }
 
 

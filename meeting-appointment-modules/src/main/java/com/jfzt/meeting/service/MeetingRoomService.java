@@ -32,7 +32,7 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      */
     List<MeetingRoomStatusVO> getMeetingRoomStatus ();
 
-    Boolean deleteMeetingRoom (MeetingRoomVO meetingRoomVO);
+    Result<String> deleteMeetingRoom (Long meetingRoomId);
 
     /**
      * 查询当天各个时间段会议室占用情况

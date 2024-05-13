@@ -8,7 +8,6 @@ import com.jfzt.meeting.entity.vo.MeetingRoomVO;
 import com.jfzt.meeting.entity.vo.TimePeriodStatusVO;
 import com.jfzt.meeting.service.MeetingRoomService;
 import jakarta.annotation.Resource;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -73,18 +72,23 @@ public class MeetingRoomController {
         return meetingRoomService.getAvailableMeetingRooms(timePeriodDTO.getStartTime(), timePeriodDTO.getEndTime());
     }
 
+    /**
+     * @param meetingRoom 会议室
+     * @return {@code Result<String>}
+     */
     @PostMapping("/addMeetingRoom")
     public Result<String> addMeetingRoom (@RequestBody MeetingRoom meetingRoom) {
         return meetingRoomService.addMeetingRoom(meetingRoom);
 
     }
 
+    /**
+     * @param meetingRoomVO 会议室
+     * @return {@code Result<String>}
+     */
     @DeleteMapping("/deleteMeetingRoom")
-    public Result<String> deleteMeetingRoom (@RequestBody @Valid MeetingRoomVO meetingRoomVO) {
-        if (meetingRoomService.deleteMeetingRoom(meetingRoomVO)) {
-            return Result.success("删除成功");
-        }
-        return Result.fail("删除失败");
+    public Result<String> deleteMeetingRoom (@RequestParam Long meetingRoomId) {
+        return meetingRoomService.deleteMeetingRoom(meetingRoomId);
 
     }
 

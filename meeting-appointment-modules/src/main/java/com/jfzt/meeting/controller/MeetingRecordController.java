@@ -21,9 +21,15 @@ import java.util.Objects;
 @RequestMapping("/meeting")
 public class MeetingRecordController {
 
-    @Autowired
     private MeetingRecordService meetingRecordService;
 
+    /**
+     * setter注入
+     */
+    @Autowired
+    public void setMeetingRecordService (MeetingRecordService meetingRecordService) {
+        this.meetingRecordService = meetingRecordService;
+    }
 
     /**
      * @return {@code Result<Integer>}
@@ -47,7 +53,9 @@ public class MeetingRecordController {
 
     /**
      * @param userId 用户id
-     * @return {@code Result<Page<MeetingRecordVO>>}
+     * @param page   页码
+     * @param limit  每页条数
+     * @return {@code Result<List<MeetingRecordVO>>}
      * @description 根据用户id查询用户所有历史会议记录
      */
     @GetMapping("/meetingRecord/allMeetingRecord")
@@ -81,9 +89,9 @@ public class MeetingRecordController {
     }
 
     /**
+     * @param meetingRecordDTO 会议信息
      * @return com.jfzt.meeting.common.Result<java.util.Objects>
      * @Description 新增会议
-     * @Param [meetingRecordDTO]
      */
     @PostMapping("/index/addMeetingRecord")
     public Result<Objects> addMeetingRecord (@RequestBody MeetingRecordDTO meetingRecordDTO) {
@@ -91,10 +99,9 @@ public class MeetingRecordController {
     }
 
     /**
+     * @param meetingRecordDTO 会议信息
      * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingRecordVO>>
-     * @throws
      * @Description 更新会议
-     * @Param [meetingRecordDTO]
      */
     @PutMapping("/index/updateMeetingRecord")
     public Result<List<MeetingRecordVO>> updateMeetingRecord (@RequestBody MeetingRecordDTO meetingRecordDTO) {

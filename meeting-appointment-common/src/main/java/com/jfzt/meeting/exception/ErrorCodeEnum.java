@@ -74,13 +74,17 @@ public enum ErrorCodeEnum {
     /**
      * 用户访问权限异常
      */
-    SERVICE_ERROR_A0301("A0301", "访问未授权");
+    SERVICE_ERROR_A0301("A0301", "访问未授权"),
+    /**
+     * A0312 无权限使用 API
+     */
+    SERVICE_ERROR_A0312("A0312", "无权限使用 API");
 
 
     private final String code;
     private final String description;
 
-    ErrorCodeEnum(String code, String description) {
+    ErrorCodeEnum (String code, String description) {
         this.code = code;
         this.description = description;
     }

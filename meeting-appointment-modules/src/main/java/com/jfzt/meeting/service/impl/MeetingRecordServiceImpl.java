@@ -253,7 +253,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                         , new LambdaQueryWrapper<MeetingAttendees>()
                                 .eq(MeetingAttendees::getUserId, userId)
                                 .orderByAsc(MeetingAttendees::getGmtModified));
-        List<Long> recordIds = meetingAttendeesPage.getRecords().stream().map(MeetingAttendees::getMeetingRecordId).toList();
+        List<Long> recordIds = meetingAttendeesPage.getRecords().stream().map(MeetingAttendees::getMeetingRecordId).sorted().toList();
         if (recordIds.isEmpty()) {
             return null;
         }
@@ -389,6 +389,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         updateRecordStatus(meetingRecord);
         meetingRecord = this.baseMapper.selectById(meetingId);
         //更新会议状态
+        if (meetingRecord == null) {
+            throw new RRException("会议不存在！", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+        }
         //会议不是未开始状态或者会议创建人不是当前用户无法取消
         if (!Objects.equals(meetingRecord.getStatus(), MEETING_RECORD_STATUS_NOT_START)) {
             throw new RRException("会议当前状态不可取消！", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
