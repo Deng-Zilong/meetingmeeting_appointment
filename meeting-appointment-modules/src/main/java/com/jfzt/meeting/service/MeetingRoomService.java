@@ -64,7 +64,7 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      *
      * @param id     会议室ID
      * @param status 会议室状态
-     * @return
+     * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     Result<Integer> updateStatus (Long id, Integer status);
 }

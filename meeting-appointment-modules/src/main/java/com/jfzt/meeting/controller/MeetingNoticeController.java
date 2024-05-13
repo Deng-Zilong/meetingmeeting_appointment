@@ -10,9 +10,8 @@ import java.util.List;
 
 
 /**
- * 会议群组控制类
- *
- * @Author: chenyu.di
+ * 会议公告控制类
+ * @Author: xuchang.yang
  * @since: 2024-04-29 16:44
  */
 @CrossOrigin
@@ -25,9 +24,8 @@ public class MeetingNoticeController {
 
     /**
      * 新增通告信息
-     *
-     * @param meetingNotice
-     * @return
+     * @param meetingNotice 公告信息对象
+     * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @PostMapping("/addNotice")
     public Result<Integer> addNotice (@RequestBody MeetingNotice meetingNotice) {
@@ -35,26 +33,13 @@ public class MeetingNoticeController {
     }
 
     /**
-     * 删除通告
-     *
-     * @param id
-     * @return
-     */
-    @DeleteMapping("/deleteNotice/{id}")
-    public Result<Object> deleteMeetingGroup (@PathVariable("id") Long id) {
-        return Result.success(meetingNoticeService.deleteNotice(id));
-    }
-
-    /**
      * 查询所有公告
-     *
-     * @param meetingNotice
-     * @return
+     * @param meetingNotice 公告信息对象
+     * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
      */
     @GetMapping("/getNotice")
     public Result<List<String>> getNotice (MeetingNotice meetingNotice) {
-        List<String> stringList = meetingNoticeService.selectAll(meetingNotice);
-        return Result.success(stringList);
+        return meetingNoticeService.selectAll(meetingNotice);
 
     }
 }

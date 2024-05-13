@@ -15,23 +15,17 @@ public interface MeetingNoticeService extends IService<MeetingNotice> {
 
     /**
      * 新增公告
-     * @param meetingNotice
-     * @return
+     * @param meetingNotice 公告信息
+     * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     Result<Integer> addNotice(MeetingNotice meetingNotice);
 
-    /**
-     * 删除公告
-     * @param id
-     * @return
-     */
-    int deleteNotice(Long id);
 
     /**
      * 查询所有公告
-     * @param meetingNotice
-     * @return
+     * @param meetingNotice 公告信息
+     * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
      */
-    List<String> selectAll(MeetingNotice meetingNotice);
+    Result<List<String>> selectAll(MeetingNotice meetingNotice);
 
 }
