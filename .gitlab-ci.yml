@@ -33,7 +33,7 @@ variables:
   BACK_PROJECT_NAME: "meeting-appointment-backend"
 
   #【请修改】前端项目打包方式 npm run build:$ENVIRONMENT
-  # ENVIRONMENT: test
+  ENVIRONMENT: "pro"
 
   #【请修改】Jar包的端口号，建议各项目组设置后端服务用8080端口
   JAR_PORT: 8080
