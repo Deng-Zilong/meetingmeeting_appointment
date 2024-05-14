@@ -9,6 +9,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @author zilong.deng
@@ -63,6 +64,11 @@ public class MeetingRecordVO implements Serializable {
      * 参会人
      */
     private String attendees;
+
+    /**
+     * 参会人详细信息
+     */
+    private List<SysUserVO> users;
 
     /**
      * 开始时间

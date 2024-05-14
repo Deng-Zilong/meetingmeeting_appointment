@@ -7,13 +7,13 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MeetingRecordStatusConstant;
 import com.jfzt.meeting.constant.MessageConstant;
-import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.MeetingAttendees;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
+import com.jfzt.meeting.entity.vo.SysUserVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
@@ -24,7 +24,6 @@ import com.jfzt.meeting.service.MeetingRoomService;
 import com.jfzt.meeting.service.SysUserService;
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +36,6 @@ import static com.jfzt.meeting.constant.IsDeletedConstant.NOT_DELETED;
 import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
 import static com.jfzt.meeting.constant.MessageConstant.START_TIME_GT_END_TiME;
 import static com.jfzt.meeting.constant.MessageConstant.START_TIME_LT_NOW;
-import static com.jfzt.meeting.context.BaseContext.removeCurrentLevel;
 
 /**
  * @author zilong.deng
@@ -50,18 +48,12 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     @Resource
     private MeetingAttendeesService meetingAttendeesService;
-    @Autowired
+    @Resource
     private MeetingRoomService meetingRoomService;
     @Resource
     private SysUserService userService;
     @Resource
     private MeetingAttendeesMapper attendeesMapper;
-
-
-    @Autowired
-    public void setMeetingRoomService (MeetingRoomService meetingRoomService) {
-        this.meetingRoomService = meetingRoomService;
-    }
 
 
     /**
@@ -72,7 +64,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      */
     @Override
     public List<MeetingRecordVO> getRecordVoList (String userId) {
-        if (Objects.isNull(userId)) {
+        if (userId.isBlank()) {
             throw new RRException("用户id不能为空", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
         }
         LambdaQueryWrapper<MeetingRecord> recordQueryWrapper = new LambdaQueryWrapper<>();
@@ -103,7 +95,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         }
         //获取当前用户所在的会议
         return meetingRecords.stream().map(meetingRecord -> {
-
+            if (meetingRecord == null) {
+                return null;
+            }
             MeetingRecordVO meetingRecordVO = new MeetingRecordVO();
             //通过会议id找到参会人列表
             List<MeetingAttendees> attendeesList = meetingAttendeesService.list(
@@ -114,6 +108,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 return null;
             }
             List<String> userIdList = new ArrayList<>();
+            ArrayList<SysUserVO> sysUserVOList = new ArrayList<>();
             StringBuffer attendees = new StringBuffer();
             //遍历参会人，拼接姓名，获取userIdList
             attendeesList.forEach(attendee -> {
@@ -126,11 +121,16 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                     return;
                 }
                 SysUser user = userList.getFirst();
+                SysUserVO sysUserVO = new SysUserVO();
+                sysUserVO.setUserName(user.getUserName());
+                sysUserVO.setUserId(user.getUserId());
+                sysUserVOList.add(sysUserVO);
 
                 attendees.append(user.getUserName());
                 if (attendeesList.indexOf(attendee) != attendeesList.size() - 1) {
                     attendees.append(",");
                 }
+
             });
             //当前用户参与会议
             if (userIdList.contains(userId)) {
@@ -154,6 +154,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 }
                 //插入参会人信息
                 meetingRecordVO.setAttendees(String.valueOf(attendees));
+                meetingRecordVO.setUsers(sysUserVOList);
                 meetingRecordVO.setMeetingNumber(userIdList.size());
             }
             return meetingRecordVO;
@@ -162,14 +163,15 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     private StringBuffer getStringBuffer (List<String> userIds) {
-        HashSet<String> userIdSet = new HashSet<>(userIds);
+        HashSet<String> userIdSet = new LinkedHashSet<>(userIds);
+        ArrayList<String> userIdList = new ArrayList<>(userIdSet);
         StringBuffer attendees = new StringBuffer();
-        userIdSet.forEach(userId1 -> {
-            SysUser user = userService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, userId1));
+        userIdList.forEach(userId -> {
+            SysUser user = userService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, userId));
             if (user != null) {
                 //拼接参会人姓名
                 attendees.append(user.getUserName());
-                if (userIds.indexOf(userId1) != userIds.size() - 1) {
+                if (userIdList.indexOf(userId) < userIdList.size() - 1) {
                     attendees.append(",");
                 }
             }
@@ -199,6 +201,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      */
     @Override
     public void updateRecordStatus (MeetingRecord meetingRecord) {
+        if (meetingRecord == null) {
+            return;
+        }
         if (meetingRecord.getStartTime().isBefore(LocalDateTime.now()) && meetingRecord.getEndTime().isAfter(LocalDateTime.now())) {
             //会议进行中
             meetingRecord.setStatus(MEETING_RECORD_STATUS_PROCESSING);
@@ -267,6 +272,14 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                     //查询参会者id
                     List<String> userIds = attendeesMapper.selectUserIdsByRecordId(recordId);
                     StringBuffer attendees = getStringBuffer(userIds);
+                    ArrayList<SysUserVO> users = new ArrayList<>();
+                    userIds.forEach(id -> {
+                        List<SysUser> userList = userService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, userId));
+                        SysUser user = userList.getFirst();
+                        SysUserVO userVO = new SysUserVO();
+                        BeanUtils.copyProperties(user, userVO);
+                        users.add(userVO);
+                    });
                     //更新会议状态
                     updateRecordStatus(meetingRecord);
                     meetingRecord = this.baseMapper.selectById(recordId);
@@ -284,7 +297,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                         meetingRecordVO.setAdminUserName(user.getUserName());
                     }
                     //插入参会人信息
-                    meetingRecordVO.setAttendees(String.valueOf(attendees));
+                    meetingRecordVO.setAttendees(attendees.toString());
+                    meetingRecordVO.setUsers(users);
                     meetingRecordVO.setMeetingNumber(userIds.size());
                     return meetingRecordVO;
                 }).filter(Objects::nonNull)
@@ -294,16 +308,16 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
 
     /**
-     * @param pageNum  页码
-     * @param pageSize 每页显示条数
+     * @param pageNum      页码
+     * @param pageSize     每页显示条数
      * @param currentLevel 当前登录用户的权限等级
-     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.MeetingRecordVO>>
+     * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingRecordVO>>
      * @description 查询所有会议记录
      */
     @Override
-    public Result<List<MeetingRecordVO>> getAllMeetingRecordVoListPage(Long pageNum, Long pageSize, Integer currentLevel) {
+    public Result<List<MeetingRecordVO>> getAllMeetingRecordVoListPage (Long pageNum, Long pageSize, Integer currentLevel) {
         // 获取当前登录用户的权限等级
-        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel) || MessageConstant.ADMIN_LEVEL.equals(currentLevel)){
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel) || MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
             if (pageNum == null || pageSize == null) {
                 log.error("请求必填参数为空" + ErrorCodeEnum.SERVICE_ERROR_A0410);
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
@@ -319,6 +333,14 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 // 通过会议记录id获取到参会人员的信息
                 List<String> userIds = attendeesMapper.selectUserIdsByRecordId(id);
                 StringBuffer attendees = getStringBuffer(userIds);
+                ArrayList<SysUserVO> users = new ArrayList<>();
+                userIds.forEach(item -> {
+                    List<SysUser> userList = userService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, item));
+                    SysUser user = userList.getFirst();
+                    SysUserVO userVO = new SysUserVO();
+                    BeanUtils.copyProperties(user, userVO);
+                    users.add(userVO);
+                });
                 //更新会议状态
                 MeetingRecord meetingRecord = this.baseMapper.selectById(id);
                 updateRecordStatus(meetingRecord);
@@ -338,7 +360,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                     meetingRecordVO.setAdminUserName(user.getUserName());
                 }
                 //插入参会人信息
-                meetingRecordVO.setAttendees(String.valueOf(attendees));
+                meetingRecordVO.setAttendees(attendees.toString());
+                meetingRecordVO.setUsers(users);
                 meetingRecordVO.setMeetingNumber(userIds.size());
                 return meetingRecordVO;
             }).sorted((o1, o2) -> o1.getStartTime().isBefore(o2.getStartTime()) ? 1 : -1).toList());

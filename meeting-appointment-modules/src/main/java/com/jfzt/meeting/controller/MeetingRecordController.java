@@ -1,27 +1,21 @@
 package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
-import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
+import com.jfzt.meeting.entity.dto.UpdateMeetingDTO;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
-import com.jfzt.meeting.exception.ErrorCodeEnum;
-import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.service.MeetingRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-
-import static com.jfzt.meeting.constant.MessageConstant.*;
 
 /**
  * @author zilong.deng
  * @date 2024/04/29
  */
-
 @Slf4j
 @RestController
 @RequestMapping("/meeting")
@@ -73,20 +67,17 @@ public class MeetingRecordController {
     /**
      * 取消会议
      *
-     * @param userId    用户id
-     * @param meetingId 会议id
      * @return {@code Result<String>}
      */
-    @PostMapping("/index/cancelMeetingRecord")
-    public Result<String> cancelMeetingRecord (@RequestParam String userId, @RequestParam Long meetingId) {
-        return meetingRecordService.cancelMeetingRecord(userId, meetingId);
+    @PutMapping("/index/cancelMeetingRecord")
+    public Result<String> cancelMeetingRecord (@RequestBody UpdateMeetingDTO updateMeetingDTO) {
+        return meetingRecordService.cancelMeetingRecord(updateMeetingDTO.getUserId(), updateMeetingDTO.getMeetingId());
     }
+
 
     /**
      * 删除会议
      *
-     * @param userId    用户id
-     * @param meetingId 会议id
      * @return {@code Result<String>}
      */
     @DeleteMapping("/index/deleteMeetingRecord")
@@ -118,7 +109,7 @@ public class MeetingRecordController {
      * @param pageNum  页码
      * @param pageSize 每页显示条数
      * @param currentLevel 当前登录用户的权限等级
-     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.MeetingRecordVO>>
+     * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingRecordVO>>
      * @description 查询所有会议记录
      */
     @GetMapping("/meetingRecord/selectAllMeetingRecord")
