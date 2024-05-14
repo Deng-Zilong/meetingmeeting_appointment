@@ -296,15 +296,14 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     /**
      * @param pageNum  页码
      * @param pageSize 每页显示条数
+     * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.MeetingRecordVO>>
      * @description 查询所有会议记录
      */
     @Override
-    public Result<List<MeetingRecordVO>> getAllMeetingRecordVoListPage(Long pageNum, Long pageSize) {
-//        // 获取当前登录用户的权限等级
-        Integer level = BaseContext.getCurrentLevel();
-        removeCurrentLevel();
-        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)){
+    public Result<List<MeetingRecordVO>> getAllMeetingRecordVoListPage(Long pageNum, Long pageSize, Integer currentLevel) {
+        // 获取当前登录用户的权限等级
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel) || MessageConstant.ADMIN_LEVEL.equals(currentLevel)){
             if (pageNum == null || pageSize == null) {
                 log.error("请求必填参数为空" + ErrorCodeEnum.SERVICE_ERROR_A0410);
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);

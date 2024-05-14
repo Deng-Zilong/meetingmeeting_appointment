@@ -117,11 +117,12 @@ public class MeetingRecordController {
     /**
      * @param pageNum  页码
      * @param pageSize 每页显示条数
+     * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.MeetingRecordVO>>
      * @description 查询所有会议记录
      */
     @GetMapping("/meetingRecord/selectAllMeetingRecord")
-    public Result<List<MeetingRecordVO>> getRecordPage (@RequestParam Long pageNum, @RequestParam Long pageSize) {
-        return meetingRecordService.getAllMeetingRecordVoListPage(pageNum, pageSize);
+    public Result<List<MeetingRecordVO>> getRecordPage (@RequestParam Long pageNum, @RequestParam Long pageSize, @RequestParam("currentLevel") Integer currentLevel) {
+        return meetingRecordService.getAllMeetingRecordVoListPage(pageNum, pageSize, currentLevel);
     }
 }

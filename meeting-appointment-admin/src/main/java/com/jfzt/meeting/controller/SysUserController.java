@@ -70,32 +70,36 @@ public class SysUserController {
 
     /**
      * 获取不是管理员的企业微信用户姓名
-     * @param sysUser
-     * @return List<String>
+     * @param sysUser 用户对象
+     * @param currentLevel 当前登录用户的权限等级
+     * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
      */
     @GetMapping("/selectName")
-    public Result<List<String>> selectList(SysUser sysUser){
-        return sysUserService.selectAll(sysUser);
+    public Result<List<String>> selectList(SysUser sysUser, @RequestParam("currentLevel") Integer currentLevel){
+        return sysUserService.selectAll(sysUser, currentLevel);
 
     }
 
 
     /**
      * 查询所有的管理员
-     * @return
+     * @param currentLevel 当前登录用户的权限等级
+     * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
      */
     @GetMapping("/selectAdmin")
-    public Result<List<String>> selectAdmin(){
-        return sysUserService.selectAdmin();
+    public Result<List<String>> selectAdmin(@RequestParam("currentLevel") Integer currentLevel){
+        return sysUserService.selectAdmin(currentLevel);
     }
 
     /**
      * 修改用户权限等级,只有超级管理员可以操作
      * @param userId 用户id
      * @param level 权限等级(0超级管理员，1管理员，2员工)
+     * @param currentLevel 当前登录用户的权限等级
+     * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @PutMapping("/updateLevel")
-    public Result<Integer> updateStatus (@RequestParam("userId") String userId, @RequestParam("level") Integer level) {
-        return sysUserService.updateLevel(userId, level);
+    public Result<Integer> updateStatus (@RequestParam("userId") String userId, @RequestParam("level") Integer level, @RequestParam("currentLevel") Integer currentLevel) {
+        return sysUserService.updateLevel(userId, level, currentLevel);
     }
 }
