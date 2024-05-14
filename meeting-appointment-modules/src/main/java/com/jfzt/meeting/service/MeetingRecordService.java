@@ -32,7 +32,7 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      */
     Integer getRecordNumber ();
 
-    void updateRecordStatus (MeetingRecord meetingRecord);
+    MeetingRecord updateRecordStatus (MeetingRecord meetingRecord);
 
     void updateTodayRecordStatus ();
 
@@ -47,13 +47,13 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
 
     /**
      * 分页获取所有会议记录
-     * @param pageNum 页码
-     * @param pageSize 每页条数
+     *
+     * @param pageNum      页码
+     * @param pageSize     每页条数
      * @param currentLevel 当前登录用户的权限等级
      * @return @return {@code List<MeetingRecordVO>}
      */
     Result<List<MeetingRecordVO>> getAllMeetingRecordVoListPage (Long pageNum, Long pageSize, Integer currentLevel);
-
 
 
     /**
