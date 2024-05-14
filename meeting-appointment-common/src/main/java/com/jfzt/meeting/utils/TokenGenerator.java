@@ -13,10 +13,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
+
 /**
- * 生成token
- *
- * @author Mark sunlightcs@gmail.com
+ * 生成token请求
+ * @author zhenxing.lu
+ * @date 2024/05/09
  */
 public class TokenGenerator {
 

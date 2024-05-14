@@ -1,6 +1,7 @@
 package com.jfzt.meeting.constant;
 
 /**
+ * 会议状态码
  * @author zilong.deng
  * @date 2024/05/09
  */

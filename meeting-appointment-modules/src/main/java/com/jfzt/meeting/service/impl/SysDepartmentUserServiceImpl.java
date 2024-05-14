@@ -106,8 +106,10 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
         List<WxCpUser> listDepartmentUserList = new ArrayList<>();
         for (int i = 1; i < departmentLength + 1; i++) {
             List<WxCpUser> wxCpUser = wxCpUserService.listSimpleByDepartment((long) i, true, 0);
-            for (int j = 0; j < wxCpUser.size(); j++) {
-                listDepartmentUserList.add(wxCpUser.get(j));
+            Iterator<WxCpUser> iterator = wxCpUser.iterator();
+            while (iterator.hasNext()){
+                WxCpUser item = iterator.next();
+                listDepartmentUserList.add(item);
             }
         }
         List<WxCpUser> wxCpUserList = listDepartmentUserList.stream().distinct().collect(Collectors.toList());

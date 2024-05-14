@@ -11,8 +11,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * 解决跨域的配置
- *和用户登录问题
+ * 跨域处理，拦截器
  * @author zhenxing.lu
  * @since 2024-04-30 10.13:51
  */

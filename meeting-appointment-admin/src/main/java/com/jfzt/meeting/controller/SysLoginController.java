@@ -33,7 +33,6 @@ import java.time.Duration;
  * @author zhenxing.lu
  * @since 2024-04-30 10.13:51
  */
-
 @Slf4j
 @RestController
 @RequestMapping("/meeting/user")
@@ -49,9 +48,8 @@ public class SysLoginController {
 
     /**
      * 验证码
-     * @param response
-     * @param uuid
-     * @throws IOException
+     * @param uuid 唯一id
+     * @throws IOException io异常
      */
     @GetMapping("captcha.jpg")
     public void captcha (HttpServletResponse response, @RequestParam("uuid") String uuid) throws IOException {
@@ -66,9 +64,8 @@ public class SysLoginController {
 
     /**
      * 用户登录
-     * @param loginVo
-     * @return
-     * @throws NoSuchAlgorithmException
+     * @param loginVo 登录信息
+     * @return 登录结果
      */
     @PostMapping(value = "login")
     public Result<UserInfoVO> login(@RequestBody LoginVo loginVo) throws NoSuchAlgorithmException {

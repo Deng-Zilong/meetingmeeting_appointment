@@ -8,6 +8,7 @@ import org.apache.ibatis.exceptions.TooManyResultsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
 import static com.jfzt.meeting.constant.MessageConstant.EXCEPTION_TYPE;
@@ -28,6 +29,16 @@ public class GlobalExceptionHandler {
         log.error(e.getMessage(), e);
         Result<String> result = new Result<>();
         result.setCode(e.getCode());
+        result.setMsg(e.getMessage());
+        return result;
+    }
+    /**
+     * 处理io流异常
+     */
+    @ExceptionHandler(IOException.class)
+    public Result<String> REIOException (IOException e) {
+        log.error(e.getMessage(), e);
+        Result<String> result = new Result<>();
         result.setMsg(e.getMessage());
         return result;
     }

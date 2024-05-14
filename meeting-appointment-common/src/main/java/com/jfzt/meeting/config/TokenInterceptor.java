@@ -6,6 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+/**
+ * 拦截判断是否有token
+ *
+ * @author zhenxing.lu
+ * @since 2024-04-30 10.13:51
+ */
 @Slf4j
 @Component
 public class TokenInterceptor implements HandlerInterceptor {

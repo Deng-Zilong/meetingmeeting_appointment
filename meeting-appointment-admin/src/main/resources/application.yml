@@ -6,7 +6,7 @@ spring:
   application:
     name: meeting-appointment
   profiles:
-    active: dev
+    active: prod
     include: db,log,common,modules,quartz
   # application.yml
   jackson:
@@ -33,4 +33,4 @@ mybatis-plus:
       logic-not-delete-value: 0
 logging:
   level:
-    com.atguigu.gulimall: debug
+    com.jfzt.meeting: debug

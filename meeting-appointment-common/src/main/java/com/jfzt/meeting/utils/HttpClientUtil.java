@@ -27,10 +27,9 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * @ClassName HttpClientUtil
- * @Description
- * @Date 2020/8/28 11:32
- * @Version 1.0
+ * http请求工具类
+ * @author zhenxing.lu
+ * @date 2024/05/09
  */
 @Component
 public class HttpClientUtil {

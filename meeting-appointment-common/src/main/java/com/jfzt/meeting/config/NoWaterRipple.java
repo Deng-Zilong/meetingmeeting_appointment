@@ -8,6 +8,13 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 
+
+/**
+ * 验证码自定义格式设置
+ *
+ * @author zilong.deng
+ * @since 2024-04-30 10.13:51
+ */
 public class NoWaterRipple extends Configurable implements GimpyEngine {
     public NoWaterRipple(){}
 

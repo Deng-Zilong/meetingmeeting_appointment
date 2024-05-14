@@ -1,15 +1,12 @@
 package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
-import com.jfzt.meeting.constant.MessageConstant;
-import com.jfzt.meeting.context.BaseContext;
+
 import com.jfzt.meeting.entity.SysUser;
-import com.jfzt.meeting.entity.vo.MeetingRoomVO;
 import com.jfzt.meeting.entity.vo.UserInfoVO;
 import com.jfzt.meeting.service.SysDepartmentUserService;
 import com.jfzt.meeting.service.SysUserService;
 import jakarta.annotation.Resource;
-import jakarta.validation.Valid;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.cp.bean.WxCpUser;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -45,8 +42,7 @@ public class SysUserController {
 
     /**
      * 获取token，部门，部门人员
-     *
-     * @param code 入参
+     * @return userInfoVO
      */
     @GetMapping(value = "info")
     @Transactional
@@ -71,8 +67,11 @@ public class SysUserController {
         return Result.success(userInfoVO);
     }
 
+
     /**
      * 获取不是管理员的企业微信用户姓名
+     * @param sysUser
+     * @return List<String>
      */
     @GetMapping("/selectName")
     public Result<List<String>> selectList(SysUser sysUser){
@@ -80,8 +79,10 @@ public class SysUserController {
 
     }
 
+
     /**
      * 查询所有的管理员
+     * @return
      */
     @GetMapping("/selectAdmin")
     public Result<List<String>> selectAdmin(){
