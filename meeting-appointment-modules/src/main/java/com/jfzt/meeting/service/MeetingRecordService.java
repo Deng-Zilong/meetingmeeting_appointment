@@ -47,10 +47,14 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
 
     /**
      * 分页获取所有会议记录
-     *
-     * @return {@code List<MeetingRecordVO>}
+     * @param pageNum 页码
+     * @param pageSize 每页条数
+     * @param currentLevel 当前登录用户的权限等级
+     * @return @return {@code List<MeetingRecordVO>}
      */
-    Result<List<MeetingRecordVO>> getAllMeetingRecordVoListPage (Long pageNum, Long pageSize);
+    Result<List<MeetingRecordVO>> getAllMeetingRecordVoListPage (Long pageNum, Long pageSize, Integer currentLevel);
+
+
 
     /**
      * 根据会议记录id删除会议（首页不展示，历史记录展示）

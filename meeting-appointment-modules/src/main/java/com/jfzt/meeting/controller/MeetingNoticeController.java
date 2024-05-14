@@ -2,6 +2,7 @@ package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingNotice;
+import com.jfzt.meeting.entity.vo.MeetingNoticeVO;
 import com.jfzt.meeting.service.MeetingNoticeService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
@@ -24,12 +25,11 @@ public class MeetingNoticeController {
 
     /**
      * 新增通告信息
-     * @param meetingNotice 公告信息对象
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @PostMapping("/addNotice")
-    public Result<Integer> addNotice (@RequestBody MeetingNotice meetingNotice) {
-        return meetingNoticeService.addNotice(meetingNotice);
+    public Result<Integer> addNotice (@RequestBody MeetingNoticeVO meetingNoticeVO) {
+        return meetingNoticeService.addNotice(meetingNoticeVO);
     }
 
     /**

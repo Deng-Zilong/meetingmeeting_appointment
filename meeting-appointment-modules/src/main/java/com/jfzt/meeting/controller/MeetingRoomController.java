@@ -83,7 +83,7 @@ public class MeetingRoomController {
     }
 
     /**
-     * @param meetingRoomVO 会议室
+     * @param meetingRoomId 会议室id
      * @return {@code Result<String>}
      */
     @DeleteMapping("/deleteMeetingRoom")
@@ -96,10 +96,24 @@ public class MeetingRoomController {
      * 修改会议室状态
      * @param id 会议室id
      * @param status 会议室状态（0暂停使用,1可使用/空闲 2为使用中不保存至数据库，实时获取）
+     * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @PutMapping("/updateStatus")
-    public Result<Integer> updateStatus (@RequestParam("id") Long id, @RequestParam("status") Integer status) {
-        return meetingRoomService.updateStatus(id, status);
+    public Result<Integer> updateStatus (@RequestParam("id") Long id, @RequestParam("status") Integer status, @RequestParam("currentLevel") Integer currentLevel) {
+        return meetingRoomService.updateStatus(id, status, currentLevel);
+    }
+
+
+    /**
+     * 查询未被禁用的会议室的id
+     * @param meetingRoom 会议室对象
+     * @param currentLevel 当前登录用户的权限等级
+     * @return com.jfzt.meeting.common.Result<java.util.List<<java.lang.Integer>>
+     */
+    @GetMapping("/index/usableRoom")
+    public Result<List<Long>> selectUsableRoom (MeetingRoom meetingRoom, @RequestParam("currentLevel") Integer currentLevel) {
+        return meetingRoomService.selectUsableRoom(meetingRoom, currentLevel);
+
     }
 }
