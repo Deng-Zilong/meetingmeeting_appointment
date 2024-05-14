@@ -14,7 +14,7 @@ variables:
   #   --.gitlab-ci.yml
 
   #【请修改】后端文件夹路径
-  BACK_PATH: "meeting_appointment"
+  BACK_PATH: "./"
 
   #【请修改】前端文件夹路径
   FRONT_PATH: "meeting-appointment-ui"
@@ -39,8 +39,8 @@ variables:
   JAR_PORT: 8080
 
   #【请修改】后端Jar包存在地址(参考上述目录结构)
-  JAR_PATH = "./meeting-appointment-admin/target/"
-
+#  JAR_PATH = "./meeting-appointment-admin/target"
+  JAR_PATH: "meeting-appointment-admin/target/*.jar"
 
   PROD_DOCKER_TAG: "${CI_COMMIT_TAG}"
   DOCKER_TAG: "${CI_COMMIT_SHORT_SHA}"
