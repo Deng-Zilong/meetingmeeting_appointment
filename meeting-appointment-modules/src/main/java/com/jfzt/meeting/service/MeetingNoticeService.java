@@ -3,6 +3,7 @@ package com.jfzt.meeting.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingNotice;
+import com.jfzt.meeting.entity.vo.MeetingNoticeVO;
 
 import java.util.List;
 
@@ -15,10 +16,9 @@ public interface MeetingNoticeService extends IService<MeetingNotice> {
 
     /**
      * 新增公告
-     * @param meetingNotice 公告信息
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
-    Result<Integer> addNotice(MeetingNotice meetingNotice);
+    Result<Integer> addNotice(MeetingNoticeVO meetingNoticeVO);
 
 
     /**

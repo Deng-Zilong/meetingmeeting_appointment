@@ -52,14 +52,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     /**
      * 获取所有不是管理员的企业微信用户的姓名
      * @param sysUser 用户信息
+     * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
      */
     @Override
-    public Result<List<String>> selectAll(SysUser sysUser) {
-        // 获取当前登录用户的权限等级
-        Integer level = BaseContext.getCurrentLevel();
-        removeCurrentLevel();
-        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level)){
+    public Result<List<String>> selectAll(SysUser sysUser, Integer currentLevel) {
+        // 判断当前登录用户的权限等级
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)){
             // 获取所有的用户信息
             List<SysUser> sysUsers = sysUserMapper.selectList(new QueryWrapper<>());
             return Result.success(sysUsers.stream()
@@ -75,15 +74,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
     /**
      * 查询所有的管理员
+     * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
      */
     @Override
-    public Result<List<String>> selectAdmin() {
-        // 获取当前登录用户的权限等级
-        Integer level = BaseContext.getCurrentLevel();
-        removeCurrentLevel();
-        // 判断当前用户是否是超级管理员
-        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level)){
+    public Result<List<String>> selectAdmin(Integer currentLevel) {
+        // 判断当前登录用户的权限等级
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)){
             // 查询用户的信息
             List<SysUser> sysUsers = sysUserMapper.selectList(new QueryWrapper<>());
             return Result.success(sysUsers.stream()
@@ -100,17 +97,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
      * 修改用户权限等级
      * @param userId 用户id
      * @param level 权限等级(0超级管理员，1管理员，2员工)
+     * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @Override
-    public Result<Integer> updateLevel(String userId, Integer level) {
+    public Result<Integer> updateLevel(String userId, Integer level, Integer currentLevel) {
         // 检查输入的权限等级是否合法
         if (level < MessageConstant.SUPER_ADMIN_LEVEL || level > MessageConstant.EMPLOYEE_LEVEL) {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
         }
-        // 获取当前登录用户的权限等级
-        Integer currentLevel = BaseContext.getCurrentLevel();
-        removeCurrentLevel();
+        // 判断当前登录用户的权限等级
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)){
             int row = sysUserMapper.updateLevel(userId, level);
             if (row > 0){

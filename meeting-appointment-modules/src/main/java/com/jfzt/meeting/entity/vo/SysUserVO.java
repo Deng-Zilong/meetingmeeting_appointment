@@ -1,9 +1,7 @@
 package com.jfzt.meeting.entity.vo;
 
 import com.jfzt.meeting.entity.SysUser;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 /**
  * @Author: chenyu.di
@@ -12,6 +10,8 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class SysUserVO  {
     /**
      * 企微id

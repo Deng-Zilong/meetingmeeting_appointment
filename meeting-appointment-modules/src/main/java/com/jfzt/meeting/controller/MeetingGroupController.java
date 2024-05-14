@@ -2,6 +2,7 @@ package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.dto.MeetingGroupDTO;
+import com.jfzt.meeting.entity.dto.MeetingGroupPageDTO;
 import com.jfzt.meeting.entity.vo.MeetingGroupVO;
 import com.jfzt.meeting.service.MeetingGroupService;
 import jakarta.annotation.Resource;
@@ -29,10 +30,10 @@ public class MeetingGroupController {
      * @Param [userId]
      */
     @GetMapping("/getMeetingGroupList")
-    public Result<List<MeetingGroupVO>> getMeetingGroupList (@RequestParam Integer pageNum,
-                                                             @RequestParam Integer pageSize,
-                                                             @RequestParam String userId) {
-        return meetingGroupService.checkGroup(pageNum, pageSize, userId);
+    public Result<List<MeetingGroupVO>> getMeetingGroupList (MeetingGroupPageDTO meetingGroupPageDTO)  {
+        return meetingGroupService.checkGroup(meetingGroupPageDTO.getPageNum(),
+                                              meetingGroupPageDTO.getPageSize(),
+                                              meetingGroupPageDTO.getUserId());
     }
 
     /**

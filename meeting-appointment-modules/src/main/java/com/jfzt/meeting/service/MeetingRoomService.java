@@ -64,7 +64,17 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      *
      * @param id     会议室ID
      * @param status 会议室状态
+     * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
-    Result<Integer> updateStatus (Long id, Integer status);
+    Result<Integer> updateStatus (Long id, Integer status, Integer currentLevel);
+
+    /**
+     * 查询未被禁用的会议室的id
+     *
+     * @param meetingRoom 会议室对象
+     * @param currentLevel 当前登录用户的权限等级
+     * @return com.jfzt.meeting.common.Result<java.util.List<<java.lang.Integer>>
+     */
+    Result<List<Long>> selectUsableRoom(MeetingRoom meetingRoom, Integer currentLevel);
 }

@@ -3,12 +3,12 @@ package com.jfzt.meeting.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
-import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.MeetingGroup;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.UserGroup;
 import com.jfzt.meeting.entity.dto.MeetingGroupDTO;
 import com.jfzt.meeting.entity.vo.MeetingGroupVO;
+import com.jfzt.meeting.entity.vo.SysUserVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingGroupMapper;
@@ -51,7 +51,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
      */
     @Override
     public Result<List<MeetingGroupVO>> checkGroup (Integer pageNum, Integer pageSize, String userId) {
-
+        SysUserVO userVO = new SysUserVO();
         // 返回Result.success(collect)
         ArrayList<MeetingGroup> joinList = new ArrayList<>();
         // 查询创建人姓名
@@ -61,6 +61,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         SysUser user = sysUserService.lambdaQuery()
                 .eq(StringUtils.isNotBlank(userId), SysUser::getUserId, userId)
                 .one();
+        BeanUtils.copyProperties(user,userVO);
 
         // 定义一个UserGroup类型的List，通过userGroupService的lambdaQuery方法获取满足条件的UserGroup列表
         List<UserGroup> userGroupList = userGroupService.lambdaQuery()
@@ -75,8 +76,6 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
             // 将满足条件的MeetingGroup添加到endList中
             joinList.add(joinUser);
         }).toList();
-
-
         // 定义一个List，用于存放满足条件的MeetingGroupVO
         List<MeetingGroupVO> collectVO = joinList.stream().map((item) -> {
             // 创建一个MeetingGroupVO实例
@@ -84,12 +83,12 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
             // 使用BeanUtils.copyProperties方法将item复制到meetingGroupVO实例中
             BeanUtils.copyProperties(item, meetingGroupVO);
             // 将user的userName添加到meetingGroupVO中
-            SysUser one = sysUserService.getOne(
-                    new LambdaQueryWrapper<SysUser>()
-                            .eq(SysUser::getUserId, item.getCreatedBy()));
+            SysUser one = sysUserService.lambdaQuery()
+                            .eq(SysUser::getUserId, item.getCreatedBy())
+                            .one();
             meetingGroupVO.setUserName(one.getUserName());
             // 将会议创建人添加到参会人员
-            meetingGroupVO.getUsers().add(user.getUserName());
+            meetingGroupVO.getUsers().add(userVO);
             // 使用lambdaQuery查询出所有UserGroup，其中groupId为item.getId()
             List<UserGroup> userGroups = userGroupService.lambdaQuery()
                     .eq(item.getId() != null, UserGroup::getGroupId, item.getId())
@@ -104,8 +103,9 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
                 SysUser sysUser = sysUserService.lambdaQuery()
                         .eq(StringUtils.isNotBlank(userGroup.getUserId()), SysUser::getUserId, userGroup.getUserId())
                         .one();
+                BeanUtils.copyProperties(sysUser, userVO);
                 // 将sysDepartmentUser的用户名添加到meetingGroupVO中
-                meetingGroupVO.getUsers().add(sysUser.getUserName());
+                meetingGroupVO.getUsers().add(userVO);
 
             }).toList();
             // 返回meetingGroupVO实例
@@ -153,7 +153,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
                 .getId();
 
         // 获取meetingGroupDTO中的用户列表
-        List<UserGroup> userList = meetingGroupDTO.getUsers();
+        List<SysUser> userList = meetingGroupDTO.getUsers();
 
         // 对用户列表进行处理，将每个用户关联到meetingGroup中
         userList.stream().peek((item) -> {
@@ -184,7 +184,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     @Override
     @Transactional
     public Result<Object> updateMeetingGroup (MeetingGroupDTO meetingGroupDTO) {
-
+        //查询修改之前的群组
         MeetingGroup beforeGroup = lambdaQuery()
                 .eq(meetingGroupDTO.getId() != null, MeetingGroup::getId, meetingGroupDTO.getId())
                 .one();
@@ -203,7 +203,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         // 保存meetingGroup
         updateById(meetingGroup);
         // 获取meetingGroupDTO中的用户列表
-        List<UserGroup> userList = meetingGroupDTO.getUsers();
+        List<SysUser> userList = meetingGroupDTO.getUsers();
         List<UserGroup> beforeList = userGroupService.lambdaQuery().eq(UserGroup::getGroupId, meetingGroupDTO.getId()).list();
         userGroupService.removeBatchByIds(beforeList);
         // 对用户列表进行处理，将每个用户关联到meetingGroup中
@@ -222,7 +222,6 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
 
     /**
      * @return com.jfzt.meeting.common.Result<java.lang.Object>
-     * @throws
      * @Description 群组删除
      * @Param [meetingGroupDTO]
      */

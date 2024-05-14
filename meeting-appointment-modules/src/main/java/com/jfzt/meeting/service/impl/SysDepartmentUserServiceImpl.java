@@ -112,7 +112,7 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
                 listDepartmentUserList.add(item);
             }
         }
-        List<WxCpUser> wxCpUserList = listDepartmentUserList.stream().distinct().collect(Collectors.toList());
+        List<WxCpUser> wxCpUserList = listDepartmentUserList.stream().distinct().toList();
         for (WxCpUser wxCpUser : wxCpUserList) {
             SysUser sysUser = new SysUser();
             sysUser.setUserId(wxCpUser.getUserId());
@@ -138,12 +138,11 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
 
     /**
      * @Description 获取部门成员树
-     * @Param []
+     * @Param [id]
      * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.SysDepartment>>
-     * @exception
      */
     @Override
-    public Result<List<SysDepartment>> gainUsers(String id) {
+    public Result<List<SysDepartment>> gainUsers() {
         // 获取所有部门列表
         List<SysDepartment> departmentList = sysDepartmentService.list();
         // 获取成员树
@@ -153,7 +152,7 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
                 // 排序
                 .sorted((node1, node2) -> Math.toIntExact(node1.getDepartmentId() - node2.getDepartmentId()))
                 // 递归设置子部门
-                .peek(topNode -> topNode.setChildrenPart(getChildren(topNode, departmentList,id)))
+                .peek(topNode -> topNode.setChildrenPart(getChildren(topNode, departmentList)))
                 .collect(Collectors.toList());
         return Result.success(departments);
     }
@@ -163,7 +162,7 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
      * @Param SysDepartment root, List<SysDepartment> all,String userName
      * @return List<SysDepartment>
      */
-    private List<SysDepartment> getChildren(SysDepartment root, List<SysDepartment> all,String id) {
+    private List<SysDepartment> getChildren(SysDepartment root, List<SysDepartment> all) {
         return all.stream()
                 // 过滤出父部门ID等于根部门ID的部门
                 .filter(sysDepartment -> Objects.equals(sysDepartment.getParentId(), root.getDepartmentId()))
@@ -172,7 +171,7 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
                     // 创建一个用户列表
                     ArrayList<SysUser> sysUsers = new ArrayList<>();
                     // 获取子部门的用户
-                    childrenNode.setChildrenPart(getChildren(childrenNode, all,id));
+                    childrenNode.setChildrenPart(getChildren(childrenNode, all));
                     // 获取部门用户
                     List<SysDepartmentUser> departmentUsers = sysDepartmentUserService.lambdaQuery()
                             .eq(SysDepartmentUser::getDepartmentId , childrenNode.getDepartmentId())

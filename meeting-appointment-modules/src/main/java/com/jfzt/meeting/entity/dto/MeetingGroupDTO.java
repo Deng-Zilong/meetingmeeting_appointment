@@ -2,6 +2,7 @@ package com.jfzt.meeting.entity.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.UserGroup;
 import lombok.Data;
 
@@ -34,6 +35,6 @@ public class MeetingGroupDTO {
     /**
      * 群组成员
      */
-    private List<UserGroup> users = new ArrayList<>();
+    private List<SysUser> users = new ArrayList<>();
 
 }

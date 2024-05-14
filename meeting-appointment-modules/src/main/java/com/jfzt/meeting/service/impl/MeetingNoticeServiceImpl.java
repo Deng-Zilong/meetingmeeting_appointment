@@ -6,6 +6,7 @@ import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MessageConstant;
 import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.MeetingNotice;
+import com.jfzt.meeting.entity.vo.MeetingNoticeVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingNoticeMapper;
@@ -33,17 +34,16 @@ public class MeetingNoticeServiceImpl extends ServiceImpl<MeetingNoticeMapper, M
 
     /**
      * 上传公告
-     * @param meetingNotice 公告信息
+     * @param meetingNoticeVO
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @Override
-    public Result<Integer> addNotice(MeetingNotice meetingNotice) {
-        // 获取当前登录用户的权限等级
-        Integer level = BaseContext.getCurrentLevel();
-        removeCurrentLevel();
-        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)){
-            String currentId = BaseContext.getCurrentId();
-            meetingNotice.setUserId(currentId);
+    public Result<Integer> addNotice(MeetingNoticeVO meetingNoticeVO) {
+        // 判断当前用户是否是管理员或超级管理员
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(meetingNoticeVO.getCurrentLevel()) || MessageConstant.ADMIN_LEVEL.equals(meetingNoticeVO.getCurrentLevel())){
+            MeetingNotice meetingNotice = new MeetingNotice();
+            meetingNotice.setUserId(meetingNoticeVO.getCurrentUserId());
+            meetingNotice.setSubstance(meetingNoticeVO.getSubstance());
             int insert = meetingNoticeMapper.insert(meetingNotice);
             if (insert > 0){
                 return Result.success();
