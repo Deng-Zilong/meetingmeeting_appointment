@@ -31,8 +31,8 @@ public class GroupUserTreeController {
      * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.SysDepartment>>
      */
     @GetMapping("/getGroupUserTree")
-    public Result<List<SysDepartment>> getGroupUserTree(String id){
-        return sysDepartmentUserService.gainUsers(id);
+    public Result<List<SysDepartment>> getGroupUserTree(){
+        return sysDepartmentUserService.gainUsers();
     }
 
     /**
@@ -41,7 +41,7 @@ public class GroupUserTreeController {
      * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.SysUserVO>>
      */
     @GetMapping("/likeByName")
-    public Result<List<SysUserVO>> likeByName (String name){
+    public Result<List<SysUserVO>> likeByName (@RequestParam String name){
         return sysUserService.findByName(name);
     }
 

@@ -26,5 +26,5 @@ public interface SysDepartmentUserService extends IService<SysDepartmentUser> {
     void findDepartmentUser (Long departmentLength) throws WxErrorException;
 
 
-    Result<List<SysDepartment>> gainUsers(String id);
+    Result<List<SysDepartment>> gainUsers();
 }

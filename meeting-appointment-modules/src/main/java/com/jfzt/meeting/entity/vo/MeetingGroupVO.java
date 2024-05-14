@@ -2,6 +2,7 @@ package com.jfzt.meeting.entity.vo;
 
 import com.jfzt.meeting.entity.MeetingGroup;
 import com.jfzt.meeting.entity.SysDepartment;
+import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.UserGroup;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -25,7 +26,7 @@ public class MeetingGroupVO extends MeetingGroup {
     /**
      * 群组成员
      */
-    private Set<String> users = new LinkedHashSet<>();
+    private Set<SysUserVO> users = new LinkedHashSet<>();
 
 
 
