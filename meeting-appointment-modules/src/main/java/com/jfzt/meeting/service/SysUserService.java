@@ -1,5 +1,6 @@
 package com.jfzt.meeting.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.SysUser;
@@ -9,6 +10,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author zilong.deng
@@ -30,16 +32,22 @@ public interface SysUserService extends IService<SysUser> {
      * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
      */
-    Result<List<String>> selectAdmin(Integer currentLevel);
+    Result<List<SysUser>> selectAdmin(Integer currentLevel);
 
     /**
-     * 修改用户的权限等级
-     * @param userId 用户id
-     * @param level 权限等级(0超级管理员，1管理员，2员工)
-     * @param currentLevel 当前登录用户的权限等级
+     * 新增管理员，修改用户的权限等级为1
+     * @param userIds 用户id
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
-    Result<Integer> updateLevel(@Param("userId") String userId, @Param("level") Integer level, @Param("currentLevel") Integer currentLevel);
+    Result<Integer> addAdmin(@Param("userIds") List<String> userIds);
+
+    /**
+     * 删除管理员，修改用户的权限等级为2
+     * @param userId 用户id
+     * @return com.jfzt.meeting.common.Result<java.lang.Integer>
+     */
+    Result<Integer> deleteAdmin(@Param("userId") String userId);
+
 
 
     /**

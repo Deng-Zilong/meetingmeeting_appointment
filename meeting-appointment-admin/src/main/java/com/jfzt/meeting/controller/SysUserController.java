@@ -1,5 +1,6 @@
 package com.jfzt.meeting.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.jfzt.meeting.common.Result;
 
 import com.jfzt.meeting.entity.SysUser;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 import java.util.List;
-
+import java.util.Map;
 
 
 /**
@@ -87,19 +88,28 @@ public class SysUserController {
      * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
      */
     @GetMapping("/selectAdmin")
-    public Result<List<String>> selectAdmin(@RequestParam("currentLevel") Integer currentLevel){
+    public Result<List<SysUser>> selectAdmin(@RequestParam("currentLevel") Integer currentLevel){
         return sysUserService.selectAdmin(currentLevel);
     }
 
     /**
-     * 修改用户权限等级,只有超级管理员可以操作
+     * 删除管理员,只有超级管理员可以操作
      * @param userId 用户id
-     * @param level 权限等级(0超级管理员，1管理员，2员工)
-     * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
-    @PutMapping("/updateLevel")
-    public Result<Integer> updateStatus (@RequestParam("userId") String userId, @RequestParam("level") Integer level, @RequestParam("currentLevel") Integer currentLevel) {
-        return sysUserService.updateLevel(userId, level, currentLevel);
+    @PutMapping("/deleteAdmin")
+    public Result<Integer> deleteAdmin (@RequestParam("userId") String userId) {
+        return sysUserService.deleteAdmin(userId);
+    }
+
+
+    /**
+     * 新增管理员,只有超级管理员可以操作
+     * @param userIds 用户id
+     * @return com.jfzt.meeting.common.Result<java.lang.Integer>
+     */
+    @PutMapping("/addAdmin")
+    public Result<Integer> addAdmin (@RequestParam("userIds") List<String> userIds) {
+        return sysUserService.addAdmin(userIds);
     }
 }

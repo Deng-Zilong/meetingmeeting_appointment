@@ -5,8 +5,6 @@ import com.jfzt.meeting.entity.SysUser;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
-
 /**
  * @author zilong.deng
  * @description 针对表【sys_user】的数据库操作Mapper
@@ -15,14 +13,29 @@ import java.util.List;
  */
 @Mapper
 public interface SysUserMapper extends BaseMapper<SysUser> {
-    
+
     /**
-     * 修改用户的权限等级
-     * @param userId
-     * @param level
+     * 新增管理员,修改用户的权限等级为1
+     * @param userId 用户id
      * @return
      */
-    int updateLevel(@Param("userId") String userId, @Param("level") Integer level);
+    int updateAdmin(@Param("userId") String userId);
+
+
+    /**
+     * 删除管理员,修改用户的权限等级为2
+     * @param userId 用户id
+     * @return
+     */
+    int updateLevel(@Param("userId") String userId);
+
+    /**
+     * 查询用户信息
+     * @param userId 用户id
+     * @return
+     */
+    SysUser selectByUserId(@Param("userId") String userId);
+
 
 }
 

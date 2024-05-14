@@ -18,8 +18,16 @@
         password,level,is_deleted
     </sql>
 
-    <update id="updateLevel" parameterType="map">
-        update sys_user set level = #{level} where user_id = #{userId}
+    <update id="updateLevel" parameterType="String">
+        update sys_user set level = 2 where user_id = #{userId}
     </update>
+
+    <update id="updateAdmin" parameterType="String">
+        update sys_user set level = 1 where user_id = #{userId}
+    </update>
+
+    <select id="selectByUserId" resultType="com.jfzt.meeting.entity.SysUser">
+        select id,user_id,user_name,password,level,is_deleted from sys_user where user_id = #{userId}
+    </select>
 
 </mapper>

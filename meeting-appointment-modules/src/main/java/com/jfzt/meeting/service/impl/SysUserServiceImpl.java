@@ -1,5 +1,7 @@
 package com.jfzt.meeting.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -24,7 +26,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.awt.image.BufferedImage;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.jfzt.meeting.context.BaseContext.removeCurrentLevel;
@@ -62,7 +66,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             // 获取所有的用户信息
             List<SysUser> sysUsers = sysUserMapper.selectList(new QueryWrapper<>());
             return Result.success(sysUsers.stream()
-                    // 过滤掉员工
+                    // 过滤掉管理员和超级管理员
                     .filter(user -> !MessageConstant.ADMIN_LEVEL.equals(user.getLevel()) && !MessageConstant.SUPER_ADMIN_LEVEL.equals(user.getLevel()))
                     // 获取管理员和超级管理员的名字
                     .map(SysUser::getUserName)
@@ -78,44 +82,57 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
      * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
      */
     @Override
-    public Result<List<String>> selectAdmin(Integer currentLevel) {
+    public Result<List<SysUser>> selectAdmin(Integer currentLevel) {
         // 判断当前登录用户的权限等级
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)){
+/*
+            QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
+            queryWrapper.in("level",0,1);
+            queryWrapper.select("user_name","level");*/
             // 查询用户的信息
             List<SysUser> sysUsers = sysUserMapper.selectList(new QueryWrapper<>());
-            return Result.success(sysUsers.stream()
-                    // 过滤掉管理员和超级管理员
-                    .filter(user -> MessageConstant.ADMIN_LEVEL.equals(user.getLevel()) || MessageConstant.SUPER_ADMIN_LEVEL.equals(user.getLevel()))
-                    // 获取员工姓名
-                    .map(SysUser::getUserName)
-                    .collect(Collectors.toList()));
+            return Result.success(sysUsers);
         }
+
+
         return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
     }
 
     /**
-     * 修改用户权限等级
-     * @param userId 用户id
-     * @param level 权限等级(0超级管理员，1管理员，2员工)
-     * @param currentLevel 当前登录用户的权限等级
+     * 新增管理员
+     * @param userIds 用户id
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @Override
-    public Result<Integer> updateLevel(String userId, Integer level, Integer currentLevel) {
-        // 检查输入的权限等级是否合法
-        if (level < MessageConstant.SUPER_ADMIN_LEVEL || level > MessageConstant.EMPLOYEE_LEVEL) {
-            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
-        }
-        // 判断当前登录用户的权限等级
-        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)){
-            int row = sysUserMapper.updateLevel(userId, level);
-            if (row > 0){
-                return Result.success(ErrorCodeEnum.SUCCESS);
+    public Result<Integer> addAdmin(List<String> userIds) {
+        int row = 0;
+        for (String userId : userIds) {
+            SysUser sysUser = sysUserMapper.selectByUserId(userId);
+            if (MessageConstant.ADMIN_LEVEL.equals(sysUser.getLevel())) {
+                throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
             }
-            log.error("修改用户权限等级失败！");
-            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
+            row = sysUserMapper.updateAdmin(userId);
         }
-        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
+        if (row > 0){
+            return Result.success(ErrorCodeEnum.SUCCESS);
+        }
+        log.error("修改用户权限等级失败！");
+        throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
+    }
+
+    /**
+     * 删除管理员
+     * @param userId 用户id
+     * @return com.jfzt.meeting.common.Result<java.lang.Integer>
+     */
+    @Override
+    public Result<Integer> deleteAdmin(String userId) {
+        int row = sysUserMapper.updateLevel(userId);
+        if (row > 0){
+            return Result.success(ErrorCodeEnum.SUCCESS);
+        }
+        log.error("修改用户权限等级失败！");
+        throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
     }
 
     /**
