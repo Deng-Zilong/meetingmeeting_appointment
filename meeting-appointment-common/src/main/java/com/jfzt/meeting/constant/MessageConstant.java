@@ -12,7 +12,7 @@ public class MessageConstant {
     public static final String DELETE_FAIL = "删除失败！";
     public static final String DELETE_SUCCESS = "删除成功！";
     public static final String CANCEL_SUCCESS = "取消成功！";
-    public static final String CANCEL_FAIL = "取消成功！";
+    public static final String CANCEL_FAIL = "取消失败！";
     public static final String START_TIME_LT_NOW = "开始时间不能小于当前时间";
     public static final String GROUP_NOT_EXIST = "群组不存在";
     public static final String USER_ERROR = "用户错误！";

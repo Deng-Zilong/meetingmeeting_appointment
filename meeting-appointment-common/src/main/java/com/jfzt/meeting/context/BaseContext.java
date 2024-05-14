@@ -1,5 +1,8 @@
 package com.jfzt.meeting.context;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class BaseContext {
 
     public static ThreadLocal<String> threadLocal = new ThreadLocal<>();

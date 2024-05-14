@@ -3,6 +3,7 @@ package com.jfzt.meeting.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.MeetingGroup;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.UserGroup;
@@ -50,6 +51,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
      */
     @Override
     public Result<List<MeetingGroupVO>> checkGroup (Integer pageNum, Integer pageSize, String userId) {
+
         // 返回Result.success(collect)
         ArrayList<MeetingGroup> joinList = new ArrayList<>();
         // 查询创建人姓名

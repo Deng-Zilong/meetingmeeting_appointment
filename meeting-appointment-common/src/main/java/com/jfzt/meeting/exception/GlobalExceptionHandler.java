@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.security.NoSuchAlgorithmException;
 
 import static com.jfzt.meeting.constant.MessageConstant.EXCEPTION_TYPE;
+import static com.jfzt.meeting.exception.ErrorCodeEnum.SERVICE_ERROR_A0400;
 import static com.jfzt.meeting.exception.ErrorCodeEnum.SYSTEM_ERROR_B0001;
 
 
@@ -36,9 +37,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(TooManyResultsException.class)
     public Result<String> TooManyRException(TooManyResultsException e){
         log.error(SYSTEM_ERROR_B0001.getDescription() + EXCEPTION_TYPE,e.getMessage());
-        Result<String> result = new Result<>();
-        result.setMsg(e.getMessage());
-        return result;
+        return Result.fail(SYSTEM_ERROR_B0001);
+    }
+    /**
+     * 空指针异常
+     */
+    @ExceptionHandler(NullPointerException.class)
+    public Result<String> NullPointerException(NullPointerException e){
+        log.error(SERVICE_ERROR_A0400.getDescription() + EXCEPTION_TYPE,e.getMessage());
+        return Result.fail(SERVICE_ERROR_A0400);
     }
 
     /**
