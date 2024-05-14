@@ -30,8 +30,9 @@ public class MeetingGroupController {
      */
     @GetMapping("/getMeetingGroupList")
     public Result<List<MeetingGroupVO>> getMeetingGroupList (@RequestParam Integer pageNum,
-                                                             @RequestParam Integer pageSize) {
-        return meetingGroupService.checkGroup(pageNum, pageSize);
+                                                             @RequestParam Integer pageSize,
+                                                             @RequestParam String userId) {
+        return meetingGroupService.checkGroup(pageNum, pageSize, userId);
     }
 
     /**

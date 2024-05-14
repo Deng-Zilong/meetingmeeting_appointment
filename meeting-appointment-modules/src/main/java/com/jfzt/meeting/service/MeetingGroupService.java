@@ -16,7 +16,7 @@ import java.util.List;
 public interface MeetingGroupService extends IService<MeetingGroup> {
 
 
-    Result<List<MeetingGroupVO>> checkGroup (Integer pageNum, Integer pageSize);
+    Result<List<MeetingGroupVO>> checkGroup (Integer pageNum, Integer pageSize, String userId);
 
     Result<Object> addMeetingGroup (MeetingGroupDTO meetingGroupDTO);
 

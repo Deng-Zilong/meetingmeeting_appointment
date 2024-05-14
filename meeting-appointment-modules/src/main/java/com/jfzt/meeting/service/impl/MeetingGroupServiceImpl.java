@@ -3,7 +3,6 @@ package com.jfzt.meeting.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
-import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.MeetingGroup;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.UserGroup;
@@ -50,13 +49,13 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
      * @Param [userId]
      */
     @Override
-    public Result<List<MeetingGroupVO>> checkGroup (Integer pageNum, Integer pageSize) {
-        String userId = BaseContext.getCurrentId();
-        // 移除当前的ID
-        BaseContext.removeCurrentId();
+    public Result<List<MeetingGroupVO>> checkGroup (Integer pageNum, Integer pageSize, String userId) {
         // 返回Result.success(collect)
         ArrayList<MeetingGroup> joinList = new ArrayList<>();
         // 查询创建人姓名
+        if (StringUtils.isBlank(userId)) {
+            return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0312);
+        }
         SysUser user = sysUserService.lambdaQuery()
                 .eq(StringUtils.isNotBlank(userId), SysUser::getUserId, userId)
                 .one();
@@ -97,6 +96,9 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
             // 遍历userGroups，将每个userGroup的用户名添加到meetingGroupVO中
             userGroups.stream().peek((userGroup) -> {
                 // 使用lambdaQuery查询出SysDepartmentUser，其中用户ID为userGroup.getUserId()
+                if (StringUtils.isBlank(userGroup.getUserId())) {
+                    return;
+                }
                 SysUser sysUser = sysUserService.lambdaQuery()
                         .eq(StringUtils.isNotBlank(userGroup.getUserId()), SysUser::getUserId, userGroup.getUserId())
                         .one();
