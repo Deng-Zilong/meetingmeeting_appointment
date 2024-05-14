@@ -117,10 +117,11 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      * 修改会议室状态
      * @param id     会议室ID
      * @param status 会议室状态
+     * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @Override
-    public Result<Integer> updateStatus (Long id, Integer status) {
+    public Result<Integer> updateStatus (Long id, Integer status, Integer currentLevel) {
         // 检查输入的会议室ID是否存在
         MeetingRoom meetingRoom = meetingRoomMapper.selectById(id);
         if (meetingRoom == null) {
@@ -128,9 +129,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             throw new RRException(UPDATE_FAIL,ErrorCodeEnum.SERVICE_ERROR_A0421.getCode());
         }
         // 获取当前登录用户的权限等级
-        Integer level = BaseContext.getCurrentLevel();
-        removeCurrentLevel();
-        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)) {
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel) || MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
             int row = meetingRoomMapper.updateStatus(id, status);
             if (row > 0){
                 return Result.success(ErrorCodeEnum.SUCCESS);
@@ -139,6 +138,27 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
         }
         return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
+    }
+
+    /**
+     * 查询未被禁用的会议室的id
+     * @param meetingRoom 会议室对象
+     * @param currentLevel 当前登录用户的权限等级
+     * @return com.jfzt.meeting.common.Result<java.util.List<<java.lang.Integer>>
+     */
+    @Override
+    public Result<List<Long>> selectUsableRoom(MeetingRoom meetingRoom, Integer currentLevel) {
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel) || MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
+            LambdaQueryWrapper<MeetingRoom> rooms = new LambdaQueryWrapper<MeetingRoom>()
+                    .eq(MeetingRoom::getStatus, MEETINGROOM_STATUS_AVAILABLE);
+            List<MeetingRoom> roomList = meetingRoomMapper.selectList(rooms);
+            List<Long> roomNames = roomList.stream()
+                    .map(MeetingRoom::getId)
+                    .toList();
+            return Result.success(roomNames);
+        }
+        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
+
     }
 
 
