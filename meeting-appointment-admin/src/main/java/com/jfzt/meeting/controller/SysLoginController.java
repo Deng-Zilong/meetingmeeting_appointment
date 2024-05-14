@@ -74,7 +74,7 @@ public class SysLoginController {
     public Result<UserInfoVO> login(@RequestBody LoginVo loginVo) throws NoSuchAlgorithmException {
         //判断验证码是否正确,需要获取redis中的验证码
         String codeUuids = (String) redisTemplate.opsForValue().get(loginVo.getUuid());
-        if(StringUtils.isBlank(codeUuids)||!loginVo.getCode().equals(codeUuids)){
+        if(StringUtils.isBlank(codeUuids)||!loginVo.getCode().equalsIgnoreCase(codeUuids)){
             log.error("用户未请求验证码或者用户验证码输入错误");
             throw new  RRException(ErrorCodeEnum.SERVICE_ERROR_A0240);
         }
