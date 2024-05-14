@@ -33,9 +33,11 @@ export function ResResolve(res: any) {
     if (res.config.url === "/meeting/user/captcha.jpg") {
         return res;
     }
-
+    
+    // if (res.status === '00000') {
     if (res.status === 200) {
-        if (res.data.code == 200) {
+        // if (res.data.code == 200) {
+        if (res.data.code === '00000') {
             return res.data;
         } else {
             ElMessage.error(res.data.msg);

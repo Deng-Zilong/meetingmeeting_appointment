@@ -6,7 +6,7 @@ export const qwLogin = (data: {code: string}) => {
 }
 
 // 账号密码登录
-export const Login = (data: {username: string, password: string, uuid: string, code: string}) => {
+export const Login = (data: {name: string, password: string, uuid: string, code: string}) => {
     return http.post("/meeting/user/login", data)
 }
 

@@ -72,7 +72,7 @@ public class SysUserController {
     }
 
     /**
-     * 获取企业微信用户姓名
+     * 获取不是管理员的企业微信用户姓名
      */
     @GetMapping("/selectName")
     public Result<List<String>> selectList(SysUser sysUser){
@@ -94,7 +94,7 @@ public class SysUserController {
      * @param level 权限等级(0超级管理员，1管理员，2员工)
      */
     @PutMapping("/updateLevel")
-    public Result<Object> updateStatus (@RequestParam("userId") String userId, @RequestParam("level") Integer level) {
+    public Result<Integer> updateStatus (@RequestParam("userId") String userId, @RequestParam("level") Integer level) {
         return sysUserService.updateLevel(userId, level);
     }
 }

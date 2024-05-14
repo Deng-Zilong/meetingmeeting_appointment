@@ -3,8 +3,8 @@
     <div class="theme">
       <div class="theme-left">
         <div class="left-common meeting-set">
-          <el-checkbox-group v-model="checkList">
-            <el-checkbox v-for="item in checkItem" :label="item.label" :value="item.value" />
+          <el-checkbox-group v-model="checkList" @change="changeCheckAll">
+            <el-checkbox v-for="item in checkItem" :label="item.label" :value="item.id" />
           </el-checkbox-group>
           <div class="text">会议室禁用设置</div>
         </div>
@@ -21,10 +21,11 @@
               操作管理员<el-icon><arrow-down /></el-icon>
             </div>
           </template>
-          <div class="people-items" v-for="(item, index) in manageList">
-            <span>{{ item.userName }}</span>
+          <div class="people-items" v-if="manageList.length" v-for="(item, index) in manageList">
+            <span>{{ item }}</span>
             <el-icon @click="handleDelPeople(index)"><close /></el-icon>
           </div>
+          <div v-else>暂无管理员</div>
         </el-popover>
       </div>
     </div>
@@ -58,45 +59,44 @@
   </div>
 </template>
 <script lang="ts" setup>
-    import { ref, reactive, onMounted, computed } from 'vue'
+    import { ref, onMounted, computed } from 'vue'
     import { ElMessage, ElMessageBox, dayjs } from 'element-plus';
     import { useInfiniteScroll } from '@vueuse/core'
     import { Close } from '@element-plus/icons-vue'
     import { meetingState } from '@/utils/types';
-    import { getAllRecord } from '@/request/api/manage'
+    import { getMeetingBan, getSelectAdminData, getAllRecordData } from '@/request/api/manage'
 
-    const checkList = ref(['1'])
-    const checkItem = ref([
-      {
+    // 会议室状态 0-暂停使用 1-空闲 2-使用中
+    const checkList = ref([3,5])  // 选中会议室 为禁用会议室
+    const checkItem = ref([  // 会议室
+      { 
+        id: 1,
         label: '广政通宝会议室',
-        value: '1'
+        status: 1
       },
-      {
+      { 
+        id: 2,
         label: 'EN-2F-02 恰谈室会议室',
-        value: 'EN-2F-02 恰谈室会议室'
+        status: 1
       },
-      {
+      { 
+        id: 3,
         label: 'EN-2F-03 恰谈室会议室',
-        value: 'EN-2F-03 恰谈室会议室'
+        status: 1
       },
-      {
+      { 
+        id: 4,
         label: 'EN-3F-02 恰谈室会议室',
-        value: 'EN-3F-02 恰谈室会议室'
-      }
+        status: 1
+      },
+      { 
+        id: 5,
+        label: 'EN-3F-03 恰谈室会议室',
+        status: 1
+      },
     ])
     const input = ref(''); 
-    const manageList = reactive([
-      {
-        userId: '2',
-        userName: '张三2'
-      },{
-        userId: '3',
-        userName: '张三3'
-      },{
-        userId: '4',
-        userName: '张三4'
-      },
-    ])
+    const manageList = ref<any>([])  // 所有管理员列表
     
     let manageData = ref<any>([]); // 所有会议记录数据
     const timelineRef = ref(null); // 获取dom节点
@@ -104,18 +104,6 @@
     let page = ref(1); // 默认页数 1
     let isLoading = ref(false); // 控制数据加载中是否显示
     let canLoadMore = ref(true); // 是否 继续请求数据
-    // console.log(timelineRef,'好');
-    
-    // 数据接口
-    // interface IData {
-    //     meetingRoomName: string
-    //     startTime: string
-    //     endTime: string
-    //     title: string
-    //     attendees:string
-    //     status: string
-    //     other: string | null
-    // }
     
     // 自己设置的数据列表！！！
     let manage = ref([
@@ -175,9 +163,41 @@
 
     onMounted(() => {
       // manageData.value = processData(manage.value)
-      manageData.value = getAllData({ page: page.value, limit: limit.value })
+      getMeetingBan({id: 1, status: 1})
+      manageData.value = getAllRecord({ page: page.value, limit: limit.value })  // 查询所有会议记录
+      getSelectAdmin()  // 查询所有管理员
     })
 
+    // 会议室禁用设置
+const changeCheckAll = (value: any) => {
+  console.log(value,);
+   const meeting = value.map((item: any) => {
+    if (!checkList.value.includes(item.id)) {
+      return {
+        id: item.id,
+        status: item.status,
+      }
+    }
+})
+  
+  let arr1 = ref({});
+      checkItem.value.forEach((item: any) => {
+        if (checkList.value.includes(item.id)) {
+          item.status = 0;
+
+        }
+        console.log(item, 'item');
+      })
+      console.log(checkList.value, 'changeCheckAll', );
+}
+    // const arr1 =  checkList.value.map((item: any) => {
+    //   return {
+    //     id: item.id,
+    //     status: item.status
+    //   }
+    // })
+    // getSelectAdmin(arr1)
+    
     // 公告输入信息
     const uploadBulletin = (input: string) => {
       ElMessageBox.confirm('确定上传公告吗？')
@@ -193,24 +213,32 @@
           ElMessage.warning('取消上传公告')
         })
     }
+
+    /**
+     * @description 查询所有管理员 
+     */
+    const getSelectAdmin = async () => {
+      const res = await getSelectAdminData()
+      manageList.value = res.data
+    }
+
+    /**
+     * @description 增删管理员    还没写！！！
+     * @param {string} userId 用户id
+     * @param {number} level 用户等级-管理员
+     */
+    
     // 操作管理员--删除管理员
     const handleDelPeople = (index: number) => {
       ElMessageBox.confirm('确定删除该管理员吗？')
         .then(() => {
-          manageList.splice(index,1)
+          manageList.value.splice(index,1)
           ElMessage.success('删除成功')          
         })
         .catch(() => {
           ElMessage.warning('取消删除')
         })
     }
-
-    /**
-     * @description 增删管理员 
-     * @param {string} userId 用户id
-     * @param {number} level 用户等级-管理员
-     */
-    
 
     /**
      * @description 处理列表数据
@@ -238,9 +266,9 @@
      * @param {number} page 页码
      * @param {number} limit 每页条数 默认10
      */
-    const getAllData = (data: { page: number, limit: number}) => {
+    const getAllRecord = async (data: { page: number, limit: number}) => {
       let list:any = []
-      getAllRecord(data)
+      await getAllRecordData(data)
         .then((res) => {
           list = processData(res.data);
         })
@@ -259,7 +287,7 @@
       // 延迟请求
       await new Promise((resolve) => setTimeout(resolve, 2000));
       // 发送请求
-      const newData = await getAllData({ page: page.value, limit: limit.value });
+      const newData = await getAllRecord({ page: page.value, limit: limit.value });
       // 返回数组长度
       const length = ref<number>(newData.length)
       // 若返回数据长度小于限制 停止加载
@@ -369,6 +397,7 @@
           height: 1.9rem;
           color: #3268DC;
           background: #ECF2FF;
+          cursor: pointer;
         }
         .operate-people {
           &:hover {

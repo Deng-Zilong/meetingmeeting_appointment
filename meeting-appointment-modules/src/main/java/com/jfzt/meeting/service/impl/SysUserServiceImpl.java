@@ -10,6 +10,8 @@ import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.vo.LoginVo;
 import com.jfzt.meeting.entity.vo.SysUserVO;
+import com.jfzt.meeting.exception.ErrorCodeEnum;
+import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.service.SysUserService;
 import jakarta.annotation.Resource;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.awt.image.BufferedImage;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,7 +43,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     private SysUserMapper sysUserMapper;
 
     @Resource
-    private RedisTemplate<String,String> redisTemplate;
+    private RedisTemplate<String,Object> redisTemplate;
     @Resource
     private Producer producer;
 
@@ -48,8 +51,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
     /**
      * 获取所有不是管理员的企业微信用户的姓名
-     * @param sysUser
-     * @return
+     * @param sysUser 用户信息
+     * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
      */
     @Override
     public Result<List<String>> selectAll(SysUser sysUser) {
@@ -60,49 +63,63 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             // 获取所有的用户信息
             List<SysUser> sysUsers = sysUserMapper.selectList(new QueryWrapper<>());
             return Result.success(sysUsers.stream()
+                    // 过滤掉员工
                     .filter(user -> !MessageConstant.ADMIN_LEVEL.equals(user.getLevel()) && !MessageConstant.SUPER_ADMIN_LEVEL.equals(user.getLevel()))
+                    // 获取管理员和超级管理员的名字
                     .map(SysUser::getUserName)
                     .collect(Collectors.toList()));
         }
-        return Result.fail(MessageConstant.HAVE_NO_AUTHORITY);
+        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
 
     }
 
     /**
      * 查询所有的管理员
-     * @return
+     * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
      */
     @Override
     public Result<List<String>> selectAdmin() {
         // 获取当前登录用户的权限等级
         Integer level = BaseContext.getCurrentLevel();
         removeCurrentLevel();
+        // 判断当前用户是否是超级管理员
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level)){
+            // 查询用户的信息
             List<SysUser> sysUsers = sysUserMapper.selectList(new QueryWrapper<>());
             return Result.success(sysUsers.stream()
+                    // 过滤掉管理员和超级管理员
                     .filter(user -> MessageConstant.ADMIN_LEVEL.equals(user.getLevel()) || MessageConstant.SUPER_ADMIN_LEVEL.equals(user.getLevel()))
+                    // 获取员工姓名
                     .map(SysUser::getUserName)
                     .collect(Collectors.toList()));
         }
-        return Result.fail(MessageConstant.HAVE_NO_AUTHORITY);
+        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
     }
 
     /**
      * 修改用户权限等级
      * @param userId 用户id
      * @param level 权限等级(0超级管理员，1管理员，2员工)
-     * @return
+     * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @Override
-    public Result<Object> updateLevel(String userId, Integer level) {
+    public Result<Integer> updateLevel(String userId, Integer level) {
+        // 检查输入的权限等级是否合法
+        if (level < MessageConstant.SUPER_ADMIN_LEVEL || level > MessageConstant.EMPLOYEE_LEVEL) {
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
+        }
         // 获取当前登录用户的权限等级
         Integer currentLevel = BaseContext.getCurrentLevel();
         removeCurrentLevel();
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)){
             int row = sysUserMapper.updateLevel(userId, level);
-            return Result.success(row);
+            if (row > 0){
+                return Result.success(ErrorCodeEnum.SUCCESS);
+            }
+            log.error("修改用户权限等级失败！");
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
         }
-        return Result.fail(MessageConstant.HAVE_NO_AUTHORITY);
+        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
     }
 
     /**
@@ -113,7 +130,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     @Override
     public BufferedImage getCaptcha(String uuid) {
         String code =producer.createText();
-        redisTemplate.opsForValue().set(uuid,code, Duration.ofHours(60));
+        redisTemplate.opsForValue().set(uuid,code, Duration.ofSeconds(60));
         return producer.createImage(code);
     }
 

@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
 import static com.jfzt.meeting.constant.IsDeletedConstant.NOT_DELETED;
 import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
 import static com.jfzt.meeting.constant.MeetingRoomStatusConstant.*;
+import static com.jfzt.meeting.constant.MessageConstant.*;
+import static com.jfzt.meeting.constant.MessageConstant.SAME_NAME;
 import static com.jfzt.meeting.constant.TimePeriodStatusConstant.*;
 import static com.jfzt.meeting.context.BaseContext.removeCurrentLevel;
 
@@ -95,8 +97,8 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     @Override
     public Result<String> deleteMeetingRoom (Long meetingRoomId) {
         // 获取当前登录用户的权限等级
-        Integer level = BaseContext.getCurrentLevel();
-        removeCurrentLevel();
+         Integer level = BaseContext.getCurrentLevel();
+         removeCurrentLevel();
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)) {
             // 删除会议室
             if (meetingRoomId != null) {
@@ -110,25 +112,33 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0312);
     }
 
+
     /**
      * 修改会议室状态
-     *
-     * @param id     会议室id
+     * @param id     会议室ID
      * @param status 会议室状态
+     * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @Override
     public Result<Integer> updateStatus (Long id, Integer status) {
+        // 检查输入的会议室ID是否存在
+        MeetingRoom meetingRoom = meetingRoomMapper.selectById(id);
+        if (meetingRoom == null) {
+            log.error(UPDATE_FAIL + EXCEPTION_TYPE,RRException.class);
+            throw new RRException(UPDATE_FAIL,ErrorCodeEnum.SERVICE_ERROR_A0421.getCode());
+        }
         // 获取当前登录用户的权限等级
         Integer level = BaseContext.getCurrentLevel();
         removeCurrentLevel();
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)) {
-            boolean result = meetingRoomMapper.updateStatus(id, status);
-            if (result) {
-                return Result.success(MessageConstant.SUCCESS);
+            int row = meetingRoomMapper.updateStatus(id, status);
+            if (row > 0){
+                return Result.success(ErrorCodeEnum.SUCCESS);
             }
-            return Result.fail(MessageConstant.FAIL);
+            log.error("修改会议室状态失败！");
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
         }
-        return Result.fail(MessageConstant.HAVE_NO_AUTHORITY);
+        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
     }
 
 

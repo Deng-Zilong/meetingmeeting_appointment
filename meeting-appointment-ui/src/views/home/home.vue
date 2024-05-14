@@ -1,14 +1,14 @@
 <template>
-  <div class="home-container">
+  <div class="home-container" v-loading="loading">
     <div class="home-row">
       <!-- 会议室大屏 -->
       <div class="every-block screen">
         <div class="screen-title">中心会议室大屏</div>
         <div class="screen-main">
           <div class="main-table">
-            <div class="main-items" v-for="item in 3">
-              <div class="name">会议室名</div>
-              <div class="state">状态</div>
+            <div class="main-items" v-for="item in roomMeetingData" @click.stop="handleRoomClick(item)">
+              <div class="name">{{ item.roomName }}</div>
+              <div class="state">{{ roomStatus(item.status) }}</div>
             </div>
           </div>
           <div class="guage-chart">
@@ -75,7 +75,7 @@
       <div class="every-block choose">
         <div class="choose-title">今日会议预约时间选择</div>
         <div class="choose-main" >
-          <div class="choose-cell" :class="color(item.state)" v-for="item in timeArr" @click.stop="selectTime(item)">{{ item.time }}</div>
+          <div class="choose-cell" :class="timeColor(item.state)" v-for="item in timeArr" @click.stop="selectTime(item)">{{ item.time }}</div>
         </div>
       </div>
       <!-- 会议室预约情况 -->
@@ -93,12 +93,12 @@
           <div class="table-main">
             <div class="table-tr" v-for="(item, index) in tableData">
               <div class="tr-cell">{{ item.title }}</div>
-              <div class="tr-cell">{{ item.name }}</div>
-              <div class="tr-cell">{{ item.time }}</div>
+              <div class="tr-cell">{{ item.meetingRoomName }}</div>
+              <div class="tr-cell">{{ time(item) }}</div>
               <div class="tr-cell">{{ statusName(item.status) }}</div>
               <div class="tr-cell">{{ item.meetingNumber }}</div>
               <div class="tr-cell" :style="{ 'color': (operate(item) === '修改' ? '#3268DC' : '') }"
-              @click="operate(item) === '修改' ? modifyMeeting(item) : delMeeting(index) ">
+              @click="operate(item) === '修改' ? modifyMeeting(item) : delMeeting(item,index) ">
                 {{ operate(item) }}
               </div>
             </div>
@@ -109,82 +109,170 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user'
-import { reactive, ref } from 'vue'
-import { getTodayMeetingRecordData } from '@/request/api/home'
+import {  getTodayMeetingRecordData, getDeleteMeetingRecordData, getCenterAllNumberData, getRoomStatusData, getTimeBusyData, } from '@/request/api/home'
 
 import Clock from '@/views/home/component/clock.vue'
 import GuageChart from '@/views/home/component/guageChart.vue'
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage, ElMessageBox, dayjs } from 'element-plus';
+import { meetingState } from '@/utils/types';
 
+const loading = ref(true);  // 获取数据loading 
 const userStore = useUserStore();
 const route = useRoute();
 const router = useRouter();
+const userInfo = ref();
 
-onMounted(async () => {
-  /* 判断扫码登录状态 */
-  const code = decodeURIComponent(route.query.code as string);
-  const token = userStore.userInfo.accessToken;
-
-  // 若 code 不为 undefined 时为扫码登录
-  if (code != 'undefined') {
-    return await userStore.getQWUserInfo(code);
-  }
-  
-  // 若不是扫码登录则判断token  
-  if (!token) {
-    router.replace('/login');
-  }
-});
-
-onMounted(() => {
-  getTodayRecord()
-})
-
-/* 会议室大屏 */
-// echarts数据展示
-const gaugeData = ref([
+let gaugeData = ref<any>([ // echarts数据展示 今日总预约数
   {
-    value: 12,
+    value: 0,
     name: '中心会议总次数'
   }
 ])
-/* 预约时间选择 */
-// 会议时间点
-interface Time {
-  time: String,
-  state: Number
-}
-const timeArr = reactive<Time[]>([
-  { time: '8:00', state: 4 }, { time: '8:30', state: 4 },
-  { time: '9:00', state: 4 }, { time: '9:30', state: 1 },
-  { time: '10:00', state: 1 }, { time: '10:30', state: 2 },
-  { time: '11:00', state: 3 }, { time: '11:30', state: 4 },
-  { time: '12:00', state: 4 }, { time: '12:30', state: 1 },
-  { time: '13:00', state: 4 }, { time: '13:30', state: 4 },
-  { time: '14:00', state: 4 }, { time: '14:30', state: 1 },
-  { time: '15:00', state: 1 }, { time: '15:30', state: 2 },
-  { time: '16:00', state: 3 }, { time: '16:30', state: 4 },
-  { time: '17:00', state: 4 }, { time: '17:30', state: 1 },
-  { time: '18:00', state: 1 }, { time: '18:30', state: 1 },
-  { time: '19:00', state: 1 }, { time: '19:30', state: 1 },
-  { time: '20:00', state: 1 }, { time: '20:30', state: 2 },
-  { time: '21:00', state: 3 }, { time: '21:30', state: 4 },
-  { time: '22:00', state: 1 }, { time: '22:30', state: 1 }
+let roomMeetingData = ref<any>([]) // 会议室状态信息
+const timeArr = ref([  // 预约时间点及该时间点可预约状态
+  { time: '8:00', state: 3 }, { time: '8:30', state: 3 },
+  { time: '9:00', state: 3 }, { time: '9:30', state: 3 },
+  { time: '10:00', state: 3 }, { time: '10:30', state: 3 },
+  { time: '11:00', state: 3 }, { time: '11:30', state: 3 },
+  { time: '12:00', state: 3 }, { time: '12:30', state: 3 },
+  { time: '13:00', state: 3 }, { time: '13:30', state: 3 },
+  { time: '14:00', state: 3 }, { time: '14:30', state: 3 },
+  { time: '15:00', state: 3 }, { time: '15:30', state: 3 },
+  { time: '16:00', state: 3 }, { time: '16:30', state: 3 },
+  { time: '17:00', state: 3 }, { time: '17:30', state: 3 },
+  { time: '18:00', state: 3 }, { time: '18:30', state: 3 },
+  { time: '19:00', state: 3 }, { time: '19:30', state: 3 },
+  { time: '20:00', state: 3 }, { time: '20:30', state: 3 },
+  { time: '21:00', state: 3 }, { time: '21:30', state: 3 },
+  { time: '22:00', state: 3 }, { time: '22:30', state: 3 }
 ])
-const color = computed(() => (state: any) => {
-  switch (state) {
+
+let tableData = ref<any>([]) // 预约情况数据
+// let table = [
+//   {
+//     id: 1,//     title: "test会议1",
+//     description: "会议内容1",
+//     startTime: "2024-04-30 11:22:10",
+//     endTime: "2024-04-30 11:23:11",
+//     meetingRoomId: 4,
+//     status: 3,
+//     createdBy: "dzl",
+//     gmtCreate: "2024-04-29 15:23:21",
+//     gmtModified: "2024-04-30 03:59:30",
+//     isDeleted: 0,
+//     adminUserName: "邓子龙",
+//     meetingRoomName: "会议室4",
+//     meetingNumber: 3,
+//     attendees: "邓子龙,zhangsan,lisi",
+//     location: 4
+//   }
+// ]
+
+onMounted(async () => {
+   /* 判断扫码登录状态 */
+   const code = decodeURIComponent(route.query.code as string);
+    userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    const token = userInfo.value?.accessToken;
+    console.log(token, "token");
+    
+  
+    // 若 code 不为 undefined 时为扫码登录
+    if (code != 'undefined') {
+      return await userStore.getQWUserInfo(code);
+    }
+    
+    // 若不是扫码登录则判断token
+    if (!token) {
+      return router.replace('/login');
+    }
+
+  tableData.value = getTodayRecord({ userId: userStore.userInfo.userId })  // 查询今日会议情况
+  getCenterAllNumber()  // 查询中心会议总次数
+  getRoomStatus()  // 查询会议室状态
+  getTimeBusy()  // 查询当日时间段占用情况
+
+  loading.value = false
+});
+
+
+/* 会议室大屏 */
+/**
+ * @description 今日中心会议总次数
+*/
+const getCenterAllNumber = () => {
+  getCenterAllNumberData()
+    .then((res) => {
+      gaugeData.value = [{
+        value: res.data,
+        name: '中心会议总次数'
+      }]
+    })
+    .catch((err) => {
+      console.log(err,'中心会议总次数err')
+    })
+}
+
+/**
+ * @description 查询会议室状态
+ */
+// 处理状态名称展示
+const roomStatus = computed(() => (status: number) => {
+  switch (status) {
+    case 0:
+      return '暂停使用'
     case 1:
+      return '空闲'
+    case 2: 
+      return '使用中'
+  }
+})
+const getRoomStatus = () => {
+  getRoomStatusData()
+    .then((res) => {
+      roomMeetingData.value = res.data
+    })
+    .catch((err) => {
+      console.log(err,'会议室情况err')
+    })
+}
+
+const handleRoomClick = (item: any) => {
+    if(item.status === 1) {
+      router.push({
+      path: '/meeting-appoint',
+      query: {
+        meetingRoomId: item.id
+      }
+    })
+  }
+}
+
+/* 预约时间选择 */
+/**
+ * @description 查询当日时间段占用情况
+ * 时间状态  0：已过期 1：已预定 2：可预约
+*/
+const getTimeBusy = async () => {
+  let res:any = await getTimeBusyData()
+  timeArr.value.forEach((item: any, index: number) => {
+    item.state = res.data[index];
+  })
+}
+// 会议时间点
+const timeColor = computed(() => (state: any) => {
+  switch (state) {
+    case 0:
       return 'color-one';
-    case 2:
+    case 1:
       return 'color-two';
   }
 })
 // 选择时间段
 const selectTime = (item: any) => {
-  if ([1, 2].includes(item.state)) {
+  if ([0, 1].includes(item.state)) {
     return;
   } else {
     router.push('/meeting-appoint')
@@ -192,181 +280,77 @@ const selectTime = (item: any) => {
 }
 
 /* 会议室预约情况 */
-interface RecordType {
-  "title": string,
-  "name": string,
-  "time": string,
-  "status": number,
-  "createdBy": string,
-  "meetingNumber": string
-}
-let tableData = reactive<RecordType[]>([])
-const res = {
 
-code: "200",
-msg: "success",
-data: [
-
-    {
-
-        id: 1,
-
-        title: "test会议1",
-
-        description: "会议内容1",
-
-        startTime: "2024-04-30 11:22:10",
-
-        endTime: "2024-04-30 11:23:11",
-
-        meetingRoomId: 4,
-
-        status: 2,
-
-        createdBy: "dzl",
-
-        gmtCreate: "2024-04-29 15:23:21",
-
-        gmtModified: "2024-04-30 03:59:30",
-
-        isDeleted: 0,
-
-        adminUserName: "邓子龙",
-
-        meetingRoomName: "会议室4",
-
-        meetingNumber: 3,
-
-        attendees: "邓子龙,zhangsan,lisi",
-
-        location: 4
-
-    }
-
-]
-
-}
-// const tableData = reactive([
-//   {
-//     title: '会议室主题内容信息展示',
-//     name: '会议室主题内容信息展',
-//     time: '11',
-//     status: 0,
-//     createdBy: '1',
-//     meetingNumber: '11'
-//   },
-//   {
-//     title: '11',
-//     name: '11',
-//     time: '11',
-//     status: 1,
-//     createdBy: '2',
-//     meetingNumber: '11'
-//   },
-//   {
-//     title: '112',
-//     name: '11',
-//     time: '11',
-//     status: 2,
-//     createdBy: '2',
-//     meetingNumber: '11'
-//   },
-//   {
-//     title: '113',
-//     name: '11',
-//     time: '11',
-//     status: 2,
-//     createdBy: '2',
-//     meetingNumber: '11'
-//   },
-//   {
-//     title: '114',
-//     name: '11',
-//     time: '11',
-//     status: 2,
-//     createdBy: '2',
-//     meetingNumber: '11'
-//   }
-// ]);
-
-const getTodayRecord = async () => {
-  const res = await getTodayMeetingRecordData({ userId: userStore.userInfo.userId });
-  tableData = res.data
-  // tableData.values = res.data
-  // if (res.data.code === 200) {
-  //   tableData.splice(0, tableData.length, ...res.data);
-  // }
-  console.log(tableData,'res');
-  
-}
-// 监听会议室状态
+/**
+ * @description 处理列表数据
+ * @param data 获取的数据
+ */
+// 处理时间格式
+const time = (item: any) => {
+  const time = dayjs(item.startTime).format('HH:mm') + ' - ' + dayjs(item.endTime).format('HH:mm')
+  return time
+} 
+// 会议室状态
 const statusName = computed(() => (status: any) => {
-  switch (status) {
-    case 0:
-      return '未开始';
-    case 1:
-      return '进行中';
-    case 2:
-      return '已结束';
-    default :
-      return '未开始';
-  }
+  let state = meetingState.find((item: any) => item.value === status)?.label
+  return state
 })
+
+// 操作 展示状态
 const operate = computed(() => (item: any) => {
   // 会议-未开始 且 登陆人员=创建者时(item.createdBy === userStore.userInfo.userId) 才可以修改
-  if (item.status === 0 && item.createdBy === '1') {
+  if (item.status === 0 && item.createdBy === 'dzl') {
     return '修改';
-  } else if (item.status === 1) {
-    return '';
-  } else {
+    // 暂定 状态为"已取消"时 且 登陆人员=创建者时(item.createdBy === userStore.userInfo.userId)  可删除
+  } else if (item.status === 3 && item.createdBy === 'dzl') {
     return '删除';
+  } else {
+    return '';
   }
 })
+
+/**
+ * @description 查询今日会议情况
+ * @param {userId} 用户id
+ */
+const getTodayRecord = async (data: { userId: string }) => {
+  let list:any = []
+  await getTodayMeetingRecordData(data)
+    .then((res) => {
+      list = res.data
+    })
+    .catch((err) => {
+      console.log(err, '查询今日会议情况err')
+    })
+  return list;
+}
+
+
 // 点击修改会议
 const modifyMeeting = (item: any) => {
-  if (item.status === 0 && item.createdBy === '1') {
+  // 会议-未开始 且 登陆人员=创建者时(item.createdBy === userStore.userInfo.userId) 才可以修改
+  if (item.status === 0 && item.createdBy === 'dzl') {
     router.push('/meeting-appoint')
   }
 }
-// 点击删除
-const delMeeting = (index: number) => {
+
+/**
+ * @description 删除会议记录  点击删除
+ * @param {userId} 用户id
+ * @param {meetingId} 会议id
+ */
+
+const delMeeting = (item: any,index: number) => {
   ElMessageBox.confirm('是否确定删除会议？')
   .then(() => {
-    tableData.splice(index, 1);
+    getDeleteMeetingRecordData({userId: item.userId ,meetingId: item.meetingId})
+    tableData.value.splice(index, 1);
     ElMessage.success('删除成功')
   })
   .catch(() => {
     ElMessage.info('取消删除')
   })
 }
-// onMounted(() => {
-//   getTodayMeetingRecord({ userId: userStore.userInfo.userId })
-// })
-// interface RecordType {
-//     "title": string,
-//     "name": string,
-//     "time": string,
-//     "status": number,
-//     "createdBy": string,
-//     "meetingNumber": string
-//   }
-// const getTodayMeetingRecord = (data: { userId: number | string }) => {
-//   let todayRecordList = []
-//   const tableData = reactive({})
-//   getTodayMeetingRecordData({ userId: userStore.userInfo.userId }).then(res => {
-//     todayRecordList = res.data;
-//     todayRecordList.forEach((item: { title: any; name: any; time: any; status: any; createdBy: any; meetingNumber: any; }) => {
-//       tableData.push({
-//         title: item.title,
-//         name: item.name,
-//         time: item.time,
-//         status: item.status,
-//         createdBy: item.createdBy,
-//         meetingNumber: item.meetingNumber
-//       })
-//     })
-//   })
-// }
 
 </script>
 
@@ -423,6 +407,7 @@ const delMeeting = (index: number) => {
             box-sizing: border-box;
             border: 1px solid rgba(111, 167, 249, 0.8);
             box-shadow: inset 0px 0px 30px 0px rgba(16, 127, 255, 0.3);
+            cursor: pointer;
             .name {
               font-size: 1.1rem;
               color: #6A6A6A;
@@ -644,8 +629,8 @@ const delMeeting = (index: number) => {
           background: #FFF;
           border-radius: 5px;
           box-shadow: 1px 1px 2px 1px #DBE9F7;
-
           &:hover {
+            cursor: pointer;
             background-color: #1273DB;
             transform: scale(1.06);
           }

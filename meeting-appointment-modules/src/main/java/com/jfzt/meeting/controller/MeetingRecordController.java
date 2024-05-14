@@ -1,15 +1,21 @@
 package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
+import com.jfzt.meeting.exception.ErrorCodeEnum;
+import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.service.MeetingRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+
+import static com.jfzt.meeting.constant.MessageConstant.*;
 
 /**
  * @author zilong.deng
@@ -109,13 +115,13 @@ public class MeetingRecordController {
     }
 
     /**
-     * @param page  页码
-     * @param limit 每页显示条数
-     * @return {@code Result<List<MeetingRecordVO>>}
+     * @param pageNum  页码
+     * @param pageSize 每页显示条数
+     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.MeetingRecordVO>>
      * @description 查询所有会议记录
      */
     @GetMapping("/meetingRecord/selectAllMeetingRecord")
-    public Result<List<MeetingRecordVO>> getRecordPage (@RequestParam Long page, @RequestParam Long limit) {
-        return meetingRecordService.getAllMeetingRecordVoListPage(page, limit);
+    public Result<List<MeetingRecordVO>> getRecordPage (@RequestParam Long pageNum, @RequestParam Long pageSize) {
+        return meetingRecordService.getAllMeetingRecordVoListPage(pageNum, pageSize);
     }
 }

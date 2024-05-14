@@ -7,8 +7,8 @@
                 <div class="logo"></div>
                 <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules">
                     <!-- 域名 -->
-                    <el-form-item prop="username">
-                        <el-input v-model="ruleForm.username" placeholder="账号" />
+                    <el-form-item prop="name">
+                        <el-input v-model="ruleForm.name" placeholder="账号" />
                     </el-form-item>
                     <!-- 密码 -->
                     <el-form-item prop="password">
@@ -57,23 +57,23 @@ const userStore = useUserStore();
 const ruleFormRef = ref<FormInstance>()
 // 登录验证
 const ruleForm = reactive({
-    username: '',
+    name: '',
     password: '',
     captcha: '',
 })
 
 const rules = reactive<FormRules<typeof ruleForm>>({
-    username: [
+    name: [
         { required: true, message: "请输入域名", trigger: "blur" },
-        { min: 4, max: 10, message: "域名必须是4-10位字符", trigger: "blur" }
+        { min: 1, message: "域名不可为空", trigger: "blur" }
     ],
     password: [
         { required: true, message: "请输入密码", trigger: "blur" },
-        { min: 4, max: 10, message: "密码必须是4-10位字符", trigger: "blur" },
+        { min: 1,  message: "密码不可为空", trigger: "blur" },
     ],
     captcha: [
         { required: true, message: "请输入验证码", trigger: "blur" },
-        { min: 4, max: 4, message: "验证码必须是5位字符", trigger: "blur" }
+        { min: 4, max: 4, message: "验证码必须是4位字符", trigger: "blur" }
     ]
 })
 
@@ -112,8 +112,8 @@ const submitForm = async (formEl: FormInstance | undefined) => {
     if (!formEl) return
     formEl.validate((valid) => {
         if (valid) {
-            const { username, password, captcha } = ruleForm;
-            userStore.getUserInfo({ username, password, code: captcha, uuid: uuid.value });
+            const { name, password, captcha } = ruleForm;
+            userStore.getUserInfo({ name, password, code: captcha, uuid: uuid.value });
         } else {
             // openVn()
             return false

@@ -23,7 +23,7 @@ public class MessageConstant {
     /**
      * 权限处理提示信息
      */
-    public static final String HAVE_NO_AUTHORITY = "请联系管理员获取权限!";
+    public static final String UPDATE_FAIL = "修改会议室状态失败!";
     public static final String SUCCESS = "成功！";
     public static final String FAIL = "失败！";
 
