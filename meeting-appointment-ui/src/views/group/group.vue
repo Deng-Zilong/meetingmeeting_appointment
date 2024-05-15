@@ -40,12 +40,11 @@
             </div>
         </div>
         <!-- 添加群组成员弹窗 -->
-        <personDialog
-            v-model="addGroupForm.visible"
-            :title="addGroupForm.title"
+        <personTreeDialog
+            v-model="addGroupVisible"
+            title="添加群组人员"
             :type="type"
-            :data="addGroupForm.list"
-            :groupPeopleIds="groupPeopleIds"
+            :peopleIds="peopleIds"
             @close-dialog="closeAddGroupDialog"
             @submit-dialog="handleCheckedNodes"
         />
@@ -56,105 +55,53 @@
     import { ElMessage, ElMessageBox, ElTree  } from 'element-plus'
     import { useUserStore } from '@/stores/user'
     import { Plus } from '@element-plus/icons-vue'
-    import { getGroupList, deleteMeetingGroup, updateMeetingGroup, addMeetingGroup, getGroupUserTree, likeByName } from '@/request/api/group'
-    import personDialog from "@/views/group/components/person-dialog.vue";
+    import { getMeetingGroupList, deleteMeetingGroup, updateMeetingGroup, addMeetingGroup, getGroupUserTree } from '@/request/api/group'
+    import personTreeDialog from "@/components/person-tree-dialog.vue";
     import { useInfiniteScroll } from '@vueuse/core'
 
     const userStore = useUserStore(); // 获取用户信息
-    const userInfo = ref();
-    onMounted(() => {
+    const userInfo = ref<any>({});
+    onMounted(async() => {
         userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '');
         // 初始化数据
-        data.value = handleGroupList({pageSize: page.value, pageNum: limit.value});
+        data.value = await handleGroupList({userId: userInfo.value.userId, pageSize: page.value, pageNum: limit.value});
     })
 
     /************************** 创建群组开始 **************************/
     let groupTitle = ref<string>(''); // 群组名称
     let groupPeopleNames = ref<string>(''); // 群组成员名称
-    let groupPeopleIds = ref<any>([]); // 群组成员id
+    let peopleIds = ref<any>([]); // 群组成员id
     let groups = ref<any>([]); // 选中的群组成员信息、
     let type = ref<number>(1); // 1 创建群组 2 修改群组
-    let search = ref<string>('');// 搜索人员
     const timelineRef = ref(null); // 获取dom节点
     let limit = ref(10); // 默认限制条数 10
     let page = ref(1); // 默认页数 1
     let isLoading = ref(false); // 控制数据加载中是否显示
     let canLoadMore = ref(true); // 是否 继续请求数据
-    // 添加群组人员弹窗数据
-    let addGroupForm = ref({
-        visible: false,
-        title: '添加群组人员',
-        list:<any> [],
-    })
-    
+    let addGroupVisible = ref(false);
     // 打开添加群组人员弹窗
     const handleAddPerson = () => {
         if (type.value == 2) {
-            groupPeopleIds.value = [];
+            peopleIds.value = [];
         }
         type.value = 1;
-        handleAddGroupReq();
-    }
-
-    /**
-     * @description 处理群组成员数据结构
-     */
-    const treeUserListToChildren = (data: any) => {
-        data.forEach((item: any) => {
-            // 如果当前节点有 treeUsers，则创建一个代表 treeUsers 的虚拟节点
-            if (item.treeUsers && item.treeUsers.length > 0) {
-                const userListNode = item.treeUsers.map((user: any) => {
-                    user.departmentName = user.userName;
-                    user.isTreeUsersNode = true;
-                    return user;
-                })
-                // 将这个虚拟节点插入到 childrenPart 的最前面
-                item.childrenPart.unshift(...userListNode);
-            }
-            // 递归处理子节点
-            if (item.childrenPart && item.childrenPart.length > 0) {
-                treeUserListToChildren(item.childrenPart);
-            }
-        });
-        return data;
-    }
-    /**
-     * @description 获取群组成员数据
-     */
-    const handleAddGroupReq = () => {
-        getGroupUserTree()
-            .then(res => {
-                addGroupForm.value.list = treeUserListToChildren(res.data);
-            })
-            .catch(err => {
-                console.log(err, "err");
-            })
-            .finally(() => {
-                addGroupForm.value.visible = true;
-            })
+        addGroupVisible.value = true;
     }
     
     /**
      * @description 提交需要添加的群组人员
      */
-    const handleCheckedNodes = (type: number, treeRef: any) => {
-        const selectedPeople = treeRef.value!.getCheckedNodes(false, false).filter(((el: any) => el.parentId == undefined))
+    const handleCheckedNodes = (type: number, active: number, form: any) => {
         // 获取被选中成员的id
-        groupPeopleIds.value.push(...new Set(selectedPeople.map((item: any) => item.userId)));
-        /// 获取被选中人员的 信息并去重
-        groups.value = Array.from(
-            new Map(
-                selectedPeople.map((item: any) => [item.userId, {
-                    userId: item.userId,
-                    userName: item.userName,
-                }])
-            ).values()
-        );
-        
-        // 创建群组
+        peopleIds.value = form.peopleIds;
+
+        // 获取被选中人员的 信息并去重
+        groups.value = form.groups;
+    
+        // // 创建群组
         if (type == 1) {
             // 处理被选中成员的名称 用，隔开
-            groupPeopleNames.value = Array.from(new Set(selectedPeople.map((item: any) => item.userName))).join(',');
+            groupPeopleNames.value = form.groupPeopleNames;
         }
         // 修改群组成员
         if (type == 2) {
@@ -167,9 +114,7 @@
      * @description 关闭添加群组人员弹窗
      */
      const closeAddGroupDialog = () => {
-        addGroupForm.value.visible = false;
-        search.value = '';
-        addGroupForm.value.list = [];
+        addGroupVisible.value = false;
     }
     /**
      * 创建群组
@@ -185,8 +130,8 @@
         }
         addMeetingGroup({
             groupName: groupTitle.value, 
-            createdBy: userStore.userInfo.userId, 
-            userName: userStore.userInfo.name, 
+            createdBy: userInfo.value.userId, 
+            userName: userInfo.value.name, 
             users: groups.value,
         })
             .then(res => {
@@ -219,9 +164,9 @@
     /**
      * @description 获取群组列表
      */
-    const handleGroupList = async(data: {pageSize: number, pageNum: number}) =>{
+    const handleGroupList = async(data: {userId: string, pageSize: number, pageNum: number}) =>{
         let list:any = [];
-        await getGroupList(data)
+        await getMeetingGroupList(data)
             .then(res => {
                 list = res.data.map((item: any) => {
                     // 获取成员名称并用逗号连接
@@ -231,9 +176,7 @@
                     return item
                 });
             })
-            .catch((err) => {
-                console.log(err, "err")
-            })
+            .catch((err) => {})
             return list;
     }
     // 滚动加载
@@ -245,11 +188,9 @@
         // 延迟请求
         await new Promise((resolve) => setTimeout(resolve, 2000));
         // 发送请求
-        const newData = await handleGroupList({pageSize: page.value, pageNum: limit.value});
-        // 返回数组长度
-        const length = ref<number>(newData.length)
+        const newData = await handleGroupList({userId: userInfo.value.userId, pageSize: page.value, pageNum: limit.value});
         // 若返回数据长度小于限制 停止加载
-        if(length < limit) {
+        if(newData.length < limit.value) {
             canLoadMore.value = false;
         }
         // 合并数据
@@ -283,7 +224,7 @@
             })
             .catch(err => {})
             .finally(() =>{
-                handleGroupList({pageSize: page.value, pageNum: limit.value});
+                handleGroupList({userId: userInfo.value.userId, pageSize: page.value, pageNum: limit.value});
             })
     }
     /**
@@ -299,15 +240,15 @@
      */
     const editAttendees = (row: any) => {
         if (type.value == 1) {
-            groupPeopleIds.value = [];
+            peopleIds.value = [];
         }
         type.value = 2;
-        groupPeopleIds.value = row.users.map((item: any) => item.userId);
+        peopleIds.value = Array.from(new Set(row.users.map((item: any) => item.userId)));
         groupInfo.value = {
             id: row.id,
             groupName: row.groupName,
         }
-        handleAddGroupReq();
+        addGroupVisible.value = true;
     }
 
     /**
@@ -320,7 +261,7 @@
         })
             .then(() => {
                 deleteMeetingGroup({id}).then(res => {
-                    handleGroupList({pageSize: page.value, pageNum: limit.value});
+                    handleGroupList({userId: userInfo.value.userId, pageSize: page.value, pageNum: limit.value});
                     ElMessage.success('删除成功!');
                 }).catch(err => {});
             })

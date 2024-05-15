@@ -121,9 +121,7 @@
     import { useInfiniteScroll } from '@vueuse/core'
     import { cancelMeetingRecord, getHistoryList } from '@/request/api/history'
     import { meetingState } from '@/utils/types'
-    import { useUserStore } from '@/stores/user'
     
-    const userStore = useUserStore(); // 获取用户信息
     const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
     const router = useRouter();
 
@@ -239,10 +237,14 @@
      */
     const getData = async(data: {userId: number | string, page: number, limit: number}) => {
         let list:any = [];
-        let res = await getHistoryList(data);
-        if (res.data) {
-            list = processData(res.data);
-        } 
+        await getHistoryList(data)
+            .then((res) => {
+                list = processData(res.data);
+            }).catch(err => {})
+            .finally(() => {
+                loading.value = false;
+            });
+                
         return list;
     }
 
@@ -255,7 +257,7 @@
         // 延迟请求
         await new Promise((resolve) => setTimeout(resolve, 2000));
         // 发送请求
-        const newData = await getData({userId: userStore.userInfo.userId, page: page.value, limit: limit.value});
+        const newData = await getData({userId: userInfo.value.userId, page: page.value, limit: limit.value});
         // 若返回数据长度小于限制 停止加载
         if(newData.length < limit.value) {
             canLoadMore.value = false;
@@ -280,6 +282,8 @@
     );
 
     const handleEditMeeting = (item: any) => {
+        console.log(item);
+        
         router.push({
             path: 'meeting-appoint',
             query: {
@@ -311,6 +315,7 @@
             cancelMeetingRecord({userId: userInfo.userId, meetingId: id})
             .then((res) => {
                 ElMessage.success('取消成功!');
+                getData({userId: userInfo.value.userId, page: page.value, limit: limit.value})
             })
             .catch(err => {})
         })
