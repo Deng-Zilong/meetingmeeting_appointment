@@ -27,7 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 
@@ -42,8 +41,6 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
         implements SysDepartmentUserService {
 
 
-    //    @Autowired
-    //    private StringRedisTemplate stringRedisTemplate;
 
     @Autowired
     private SysDepartmentUserMapper sysDepartmentUserMapper;
@@ -106,11 +103,7 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
         List<WxCpUser> listDepartmentUserList = new ArrayList<>();
         for (int i = 1; i < departmentLength + 1; i++) {
             List<WxCpUser> wxCpUser = wxCpUserService.listSimpleByDepartment((long) i, true, 0);
-            Iterator<WxCpUser> iterator = wxCpUser.iterator();
-            while (iterator.hasNext()){
-                WxCpUser item = iterator.next();
-                listDepartmentUserList.add(item);
-            }
+            listDepartmentUserList.addAll(wxCpUser);
         }
         List<WxCpUser> wxCpUserList = listDepartmentUserList.stream().distinct().toList();
         for (WxCpUser wxCpUser : wxCpUserList) {

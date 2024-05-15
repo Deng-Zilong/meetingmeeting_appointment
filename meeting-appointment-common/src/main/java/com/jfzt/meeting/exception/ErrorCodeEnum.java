@@ -31,7 +31,7 @@ public enum ErrorCodeEnum {
     SERVICE_ERROR_A0240("A0240", "用户验证码错误"),
     SERVICE_ERROR_A0201("A0201", "用户账户不存在"),
     SERVICE_ERROR_A0210("A0210", "用户密码错误"),
-
+    SERVICE_ERROR_A0230("A0230", "用户登录已过期"),
 
     /**
      * 系统异常

@@ -22,7 +22,7 @@ public class NoWaterRipple extends Configurable implements GimpyEngine {
     public BufferedImage getDistortedImage(BufferedImage baseImage) {
         BufferedImage distortedImage = new BufferedImage(baseImage.getWidth(), baseImage.getHeight(), 2);
         Graphics2D graphics = (Graphics2D)distortedImage.getGraphics();
-        graphics.drawImage(baseImage, 0, 0, (Color)null, (ImageObserver)null);
+        graphics.drawImage(baseImage, 0, 0, null, (ImageObserver)null);
         graphics.dispose();
         return distortedImage;
     }
