@@ -250,16 +250,20 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         LocalDateTime endTime = startTime.plusMinutes(30);
         //每段30分钟遍历时间，在当前时间之前的时间段状态为0已过期
         for (int i = 0; i < 30; i++) {
-            if (now.isAfter(endTime)) {
+            //时间段开始在当前时间前
+            if (now.isAfter(startTime)) {
                 timeStatus.add(i, TIME_PERIOD_OVERDUE);
             } else {
                 //之后的时间，判断是否有会议的开始时间或结束时间包含在里面，有的话且包含所有的会议室则为1已预订
                 LambdaQueryWrapper<MeetingRecord> recordQueryWrapper = new LambdaQueryWrapper<>();
                 //开始时间或结束时间包含在时间段内
                 recordQueryWrapper
-                        .between(MeetingRecord::getStartTime, startTime, endTime)
-                        .or().between(MeetingRecord::getEndTime, startTime, endTime)
-                        .or().lt(MeetingRecord::getStartTime, startTime).gt(MeetingRecord::getEndTime, endTime);
+                        //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
+                        .between(MeetingRecord::getStartTime, startTime, endTime.minusSeconds(1))
+                        //结束时间在时间段内 前不含后含  8-9属于8.5-9不属于9-9.5
+                        .or().between(MeetingRecord::getEndTime, startTime.plusSeconds(1), endTime)
+                        //时间段包含在开始时间(含)和结束时间(含)之间    8-9 属于8-8.5属于8.5-9
+                        .or().lt(MeetingRecord::getStartTime, startTime.plusSeconds(1)).gt(MeetingRecord::getEndTime, endTime.minusSeconds(1));
                 //没有逻辑删除
                 recordQueryWrapper.and(recordQueryWrapper1 -> recordQueryWrapper1.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
                         .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING));
