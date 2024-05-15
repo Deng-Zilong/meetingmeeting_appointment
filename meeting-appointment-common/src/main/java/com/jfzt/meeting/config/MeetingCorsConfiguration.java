@@ -17,22 +17,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 
 @Configuration
-public class MeetingCorsConfiguration{
+public class MeetingCorsConfiguration implements WebMvcConfigurer {
 
-    @Bean
-    public CorsWebFilter corsWebFilter(){
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-
-        CorsConfiguration corsConfiguration = new CorsConfiguration();
-
-        //1、配置跨域
-        corsConfiguration.addAllowedHeader("*");
-        corsConfiguration.addAllowedMethod("*");
-        corsConfiguration.addAllowedOrigin("*");
-        corsConfiguration.setAllowCredentials(true);
-
-        source.registerCorsConfiguration("/**",corsConfiguration);
-        return new CorsWebFilter(source);
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOriginPatterns("*")
+                .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedHeaders("*")
+                .allowCredentials(true);
     }
 //    @Autowired
 //    private TokenInterceptor tokenInterceptor;
