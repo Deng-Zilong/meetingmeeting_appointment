@@ -174,8 +174,6 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
                 .build();
         // 保存UserGroup
         userGroupService.save(group);
-
-
         return Result.success(ADD_SUCCESS);
     }
 
@@ -201,7 +199,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         BeanUtils.copyProperties(meetingGroupDTO, meetingGroup);
         // 保存meetingGroup
         updateById(meetingGroup);
-        if(meetingGroupDTO.getUsers() != null){
+        if(!meetingGroupDTO.getUsers().isEmpty()){
             List<UserGroup> userGroups = userGroupService.lambdaQuery().eq(UserGroup::getGroupId, meetingGroupDTO.getId()).list();
             userGroupService.removeBatchByIds(userGroups);
             meetingGroupDTO.getUsers().stream().map((member) -> {
