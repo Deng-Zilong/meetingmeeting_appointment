@@ -85,7 +85,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
             }
             //将当前用户参与过的群组添加到joinList
             joinList.add(joinGroup);
-        }).toList();
+        }).distinct().toList();
 
         //遍历所参与的所有群组
         List<MeetingGroupVO> collectVO = joinList.stream().map((meetingGroup) -> {
