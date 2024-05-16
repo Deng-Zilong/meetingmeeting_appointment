@@ -1,10 +1,10 @@
 <template>
-  <div class="container manage" v-loading="loading">
+  <div class="manage">
     <div class="theme">
       <div class="theme-left">
         <div class="left-common meeting-set">
-          <el-checkbox-group v-model="checkList" @change="changeCheckAll">
-            <el-checkbox v-for="item in checkItem" :label="item.label" :value="item.id" />
+          <el-checkbox-group v-model="checkList">
+            <el-checkbox v-for="item in checkItem" :label="item.label" :value="item.id" @change="changeCheckAll(item)" />
           </el-checkbox-group>
           <div class="text">会议室禁用设置</div>
         </div>
@@ -14,15 +14,15 @@
         </div>
       </div>
       <div class="theme-right" v-if="userInfo.level === 0">
-        <el-icon class="plus-icon" @click="handleAddManege"><Plus /></el-icon>
+        <el-icon class="plus-icon" @click="handleAddManage"><Plus /></el-icon>
         
         <!-- 添加群组成员弹窗 -->
-        <!-- <personTreeDialog 
-            v-model="addPersonForm.visible" 
-            :title="addPersonForm.title"
-            :type="addPersonForm.type"
+        <personTreeDialog 
+            v-model="addGroupVisible" 
+            title="添加管理员"
+            :type="type"
             @close-dialog="closeAddPersonDialog" 
-            @submit-dialog="handleCheckedPerson" /> -->
+            @submit-dialog="handleCheckedPerson" />
             
         <el-popover trigger="click" :width="180" :popper-style="{ maxHeight: '250px', overflow: 'auto'}">
           <template #reference>
@@ -47,19 +47,21 @@
         <div class="title">会议状态</div>
         <div class="title">其他</div>
       </div>
-      <div class="table-container" ref="timelineRef" v-for="(value, index) in manageData">
-        <div class="table-left">
-          <p>{{ value.month }}月</p>
-          <p>{{ value.day }}</p>
-        </div>
-        <div class="table-main">
-          <div class="table-tr" v-for="(item, index) in value.list">
-            <div class="tr-cell">{{ item.meetingRoomName }}</div>
-            <div class="tr-cell">{{ item.time }}</div>
-            <div class="tr-cell">{{ item.title }}</div>
-            <div class="tr-cell attend-cell">{{ item.attendees }}</div>
-            <div class="tr-cell">{{ item.stateValue }}</div>
-            <div class="tr-cell"></div>
+      <div class="table-container" ref="timelineRef">
+        <div v-for="(value, index) in manageData">
+          <div class="table-left">
+            <p>{{ value.month }}月</p>
+            <p>{{ value.day }}</p>
+          </div>
+          <div class="table-main">
+            <div class="table-tr" v-for="(item, index) in value.list">
+              <div class="tr-cell">{{ item.meetingRoomName }}</div>
+              <div class="tr-cell">{{ item.time }}</div>
+              <div class="tr-cell">{{ item.title }}</div>
+              <div class="tr-cell attend-cell">{{ item.attendees }}</div>
+              <div class="tr-cell">{{ item.stateValue }}</div>
+              <div class="tr-cell"></div>
+            </div>
           </div>
         </div>
         <div class="loading" v-show="isLoading">数据加载中......</div>
@@ -73,12 +75,12 @@
     import { useInfiniteScroll } from '@vueuse/core'
     import { Close } from '@element-plus/icons-vue'
 
-    // import personTreeDialog from '@/views/group/components/person-dialog.vue'
     import { useUserStore } from '@/stores/user';
     import { meetingState } from '@/utils/types';
+    import personTreeDialog from "@/components/person-tree-dialog.vue";
     import { getUsableRoomData, getMeetingBanData, addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData } from '@/request/api/manage'
 
-    let loading = ref(true) // 加载状态
+    // let loading = ref(true) // 加载状态
     const userStore = useUserStore() // 获取用户信息
     let userInfo = ref<any>({});  // 获取用户信息 用于传后端参数
     
@@ -122,20 +124,16 @@
     let canLoadMore = ref(true); // 是否 继续请求数据
 
     // 添加群组人员弹窗数据
-    let addPersonForm = ref({
-        visible: false,
-        title: '添加群组人员',
-        type: 1,
-        list:<any> [],
-    })
-    let search = ref<string>('');// 搜索人员
+    let addGroupVisible = ref(false)
+    let type = ref<number>(4); // 1 创建群组 2 修改群组
     
     onMounted(() => {
       userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}');  // 用户信息
 
       getUsableRoom({ currentLevel: userInfo.value.level }) // 查询未被禁用的会议室
       getSelectAdmin()  // 查询所有管理员
-      manageData.value = getAllRecord({ pageNum: page.value, pageSize: limit.value, currentLevel: userInfo.value.level })  // 查询所有会议记录
+      getDataOnScroll()
+      // manageData.value = getAllRecord({ pageNum: page.value, pageSize: limit.value, currentLevel: userInfo.value.level })  // 查询所有会议记录
       
     })
 
@@ -144,16 +142,16 @@
      * @description 查询未被禁用的会议室
      * @param {currentLevel} 当前用户等级
      */
-    let list:any = [];
     const getUsableRoom = (data: {currentLevel: number}) => {
       getUsableRoomData(data)
         .then((res) => {
           checkList.value = res.data;
-          list = res.data;  // 存储选中的(暂停使用)会议室 
           checkItem.value.forEach((item: any) => {
             // 选中时，将会议室状态改为0 (0-暂停使用  1-空闲)
             if (checkList.value.includes(item.id)) {
               item.status = 0;
+            } else {
+              item.status = 1;
             }
           })
         })
@@ -166,24 +164,23 @@
      * @param {status} 会议室状态
      * @param {currentLevel} 当前用户等级
      */
-    
-    // 会议室禁用设置
-    const changeCheckAll = (value: any) => {
-      const checked = value.concat(list).find((v: any, index: number, arr: any[]) => {
-        return arr.indexOf(v) === arr.lastIndexOf(v);
-      });
-      const checkedStatus = checkItem.value.find((item: any) => item.id == checked)?.status;
 
-      getMeetingBanData({ id: checked, status: checkedStatus, currentLevel: userInfo.value.level })  // 会议室禁用
-        .then((res) => {
+    // 会议室禁用设置
+    const changeCheckAll = (item: any) => {
+      // 选中时，将会议室状态改为0 (0-暂停使用  1-空闲)
+      if (checkList.value.includes(item.id)) {
+        item.status = 0;
+      } else {
+        item.status = 1;
+      }
+      getMeetingBanData({ id: item.id, status: item.status, currentLevel: userInfo.value.level })  // 会议室禁用
+        .then(() => {
           getUsableRoom({ currentLevel: userInfo.value.level })
-          console.log(res, '禁用res');
         })
         .catch((err) => {
           console.log(err, '禁用err');
         })
     }
-
 
 /******************************************* 公告 ***********************************/
     /**
@@ -245,56 +242,35 @@
     }
 
     // 添加管理员
-    const handleAddManege = () => {
-      
+    const handleAddManage = () => {
+      addGroupVisible.value = true;
     }
+    
     /**
-     * @description 新增管理员       还没写！！！！！！！！！
+     * @description 提交需要添加的群组人员
+     * 
+     * @description 新增管理员
      * @param {userIds} 用户id数组
-    */
-    const addAdmin = (data: {userIds: any[]}) => {
-      addAdminData(data)
-        .then((res) => { })
-        .catch(() => { })
+     */
+      const handleCheckedPerson = (type: number, form: any) => {
+        if (type == 4) {
+          addAdminData({ userIds: form })  // 新增管理员
+            .then(() => {
+              ElMessage.success('成功添加管理员')
+              getSelectAdmin()  // 调用全部管理员列表
+            })
+            .catch(() => { })
+        }
+        // 关闭弹窗
+        closeAddPersonDialog();
     }
     /**
      * @description 关闭添加群组人员弹窗
      */
      const closeAddPersonDialog = () => {
-        addPersonForm.value.visible = false;
-        search.value = '';
-        addPersonForm.value.list = [];
+        addGroupVisible.value = false;
     }
-    /**
-     * @description 提交需要添加的群组人员
-     */
-     const handleCheckedPerson = (type: number, treeRef: any) => {
-        const selectedPeople = treeRef.value!.getCheckedNodes(false, false).filter(((el: any) => el.parentId == undefined))
-        // 获取被选中成员的id
-        // groupPeopleIds.value.push(...new Set(selectedPeople.map((item: any) => item.userId)));
-        /// 获取被选中人员的 信息并去重
-        // groups.value = Array.from(
-        //     new Map(
-        //         selectedPeople.map((item: any) => [item.userId, {
-        //             userId: item.userId,
-        //             userName: item.userName,
-        //         }])
-        //     ).values()
-        // );
-        
-        // 创建群组
-        if (type == 1) {
-            // 处理被选中成员的名称 用，隔开
-            // groupPeopleNames.value = Array.from(new Set(selectedPeople.map((item: any) => item.userName))).join(',');
-        }
-        // 修改群组成员
-        if (type == 2) {
-            // updateGroupInfo({id: groupInfo.value.id, groupName: groupInfo.value.groupName, users: groups.value});
-        }
-        // 关闭弹窗
-        closeAddPersonDialog();
-    }
-
+    
 
 /******************************************* 会议室记录 ***********************************/
 
@@ -326,20 +302,25 @@
      * @param {number} currentLevel 用户等级
      */
     const getAllRecord = async (data: { pageNum: number, pageSize: number, currentLevel: number}) => {
-      let list:any = []
+      let list: any = [];
+      let total: any = 0;
       await getAllRecordData(data)
         .then((res) => {
+          total = res.data.length;
           list = processData(res.data);
-          manageData.value = list
+          // manageData.value = list
           // loading.value = false;
         })
         .catch((err) => {
           console.log(err, "所有会议记录err");
         })
-        .finally(() => {
-          loading.value = false;
-        })
-      return list;
+        // .finally(() => {
+        //   loading.value = false;
+        // })
+      return {
+        data: list,
+        total,
+      };
     }
 
 
@@ -347,38 +328,38 @@
 
     // 滚动加载
     const getDataOnScroll = async () => {
-      // 中断处理
-      if (!canLoadMore.value || isLoading.value) return;
-      // 打开loading
-      isLoading.value = true;
-      // 延迟请求
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      // 发送请求
-      const newData = await getAllRecord({ pageNum: page.value, pageSize: limit.value, currentLevel: userInfo.value.level });
-      // 返回数组长度
-      const length = ref<number>(newData.length)
-      // 若返回数据长度小于限制 停止加载
-      if(length < limit) {
-          canLoadMore.value = false;
-      }
-      // 合并数据
-      manageData.value = [...manageData.value, ...newData];
-      // page + 1
-      page.value++;
-      // 关闭loading
-      isLoading.value = false;
+        // 中断处理
+        if (!canLoadMore.value || isLoading.value) return;
+        // 打开loading
+        isLoading.value = true;
+        // 延迟请求
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        // 发送请求
+        const {data: newData, total} = await getAllRecord({ pageNum: page.value, pageSize: limit.value, currentLevel: userInfo.value.level })  // 查询所有会议记录        
+        
+        // 若返回数据长度小于限制 停止加载
+        if(total < limit.value) {
+            canLoadMore.value = false;
+        }
+        
+        // 合并数据
+        manageData.value = [...manageData.value, ...newData];
+        // page + 1
+        page.value++;
+        // 关闭loading
+        isLoading.value = false;
     };
 
     // 滚动加载插件
-    // useInfiniteScroll(
-    //   timelineRef, // 容器
-    //   async () => {
-    //       await getDataOnScroll();
-    //   },
-    //   {
-    //       distance: 15, // 距离底部的长度
-    //   }
-    // );
+    useInfiniteScroll(
+        timelineRef, // 容器
+        async () => {
+            await getDataOnScroll();
+        },
+        {
+            distance: 30, // 距离底部的长度
+        }
+    );
     
 </script>
 <style scoped lang="scss">
@@ -405,7 +386,7 @@
     }
   }
   .manage {
-    background-color: #f5f5f5;
+    // background-color: #f5f5f5;
     padding: 0 26px;
     .theme {
       display: flex;
@@ -547,7 +528,7 @@
           color: #666666;
           font-size: 1.25rem;
           text-align: center;
-          font-weight: 600;
+          font-weight: 300;
         }
         &::-webkit-scrollbar {
           width: 1.1rem;

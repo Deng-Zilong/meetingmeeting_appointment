@@ -6,7 +6,7 @@
         <div class="screen-title">中心会议室大屏</div>
         <div class="screen-main">
           <div class="main-table">
-            <div class="main-items" v-for="item in roomMeetingData" @click.stop="handleRoomClick(item)">
+            <div class="main-items" :class="item.status === 1 ? 'pointer' : 'ban'" v-for="item in roomMeetingData" @click.stop="handleRoomClick(item)">
               <div class="name">{{ item.roomName }}</div>
               <div class="state">{{ roomStatus(item.status) }}</div>
             </div>
@@ -193,7 +193,7 @@ onMounted(async () => {
       return router.replace('/login');
     }
 
-  tableData.value = await getTodayRecord({ userId: userInfo.value.userId })  // 查询今日会议情况
+  getTodayRecord({ userId: userInfo.value.userId })  // 查询今日会议情况
   
   getCenterAllNumber()  // 查询中心会议总次数
   getRoomStatus()  // 查询会议室状态
@@ -325,16 +325,14 @@ const operate = computed(() => (item: any) => {
  * @description 查询今日会议情况
  * @param {userId} 用户id
  */
-const getTodayRecord = async (data: { userId: string }) => {
-  let list:any = []
-  await getTodayMeetingRecordData(data)
+const getTodayRecord = (data: { userId: string }) => {
+  getTodayMeetingRecordData(data)
     .then((res) => {
-      list = res.data
+      tableData.value = res.data
     })
     .catch((err) => {
       console.log(err, '查询今日会议情况err')
     })
-  return list;
 }
 
 
@@ -428,7 +426,6 @@ const getNotice = async () => {
             box-sizing: border-box;
             border: 1px solid rgba(111, 167, 249, 0.8);
             box-shadow: inset 0px 0px 30px 0px rgba(16, 127, 255, 0.3);
-            cursor: pointer;
             .name {
               font-size: 1.1rem;
               color: #6A6A6A;
@@ -438,6 +435,13 @@ const getNotice = async () => {
               font-weight: bold;
               color: #1273DB;
             }
+          }
+          // main-items 会议室状态为空闲1 为小手，其他为 禁止
+          .pointer {
+            cursor: pointer;
+          }
+          .ban {
+            cursor: not-allowed;
           }
         }
       }

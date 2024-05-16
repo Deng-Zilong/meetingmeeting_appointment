@@ -105,7 +105,7 @@
      */
      const handleAddGroupReq = () => {
         getGroupUserTree()
-            .then(res => {
+          .then(res => {
                 addGroupForm.value.list = treeUserListToChildren(res.data);
             })
             .catch(err => {
@@ -120,11 +120,22 @@
         data.forEach((item: any) => {
             // 如果当前节点有 treeUsers，则创建一个代表 treeUsers 的虚拟节点
             if (item.treeUsers && item.treeUsers.length > 0) {
-                const userListNode = item.treeUsers.map((user: any) => {
+              const userListNode = item.treeUsers.map((user: any) => {
+                if (props.type == 4 && user.level == 2) {
+                  console.log(11111);
+                  
                     user.departmentName = user.userName;
-                    user.isTreeUsersNode = true;
-                    return user;
-                })
+                  user.isTreeUsersNode = true;
+                  return user;
+                }
+                if (props.type !== 4) {
+                    user.departmentName = user.userName;
+                  user.isTreeUsersNode = true;
+                  return user;
+                }
+              }).filter((item: any) => item !== undefined)
+                console.log(userListNode, "userListNode");
+                
                 // 将这个虚拟节点插入到 childrenPart 的最前面
                 item.childrenPart.unshift(...userListNode);
             }
