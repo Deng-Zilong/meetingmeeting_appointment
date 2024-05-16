@@ -81,16 +81,16 @@ public class GlobalExceptionHandler {
         result.setMsg(ErrorCodeEnum.SERVICE_ERROR_C0200.getDescription());
         return result;
     }
-
-    /**
-     * 处理其他未知异常
-     *
-     * @return {@code Result<String>}
-     */
-    @ExceptionHandler(Exception.class)
-    public Result<String> handleException () {
-        return Result.fail(ErrorCodeEnum.SYSTEM_ERROR_B0001);
-    }
+//
+//    /**
+//     * 处理其他未知异常
+//     *
+//     * @return {@code Result<String>}
+//     */
+//    @ExceptionHandler(Exception.class)
+//    public Result<String> handleException () {
+//        return Result.fail(ErrorCodeEnum.SYSTEM_ERROR_B0001);
+//    }
 
 
 }

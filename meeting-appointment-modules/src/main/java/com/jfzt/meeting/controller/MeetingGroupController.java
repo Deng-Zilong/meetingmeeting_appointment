@@ -62,8 +62,8 @@ public class MeetingGroupController {
      * @Description 群组删除
      * @Param [meetingGroupDTO]
      */
-    @DeleteMapping("/deleteMeetingGroup/{id}")
-    public Result<Object> deleteMeetingGroup (@PathVariable(value = "id") Long id) {
+    @DeleteMapping("/deleteMeetingGroup")
+    public Result<Object> deleteMeetingGroup (@RequestParam Long id) {
         return meetingGroupService.deleteMeetingGroup(id);
     }
 }

@@ -34,8 +34,7 @@ import java.util.stream.Collectors;
 import static com.jfzt.meeting.constant.IsDeletedConstant.IS_DELETED;
 import static com.jfzt.meeting.constant.IsDeletedConstant.NOT_DELETED;
 import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
-import static com.jfzt.meeting.constant.MessageConstant.START_TIME_GT_END_TiME;
-import static com.jfzt.meeting.constant.MessageConstant.START_TIME_LT_NOW;
+import static com.jfzt.meeting.constant.MessageConstant.*;
 
 /**
  * @author zilong.deng
@@ -545,10 +544,10 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         BeanUtils.copyProperties(meetingRecordDTO, meetingRecord);
         // 判断meetingRecord的结束时间是否早于开始时间，如果是，则返回错误信息
         if (meetingRecord.getEndTime().isBefore(meetingRecord.getStartTime())) {
-            return Result.fail(START_TIME_GT_END_TiME);
+            throw new RRException(START_TIME_GT_END_TiME);
         } else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())) {
             // 判断meetingRecord的开始时间是否早于当前时间，如果是，则返回错误信息
-            return Result.fail(START_TIME_LT_NOW);
+            throw new RRException(START_TIME_LT_NOW);
         }
         // 保存meetingRecord
         save(meetingRecord);
@@ -562,7 +561,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .collect(Collectors.toList());
         // 保存MeetingAttendees列表
         meetingAttendeesService.saveBatch(attendeesList);
-        return Result.success();
+        return Result.success(UPDATE_SUCCESS);
     }
 
     /**
