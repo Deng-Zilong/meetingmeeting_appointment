@@ -1,5 +1,5 @@
 <template>
-  <div class="container manage">
+  <div class="container manage" v-loading="loading">
     <div class="theme">
       <div class="theme-left">
         <div class="left-common meeting-set">
@@ -13,16 +13,25 @@
           <div class="text upload-text" @click="uploadBulletin(input)">上传公告</div>
         </div>
       </div>
-      <div class="theme-right">
-        <el-icon class="plus-icon"><Plus /></el-icon>
+      <div class="theme-right" v-if="userInfo.level === 0">
+        <el-icon class="plus-icon" @click="handleAddManege"><Plus /></el-icon>
+        
+        <!-- 添加群组成员弹窗 -->
+        <!-- <personTreeDialog 
+            v-model="addPersonForm.visible" 
+            :title="addPersonForm.title"
+            :type="addPersonForm.type"
+            @close-dialog="closeAddPersonDialog" 
+            @submit-dialog="handleCheckedPerson" /> -->
+            
         <el-popover trigger="click" :width="180" :popper-style="{ maxHeight: '250px', overflow: 'auto'}">
           <template #reference>
             <div class="operate-people">
               操作管理员<el-icon><arrow-down /></el-icon>
             </div>
           </template>
-          <div class="people-items" v-if="manageList.length" v-for="(item, index) in manageList">
-            <span>{{ item }}</span>
+          <div class="people-items" v-if="manageList?.length" v-for="(item, index) in manageList">
+            <span>{{ item.userName }}</span>
             <el-icon @click="handleDelPeople(index)"><close /></el-icon>
           </div>
           <div v-else>暂无管理员</div>
@@ -63,12 +72,19 @@
     import { ElMessage, ElMessageBox, dayjs } from 'element-plus';
     import { useInfiniteScroll } from '@vueuse/core'
     import { Close } from '@element-plus/icons-vue'
-    import { meetingState } from '@/utils/types';
-    import { getMeetingBan, getSelectAdminData, getAllRecordData } from '@/request/api/manage'
 
+    import personTreeDialog from '@/views/group/components/person-dialog.vue'
+    import { useUserStore } from '@/stores/user';
+    import { meetingState } from '@/utils/types';
+    import { getUsableRoomData, getMeetingBanData, addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData } from '@/request/api/manage'
+
+    let loading = ref(true) // 加载状态
+    const userStore = useUserStore() // 获取用户信息
+    let userInfo = ref<any>({});  // 获取用户信息 用于传后端参数
+    
     // 会议室状态 0-暂停使用 1-空闲 2-使用中
-    const checkList = ref([3,5])  // 选中会议室 为禁用会议室
-    const checkItem = ref([  // 会议室
+    let checkList = ref()  // 选中会议室 为禁用会议室
+    let checkItem = ref<any>([  // 会议室
       { 
         id: 1,
         label: '广政通宝会议室',
@@ -95,8 +111,8 @@
         status: 1
       },
     ])
-    const input = ref(''); 
-    const manageList = ref<any>([])  // 所有管理员列表
+    let input = ref<any>(''); 
+    let manageList = ref<any>([])  // 所有管理员列表
     
     let manageData = ref<any>([]); // 所有会议记录数据
     const timelineRef = ref(null); // 获取dom节点
@@ -104,141 +120,183 @@
     let page = ref(1); // 默认页数 1
     let isLoading = ref(false); // 控制数据加载中是否显示
     let canLoadMore = ref(true); // 是否 继续请求数据
-    
-    // 自己设置的数据列表！！！
-    let manage = ref([
-         {
-            id: 1,
-            title: "test会议1",
-            description: "会议内容1",
-            createdBy: "dzl",
-            adminUserName: "邓子龙",
-            meetingRoomId: 4,
-            meetingRoomName: "会议室4",
-            location: 4,
-            meetingNumber: 3,
-            attendees: "邓子龙,邓子龙,邓子龙,邓子龙,邓",
-            startTime: "2024-04-30 11:22:10",
-            endTime: "2024-04-30 11:23:11",
-            status: 0,
-            isDeleted: 0,
-            date: '2024-04-30'
-        },
-        {
-            id: 1,
-            title: "test会议1111111111111111111111",
-            description: "会议内容1",
-            createdBy: "dzl",
-            adminUserName: "邓子龙",
-            meetingRoomId: 4,
-            meetingRoomName: "会议室4",
-            location: 4,
-            meetingNumber: 3,
-            attendees: "卢振兴,翟臣宇,杨家乐,寇梦梦,杨家乐,寇梦梦,杨家乐,寇梦梦,杨家乐,杨家乐,寇梦梦,杨家乐杨家乐,寇梦梦,杨家乐",
-            startTime: "2024-04-30 11:22:10",
-            endTime: "2024-04-30 11:23:11",
-            status: 2,
-            isDeleted: 0,
-            date: '2024-04-30'
-        },
-        {
-            id: 1,
-            title: "test会议1",
-            description: "会议内容1",
-            createdBy: "dzl",
-            adminUserName: "邓子龙",
-            meetingRoomId: 4,
-            meetingRoomName: "EN-2F-02 恰谈室会议室是事实会",
-            location: 4,
-            meetingNumber: 3,
-            attendees: "邓子龙,zhangsan,lisi",
-            startTime: "2024-12-29 11:22:10",
-            endTime: "2024-04-30 11:23:11",
-            status: 2,
-            isDeleted: 0,
-            date: '2024-04-29'
-        },
-        
-    ])
 
+    // 添加群组人员弹窗数据
+    let addPersonForm = ref({
+        visible: false,
+        title: '添加群组人员',
+        type: 1,
+        list:<any> [],
+    })
+    let search = ref<string>('');// 搜索人员
+    
     onMounted(() => {
-      // manageData.value = processData(manage.value)
-      getMeetingBan({id: 1, status: 1})
-      manageData.value = getAllRecord({ page: page.value, limit: limit.value })  // 查询所有会议记录
+      userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}');  // 用户信息
+
+      getUsableRoom({ currentLevel: userInfo.value.level }) // 查询未被禁用的会议室
       getSelectAdmin()  // 查询所有管理员
+      manageData.value = getAllRecord({ pageNum: page.value, pageSize: limit.value, currentLevel: userInfo.value.level })  // 查询所有会议记录
+      
     })
 
-    // 会议室禁用设置
-const changeCheckAll = (value: any) => {
-  console.log(value,);
-   const meeting = value.map((item: any) => {
-    if (!checkList.value.includes(item.id)) {
-      return {
-        id: item.id,
-        status: item.status,
-      }
+/******************************************* 会议室 ***********************************/
+    /**
+     * @description 查询未被禁用的会议室
+     * @param {currentLevel} 当前用户等级
+     */
+    let list:any = [];
+    const getUsableRoom = (data: {currentLevel: number}) => {
+      getUsableRoomData(data)
+        .then((res) => {
+          checkList.value = res.data;
+          list = res.data;  // 存储选中的(暂停使用)会议室 
+          checkItem.value.forEach((item: any) => {
+            // 选中时，将会议室状态改为0 (0-暂停使用  1-空闲)
+            if (checkList.value.includes(item.id)) {
+              item.status = 0;
+            }
+          })
+        })
+        .catch((err) => {})
     }
-})
-  
-  let arr1 = ref({});
-      checkItem.value.forEach((item: any) => {
-        if (checkList.value.includes(item.id)) {
-          item.status = 0;
 
-        }
-        console.log(item, 'item');
-      })
-      console.log(checkList.value, 'changeCheckAll', );
-}
-    // const arr1 =  checkList.value.map((item: any) => {
-    //   return {
-    //     id: item.id,
-    //     status: item.status
-    //   }
-    // })
-    // getSelectAdmin(arr1)
+    /**
+     * @description 会议室禁用
+     * @param {id} 会议室id
+     * @param {status} 会议室状态
+     * @param {currentLevel} 当前用户等级
+     */
     
+    // 会议室禁用设置
+    const changeCheckAll = (value: any) => {
+      const checked = value.concat(list).find((v: any, index: number, arr: any[]) => {
+        return arr.indexOf(v) === arr.lastIndexOf(v);
+      });
+      const checkedStatus = checkItem.value.find((item: any) => item.id == checked)?.status;
+
+      getMeetingBanData({ id: checked, status: checkedStatus, currentLevel: userInfo.value.level })  // 会议室禁用
+        .then((res) => {
+          getUsableRoom({ currentLevel: userInfo.value.level })
+          console.log(res, '禁用res');
+        })
+        .catch((err) => {
+          console.log(err, '禁用err');
+        })
+    }
+
+
+/******************************************* 公告 ***********************************/
+    /**
+     * @description 上传公告
+     * @param {currentLevel} 用户等级
+     * @param {substance} 公告内容
+    */
     // 公告输入信息
-    const uploadBulletin = (input: string) => {
-      ElMessageBox.confirm('确定上传公告吗？')
+    const uploadBulletin = (item: string) => {
+      if (item) {
+        ElMessageBox.confirm('确定上传公告吗？')
         .then(() => {
-          // 判断公告信息是否为空
-          if (input) {
-            ElMessage.success('上传公告成功')
-          } else {
-            ElMessage.warning('请输入公告')
-          }
+          ElMessage.success('上传公告成功')
+          addNoticeData({ currentLevel: userStore.userInfo.level, currentUserId: userInfo.value.userId, substance: item }) // 上传公告
+          input.value = ''  // 上传公告后清空输入框
         })
         .catch(() => {
           ElMessage.warning('取消上传公告')
         })
+      } else {
+        ElMessage.warning('请输入公告')
+      }
     }
 
+
+/******************************************* 管理员 ***********************************/
     /**
      * @description 查询所有管理员 
+     * @param {number} currentLevel 用户等级
      */
     const getSelectAdmin = async () => {
-      const res = await getSelectAdminData()
+      const res = await getSelectAdminData({ currentLevel: userInfo.value.level })
       manageList.value = res.data
     }
 
     /**
-     * @description 增删管理员    还没写！！！
+     * @description 删除管理员
      * @param {string} userId 用户id
-     * @param {number} level 用户等级-管理员
      */
-    
+    const deleteAdmin = (data: { userId: string }) => {
+      deleteAdminData(data)
+        .then(() => {
+          getSelectAdmin()
+        })
+        .catch((err) => {
+          console.log(err,'删除管理员err');
+        })
+    }
     // 操作管理员--删除管理员
     const handleDelPeople = (index: number) => {
       ElMessageBox.confirm('确定删除该管理员吗？')
         .then(() => {
-          manageList.value.splice(index,1)
-          ElMessage.success('删除成功')          
+          deleteAdmin({ userId: manageList.value[index].userId })
+          ElMessage.success('删除成功') 
         })
         .catch(() => {
           ElMessage.warning('取消删除')
         })
     }
+
+    // 添加管理员
+    const handleAddManege = () => {
+      
+    }
+    /**
+     * @description 新增管理员       还没写！！！！！！！！！
+     * @param {userIds} 用户id数组
+    */
+    const addAdmin = (data: {userIds: any[]}) => {
+      addAdminData(data)
+        .then((res) => { })
+        .catch(() => { })
+    }
+    /**
+     * @description 关闭添加群组人员弹窗
+     */
+     const closeAddPersonDialog = () => {
+        addPersonForm.value.visible = false;
+        search.value = '';
+        addPersonForm.value.list = [];
+    }
+    /**
+     * @description 提交需要添加的群组人员
+     */
+     const handleCheckedPerson = (type: number, treeRef: any) => {
+        const selectedPeople = treeRef.value!.getCheckedNodes(false, false).filter(((el: any) => el.parentId == undefined))
+        // 获取被选中成员的id
+        // groupPeopleIds.value.push(...new Set(selectedPeople.map((item: any) => item.userId)));
+        /// 获取被选中人员的 信息并去重
+        // groups.value = Array.from(
+        //     new Map(
+        //         selectedPeople.map((item: any) => [item.userId, {
+        //             userId: item.userId,
+        //             userName: item.userName,
+        //         }])
+        //     ).values()
+        // );
+        
+        // 创建群组
+        if (type == 1) {
+            // 处理被选中成员的名称 用，隔开
+            // groupPeopleNames.value = Array.from(new Set(selectedPeople.map((item: any) => item.userName))).join(',');
+        }
+        // 修改群组成员
+        if (type == 2) {
+            // updateGroupInfo({id: groupInfo.value.id, groupName: groupInfo.value.groupName, users: groups.value});
+        }
+        // 关闭弹窗
+        closeAddPersonDialog();
+    }
+
+
+/******************************************* 会议室记录 ***********************************/
 
     /**
      * @description 处理列表数据
@@ -263,21 +321,30 @@ const changeCheckAll = (value: any) => {
 
     /**
      * @description 查询所有会议记录
-     * @param {number} page 页码
-     * @param {number} limit 每页条数 默认10
+     * @param {number} pageNum 页码
+     * @param {number} pageSize 每页条数 默认10
+     * @param {number} currentLevel 用户等级
      */
-    const getAllRecord = async (data: { page: number, limit: number}) => {
+    const getAllRecord = async (data: { pageNum: number, pageSize: number, currentLevel: number}) => {
       let list:any = []
       await getAllRecordData(data)
         .then((res) => {
           list = processData(res.data);
+          manageData.value = list
+          // loading.value = false;
         })
         .catch((err) => {
-          console.log(err, "err");
-        });
+          console.log(err, "所有会议记录err");
+        })
+        .finally(() => {
+          loading.value = false;
+        })
       return list;
-}
-    
+    }
+
+
+/******************************************* 滚动加载 ***********************************/
+
     // 滚动加载
     const getDataOnScroll = async () => {
       // 中断处理
@@ -287,7 +354,7 @@ const changeCheckAll = (value: any) => {
       // 延迟请求
       await new Promise((resolve) => setTimeout(resolve, 2000));
       // 发送请求
-      const newData = await getAllRecord({ page: page.value, limit: limit.value });
+      const newData = await getAllRecord({ pageNum: page.value, pageSize: limit.value, currentLevel: userInfo.value.level });
       // 返回数组长度
       const length = ref<number>(newData.length)
       // 若返回数据长度小于限制 停止加载
@@ -303,15 +370,15 @@ const changeCheckAll = (value: any) => {
     };
 
     // 滚动加载插件
-    useInfiniteScroll(
-      timelineRef, // 容器
-      async () => {
-          await getDataOnScroll();
-      },
-      {
-          distance: 15, // 距离底部的长度
-      }
-    );
+    // useInfiniteScroll(
+    //   timelineRef, // 容器
+    //   async () => {
+    //       await getDataOnScroll();
+    //   },
+    //   {
+    //       distance: 15, // 距离底部的长度
+    //   }
+    // );
     
 </script>
 <style scoped lang="scss">
@@ -345,7 +412,8 @@ const changeCheckAll = (value: any) => {
       height: 90px;
       margin-bottom: 10px;
       .theme-left {
-        width: 80%;
+        min-width: 80%;
+        width: 100%;
         height: 2.8rem;
         .left-common {
           display: flex;
@@ -363,7 +431,8 @@ const changeCheckAll = (value: any) => {
             display: flex;
             align-items: center;
             justify-content: space-evenly;
-            width: 85%;
+            width: 86%;
+            // min-width: 85%;
             background: #FFF;
             border-radius: .5rem;
           }
@@ -371,6 +440,7 @@ const changeCheckAll = (value: any) => {
         .meeting-bulletin {
           :deep().el-input {
             width: 89%;
+            // max-width: 89%;
             .el-input__wrapper {
               border-radius: .5rem;
               box-shadow: none;

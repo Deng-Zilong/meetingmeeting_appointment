@@ -24,3 +24,8 @@ export const getTimeBusyData = () => {
 export const getRoomStatusData = () => {
   return http.get("/meeting/index/meetingRoomStatus")
 }
+
+// 查询所有公告
+export const getNoticeData = () => {
+  return http.get("/meetingNotice/getNotice")
+}

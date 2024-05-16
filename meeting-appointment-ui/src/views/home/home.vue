@@ -26,7 +26,7 @@
           <el-icon><ChatRound /></el-icon>
           <div class="info-text">
             <div class="text-scroll">
-              告示信息滚动告示信息滚动告示信息滚动告示信息滚动告示信息滚动信息滚动告示信息滚动告示信息滚动告示信息滚动结束🔚
+              {{ notice[0] || '暂无公告' }}
             </div>
           </div>
         </div>
@@ -53,7 +53,7 @@
               <div class="rule-title">预约规则</div>
               <div class="rule-main">
                 <div class="rule-scroll">
-                  <div class="scroll-item" v-for="item in 10"> · 预约前请先登录预约前请先登录预约前请先登录</div>
+                  <div class="scroll-item" v-for="item in appointRule">{{ item }}</div>
                 </div>
               </div>
             </div>
@@ -61,7 +61,7 @@
               <div class="rule-title">取消规则</div>
               <div class="rule-main">
                 <div class="rule-scroll">
-                  <div class="scroll-item" v-for="item in 10"> · 预约前请先登录预约前请先登录预约前请先登录</div>
+                  <div class="scroll-item" v-for="item in cancelRule">{{ item }}</div>
                 </div>
               </div>
             </div>
@@ -112,7 +112,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user'
-import {  getTodayMeetingRecordData, getDeleteMeetingRecordData, getCenterAllNumberData, getRoomStatusData, getTimeBusyData, } from '@/request/api/home'
+import {  getTodayMeetingRecordData, getDeleteMeetingRecordData, getCenterAllNumberData, getRoomStatusData, getTimeBusyData, getNoticeData } from '@/request/api/home'
 
 import Clock from '@/views/home/component/clock.vue'
 import GuageChart from '@/views/home/component/guageChart.vue'
@@ -123,8 +123,33 @@ const loading = ref(true);  // 获取数据loading
 const userStore = useUserStore();
 const route = useRoute();
 const router = useRouter();
-const userInfo = ref();
+const userInfo = ref();  // 获取用户信息 传后端数据
 
+const appointRule = ref<any>([
+  "点击首页“会议室预约”按钮",
+  "点击自已想预约的会议室名称",
+  "紧急预约可直接点击“空闲中”会议室",
+  "点击自己想预约会议的时间",
+  "长期预约会议室可使用“企微”预约",
+  "点击首页“会议室预约”按钮",
+  "点击自已想预约的会议室名称",
+  "紧急预约可直接点击“空闲中”会议室",
+  "点击自己想预约会议的时间",
+  "长期预约会议室可使用“企微”预约",
+])
+const cancelRule = ref<any>([
+  "点击首页“取消预约”按钮",
+  "点击“历史记录”-“取消会议”",
+  "取消后若该会议室空闲可重新预约",
+  "“修改会议”≠“取消会议”",
+  "取消会议后“历史记录”该记录消失",
+  "点击首页“取消预约”按钮",
+  "点击“历史记录”-“取消会议”",
+  "取消后若该会议室空闲可重新预约",
+  "“修改会议”≠“取消会议”",
+  "取消会议后“历史记录”该记录消失",
+])
+let notice = ref<any>('暂无公告信息'); // 公告信息
 let gaugeData = ref<any>([ // echarts数据展示 今日总预约数
   {
     value: 0,
@@ -151,25 +176,6 @@ const timeArr = ref([  // 预约时间点及该时间点可预约状态
 ])
 
 let tableData = ref<any>([]) // 预约情况数据
-// let table = [
-//   {
-//     id: 1,//     title: "test会议1",
-//     description: "会议内容1",
-//     startTime: "2024-04-30 11:22:10",
-//     endTime: "2024-04-30 11:23:11",
-//     meetingRoomId: 4,
-//     status: 3,
-//     createdBy: "dzl",
-//     gmtCreate: "2024-04-29 15:23:21",
-//     gmtModified: "2024-04-30 03:59:30",
-//     isDeleted: 0,
-//     adminUserName: "邓子龙",
-//     meetingRoomName: "会议室4",
-//     meetingNumber: 3,
-//     attendees: "邓子龙,zhangsan,lisi",
-//     location: 4
-//   }
-// ]
 
 onMounted(async () => {
    /* 判断扫码登录状态 */
@@ -189,16 +195,18 @@ onMounted(async () => {
       return router.replace('/login');
     }
 
-  tableData.value = getTodayRecord({ userId: userStore.userInfo.userId })  // 查询今日会议情况
+  tableData.value = await getTodayRecord({ userId: userInfo.value.userId })  // 查询今日会议情况
+  
   getCenterAllNumber()  // 查询中心会议总次数
   getRoomStatus()  // 查询会议室状态
   getTimeBusy()  // 查询当日时间段占用情况
 
+  getNotice()
   loading.value = false
 });
 
 
-/* 会议室大屏 */
+/******************************************* 会议室大屏 ***********************************/
 /**
  * @description 今日中心会议总次数
 */
@@ -244,13 +252,13 @@ const handleRoomClick = (item: any) => {
       router.push({
       path: '/meeting-appoint',
       query: {
-        meetingRoomId: item.id
+        meetingRoomId: item.id  // 首页 会议室 跳转到预约页面 传会议室id
       }
     })
   }
 }
 
-/* 预约时间选择 */
+/******************************************* 预约时间选择 ***********************************/
 /**
  * @description 查询当日时间段占用情况
  * 时间状态  0：已过期 1：已预定 2：可预约
@@ -275,11 +283,17 @@ const selectTime = (item: any) => {
   if ([0, 1].includes(item.state)) {
     return;
   } else {
-    router.push('/meeting-appoint')
+    router.push({
+      path: '/meeting-appoint',
+      query: {
+        startTime: item.time  // 首页 时间点 跳转到预约页面 传时间点time
+      }
+    })
   }
 }
 
-/* 会议室预约情况 */
+
+/******************************************* 会议室预约情况 ***********************************/
 
 /**
  * @description 处理列表数据
@@ -298,11 +312,11 @@ const statusName = computed(() => (status: any) => {
 
 // 操作 展示状态
 const operate = computed(() => (item: any) => {
-  // 会议-未开始 且 登陆人员=创建者时(item.createdBy === userStore.userInfo.userId) 才可以修改
-  if (item.status === 0 && item.createdBy === 'dzl') {
+  // 会议-未开始 且 登陆人员=创建者时(item.createdBy === userInfo.value.userId) 才可以修改
+  if (item.status === 0 && item.createdBy === userInfo.value.userId) {
     return '修改';
-    // 暂定 状态为"已取消"时 且 登陆人员=创建者时(item.createdBy === userStore.userInfo.userId)  可删除
-  } else if (item.status === 3 && item.createdBy === 'dzl') {
+    // 暂定 状态为"已取消"时 且 登陆人员=创建者时(item.createdBy === userInfo.value.userId)  可删除
+  } else if (item.status === 3 && item.createdBy === userInfo.value.userId) {
     return '删除';
   } else {
     return '';
@@ -328,8 +342,8 @@ const getTodayRecord = async (data: { userId: string }) => {
 
 // 点击修改会议
 const modifyMeeting = (item: any) => {
-  // 会议-未开始 且 登陆人员=创建者时(item.createdBy === userStore.userInfo.userId) 才可以修改
-  if (item.status === 0 && item.createdBy === 'dzl') {
+  // 会议-未开始 且 登陆人员=创建者时(item.createdBy === userInfo.value.userId) 才可以修改
+  if (item.status === 0 && item.createdBy === userInfo.value.userId) {
     router.push('/meeting-appoint')
   }
 }
@@ -350,6 +364,15 @@ const delMeeting = (item: any,index: number) => {
   .catch(() => {
     ElMessage.info('取消删除')
   })
+}
+
+/******************************************* 公告 ***********************************/
+/**
+ * @description 查询所有公告
+ */
+const getNotice = async () => {
+  const res = await getNoticeData()
+  notice.value = res.data  
 }
 
 </script>
@@ -574,6 +597,11 @@ const delMeeting = (item: any,index: number) => {
                   text-overflow: ellipsis; /* 使用省略的文本表示溢出的内容 */
                   padding: 0 5px;
                   margin-bottom: 5px;
+                  &::before {
+                    content: '·';
+                    margin-right: .125rem;
+                    color: #676767;
+                  }
                 }
               }
               // 鼠标 悬停时停止滚动

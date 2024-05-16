@@ -69,6 +69,7 @@ const routes = useRoute();  // 用于传数据
 const router = useRouter() // 用于选择时间段
 
 const date = ref(new Date())  // 会议日期选择
+const currentMeetingId = ref(routes.query.id);  // 会议室id
 const title = ref(routes.query.title);  // 会议室名称
 const locate = ref(routes.query.address);  // 会议室位置
 const time = ref(new Date().toLocaleTimeString().substring(0, 5))  // 显示当前时间点
@@ -124,6 +125,7 @@ const disabledDate = (date: any) => {  // 禁止选择今日之前的日期
 setInterval(() => {  // 更新 时间 会议室名称、位置
   time.value = new Date().toLocaleTimeString().substring(0, 5) 
 
+  currentMeetingId.value = routes.query.id
   title.value = routes.query.title
   locate.value = routes.query.address
 }, 100)
@@ -155,13 +157,15 @@ const selectTime = (item: any) => {
     return;
   } else {
     router.push({
-    path: '/meeting-appoint',
-    query: {
-      meetingRoomId: item.id
-    }
-  })
+      path: '/meeting-appoint',
+      query: {
+        meetingRoomId: currentMeetingId.value,  // 将会议室id传到 预约页面
+        startTime: item.time  // 将点击的时间点传到 预约页面
+      }
+    })
   }
 }
+
 
 </script>
 

@@ -49,7 +49,7 @@
         }
         .menu-item span{
             font-size: 1rem;
-            font-weight: 500;
+            font-weight: 600;
             line-height: normal;
             letter-spacing: 0.05em;
             color: #0256FF;
