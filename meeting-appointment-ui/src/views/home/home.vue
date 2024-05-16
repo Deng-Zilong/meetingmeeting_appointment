@@ -182,9 +182,7 @@ onMounted(async () => {
    const code = decodeURIComponent(route.query.code as string);
     userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}');
     const token = userInfo.value?.accessToken;
-    console.log(token, "token");
     
-  
     // 若 code 不为 undefined 时为扫码登录
     if (code != 'undefined') {
       return await userStore.getQWUserInfo(code);

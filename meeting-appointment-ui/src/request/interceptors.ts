@@ -4,10 +4,10 @@ import { ElMessage } from "element-plus";
 // import router from "../router";
 // 请求拦截
 export function ReqResolve(req: InternalAxiosRequestConfig) {
-    if (req.url === "/login" || req.url === "/meeting/user/captcha.jpg") {
+    if (req.url === "/meeting/user/login" || req.url === "/meeting/user/captcha.jpg") { 
         return req;
     }
-    const userInfo = JSON.parse(localStorage.getItem("userInfo") as string) ;
+    const userInfo = JSON.parse(localStorage.getItem("userInfo") as string) 
     const token = userInfo.accessToken
         ? userInfo.accessToken
         : "";

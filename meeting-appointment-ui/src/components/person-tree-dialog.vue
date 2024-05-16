@@ -1,5 +1,5 @@
 <template>
-    <el-dialog v-model="visible" :title="title" class="add-group-dialog" width="18.75rem">
+    <el-dialog v-model="visible" :title="title" class="add-group-dialog" width="18.75rem" :before-close="closeDialog">
         <el-select
             v-model="search"
             clearable
