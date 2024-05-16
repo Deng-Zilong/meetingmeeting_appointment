@@ -12,7 +12,7 @@ export const getMeetingBanData = (data: {id: number, status: number, currentLeve
 
 // 上传公告
 export const addNoticeData = (data: { currentLevel: number, currentUserId: string, substance: string }) => {
-  return http.post("/meetingNotice/addNotice", data)
+  return http.post("/meeting/meetingNotice/addNotice", data)
 }
 
 // 查询所有管理员
