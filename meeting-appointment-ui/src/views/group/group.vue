@@ -1,5 +1,5 @@
 <template>
-    <div class="container group">
+    <div class="group">
         <div class="theme">
             <div class="left">
                 <el-input v-model="groupTitle" style="width: 240px" placeholder="请输入" />
@@ -12,7 +12,7 @@
             </div>
             <div class="right" @click="handleCreateGroup">创 建</div>
         </div>
-        <div class="content">
+        <div class="content" v-loading="loading" element-loading-background="rgba(122, 122, 122, 0.1)">
             <div class="title">
                 <div>创建人</div>
                 <div>创建时间</div>
@@ -60,6 +60,8 @@
 
     const userInfo = ref<any>(JSON.parse(localStorage.getItem('userInfo') || '')); // 获取用户信息
     const currentUserId = userInfo.value?.userId; // 当前登录人id
+
+    let loading = ref(false); // 页面loading
 
     onMounted(async() => {
         // 初始化数据
@@ -172,6 +174,7 @@
     const handleGroupList = async(data: {userId: string, pageNum: number, pageSize: number}) =>{
         let list:any = [];
         let total:number = 0;
+        loading.value = true;
         await getMeetingGroupList(data)
             .then(res => {
                 total = res.data.length;
@@ -185,6 +188,9 @@
                 });
             })
             .catch((err) => {})
+            .finally(() => {
+                loading.value = false;
+            })
             return {
                 data: list,
                 total,
@@ -299,11 +305,13 @@
 </script>
 <style scoped lang="scss">
     .group {
-        background-color: #f5f5f5;
+        // background-color: #f5f5f5;
         .theme {
             display: flex;
-            justify-content: space-around;
+            justify-content: space-between;
             align-items: center;
+            width: 97.8rem;
+            margin: 0 auto;
             .left {
                 width: 47rem;
                 div {
@@ -366,11 +374,11 @@
         }
         .content {
             width: 97.9375rem;
-            height: 40.0625rem;
+            height: 42.0625rem;
             border-radius: .9375rem;
             box-sizing: border-box;
             border: .1875rem solid rgba(18, 115, 219, 0.8);
-            margin: 1.25rem auto;
+            margin: 1.25rem auto 0;
             .title {
                 height: 3rem;;
                 div {

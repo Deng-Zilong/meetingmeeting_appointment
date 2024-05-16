@@ -84,8 +84,6 @@
     const visible = ref(false) // 弹框显示
     watch(() => props.modelValue, (newValue) => {
         visible.value = newValue;
-        console.log(newValue, "newValue");
-        
         if (props.type == 2) {
             console.log(props.peopleIds);
             
@@ -161,11 +159,14 @@
      * @description 获取选中人员信息
      */
      const handleChangeGroupPeople = (value: any) => {
-        // 强制刷新视图
-        getCurrentInstance()?.appContext.config.globalProperties.$forceUpdate();
-        // 将选中的userId添加到 groupPeopleIds 中
-        addGroupForm.value.peopleIds?.push(value);
-    }
+         const userId = ref<string>(value)
+         
+         // 强制刷新视图
+         getCurrentInstance()?.appContext.config.globalProperties.$forceUpdate();
+         // 将选中的userId添加到 groupPeopleIds 中
+         addGroupForm.value.peopleIds?.push(userId.value);
+         console.log(value, "value", addGroupForm.value.peopleIds, userId.value);
+        }
 
     let groupPeopleList = ref<any>([]); // 远程搜索群组成员列表
     /**

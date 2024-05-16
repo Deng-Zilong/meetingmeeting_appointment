@@ -73,7 +73,7 @@
     import { useInfiniteScroll } from '@vueuse/core'
     import { Close } from '@element-plus/icons-vue'
 
-    import personTreeDialog from '@/views/group/components/person-dialog.vue'
+    // import personTreeDialog from '@/views/group/components/person-dialog.vue'
     import { useUserStore } from '@/stores/user';
     import { meetingState } from '@/utils/types';
     import { getUsableRoomData, getMeetingBanData, addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData } from '@/request/api/manage'
