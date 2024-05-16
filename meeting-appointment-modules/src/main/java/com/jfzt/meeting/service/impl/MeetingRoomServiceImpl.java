@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MeetingRecordStatusConstant;
-import com.jfzt.meeting.constant.MeetingRoomStatusConstant;
 import com.jfzt.meeting.constant.MessageConstant;
 import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.MeetingRecord;
@@ -274,7 +273,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 long count = this.count(new LambdaQueryWrapper<MeetingRoom>()
                         .eq(MeetingRoom::getIsDeleted, NOT_DELETED)
                         .eq(MeetingRoom::getStatus, MEETINGROOM_STATUS_AVAILABLE));
-                if (count == size) {
+                if (size >= count) {
                     System.out.println(timeStatus);
                     //相同表示时间段全被占用
                     timeStatus.add(i, TIME_PERIOD_BUSY);
