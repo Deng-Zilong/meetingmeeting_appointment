@@ -1,7 +1,7 @@
 <template>
-    <div class="container history" v-loading="loading">
+    <div class="history">
         <div class="theme" > 会议历史记录查看 </div>
-        <div class="content">
+        <div class="content" v-loading="loading" element-loading-background="rgba(122, 122, 122, 0.1)">
             <div class="title">
                 <div>会议主题</div>
                 <div>会议室名称</div>
@@ -70,12 +70,10 @@
                             <div>{{ item.stateValue }}</div>
                             <!-- 操作 -->
                             <div>
-                                <div v-show="item.status == 0 && item.createdBy == currentUserId">
-                                    <p @click="handleEditMeeting(item)" >修改</p>
-                                    <p @click="handleCancelMeeting(item.id)">取消</p>
-                                </div>
-                                <!-- <p @click="handleEditMeeting(item)" v-show="item.status == 0">修改</p>
-                                <p @click="handleCancelMeeting(item.id)" v-show="item.status == 0">取消</p> -->
+                                <p v-show="item.status == 0 && item.createdBy == currentUserId">
+                                    <span @click="handleEditMeeting(item)" >修改</span>
+                                    <span @click="handleCancelMeeting(item.id)">取消</span>
+                                </p>
                             </div>
                         </div>
                     </el-timeline-item>
@@ -315,10 +313,9 @@
 </script>
 
 <style scoped lang="scss">
-    .container {
-        background-color: #f5f5f5;
+    .history {
         .theme {
-            width: 101rem;
+            width: 98rem;
             height: 4.375rem;
             font-size: 1.5625rem;
             font-weight: 500;
@@ -328,6 +325,7 @@
             color: #3268DC;
             border-radius: .9375rem;
             background: #FFFFFF;
+            margin: 0 auto;
         }
         .content {
             width: 97.9375rem;
@@ -403,10 +401,10 @@
                             position: relative;
                         }
                         &:nth-child(7) {
-                            &>p:nth-child(1) {
+                            &>p>span:nth-child(1) {
                                 color: #409EFF;
                             }
-                            &>p:nth-child(2) {
+                            &>p>span:nth-child(2) {
                                 margin-left: .625rem;
                                 color: #F56C6C;
                             }
@@ -467,14 +465,6 @@
                 display: flex;
                 justify-content: space-around;
             }
-        }
-    }
-    // .cancel-meeting-box .el-message-box {
-    //     background-color: red !important;
-    // }
-    ::v-deep .el-message-box {
-        .el-message-box__btns {
-            justify-content: space-around;
         }
     }
 </style>
