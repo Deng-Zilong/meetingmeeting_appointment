@@ -9,7 +9,9 @@ import com.jfzt.meeting.entity.vo.LoginVo;
 import com.jfzt.meeting.entity.vo.UserInfoVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
+import com.jfzt.meeting.properties.JwtProperties;
 import com.jfzt.meeting.service.SysUserService;
+import com.jfzt.meeting.utils.JwtUtil;
 import com.jfzt.meeting.utils.TokenGenerator;
 import jakarta.annotation.Resource;
 import jakarta.servlet.ServletOutputStream;
@@ -25,6 +27,10 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.jfzt.meeting.utils.JwtUtil.createJWT;
 
 
 /**
@@ -44,7 +50,8 @@ public class SysLoginController {
     @Resource
     private RedisTemplate<String,Object> redisTemplate;
 
-
+    @Autowired
+    private JwtProperties jwtProperties;
 
     /**
      * 验证码
@@ -84,14 +91,20 @@ public class SysLoginController {
             log.error("用户密码错误");
             throw new  RRException(ErrorCodeEnum.SERVICE_ERROR_A0210);
         }
-        //生成一个token
-        String accessToken = TokenGenerator.generateValue();
-        //获取用户信息
-        UserInfoVO userInfo = new UserInfoVO();
-        userInfo.setAccessToken(accessToken);
-        userInfo.setUserId(sysUser.getUserId());
-        userInfo.setName(sysUser.getUserName());
-        userInfo.setLevel(sysUser.getLevel());
+        //登录成功后，生成jwt令牌
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sysUserId", sysUser.getUserId());
+        String token = createJWT(
+                jwtProperties.getAdminSecretKey(),
+                jwtProperties.getAdminTtl(),
+                claims);
+
+        UserInfoVO userInfo = UserInfoVO.builder()
+                .accessToken(token)
+                .userId(sysUser.getUserId())
+                .name(sysUser.getUserName())
+                .level(sysUser.getLevel())
+                .build();
         //存入到redis中
         redisTemplate.opsForValue().set("userInfo"+userInfo.getUserId(), JSONObject.toJSONString(userInfo), Duration.ofHours(24));
         //存入当前登录用户到ThreadLocal中

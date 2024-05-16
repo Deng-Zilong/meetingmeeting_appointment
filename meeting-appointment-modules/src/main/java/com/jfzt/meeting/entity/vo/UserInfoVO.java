@@ -1,7 +1,10 @@
 package com.jfzt.meeting.entity.vo;
 
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -9,6 +12,9 @@ import java.io.Serializable;
  * @author zhenxing.lu
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserInfoVO  implements Serializable {
     private String accessToken;
     private String userId;
