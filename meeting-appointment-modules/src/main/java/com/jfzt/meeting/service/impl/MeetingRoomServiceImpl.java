@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MeetingRecordStatusConstant;
+import com.jfzt.meeting.constant.MeetingRoomStatusConstant;
 import com.jfzt.meeting.constant.MessageConstant;
 import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.MeetingRecord;
@@ -141,20 +142,19 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     }
 
     /**
-     * 查询未被禁用的会议室的id
+     * 查询被禁用的会议室的id
      *
      * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.util.List < < java.lang.Integer>>
      */
     @Override
-    public Result<List<MeetingRoomVO>> selectUsableRoom (Integer currentLevel) {
+    public Result<List<Long>> selectUsableRoom (Integer currentLevel) {
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel) || MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
             List<MeetingRoom> roomList = meetingRoomMapper.selectList(new QueryWrapper<>());
-            List<MeetingRoomVO> collect = roomList.stream().map(item -> {
-                MeetingRoomVO meetingRoomVO = new MeetingRoomVO();
-                BeanUtils.copyProperties(item, meetingRoomVO);
-                return meetingRoomVO;
-            }).collect(Collectors.toList());
+            List<Long> collect = roomList.stream()
+                    .filter(room -> MEETINGROOM_STATUS_PAUSE.equals(room.getStatus()))
+                    .map(MeetingRoom::getId)
+                    .collect(Collectors.toList());
             return Result.success(collect);
         }
         return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
