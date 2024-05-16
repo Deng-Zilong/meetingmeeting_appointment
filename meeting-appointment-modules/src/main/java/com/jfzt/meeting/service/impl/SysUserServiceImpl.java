@@ -1,14 +1,11 @@
 package com.jfzt.meeting.service.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.code.kaptcha.Producer;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MessageConstant;
-import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.vo.LoginVo;
 import com.jfzt.meeting.entity.vo.SysUserVO;
@@ -21,17 +18,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.awt.image.BufferedImage;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.jfzt.meeting.context.BaseContext.removeCurrentLevel;
 
 /**
  * @author zilong.deng
@@ -85,16 +77,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     public Result<List<SysUser>> selectAdmin(Integer currentLevel) {
         // 判断当前登录用户的权限等级
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)){
-/*
-            QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
-            queryWrapper.in("level",0,1);
-            queryWrapper.select("user_name","level");*/
             // 查询用户的信息
             List<SysUser> sysUsers = sysUserMapper.selectList(new QueryWrapper<>());
-            return Result.success(sysUsers);
+            return Result.success(sysUsers.stream()
+                    .filter(user -> MessageConstant.ADMIN_LEVEL.equals(user.getLevel()) || MessageConstant.SUPER_ADMIN_LEVEL.equals(user.getLevel()))
+                    .collect(Collectors.toList()));
         }
-
-
         return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
     }
 
@@ -111,7 +99,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             if (MessageConstant.ADMIN_LEVEL.equals(sysUser.getLevel())) {
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
             }
-            row = sysUserMapper.updateAdmin(userId);
+            row = sysUserMapper.addAdmin(userId);
         }
         if (row > 0){
             return Result.success(ErrorCodeEnum.SUCCESS);
@@ -127,7 +115,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
      */
     @Override
     public Result<Integer> deleteAdmin(String userId) {
-        int row = sysUserMapper.updateLevel(userId);
+        SysUser sysUser = sysUserMapper.selectByUserId(userId);
+        if (MessageConstant.EMPLOYEE_LEVEL.equals(sysUser.getLevel())){
+            return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0400);
+        }
+        int row = sysUserMapper.deleteAdmin(userId);
         if (row > 0){
             return Result.success(ErrorCodeEnum.SUCCESS);
         }

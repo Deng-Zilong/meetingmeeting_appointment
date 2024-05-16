@@ -3,6 +3,7 @@ package com.jfzt.meeting.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingRoom;
+import com.jfzt.meeting.entity.dto.MeetingRoomDTO;
 import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomVO;
 import com.jfzt.meeting.entity.vo.TimePeriodStatusVO;
@@ -61,20 +62,16 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
 
     /**
      * 更新会议室状态
-     *
-     * @param id     会议室ID
-     * @param status 会议室状态
-     * @param currentLevel 当前登录用户的权限等级
-     * @return com.jfzt.meeting.common.Result<java.lang.Integer>
+     * @param meetingRoomDTO 会议室DTO对象
+     * @return @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
-    Result<Integer> updateStatus (Long id, Integer status, Integer currentLevel);
+    Result<Integer> updateStatus (MeetingRoomDTO meetingRoomDTO);
 
     /**
      * 查询未被禁用的会议室的id
      *
-     * @param meetingRoom 会议室对象
      * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.util.List<<java.lang.Integer>>
      */
-    Result<List<Long>> selectUsableRoom(MeetingRoom meetingRoom, Integer currentLevel);
+    Result<List<MeetingRoomVO>> selectUsableRoom(Integer currentLevel);
 }

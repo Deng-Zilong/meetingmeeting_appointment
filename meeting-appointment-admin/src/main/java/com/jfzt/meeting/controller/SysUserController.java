@@ -1,9 +1,8 @@
 package com.jfzt.meeting.controller;
 
-import com.alibaba.fastjson.JSONObject;
 import com.jfzt.meeting.common.Result;
-
 import com.jfzt.meeting.entity.SysUser;
+import com.jfzt.meeting.entity.dto.AdminDTO;
 import com.jfzt.meeting.entity.vo.UserInfoVO;
 import com.jfzt.meeting.service.SysDepartmentUserService;
 import com.jfzt.meeting.service.SysUserService;
@@ -13,10 +12,8 @@ import me.chanjar.weixin.cp.bean.WxCpUser;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.Duration;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -25,7 +22,6 @@ import java.util.Map;
  * @author zhenxing.lu
  * @since 2024-04-30 10.13:51
  */
-
 @RestController
 @RequestMapping("/meeting/user")
 public class SysUserController {
@@ -94,22 +90,22 @@ public class SysUserController {
 
     /**
      * 删除管理员,只有超级管理员可以操作
-     * @param userId 用户id
+     * @param adminDTO 用户DTO对象
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @PutMapping("/deleteAdmin")
-    public Result<Integer> deleteAdmin (@RequestParam("userId") String userId) {
-        return sysUserService.deleteAdmin(userId);
+    public Result<Integer> deleteAdmin (@RequestBody AdminDTO adminDTO) {
+        return sysUserService.deleteAdmin(adminDTO.getUserId());
     }
 
 
     /**
      * 新增管理员,只有超级管理员可以操作
-     * @param userIds 用户id
+     * @param adminDTO 用户DTO对象
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @PutMapping("/addAdmin")
-    public Result<Integer> addAdmin (@RequestParam("userIds") List<String> userIds) {
-        return sysUserService.addAdmin(userIds);
+    public Result<Integer> addAdmin (@RequestBody AdminDTO adminDTO) {
+        return sysUserService.addAdmin(adminDTO.getUserIds());
     }
 }

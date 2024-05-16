@@ -25,6 +25,7 @@ public class MeetingNoticeController {
 
     /**
      * 新增通告信息
+     * @param meetingNoticeVO 公告信息VO对象
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @PostMapping("/addNotice")

@@ -2,6 +2,7 @@ package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingRoom;
+import com.jfzt.meeting.entity.dto.MeetingRoomDTO;
 import com.jfzt.meeting.entity.dto.TimePeriodDTO;
 import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomVO;
@@ -98,27 +99,23 @@ public class MeetingRoomController {
 
     /**
      * 修改会议室状态
-     *
-     * @param id     会议室id
-     * @param status 会议室状态（0暂停使用,1可使用/空闲 2为使用中不保存至数据库，实时获取）
-     * @param currentLevel 当前登录用户的权限等级
+     * @param meetingRoomDTO 会议室DTO对象
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @PutMapping("/updateStatus")
-    public Result<Integer> updateStatus (@RequestParam("id") Long id, @RequestParam("status") Integer status, @RequestParam("currentLevel") Integer currentLevel) {
-        return meetingRoomService.updateStatus(id, status, currentLevel);
+    public Result<Integer> updateStatus (@RequestBody MeetingRoomDTO meetingRoomDTO) {
+        return meetingRoomService.updateStatus(meetingRoomDTO);
     }
 
 
     /**
      * 查询未被禁用的会议室的id
-     * @param meetingRoom 会议室对象
      * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.util.List<<java.lang.Integer>>
      */
-    @GetMapping("/index/usableRoom")
-    public Result<List<Long>> selectUsableRoom (MeetingRoom meetingRoom, @RequestParam("currentLevel") Integer currentLevel) {
-        return meetingRoomService.selectUsableRoom(meetingRoom, currentLevel);
+    @GetMapping("/index/allRoom")
+    public Result<List<MeetingRoomVO>> selectUsableRoom (@RequestParam("currentLevel") Integer currentLevel) {
+        return meetingRoomService.selectUsableRoom(currentLevel);
 
     }
 }

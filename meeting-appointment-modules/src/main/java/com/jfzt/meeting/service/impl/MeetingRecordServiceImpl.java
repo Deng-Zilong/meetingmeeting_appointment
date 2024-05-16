@@ -332,56 +332,146 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     public Result<List<MeetingRecordVO>> getAllMeetingRecordVoListPage (Long pageNum, Long pageSize, Integer currentLevel) {
         // 获取当前登录用户的权限等级
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel) || MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
+            // 检查参数
             if (pageNum == null || pageSize == null) {
-                log.error("请求必填参数为空" + ErrorCodeEnum.SERVICE_ERROR_A0410);
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
             }
-            // 查询出来所有的会议记录
+            // 查询所有会议记录
             Page<MeetingRecord> meetingRecordPage = this.baseMapper.selectPage(new Page<>(pageNum, pageSize), new QueryWrapper<>());
-            // 查询出所有的会议预约的id
-            List<Long> longList = meetingRecordPage.getRecords().stream().map(MeetingRecord::getId).toList();
-            if (longList.isEmpty()) {
-                return null;
-            }
-            return Result.success(longList.stream().map(id -> {
-                // 通过会议记录id获取到参会人员的信息
-                List<String> userIds = attendeesMapper.selectUserIdsByRecordId(id);
-                StringBuffer attendees = getStringBuffer(userIds);
-                ArrayList<SysUserVO> users = new ArrayList<>();
-                userIds.forEach(item -> {
-                    List<SysUser> userList = userService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, item));
-                    SysUser user = userList.getFirst();
-                    SysUserVO userVO = new SysUserVO();
-                    BeanUtils.copyProperties(user, userVO);
-                    users.add(userVO);
-                });
-                //更新会议状态
-                MeetingRecord meetingRecord = this.baseMapper.selectById(id);
-                updateRecordStatus(meetingRecord);
-                meetingRecord = this.baseMapper.selectById(id);
-                //插入会议信息
-                MeetingRecordVO meetingRecordVO = new MeetingRecordVO();
-                BeanUtils.copyProperties(meetingRecord, meetingRecordVO);
-                //插入会议室信息
-                MeetingRoom meetingRoom = meetingRoomService.getOne(new LambdaQueryWrapper<MeetingRoom>().eq(MeetingRoom::getId, meetingRecord.getMeetingRoomId()));
-                if (meetingRoom != null) {
-                    meetingRecordVO.setMeetingRoomName(meetingRoom.getRoomName());
-                    meetingRecordVO.setLocation(meetingRoom.getLocation());
-                }
-                //插入会议创建人信息
-                SysUser user = userService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, meetingRecord.getCreatedBy()));
-                if (user != null) {
-                    meetingRecordVO.setAdminUserName(user.getUserName());
-                }
-                //插入参会人信息
-                meetingRecordVO.setAttendees(attendees.toString());
-                meetingRecordVO.setUsers(users);
-                meetingRecordVO.setMeetingNumber(userIds.size());
-                return meetingRecordVO;
-            }).sorted((o1, o2) -> o1.getStartTime().isBefore(o2.getStartTime()) ? 1 : -1).toList());
+            // 构建MeetingRecordVO列表
+            return Result.success(meetingRecordPage.getRecords().stream()
+                    .filter(record -> !Objects.equals(record.getStatus(), MEETING_RECORD_STATUS_CANCEL))
+                    .map(record -> {
+                        MeetingRecordVO recordVO = new MeetingRecordVO();
+                        record = updateRecordStatus(record);
+                        // 设置会议信息
+                        BeanUtils.copyProperties(record, recordVO);
+
+                        // 设置会议室信息
+                        MeetingRoom meetingRoom = meetingRoomService.getById(record.getMeetingRoomId());
+                        if (meetingRoom != null) {
+                            recordVO.setMeetingRoomName(meetingRoom.getRoomName());
+                            recordVO.setLocation(meetingRoom.getLocation());
+                        }
+
+                        // 设置创建人信息
+                        SysUser adminUser = userService.getById(record.getCreatedBy());
+                        if (adminUser != null) {
+                            recordVO.setAdminUserName(adminUser.getUserName());
+                        }
+
+                        // 设置参会人信息
+                        List<String> userIds = attendeesMapper.selectUserIdsByRecordId(record.getId());
+                        StringBuffer attendees = getStringBuffer(userIds);
+                        recordVO.setAttendees(attendees.toString());
+
+                        // 设置参会人员详情
+                        List<SysUserVO> users = userIds.stream()
+                                .map(userService::getById)
+                                .filter(Objects::nonNull)
+                                .map(user -> {
+                                    SysUserVO userVO = new SysUserVO();
+                                    BeanUtils.copyProperties(user, userVO);
+                                    return userVO;
+                                })
+                                .collect(Collectors.toList());
+                        recordVO.setUsers(users);
+                        recordVO.setMeetingNumber(users.size());
+                        return recordVO;
+                    })
+                    .sorted(Comparator.comparing(MeetingRecordVO::getStartTime).reversed())
+                    .collect(Collectors.toList()));
         }
         return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//            if (pageNum == null || pageSize == null) {
+//                log.error("请求必填参数为空" + ErrorCodeEnum.SERVICE_ERROR_A0410);
+//                throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
+//            }
+//            // 查询出来所有的会议记录
+//            Page<MeetingRecord> meetingRecordPage = this.baseMapper.selectPage(new Page<>(pageNum, pageSize), new QueryWrapper<>());
+//            // 查询出所有的会议预约的id
+//            List<Long> longList = meetingRecordPage.getRecords().stream().map(MeetingRecord::getId).toList();
+//            if (longList.isEmpty()) {
+//                return null;
+//            }
+//            return Result.success(longList.stream().map(id -> {
+//                // 通过会议记录id获取到参会人员的信息
+//                List<String> userIds = attendeesMapper.selectUserIdsByRecordId(id);
+//                StringBuffer attendees = getStringBuffer(userIds);
+//                ArrayList<SysUserVO> users = new ArrayList<>();
+//                userIds.forEach(item -> {
+//                    List<SysUser> userList = userService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, item));
+//                    SysUser user = userList.getFirst();
+//                    SysUserVO userVO = new SysUserVO();
+//                    BeanUtils.copyProperties(user, userVO);
+//                    users.add(userVO);
+//                });
+//                //更新会议状态
+//                MeetingRecord meetingRecord = this.baseMapper.selectById(id);
+//                updateRecordStatus(meetingRecord);
+//                meetingRecord = this.baseMapper.selectById(id);
+//                //插入会议信息
+//                MeetingRecordVO meetingRecordVO = new MeetingRecordVO();
+//                BeanUtils.copyProperties(meetingRecord, meetingRecordVO);
+//                //插入会议室信息
+//                MeetingRoom meetingRoom = meetingRoomService.getOne(new LambdaQueryWrapper<MeetingRoom>().eq(MeetingRoom::getId, meetingRecord.getMeetingRoomId()));
+//                if (meetingRoom != null) {
+//                    meetingRecordVO.setMeetingRoomName(meetingRoom.getRoomName());
+//                    meetingRecordVO.setLocation(meetingRoom.getLocation());
+//                }
+//                //插入会议创建人信息
+//                SysUser user = userService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, meetingRecord.getCreatedBy()));
+//                if (user != null) {
+//                    meetingRecordVO.setAdminUserName(user.getUserName());
+//                }
+//                //插入参会人信息
+//                meetingRecordVO.setAttendees(attendees.toString());
+//                meetingRecordVO.setUsers(users);
+//                meetingRecordVO.setMeetingNumber(userIds.size());
+//                return meetingRecordVO;
+//            }).sorted((o1, o2) -> o1.getStartTime().isBefore(o2.getStartTime()) ? 1 : -1).toList());
+//        }
+//        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
+
 
 
     /**

@@ -34,7 +34,7 @@ public class MeetingNoticeServiceImpl extends ServiceImpl<MeetingNoticeMapper, M
 
     /**
      * 上传公告
-     * @param meetingNoticeVO
+     * @param meetingNoticeVO 公告信息VO对象
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @Override

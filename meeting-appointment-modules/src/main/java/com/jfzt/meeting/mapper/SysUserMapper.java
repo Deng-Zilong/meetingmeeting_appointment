@@ -17,22 +17,22 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
     /**
      * 新增管理员,修改用户的权限等级为1
      * @param userId 用户id
-     * @return
+     * @return int
      */
-    int updateAdmin(@Param("userId") String userId);
+    int addAdmin(@Param("userId") String userId);
 
 
     /**
      * 删除管理员,修改用户的权限等级为2
      * @param userId 用户id
-     * @return
+     * @return int
      */
-    int updateLevel(@Param("userId") String userId);
+    int deleteAdmin(@Param("userId") String userId);
 
     /**
      * 查询用户信息
      * @param userId 用户id
-     * @return
+     * @return SysUser
      */
     SysUser selectByUserId(@Param("userId") String userId);
 

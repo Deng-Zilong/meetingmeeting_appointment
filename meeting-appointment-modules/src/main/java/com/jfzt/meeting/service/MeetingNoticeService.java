@@ -16,6 +16,7 @@ public interface MeetingNoticeService extends IService<MeetingNotice> {
 
     /**
      * 新增公告
+     * @param meetingNoticeVO 公告信息VO对象
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     Result<Integer> addNotice(MeetingNoticeVO meetingNoticeVO);

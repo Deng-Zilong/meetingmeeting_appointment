@@ -18,11 +18,11 @@
         password,level,is_deleted
     </sql>
 
-    <update id="updateLevel" parameterType="String">
+    <update id="deleteAdmin" parameterType="String">
         update sys_user set level = 2 where user_id = #{userId}
     </update>
 
-    <update id="updateAdmin" parameterType="String">
+    <update id="addAdmin" parameterType="String">
         update sys_user set level = 1 where user_id = #{userId}
     </update>
 

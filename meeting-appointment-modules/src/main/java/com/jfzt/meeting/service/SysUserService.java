@@ -1,6 +1,5 @@
 package com.jfzt.meeting.service;
 
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.SysUser;
@@ -10,7 +9,6 @@ import org.apache.ibatis.annotations.Param;
 
 import java.awt.image.BufferedImage;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author zilong.deng

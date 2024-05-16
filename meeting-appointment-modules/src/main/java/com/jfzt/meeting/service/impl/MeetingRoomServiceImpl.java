@@ -1,6 +1,7 @@
 package com.jfzt.meeting.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MeetingRecordStatusConstant;
@@ -9,6 +10,7 @@ import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.SysUser;
+import com.jfzt.meeting.entity.dto.MeetingRoomDTO;
 import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomVO;
 import com.jfzt.meeting.entity.vo.TimePeriodStatusVO;
@@ -115,22 +117,19 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
     /**
      * 修改会议室状态
-     * @param id     会议室ID
-     * @param status 会议室状态
-     * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @Override
-    public Result<Integer> updateStatus (Long id, Integer status, Integer currentLevel) {
+    public Result<Integer> updateStatus (MeetingRoomDTO meetingRoomDTO) {
         // 检查输入的会议室ID是否存在
-        MeetingRoom meetingRoom = meetingRoomMapper.selectById(id);
+        MeetingRoom meetingRoom = meetingRoomMapper.selectById(meetingRoomDTO.getId());
         if (meetingRoom == null) {
             log.error(UPDATE_FAIL + EXCEPTION_TYPE,RRException.class);
             throw new RRException(UPDATE_FAIL,ErrorCodeEnum.SERVICE_ERROR_A0421.getCode());
         }
         // 获取当前登录用户的权限等级
-        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel) || MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
-            int row = meetingRoomMapper.updateStatus(id, status);
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(meetingRoomDTO.getCurrentLevel()) || MessageConstant.ADMIN_LEVEL.equals(meetingRoomDTO.getCurrentLevel())) {
+            int row = meetingRoomMapper.updateStatus(meetingRoomDTO.getId(), meetingRoomDTO.getStatus());
             if (row > 0){
                 return Result.success(ErrorCodeEnum.SUCCESS);
             }
@@ -142,20 +141,19 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
     /**
      * 查询未被禁用的会议室的id
-     * @param meetingRoom 会议室对象
      * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.util.List<<java.lang.Integer>>
      */
     @Override
-    public Result<List<Long>> selectUsableRoom(MeetingRoom meetingRoom, Integer currentLevel) {
+    public Result<List<MeetingRoomVO>> selectUsableRoom(Integer currentLevel) {
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel) || MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
-            LambdaQueryWrapper<MeetingRoom> rooms = new LambdaQueryWrapper<MeetingRoom>()
-                    .eq(MeetingRoom::getStatus, MEETINGROOM_STATUS_AVAILABLE);
-            List<MeetingRoom> roomList = meetingRoomMapper.selectList(rooms);
-            List<Long> roomNames = roomList.stream()
-                    .map(MeetingRoom::getId)
-                    .toList();
-            return Result.success(roomNames);
+            List<MeetingRoom> roomList = meetingRoomMapper.selectList(new QueryWrapper<>());
+            List<MeetingRoomVO> collect = roomList.stream().map(item -> {
+                MeetingRoomVO meetingRoomVO = new MeetingRoomVO();
+                BeanUtils.copyProperties(item, meetingRoomVO);
+                return meetingRoomVO;
+            }).collect(Collectors.toList());
+            return Result.success(collect);
         }
         return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
 
@@ -170,7 +168,6 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     @Override
     public List<MeetingRoomStatusVO> getMeetingRoomStatus () {
         //查询当前时间段会议室的使用信息,当前时间在开始或结束区间内的会议,填充到会议室VO,不更新会议室,状态只有01
-
         //查询所有会议室
         List<MeetingRoom> meetingRoomList = list(
                 new LambdaQueryWrapper<MeetingRoom>()
