@@ -161,6 +161,12 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     }
 
+    /**
+     * 获取参会人姓名拼接字符串
+     *
+     * @param userIds 参会人id集合
+     * @return {@code StringBuffer}
+     */
     private StringBuffer getStringBuffer (List<String> userIds) {
         HashSet<String> userIdSet = new LinkedHashSet<>(userIds);
         ArrayList<String> userIdList = new ArrayList<>(userIdSet);
@@ -292,7 +298,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                     }
 
                     // 设置创建人信息
-                    SysUser adminUser = userService.getById(record.getCreatedBy());
+                    SysUser adminUser = userService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, record.getCreatedBy()));
                     if (adminUser != null) {
                         recordVO.setAdminUserName(adminUser.getUserName());
                     }

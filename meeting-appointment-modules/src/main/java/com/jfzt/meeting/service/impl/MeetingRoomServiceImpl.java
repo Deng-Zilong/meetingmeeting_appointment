@@ -35,8 +35,8 @@ import java.util.stream.Collectors;
 import static com.jfzt.meeting.constant.IsDeletedConstant.NOT_DELETED;
 import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
 import static com.jfzt.meeting.constant.MeetingRoomStatusConstant.*;
-import static com.jfzt.meeting.constant.MessageConstant.*;
-import static com.jfzt.meeting.constant.MessageConstant.SAME_NAME;
+import static com.jfzt.meeting.constant.MessageConstant.EXCEPTION_TYPE;
+import static com.jfzt.meeting.constant.MessageConstant.UPDATE_FAIL;
 import static com.jfzt.meeting.constant.TimePeriodStatusConstant.*;
 import static com.jfzt.meeting.context.BaseContext.removeCurrentLevel;
 
@@ -99,8 +99,8 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     @Override
     public Result<String> deleteMeetingRoom (Long meetingRoomId) {
         // 获取当前登录用户的权限等级
-         Integer level = BaseContext.getCurrentLevel();
-         removeCurrentLevel();
+        Integer level = BaseContext.getCurrentLevel();
+        removeCurrentLevel();
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)) {
             // 删除会议室
             if (meetingRoomId != null) {
@@ -117,6 +117,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
     /**
      * 修改会议室状态
+     *
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @Override
@@ -124,13 +125,13 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         // 检查输入的会议室ID是否存在
         MeetingRoom meetingRoom = meetingRoomMapper.selectById(meetingRoomDTO.getId());
         if (meetingRoom == null) {
-            log.error(UPDATE_FAIL + EXCEPTION_TYPE,RRException.class);
-            throw new RRException(UPDATE_FAIL,ErrorCodeEnum.SERVICE_ERROR_A0421.getCode());
+            log.error(UPDATE_FAIL + EXCEPTION_TYPE, RRException.class);
+            throw new RRException(UPDATE_FAIL, ErrorCodeEnum.SERVICE_ERROR_A0421.getCode());
         }
         // 获取当前登录用户的权限等级
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(meetingRoomDTO.getCurrentLevel()) || MessageConstant.ADMIN_LEVEL.equals(meetingRoomDTO.getCurrentLevel())) {
             int row = meetingRoomMapper.updateStatus(meetingRoomDTO.getId(), meetingRoomDTO.getStatus());
-            if (row > 0){
+            if (row > 0) {
                 return Result.success(ErrorCodeEnum.SUCCESS);
             }
             log.error("修改会议室状态失败！");
@@ -141,11 +142,12 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
     /**
      * 查询未被禁用的会议室的id
+     *
      * @param currentLevel 当前登录用户的权限等级
-     * @return com.jfzt.meeting.common.Result<java.util.List<<java.lang.Integer>>
+     * @return com.jfzt.meeting.common.Result<java.util.List < < java.lang.Integer>>
      */
     @Override
-    public Result<List<MeetingRoomVO>> selectUsableRoom(Integer currentLevel) {
+    public Result<List<MeetingRoomVO>> selectUsableRoom (Integer currentLevel) {
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel) || MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
             List<MeetingRoom> roomList = meetingRoomMapper.selectList(new QueryWrapper<>());
             List<MeetingRoomVO> collect = roomList.stream().map(item -> {
@@ -306,7 +308,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         for (int i = 0; i < 30; i++) {
             TimePeriodStatusVO timePeriodStatusVO = new TimePeriodStatusVO();
             //判断是否过期
-            if (now.isAfter(endTime)) {
+            if (now.isAfter(startTime)) {
                 timePeriodStatusVO.setStartTime(startTime);
                 timePeriodStatusVO.setEndTime(endTime);
                 timePeriodStatusVO.setStatus(TIME_PERIOD_OVERDUE);
@@ -319,9 +321,12 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 LocalDateTime finalEndTime = endTime;
                 recordQueryWrapper
                         .and(wrapper -> wrapper
-                                .between(MeetingRecord::getStartTime, finalStartTime, finalEndTime)
-                                .or().between(MeetingRecord::getEndTime, finalStartTime, finalEndTime)
-                                .or().lt(MeetingRecord::getStartTime, finalStartTime).gt(MeetingRecord::getEndTime, finalEndTime));
+                                //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
+                                .between(MeetingRecord::getStartTime, finalStartTime, finalEndTime.minusSeconds(1))
+                                //结束时间在时间段内 前不含后含  8-9属于8.5-9不属于9-9.5
+                                .or().between(MeetingRecord::getEndTime, finalStartTime.plusSeconds(1), finalEndTime)
+                                //时间段包含在开始时间(含)和结束时间(含)之间    8-9 属于8-8.5属于8.5-9
+                                .or().lt(MeetingRecord::getStartTime, finalStartTime.plusSeconds(1)).gt(MeetingRecord::getEndTime, finalEndTime.minusSeconds(1)));
                 List<MeetingRecord> meetingRecords = meetingRecordService.list(recordQueryWrapper);
                 //判断是否被占用
                 if (!meetingRecords.isEmpty()) {
@@ -362,9 +367,14 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         LambdaQueryWrapper<MeetingRecord> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.notIn(MeetingRecord::getStatus, MEETING_RECORD_STATUS_CANCEL);
         //开始时间或结束时间在时间段内 或 开始时间与结束时间之间包含时间段
-        queryWrapper.and(recordQueryWrapper -> recordQueryWrapper.between(MeetingRecord::getStartTime, startTime, endTime)
-                .or().between(MeetingRecord::getEndTime, startTime, endTime)
-                .or().lt(MeetingRecord::getStartTime, startTime).gt(MeetingRecord::getEndTime, endTime));
+        queryWrapper.and(recordQueryWrapper ->
+                recordQueryWrapper
+                        //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
+                        .between(MeetingRecord::getStartTime, startTime, endTime.minusSeconds(1))
+                        //结束时间在时间段内 前不含后含  8-9属于8.5-9不属于9-9.5
+                        .or().between(MeetingRecord::getEndTime, startTime.plusSeconds(1), endTime)
+                        //时间段包含在开始时间(含)和结束时间(含)之间    8-9 属于8-8.5属于8.5-9
+                        .or().lt(MeetingRecord::getStartTime, startTime.plusSeconds(1)).gt(MeetingRecord::getEndTime, endTime.minusSeconds(1)));
         List<MeetingRecord> meetingRecords = meetingRecordService.list(queryWrapper);
         List<MeetingRoom> meetingRooms = this.list(new LambdaQueryWrapper<MeetingRoom>()
                 .notIn(MeetingRoom::getStatus, MEETINGROOM_STATUS_PAUSE));
