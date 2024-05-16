@@ -368,7 +368,7 @@
                         color: #666666;
                         font-size: 1.25rem;
                         text-align: center;
-                        font-weight: 600;
+                        font-weight: 300;
                     }
                 }
                 ::-webkit-scrollbar {

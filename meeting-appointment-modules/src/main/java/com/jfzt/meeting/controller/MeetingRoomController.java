@@ -109,12 +109,12 @@ public class MeetingRoomController {
 
 
     /**
-     * 查询未被禁用的会议室的id
+     * 查询被禁用的会议室的id
      * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.util.List<<java.lang.Integer>>
      */
     @GetMapping("/index/allRoom")
-    public Result<List<MeetingRoomVO>> selectUsableRoom (@RequestParam("currentLevel") Integer currentLevel) {
+    public Result<List<Long>> selectUsableRoom (@RequestParam("currentLevel") Integer currentLevel) {
         return meetingRoomService.selectUsableRoom(currentLevel);
 
     }
