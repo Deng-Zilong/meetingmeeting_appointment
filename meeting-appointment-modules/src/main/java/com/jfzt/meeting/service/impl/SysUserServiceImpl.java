@@ -80,7 +80,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             // 查询用户的信息
             List<SysUser> sysUsers = sysUserMapper.selectList(new QueryWrapper<>());
             return Result.success(sysUsers.stream()
-                    .filter(user -> MessageConstant.ADMIN_LEVEL.equals(user.getLevel()) || MessageConstant.SUPER_ADMIN_LEVEL.equals(user.getLevel()))
+                    .filter(user -> MessageConstant.ADMIN_LEVEL.equals(user.getLevel()))
                     .collect(Collectors.toList()));
         }
         return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
