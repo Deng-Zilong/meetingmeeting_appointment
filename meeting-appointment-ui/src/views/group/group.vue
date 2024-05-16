@@ -6,8 +6,7 @@
                 <div>群组名称</div>
             </div>
             <div class="center">
-                <el-input class="meeting-people" v-model="groupPeopleNames" clearable readonly :prefix-icon="Plus" placeholder="请添加群组人员"
-              @click="handleAddPerson" />
+                <p @click="handleAddPerson"><el-input class="meeting-people" v-model="groupPeopleNames" clearable readonly :prefix-icon="Plus" placeholder="请添加群组人员"/></p>
                 <div>添加人员</div>
             </div>
             <div class="right" @click="handleCreateGroup">创 建</div>
@@ -61,7 +60,7 @@
     const userInfo = ref<any>(JSON.parse(localStorage.getItem('userInfo') || '')); // 获取用户信息
     const currentUserId = userInfo.value?.userId; // 当前登录人id
 
-    let loading = ref(false); // 页面loading
+    let loading = ref(true); // 页面loading
 
     onMounted(async() => {
         // 初始化数据
@@ -173,8 +172,7 @@
      */
     const handleGroupList = async(data: {userId: string, pageNum: number, pageSize: number}) =>{
         let list:any = [];
-        let total:number = 0;
-        loading.value = true;
+        let total:number = 0; 
         await getMeetingGroupList(data)
             .then(res => {
                 total = res.data.length;
@@ -328,6 +326,7 @@
                         height: 20px;
                         color: #3268DC;
                         background: #ECF2FF;
+                        cursor: pointer;
                     }
 
                     ::v-deep(.el-input__inner) {

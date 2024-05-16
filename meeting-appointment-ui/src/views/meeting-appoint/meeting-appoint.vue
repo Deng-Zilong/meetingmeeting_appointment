@@ -25,13 +25,13 @@
                 </div>
                 <div class="appoint-row">
                     <el-form-item label="开始时间" prop="startTime">
-                        <el-time-select v-model="formData.startTime" :start="timeStart" :min-time="formData.startTime" step="00:15" :end="timeEnd"
-                            placeholder="请选择" />
+                        <el-time-select v-model="formData.startTime" :start="timeStart" :min-time="minStartTime" step="00:15" :end="timeEnd"
+                            placeholder="请选择" @change="minEndTime = formData.startTime"/>
                     </el-form-item>
                     <el-form-item label="结束时间" prop="endTime">
                         <el-time-select 
                             v-model="formData.endTime" 
-                            :min-time="formData.startTime" 
+                            :min-time="minEndTime" 
                             :start="timeStart"
                             step="00:15" 
                             :end="timeEnd" 
@@ -141,6 +141,9 @@ onMounted(() => {
         formData.value.meetingRoomId = routes.query?.meetingRoomId ? Number(routes.query.meetingRoomId) : '';
         formData.value.startTime = routes.query?.startTime ? routes.query?.startTime : dayjs(new Date()).format('HH:mm');
     }
+    minEndTime.value = minStartTime.value = formData.value.startTime ? formData.value.startTime : dayjs(new Date()).format('HH:m');
+    
+    // if ()
     // 获取群组列表
     getGroupList();
 })
@@ -163,8 +166,10 @@ const handleAddPerson = () => {
 const disabledDate = (date: any) => {
     return date.getTime() < Date.now() - 8.64e7
 }
-const timeStart = ref(dayjs(new Date()).format('HH:mm')); // 开始时间
-const timeEnd = ref('22:30'); // 结束时间
+let timeStart = ref('8:00'); // 开始时间
+let timeEnd = ref('22:30'); // 结束时间
+let minStartTime = ref('8:00'); // 开始最小可选时间
+let minEndTime = ref('8:00'); // 结束最小可选时间
 
 // 会议室数组
 const roomArr = ref<any>([
@@ -208,7 +213,7 @@ let addPersonForm = ref<any>({
  * @description 获取群组列表
  */
 const getGroupList = () => {
-    getMeetingGroupList({userId: userInfo.value.userId})
+    getMeetingGroupList({userId: userInfo.value.userId, pageNum: 1, pageSize: 1000})
             .then(res => {
                 addPersonForm.value.list = res.data.map((item: any) => {
                     item.userName = item.groupName;
@@ -411,9 +416,11 @@ const submitForm = (formEl: FormInstance | undefined) => {
                         height: 20px;
                         color: #3268DC;
                         background: #ECF2FF;
+                        cursor: pointer;
                     }
-
+                    
                     ::v-deep(.el-input__inner) {
+                        cursor: pointer;
                         --el-input-placeholder-color: #3268DC;
                     }
                 }

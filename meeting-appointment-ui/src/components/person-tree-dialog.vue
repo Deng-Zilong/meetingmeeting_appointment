@@ -159,20 +159,24 @@
      * @description 获取选中人员信息
      */
      const handleChangeGroupPeople = (value: any) => {
-         const userId = ref<string>(value)
-         
-         // 强制刷新视图
-         getCurrentInstance()?.appContext.config.globalProperties.$forceUpdate();
          // 将选中的userId添加到 groupPeopleIds 中
-         addGroupForm.value.peopleIds?.push(userId.value);
-         console.log(value, "value", addGroupForm.value.peopleIds, userId.value);
+         addGroupForm.value.peopleIds = Array.from(new Set([...addGroupForm.value.peopleIds, value]));
         }
 
     let groupPeopleList = ref<any>([]); // 远程搜索群组成员列表
     /**
      * @description 远程搜索群组成员
      */
-    const remoteSearchGroupPeople = (query: string = 'null') => {
+    let times = 0; // 搜索框输入值的次数
+    const remoteSearchGroupPeople = (query: string) => {
+        // 当query不为空时 即 用户输入过值
+        if (query != '') {
+            times++;
+        }
+        // 当query为空 且 用户一直未输入值时 搜索框的值为null
+        if(query == '' && times == 0) {
+            query = 'null';
+        }
         likeByName({name: query})
             .then((res: any) => {
                 groupPeopleList.value = res.data;
