@@ -93,7 +93,7 @@ public class SysLoginController {
         userInfo.setName(sysUser.getUserName());
         userInfo.setLevel(sysUser.getLevel());
         //存入到redis中
-        redisTemplate.opsForValue().set("userInfo"+userInfo.getUserId(), JSONObject.toJSONString(userInfo), Duration.ofHours(2));
+        redisTemplate.opsForValue().set("userInfo"+userInfo.getUserId(), JSONObject.toJSONString(userInfo), Duration.ofHours(24));
         //存入当前登录用户到ThreadLocal中
         BaseContext.setCurrentUserId(sysUser.getUserId());
         BaseContext.setCurrentLevel(sysUser.getLevel());

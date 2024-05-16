@@ -1,2 +1,15 @@
 FROM openjdk:21
-ADD <JAR_PATH> /app.jar
+
+LABEL version=<version>
+
+ADD ./<JAR_NAME> /opt/
+
+COPY ./SourceHanSerifSC-Bold.otf /usr/share/fonts/dejavu
+
+RUN fc-cache -f -v
+
+WORKDIR /opt/
+
+EXPOSE <JAR_PORT>
+
+CMD ["java","<MEMORY_SIZE>","-jar","<JAR_NAME>"]
