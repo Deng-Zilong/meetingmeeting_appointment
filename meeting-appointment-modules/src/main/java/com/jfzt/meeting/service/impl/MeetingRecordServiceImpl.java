@@ -305,7 +305,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
                     // 设置参会人员详情
                     List<SysUserVO> users = userIds.stream()
-                            .map(userService::getById)
+                            .map(id -> userService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, id)))
                             .filter(Objects::nonNull)
                             .map(user -> {
                                 SysUserVO userVO = new SysUserVO();
