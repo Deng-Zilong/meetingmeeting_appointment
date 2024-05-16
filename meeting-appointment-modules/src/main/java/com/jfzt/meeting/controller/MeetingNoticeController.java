@@ -17,7 +17,7 @@ import java.util.List;
  */
 @CrossOrigin
 @RestController
-@RequestMapping("/meetingNotice")
+@RequestMapping("meeting/meetingNotice")
 public class MeetingNoticeController {
 
     @Resource
