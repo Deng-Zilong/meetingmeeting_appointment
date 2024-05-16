@@ -84,6 +84,8 @@
     const visible = ref(false) // 弹框显示
     watch(() => props.modelValue, (newValue) => {
         visible.value = newValue;
+        console.log(newValue, "newValue");
+        
         if (props.type == 2) {
             console.log(props.peopleIds);
             

@@ -20,20 +20,20 @@
                 <div>群组人员</div>
                 <div>操作</div>
             </div>
-            <div class="list-container">
-                <div class="timeline-item" ref="timelineRef">
-                    <div v-for="(item, index) in data" :key="index" class="card-item">
+            <div class="list-container" ref="timelineRef">
+                <div class="timeline-item" >
+                    <div v-for="(item, index) in dataList" :key="index" class="card-item">
                         <div>{{ item.userName }}</div>
-                        <div>{{ item.gmtCreate }}</div>
+                        <div>{{ item.editTime }}</div>
                         <div v-if="item.isEdit"> 
-                            <el-icon @click="item.isEdit = false"> <Edit /></el-icon>
+                            <el-icon @click="item.isEdit = false" v-show="item.createdBy == currentUserId"> <Edit /></el-icon>
                             {{ item.groupName }}
                         </div>
                         <div v-else>
                             <el-input v-model="item.groupName" @blur="handleEditGroupName(index, item)"/>
                         </div>
-                        <div><el-icon @click="editAttendees(item)"> <Edit /></el-icon> <p class="ellipsis">{{ item.members }}</p></div>
-                        <div @click="handleDeleteMeeting(item.id)"><span>删除</span></div>
+                        <div><el-icon @click="editAttendees(item)" v-show="item.createdBy == currentUserId"> <Edit /></el-icon> <p class="ellipsis">{{ item.members }}</p></div>
+                        <div @click="handleDeleteMeeting(item.id)"><span v-show="item.createdBy === currentUserId">删除</span></div>
                     </div>
                 </div>
                 <div class="loading" v-show="isLoading">数据加载中......</div>
@@ -52,19 +52,18 @@
 </template>
 <script lang="ts" setup>
     import { ref, reactive, onMounted, getCurrentInstance } from 'vue'
-    import { ElMessage, ElMessageBox, ElTree  } from 'element-plus'
-    import { useUserStore } from '@/stores/user'
+    import { ElMessage, ElMessageBox, ElTree, dayjs  } from 'element-plus'
     import { Plus } from '@element-plus/icons-vue'
     import { getMeetingGroupList, deleteMeetingGroup, updateMeetingGroup, addMeetingGroup, getGroupUserTree } from '@/request/api/group'
     import personTreeDialog from "@/components/person-tree-dialog.vue";
     import { useInfiniteScroll } from '@vueuse/core'
 
-    const userStore = useUserStore(); // 获取用户信息
-    const userInfo = ref<any>({});
+    const userInfo = ref<any>(JSON.parse(localStorage.getItem('userInfo') || '')); // 获取用户信息
+    const currentUserId = userInfo.value?.userId; // 当前登录人id
+
     onMounted(async() => {
-        userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '');
         // 初始化数据
-        data.value = await handleGroupList({userId: userInfo.value.userId, pageSize: page.value, pageNum: limit.value});
+        getDataOnScroll();
     })
 
     /************************** 创建群组开始 **************************/
@@ -92,20 +91,21 @@
      * @description 提交需要添加的群组人员
      */
     const handleCheckedNodes = (type: number, active: number, form: any) => {
+        // 创建人信息
+        const creator = ref<any>({userId: userInfo.value.userId, userName: userInfo.value.name});
         // 获取被选中成员的id
         peopleIds.value = form.peopleIds;
-
-        // 获取被选中人员的 信息并去重
-        groups.value = form.groups;
-    
-        // // 创建群组
+        // 获取被选中人员的 信息将创建人信息添加进去并去重
+        groups.value = Array.from(new Set( [...form.groups, creator]));
+        
+        // 创建群组
         if (type == 1) {
             // 处理被选中成员的名称 用，隔开
             groupPeopleNames.value = form.groupPeopleNames;
         }
         // 修改群组成员
         if (type == 2) {
-            updateGroupInfo({id: groupInfo.value.id, groupName: groupInfo.value.groupName, users: groups.value});
+            updateGroupInfo({id: groupInfo.value.id, users: groups.value});
         }
         // 关闭弹窗
         closeAddGroupDialog();
@@ -140,44 +140,55 @@
                 groupPeopleNames.value = '';
                 groups.value = [];
             })
-            .catch(err => {
-                console.log(err, "err");
+            .catch(err => {})
+            .finally(() => {
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+                
             })
+        // dataList.value = await handleGroupList({userId: userInfo.value.userId, pageSize: page.value, pageNum: limit.value});
     }
     /************************** 创建群组结束 **************************/
 
-    let data = ref<any>([]); // 列表数据
+    let dataList = ref<any>([]); // 列表数据
     let groupInfo = ref<any>({}); // 群组信息
-    // 数据接口
-    interface IData {
-        id: string; // id
-        gmtCreate: string;   // 创建时间
-        gmtModified: string; // 修改时间
-        createdBy: string;   // 创建人id
-        isDeleted: boolean;  // 是否删除
-        userName: string;    // 创建人名称
-        groupName: string;   // 群组名
-        users: [],            // 群组成员
-        member?: string,
-    }
+    // // 数据接口
+    // interface IData {
+    //     id: string; // id
+    //     gmtCreate: string;   // 创建时间
+    //     gmtModified: string; // 修改时间
+    //     createdBy: string;   // 创建人id
+    //     isDeleted: boolean;  // 是否删除
+    //     userName: string;    // 创建人名称
+    //     groupName: string;   // 群组名
+    //     users: [],            // 群组成员
+    //     member?: string,
+    // }
 
     /**
      * @description 获取群组列表
      */
-    const handleGroupList = async(data: {userId: string, pageSize: number, pageNum: number}) =>{
+    const handleGroupList = async(data: {userId: string, pageNum: number, pageSize: number}) =>{
         let list:any = [];
+        let total:number = 0;
         await getMeetingGroupList(data)
             .then(res => {
+                total = res.data.length;
                 list = res.data.map((item: any) => {
                     // 获取成员名称并用逗号连接
                     item.members = item.users.map((user: any) => user.userName).join(',');
+                    item.editTime = dayjs(item.gmtModified).format('HH:mm');
                     // 群组名称是否可编辑
                     item.isEdit = true;
                     return item
                 });
             })
             .catch((err) => {})
-            return list;
+            return {
+                data: list,
+                total,
+            };
     }
     // 滚动加载
     const getDataOnScroll = async () => {
@@ -188,13 +199,15 @@
         // 延迟请求
         await new Promise((resolve) => setTimeout(resolve, 2000));
         // 发送请求
-        const newData = await handleGroupList({userId: userInfo.value.userId, pageSize: page.value, pageNum: limit.value});
+        const {data: newData, total} = await handleGroupList({userId: userInfo.value.userId, pageNum: page.value, pageSize: limit.value});
+        
         // 若返回数据长度小于限制 停止加载
-        if(newData.length < limit.value) {
+        if(total < limit.value) {
             canLoadMore.value = false;
         }
+        
         // 合并数据
-        data.value = [...data.value, ...newData];
+        dataList.value = [...dataList.value, ...newData];
         // page + 1
         page.value++;
         // 关闭loading
@@ -208,7 +221,7 @@
             await getDataOnScroll();
         },
         {
-            distance: 15, // 距离底部的长度
+            distance: 30, // 距离底部的长度
         }
     );
 
@@ -217,23 +230,30 @@
      * @param {object} data 群组信息 {id: 群组id, groupName: 群组名称, users: 群组成员}
      * @return {*}
      */
-    const updateGroupInfo = (data:{id: string; groupName: string; users: []}) =>{
-        updateMeetingGroup(data)
+    const updateGroupInfo = async(data:{id: string; groupName?: string; users?: []}) =>{
+        await updateMeetingGroup(data)
             .then(res => {
                 ElMessage.success('修改成功');
             })
             .catch(err => {})
             .finally(() =>{
-                handleGroupList({userId: userInfo.value.userId, pageSize: page.value, pageNum: limit.value});
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
             })
+        // dataList.value = await handleGroupList({userId: userInfo.value.userId, pageNum: page.value, pageSize: limit.value});
     }
     /**
      * @description 修改群组名称
      * @param index 下标
      */
-    const handleEditGroupName = (index: number, item: any) => {
-        data.value[index].isEdit = true;
-        updateGroupInfo({id: item.id, groupName: item.groupName, users: item.users});
+    const handleEditGroupName = async(index: number, item: any) => {
+        if(!item.groupName) {
+            ElMessage.warning('群组名称不可为空！');
+            return;
+        }
+        dataList.value[index].isEdit = true;
+        updateGroupInfo({id: item.id, groupName: item.groupName});
     }
     /**
      * @description 编辑群组人员
@@ -246,8 +266,8 @@
         peopleIds.value = Array.from(new Set(row.users.map((item: any) => item.userId)));
         groupInfo.value = {
             id: row.id,
-            groupName: row.groupName,
         }
+
         addGroupVisible.value = true;
     }
 
@@ -255,19 +275,25 @@
      * @description 删除群组会议
      * @param id 要删除群组的id
      */
-    const handleDeleteMeeting = (id: string,) => {
-        ElMessageBox.confirm('是否确定删除群组', {
+    const handleDeleteMeeting = async(id: string,) => {
+        await ElMessageBox.confirm('是否确定删除群组', {
             customClass: 'delete-box'
         })
-            .then(() => {
-                deleteMeetingGroup({id}).then(res => {
-                    handleGroupList({userId: userInfo.value.userId, pageSize: page.value, pageNum: limit.value});
+        .then(() => {
+             deleteMeetingGroup({id})
+                .then(res => {
                     ElMessage.success('删除成功!');
-                }).catch(err => {});
-            })
-            .catch(() => {
-                ElMessage.info('已取消删除！');
-            })
+                }).catch(err => {})
+                .finally(() => {
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                });
+        })
+        .catch(() => {
+            ElMessage.info('已取消删除！');
+        })
+        // dataList.value = await handleGroupList({userId: userInfo.value.userId, pageNum: page.value, pageSize: limit.value});
     }
 
 </script>
@@ -360,7 +386,7 @@
                     color: #666666;
                     font-size: 1.25rem;
                     text-align: center;
-                    font-weight: 600;
+                    font-weight: 300;
                 }
                 &::-webkit-scrollbar {
                     width: 1.1rem;

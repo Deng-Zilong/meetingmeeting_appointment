@@ -70,10 +70,12 @@
                             <div>{{ item.stateValue }}</div>
                             <!-- 操作 -->
                             <div>
+                                <div v-show="item.status == 0 && item.createdBy == currentUserId">
+                                    <p @click="handleEditMeeting(item)" >修改</p>
+                                    <p @click="handleCancelMeeting(item.id)">取消</p>
+                                </div>
                                 <!-- <p @click="handleEditMeeting(item)" v-show="item.status == 0">修改</p>
                                 <p @click="handleCancelMeeting(item.id)" v-show="item.status == 0">取消</p> -->
-                                <p @click="handleEditMeeting(item)" >修改</p>
-                                <p @click="handleCancelMeeting(item.id)" v-show="item.status == 0">取消</p>
                             </div>
                         </div>
                     </el-timeline-item>
@@ -122,8 +124,11 @@
     import { cancelMeetingRecord, getHistoryList } from '@/request/api/history'
     import { meetingState } from '@/utils/types'
     
-    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    const userInfo = ref<any>(JSON.parse(localStorage.getItem('userInfo') as string));
     const router = useRouter();
+    
+
+    const currentUserId = userInfo.value?.userId; // 当前登录人id
 
     const timelineRef = ref(null); // 获取dom节点
     let loading = ref(true); // 页面loading
@@ -146,65 +151,12 @@
     //     status: string;
     //     operate: string;
     // }
-    // 数据列表
-    // let list = ref([
-    //      {
-    //         id: 1,
-    //         title: "test会议1",
-    //         description: "会议内容1",
-    //         createdBy: "dzl",
-    //         adminUserName: "邓子龙",
-    //         meetingRoomId: 4,
-    //         meetingRoomName: "会议室4",
-    //         location: 4,
-    //         meetingNumber: 3,
-    //         attendees: "邓子龙,邓子龙,邓子龙,邓子龙,邓",
-    //         startTime: "2024-04-30 11:22:10",
-    //         endTime: "2024-04-30 11:23:11",
-    //         status: 0,
-    //         isDeleted: 0,
-    //         date: '2024-04-30'
-    //     },
-    //     {
-    //         id: 1,
-    //         title: "test会议1111111111111111111111",
-    //         description: "会议内容1",
-    //         createdBy: "dzl",
-    //         adminUserName: "邓子龙",
-    //         meetingRoomId: 4,
-    //         meetingRoomName: "会议室4",
-    //         location: 4,
-    //         meetingNumber: 3,
-    //         attendees: "卢振兴,翟臣宇,杨家乐,寇梦梦,杨家乐,寇梦梦,杨家乐,寇梦梦,杨家乐,杨家乐,寇梦梦,杨家乐杨家乐,寇梦梦,杨家乐",
-    //         startTime: "2024-04-30 11:22:10",
-    //         endTime: "2024-04-30 11:23:11",
-    //         status: 2,
-    //         isDeleted: 0,
-    //         date: '2024-04-30'
-    //     },
-    //     {
-    //         id: 1,
-    //         title: "test会议1",
-    //         description: "会议内容1",
-    //         createdBy: "dzl",
-    //         adminUserName: "邓子龙",
-    //         meetingRoomId: 4,
-    //         meetingRoomName: "EN-2F-02 恰谈室会议室是事实会",
-    //         location: 4,
-    //         meetingNumber: 3,
-    //         attendees: "邓子龙,zhangsan,lisi",
-    //         startTime: "2024-12-29 11:22:10",
-    //         endTime: "2024-04-30 11:23:11",
-    //         status: 2,
-    //         isDeleted: 0,
-    //         date: '2024-04-29'
-    //     },
-        
-    // ])
     
     onMounted(async() => {
-        data.value = await getData({userId: userInfo.userId, page: page.value, limit: limit.value});
-        loading.value = false;
+        // data.value = await getData({userId: userInfo.value.userId, page: page.value, limit: limit.value});
+        await getDataOnScroll();
+        console.log(data.value, "data.value");
+        
     })
 
     /**
@@ -237,33 +189,43 @@
      */
     const getData = async(data: {userId: number | string, page: number, limit: number}) => {
         let list:any = [];
+        let total:number = 0;
         await getHistoryList(data)
             .then((res) => {
                 list = processData(res.data);
-            }).catch(err => {})
+                total = res.data?.length;
+            })
+            .catch(err => {})
             .finally(() => {
                 loading.value = false;
             });
                 
-        return list;
+        return {
+            data: list,
+            total,
+        };
     }
 
     // 滚动加载
     const getDataOnScroll = async () => {
         // 中断处理
         if (!canLoadMore.value || isLoading.value) return;
+
         // 打开loading
         isLoading.value = true;
         // 延迟请求
         await new Promise((resolve) => setTimeout(resolve, 2000));
         // 发送请求
-        const newData = await getData({userId: userInfo.value.userId, page: page.value, limit: limit.value});
+        const {data: newData, total} = await getData({userId: userInfo.value?.userId, page: page.value, limit: limit.value});
+        
         // 若返回数据长度小于限制 停止加载
-        if(newData.length < limit.value) {
+        if(total < limit.value) {
             canLoadMore.value = false;
         }
         // 合并数据
         data.value = [...data.value, ...newData];
+        console.log(data.value, 11111, newData);
+        
         // page + 1
         page.value++;
         // 关闭loading
@@ -282,8 +244,6 @@
     );
 
     const handleEditMeeting = (item: any) => {
-        console.log(item);
-        
         router.push({
             path: 'meeting-appoint',
             query: {
@@ -296,7 +256,8 @@
                 meetingRoomName: item.meetingRoomName,
                 status: item.status,
                 createdBy: item.createdBy,
-                users: item.users,
+                userName: item.adminUserName,
+                users: JSON.stringify(item.users),
             }
         })
     }
@@ -306,20 +267,26 @@
      * @param time 
      * @param index 
      */
-    const handleCancelMeeting = (id: number) => {
+    const handleCancelMeeting = async(id: number) => {
         // isCancelMeeting.value = true;
-        ElMessageBox.confirm('是否确定取消会议？', {
+       await ElMessageBox.confirm('是否确定取消会议？', {
             buttonSize: 'small',
         })
         .then(() => {
-            cancelMeetingRecord({userId: userInfo.userId, meetingId: id})
-            .then((res) => {
-                ElMessage.success('取消成功!');
-                getData({userId: userInfo.value.userId, page: page.value, limit: limit.value})
-            })
-            .catch(err => {})
+            cancelMeetingRecord({userId: userInfo.value.userId, meetingId: id})
+                .then((res) => {
+                    ElMessage.success('取消成功!');
+                })
+                .catch(err => {})
+                .finally(() => {
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                })
         })
         .catch(() => {})
+        // const {data: list, total} = await getData({userId: userInfo.value?.userId, page: 1, limit: limit.value});
+        // data.value = list;
     }
     
     // // 取消会议弹窗开关
