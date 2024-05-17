@@ -3,8 +3,8 @@ package com.jfzt.meeting.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.constant.IsDeletedConstant;
 import com.jfzt.meeting.constant.MessageConstant;
-import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.MeetingNotice;
 import com.jfzt.meeting.entity.vo.MeetingNoticeVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
@@ -16,8 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.jfzt.meeting.context.BaseContext.removeCurrentLevel;
 
 /**
  * @author xuchang.yang
@@ -65,6 +63,7 @@ public class MeetingNoticeServiceImpl extends ServiceImpl<MeetingNoticeMapper, M
     public Result<List<String>> selectAll(MeetingNotice meetingNotice) {
         List<MeetingNotice> meetingNotices = meetingNoticeMapper.selectList(new QueryWrapper<>());
         return Result.success(meetingNotices.stream()
+                .filter(notice -> IsDeletedConstant.NOT_DELETED.equals(notice.getIsDeleted()))
                 .map(MeetingNotice::getSubstance)
                 .collect(Collectors.toList()));
     }
