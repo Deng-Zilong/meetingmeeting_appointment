@@ -97,7 +97,7 @@
         // 获取被选中成员的id
         peopleIds.value = form.peopleIds;
         // 获取被选中人员的 信息将创建人信息添加进去并去重
-        groups.value = Array.from(new Set( [...form.groups, creator]));
+        groups.value = Array.from(new Set( [...form.groups, creator.value]));
         
         // 创建群组
         if (type == 1) {

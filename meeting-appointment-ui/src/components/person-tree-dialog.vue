@@ -59,6 +59,10 @@
     import { defineProps, defineEmits, ref, getCurrentInstance, watch, onMounted, nextTick } from 'vue';
     import { getGroupUserTree } from '@/request/api/group'
 
+    const userInfo = ref<any>(JSON.parse(localStorage.getItem('userInfo') as string) || '');
+    const currentUserId = ref<string>(userInfo.value.userId);
+    const currentUserName = ref<string>(userInfo.value.name);
+
     // 获取父组件传值
     const props = defineProps<{
         modelValue: boolean
@@ -122,20 +126,17 @@
             if (item.treeUsers && item.treeUsers.length > 0) {
               const userListNode = item.treeUsers.map((user: any) => {
                 if (props.type == 4 && user.level == 2) {
-                  console.log(11111);
-                  
                     user.departmentName = user.userName;
-                  user.isTreeUsersNode = true;
-                  return user;
+                    user.isTreeUsersNode = true;
+                    return user;
                 }
                 if (props.type !== 4) {
                     user.departmentName = user.userName;
-                  user.isTreeUsersNode = true;
-                  return user;
+                    user.isTreeUsersNode = true;
+                    return user;
                 }
               }).filter((item: any) => item !== undefined)
-                console.log(userListNode, "userListNode");
-                
+
                 // 将这个虚拟节点插入到 childrenPart 的最前面
                 item.childrenPart.unshift(...userListNode);
             }
@@ -211,9 +212,10 @@
             if (active.value == 1 && treeGroupRef.value) {
                 handleGroupTree();
             }
-            allIds.value = [...groupPersonIds.value, ...addGroupForm.value.peopleIds];
-            allName.value = [...groupUserNames.value, ...addGroupForm.value.groupPeopleNames];
-            allInfo.value = [...groupUserInfo.value, ...addGroupForm.value.groups];
+            allIds.value = Array.from(new Set([...groupPersonIds.value, ...addGroupForm.value.peopleIds, currentUserId.value ]));
+            allName.value = Array.from(new Set([...groupUserNames.value, ...addGroupForm.value.groupPeopleNames, currentUserName.value]));
+            allInfo.value = Array.from(new Set([...groupUserInfo.value, ...addGroupForm.value.groups, {userId: currentUserId.value, userName: currentUserName.value}]));
+            
             return emit ('submitDialog',props.type, active.value, allIds.value, allName.value, allInfo.value);
             
         }

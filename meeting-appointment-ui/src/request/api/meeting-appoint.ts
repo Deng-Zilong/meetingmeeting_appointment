@@ -11,5 +11,5 @@ export const updateMeetingRecord = (data: {id: string, createdBy: string, meetin
 
 // 根据时间段查询可用会议室
 export const availableMeetingRooms = (data: {startTime: string, endTime: string}) => {
-    return http.put("/meeting/createMeeting/availableMeetingRooms", data)
+    return http.get("/meeting/createMeeting/availableMeetingRooms", data)
 }
