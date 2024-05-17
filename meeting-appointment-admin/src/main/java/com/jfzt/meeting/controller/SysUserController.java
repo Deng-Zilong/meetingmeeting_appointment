@@ -71,7 +71,7 @@ public class SysUserController {
      * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
      */
-    @GetMapping("/selectName")
+    @GetMapping("/select-name")
     public Result<List<String>> selectList(SysUser sysUser, @RequestParam("currentLevel") Integer currentLevel){
         return sysUserService.selectAll(sysUser, currentLevel);
 
@@ -83,7 +83,7 @@ public class SysUserController {
      * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
      */
-    @GetMapping("/selectAdmin")
+    @GetMapping("/select-admin")
     public Result<List<SysUser>> selectAdmin(@RequestParam("currentLevel") Integer currentLevel){
         return sysUserService.selectAdmin(currentLevel);
     }
@@ -93,7 +93,7 @@ public class SysUserController {
      * @param adminDTO 用户DTO对象
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
-    @PutMapping("/deleteAdmin")
+    @PutMapping("/delete-admin")
     public Result<Integer> deleteAdmin (@RequestBody AdminDTO adminDTO) {
         return sysUserService.deleteAdmin(adminDTO.getUserId());
     }
@@ -104,7 +104,7 @@ public class SysUserController {
      * @param adminDTO 用户DTO对象
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
-    @PutMapping("/addAdmin")
+    @PutMapping("/add-admin")
     public Result<Integer> addAdmin (@RequestBody AdminDTO adminDTO) {
         return sysUserService.addAdmin(adminDTO.getUserIds());
     }

@@ -35,7 +35,7 @@ public class MeetingRecordController {
      * @return {@code Result<Integer>}
      * @description 查询当日会议总数
      */
-    @GetMapping("/index/queryRecordNumber")
+    @GetMapping("/index/query-record-rumber")
     public Result<Integer> queryRecordNumber () {
         return Result.success(meetingRecordService.getRecordNumber());
     }
@@ -45,7 +45,7 @@ public class MeetingRecordController {
      * @return {@code Result<List<MeetingRecordVO>>}
      * @description 查询用户当天所有参与的今日会议记录
      */
-    @GetMapping("/index/todayMeetingRecord")
+    @GetMapping("/index/today-meeting-record")
     public Result<List<MeetingRecordVO>> queryRecordVoList (@RequestParam String userId) {
         List<MeetingRecordVO> recordvoList = meetingRecordService.getRecordVoList(userId);
         return Result.success(recordvoList);
@@ -58,7 +58,7 @@ public class MeetingRecordController {
      * @return {@code Result<List<MeetingRecordVO>>}
      * @description 根据用户id查询用户所有历史会议记录
      */
-    @GetMapping("/meetingRecord/allMeetingRecord")
+    @GetMapping("/meeting-record/all-meeting-record")
     public Result<List<MeetingRecordVO>> getRecordPage (@RequestParam String userId, @RequestParam Long page, @RequestParam Long limit) {
         List<MeetingRecordVO> recordVoList = meetingRecordService.getAllRecordVoListPage(userId, page, limit);
         return Result.success(recordVoList);
@@ -69,7 +69,7 @@ public class MeetingRecordController {
      *
      * @return {@code Result<String>}
      */
-    @PutMapping("/index/cancelMeetingRecord")
+    @PutMapping("/index/cancel-meeting-record")
     public Result<String> cancelMeetingRecord (@RequestBody UpdateMeetingDTO updateMeetingDTO) {
         return meetingRecordService.cancelMeetingRecord(updateMeetingDTO.getUserId(), updateMeetingDTO.getMeetingId());
     }
@@ -80,7 +80,7 @@ public class MeetingRecordController {
      *
      * @return {@code Result<String>}
      */
-    @DeleteMapping("/index/deleteMeetingRecord")
+    @DeleteMapping("/index/delete-meeting-record")
     public Result<String> deleteMeetingRecord (@RequestParam String userId, @RequestParam Long meetingId) {
         return meetingRecordService.deleteMeetingRecord(userId, meetingId);
     }
@@ -90,7 +90,7 @@ public class MeetingRecordController {
      * @return com.jfzt.meeting.common.Result<java.util.Objects>
      * @Description 新增会议
      */
-    @PostMapping("/index/addMeetingRecord")
+    @PostMapping("/index/add-meeting-record")
     public Result<Objects> addMeetingRecord (@RequestBody MeetingRecordDTO meetingRecordDTO) {
         return meetingRecordService.addMeeting(meetingRecordDTO);
     }
@@ -100,7 +100,7 @@ public class MeetingRecordController {
      * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingRecordVO>>
      * @Description 更新会议
      */
-    @PutMapping("/index/updateMeetingRecord")
+    @PutMapping("/index/update-meeting-record")
     public Result<List<MeetingRecordVO>> updateMeetingRecord (@RequestBody MeetingRecordDTO meetingRecordDTO) {
         return meetingRecordService.updateMeeting(meetingRecordDTO);
     }
@@ -112,7 +112,7 @@ public class MeetingRecordController {
      * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingRecordVO>>
      * @description 查询所有会议记录
      */
-    @GetMapping("/meetingRecord/selectAllMeetingRecord")
+    @GetMapping("meeting-record/select-all-meeting-record")
     public Result<List<MeetingRecordVO>> getRecordPage (@RequestParam Long pageNum, @RequestParam Long pageSize, @RequestParam("currentLevel") Integer currentLevel) {
         return meetingRecordService.getAllMeetingRecordVoListPage(pageNum, pageSize, currentLevel);
     }

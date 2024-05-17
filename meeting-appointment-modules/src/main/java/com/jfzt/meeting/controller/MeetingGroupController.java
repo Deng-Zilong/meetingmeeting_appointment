@@ -18,7 +18,7 @@ import java.util.List;
  */
 
 @RestController
-@RequestMapping("/meeting/meetingGroup")
+@RequestMapping("/meeting/meeting-group")
 public class MeetingGroupController {
 
     @Resource
@@ -29,7 +29,7 @@ public class MeetingGroupController {
      * @Description 群组查询
      * @Param [userId]
      */
-    @GetMapping("/getMeetingGroupList")
+    @GetMapping("/get-meeting-group-list")
     public Result<List<MeetingGroupVO>> getMeetingGroupList (MeetingGroupPageDTO meetingGroupPageDTO)  {
         return meetingGroupService.checkGroup(meetingGroupPageDTO.getPageNum(),
                                               meetingGroupPageDTO.getPageSize(),
@@ -41,7 +41,7 @@ public class MeetingGroupController {
      * @Description 群组添加
      * @Param [meetingGroupDTO]
      */
-    @PostMapping("/addMeetingGroup")
+    @PostMapping("/add-meeting-group")
     public Result<Object> addMeetingGroup (@RequestBody MeetingGroupDTO meetingGroupDTO) {
         return meetingGroupService.addMeetingGroup(meetingGroupDTO);
     }
@@ -52,7 +52,7 @@ public class MeetingGroupController {
      * @Param [meetingGroupDTO]
      */
 
-    @PutMapping("/updateMeetingGroup")
+    @PutMapping("/update-meeting-group")
     public Result<Object> updateMeetingGroup (@RequestBody MeetingGroupDTO meetingGroupDTO) {
         return meetingGroupService.updateMeetingGroup(meetingGroupDTO);
     }
@@ -62,7 +62,7 @@ public class MeetingGroupController {
      * @Description 群组删除
      * @Param [meetingGroupDTO]
      */
-    @DeleteMapping("/deleteMeetingGroup")
+    @DeleteMapping("/delete-meeting-group")
     public Result<Object> deleteMeetingGroup (@RequestParam Long id) {
         return meetingGroupService.deleteMeetingGroup(id);
     }

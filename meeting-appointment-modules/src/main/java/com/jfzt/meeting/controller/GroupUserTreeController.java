@@ -17,7 +17,7 @@ import java.util.List;
  */
 
 @RestController
-@RequestMapping("/meeting/groupUserTree")
+@RequestMapping("/meeting/group-user-tree")
 public class GroupUserTreeController {
 
     @Resource
@@ -30,7 +30,7 @@ public class GroupUserTreeController {
      * @Param [userName]
      * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.SysDepartment>>
      */
-    @GetMapping("/getGroupUserTree")
+    @GetMapping("/get-group-user-tree")
     public Result<List<SysDepartment>> getGroupUserTree(){
         return sysDepartmentUserService.gainUsers();
     }
@@ -40,7 +40,7 @@ public class GroupUserTreeController {
      * @Param [name]
      * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.SysUserVO>>
      */
-    @GetMapping("/likeByName")
+    @GetMapping("/like-by-name")
     public Result<List<SysUserVO>> likeByName (@RequestParam String name){
         return sysUserService.findByName(name);
     }
