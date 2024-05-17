@@ -351,10 +351,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
             }
             // 查询所有会议记录
-            Page<MeetingRecord> meetingRecordPage = this.baseMapper.selectPage(new Page<>(pageNum, pageSize), new QueryWrapper<>());
+            Page<MeetingRecord> meetingRecordPage = this.baseMapper.selectPage(new Page<>(pageNum, pageSize), new LambdaQueryWrapper<MeetingRecord>().notIn(MeetingRecord::getStatus, MEETING_RECORD_STATUS_CANCEL));
             // 构建MeetingRecordVO列表
             return Result.success(meetingRecordPage.getRecords().stream()
-                    .filter(record -> !Objects.equals(record.getStatus(), MEETING_RECORD_STATUS_CANCEL))
                     .map(record -> {
                         MeetingRecordVO recordVO = new MeetingRecordVO();
                         record = updateRecordStatus(record);

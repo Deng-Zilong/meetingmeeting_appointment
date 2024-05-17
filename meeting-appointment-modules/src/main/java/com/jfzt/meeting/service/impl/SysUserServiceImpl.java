@@ -86,6 +86,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
     }
 
+
     /**
      * 新增管理员
      * @param userIds 用户id
