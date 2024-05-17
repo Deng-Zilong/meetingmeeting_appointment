@@ -261,12 +261,16 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                         //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
                         .between(MeetingRecord::getStartTime, finalStartTime, finalEndTime.minusSeconds(1))
                         //结束时间在时间段内 前不含后含  8-9属于8.5-9不属于9-9.5
-                        .or().between(MeetingRecord::getEndTime, finalStartTime.plusSeconds(1), finalEndTime)
+                        .or()
+                        .between(MeetingRecord::getEndTime, finalStartTime.plusSeconds(1), finalEndTime)
                         //时间段包含在开始时间(含)和结束时间(含)之间    8-9 属于8-8.5属于8.5-9
-                        .or().lt(MeetingRecord::getStartTime, finalStartTime.plusSeconds(1)).gt(MeetingRecord::getEndTime, finalEndTime.minusSeconds(1)));
+                        .or()
+                        .lt(MeetingRecord::getStartTime, finalStartTime.plusSeconds(1))
+                        .gt(MeetingRecord::getEndTime, finalEndTime.minusSeconds(1)));
                 //没有逻辑删除
                 recordQueryWrapper.and(recordQueryWrapper1 -> recordQueryWrapper1.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
-                        .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING));
+                        .or()
+                        .eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING));
                 List<MeetingRecord> meetingRecords = meetingRecordService.list(recordQueryWrapper);
                 //根据会议室id收集获得占用不同会议室的数量
                 long size = meetingRecords.stream().collect(Collectors.groupingBy(MeetingRecord::getMeetingRoomId))
