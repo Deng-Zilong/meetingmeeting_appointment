@@ -3,14 +3,14 @@
     <div class="theme">
       <div class="theme-left">
         <div class="left-common meeting-set">
-          <el-checkbox-group v-model="checkList">
+          <el-checkbox-group v-model="checkList" :style="{ width: userInfo.level === 0 ? '85.62%' : '89.67%'}">
             <el-checkbox v-for="item in checkItem" :label="item.label" :value="item.id" @change="changeCheckAll(item)" />
           </el-checkbox-group>
           <div class="text">会议室禁用设置</div>
         </div>
         <div class="left-common meeting-bulletin">
-          <el-input v-model="input" placeholder="请输入公告" />
-          <div class="text upload-text" @click="uploadBulletin(input)">上传公告</div>
+          <el-input v-model="input" placeholder="请输入公告" :style="{ width: userInfo.level === 0 ? '88%' : '91.8%'}" />
+          <div class="text upload-text" @click="uploadBulletin(input)">上传新公告</div>
         </div>
       </div>
       <div class="theme-right" v-if="userInfo.level === 0">
@@ -24,7 +24,7 @@
             @close-dialog="closeAddPersonDialog" 
             @submit-dialog="handleCheckedPerson" />
             
-        <el-popover trigger="click" :width="180" :popper-style="{ maxHeight: '250px', overflow: 'auto'}">
+        <el-popover trigger="hover" :width="180" :popper-style="{ maxHeight: '250px', overflow: 'auto'}">
           <template #reference>
             <div class="operate-people">
               操作管理员<el-icon><arrow-down /></el-icon>
@@ -47,24 +47,26 @@
         <div class="title">会议状态</div>
         <div class="title">其他</div>
       </div>
-      <div class="table-container" ref="timelineRef">
-        <div v-for="(value, index) in manageData">
-          <div class="table-left">
-            <p>{{ value.month }}月</p>
-            <p>{{ value.day }}</p>
-          </div>
-          <div class="table-main">
-            <div class="table-tr" v-for="(item, index) in value.list">
-              <div class="tr-cell">{{ item.meetingRoomName }}</div>
-              <div class="tr-cell">{{ item.time }}</div>
-              <div class="tr-cell">{{ item.title }}</div>
-              <div class="tr-cell attend-cell">{{ item.attendees }}</div>
-              <div class="tr-cell">{{ item.stateValue }}</div>
-              <div class="tr-cell"></div>
+      <div class="table-container">
+        <el-timeline ref="timelineRef">
+          <el-timeline-item  placement="top" v-for="(value, index) in manageData">
+            <div class="table-left">
+              <p>{{ value.month }}月</p>
+              <p>{{ value.day }}</p>
             </div>
-          </div>
-        </div>
-        <div class="loading" v-show="isLoading">数据加载中......</div>
+            <div class="table-main">
+              <div class="table-tr" v-for="(item, index) in value.list">
+                <div class="tr-cell">{{ item.meetingRoomName }}</div>
+                <div class="tr-cell">{{ item.time }}</div>
+                <div class="tr-cell">{{ item.title }}</div>
+                <div class="tr-cell attend-cell">{{ item.attendees }}</div>
+                <div class="tr-cell">{{ item.stateValue }}</div>
+                <div class="tr-cell"></div>
+              </div>
+            </div>
+          </el-timeline-item>
+          <div class="loading" v-show="isLoading">数据加载中......</div>
+        </el-timeline>
       </div>
     </div>
   </div>
@@ -129,7 +131,7 @@
     
     onMounted(() => {
       userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}');  // 用户信息
-
+      // userInfo.value.level = 1
       getUsableRoom({ currentLevel: userInfo.value.level }) // 查询未被禁用的会议室
       getSelectAdmin()  // 查询所有管理员
       getDataOnScroll()
@@ -393,7 +395,7 @@
       height: 90px;
       margin-bottom: 10px;
       .theme-left {
-        min-width: 80%;
+        // min-width: 80%;
         width: 100%;
         height: 2.8rem;
         .left-common {
@@ -412,16 +414,12 @@
             display: flex;
             align-items: center;
             justify-content: space-evenly;
-            width: 86%;
-            // min-width: 85%;
             background: #FFF;
             border-radius: .5rem;
           }
         }
         .meeting-bulletin {
           :deep().el-input {
-            width: 89%;
-            // max-width: 89%;
             .el-input__wrapper {
               border-radius: .5rem;
               box-shadow: none;
@@ -437,22 +435,50 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        width: 20%;
+        width: 16%;
         height: 70%;
         background: #FFF;
         border-radius: .5rem;
         margin-top: .8rem;
         padding: 0 0.8rem;
+        // padding-left: 0.8rem;
         .plus-icon {
+          position: relative;
           width: 1.9rem;
           height: 1.9rem;
-          color: #3268DC;
-          background: #ECF2FF;
+          // color: #3268DC;
+          // background: #ECF2FF;
+          color: #FFF;
+          background: #409EFF;
+          border-radius: 1.5rem;
           cursor: pointer;
+          &::after {
+            content: '新增管理员';
+            display: none;
+            position: absolute;
+            left: -50%;
+            bottom: 110%;
+            width: 60px;
+            font-size: 0.75rem;
+            font-style: normal;
+            border: 1px solid #cecccc;
+            border-radius: .5rem;
+            color: #535353;
+            background: rgb(243, 242, 242);
+            padding: 10px;
+          }
+          &:hover::after {
+            display: block;
+          }
         }
         .operate-people {
+            color: #FFF;
+            background: #409EFF;
+            border-radius: 1.5rem;
+            padding: .5rem .8rem;
           &:hover {
-            color: #409EFF;
+            // color: #409EFF;
+            color: #000;
             cursor: pointer;
           }
           .el-icon {
@@ -484,17 +510,19 @@
       }
       .table-th {
         margin-left: 2.5rem;
+        margin-right: 30px;
         .title {
           padding: 10px 0; // 单独控制头部上下内边距
         }
       }
       .table-container {
-        position: relative;
+        // position: relative;
         max-height: 92%;
         overflow-y: auto;
+        padding-right: 10px;
         .table-left {
           position: absolute;
-          top: 1.25rem;
+          top: .55rem;
           text-align: center;
           p:first-child {
             // font-size: 1.1rem;
@@ -509,13 +537,14 @@
           }
         }
         .table-main {
+          font-size: 1rem;
           margin-left: 2.5rem;
           .table-tr {
             color: #666;
             background: #FFF;
             border-radius: 0.9375rem;
             margin: 10px 0;
-            padding: 25px 0; // 单独控制单元行上下内边距
+            padding: 20px 0; // 单独控制单元行上下内边距
             .tr-cell {
               text-wrap: nowrap;
               overflow: hidden;

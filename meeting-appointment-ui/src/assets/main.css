@@ -23,12 +23,12 @@
 }
 
 /* 去除历史记录中时间线的padding */
-.history .el-timeline-item__wrapper {
+ .el-timeline-item__wrapper {
   padding-left: 0 !important;
 }
 
 /* 改变 时间线中日期的样式 */
-.history .el-timeline-item__timestamp {
+ .el-timeline-item__timestamp {
   display: inline;
   position: absolute;
   left: 1.125rem;
@@ -36,7 +36,7 @@
 }
 
 /* 隐藏时间线的线条和节点 */
-.history .el-timeline-item__tail,
+.el-timeline-item__tail,
 .el-timeline-item__node {
   display: none !important;
 }
