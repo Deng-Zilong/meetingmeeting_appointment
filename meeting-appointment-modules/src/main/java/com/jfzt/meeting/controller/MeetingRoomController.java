@@ -69,11 +69,11 @@ public class MeetingRoomController {
     /**
      * 根据时间段查询可用会议室
      *
-     * @param timePeriodDTO 时间段
+     * @param 时间段
      * @return {@code Result<List<MeetingRoomVO>>}
      */
-    @PostMapping("/createMeeting/availableMeetingRooms")
-    public Result<List<MeetingRoomVO>> getAvailableMeetingRooms (@RequestBody TimePeriodDTO timePeriodDTO) {
+    @GetMapping("/createMeeting/availableMeetingRooms")
+    public Result<List<MeetingRoomVO>> getAvailableMeetingRooms (TimePeriodDTO timePeriodDTO) {
         return meetingRoomService.getAvailableMeetingRooms(timePeriodDTO.getStartTime(), timePeriodDTO.getEndTime());
     }
 
@@ -99,6 +99,7 @@ public class MeetingRoomController {
 
     /**
      * 修改会议室状态
+     *
      * @param meetingRoomDTO 会议室DTO对象
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
@@ -110,8 +111,9 @@ public class MeetingRoomController {
 
     /**
      * 查询被禁用的会议室的id
+     *
      * @param currentLevel 当前登录用户的权限等级
-     * @return com.jfzt.meeting.common.Result<java.util.List<<java.lang.Integer>>
+     * @return com.jfzt.meeting.common.Result<java.util.List < < java.lang.Integer>>
      */
     @GetMapping("/index/allRoom")
     public Result<List<Long>> selectUsableRoom (@RequestParam("currentLevel") Integer currentLevel) {

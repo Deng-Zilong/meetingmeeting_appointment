@@ -102,8 +102,9 @@ import { addMeetingGroup, getMeetingGroupList } from '@/request/api/group'
 import { addMeetingRecord, availableMeetingRooms, updateMeetingRecord } from '@/request/api/meeting-appoint'
 
 const routes = useRoute();
+const router = useRouter();
 const userInfo = ref<any>(JSON.parse(localStorage.getItem('userInfo') as string) || '');
-const currentUserId = userInfo.value.userId;
+const currentUserId = ref<string>(userInfo.value.userId);
 
 const isCreate = ref(true); // 是否是创建会议 true创建 false修改
 
@@ -170,6 +171,7 @@ let timeStart = ref('8:00'); // 开始时间
 let timeEnd = ref('22:30'); // 结束时间
 let minStartTime = ref('8:00'); // 开始最小可选时间
 let minEndTime = ref('8:00'); // 结束最小可选时间
+const seconds = dayjs(new Date()).format('ss'); // 获取当前时间的秒
 
 // 会议室数组
 const roomArr = ref<any>([
@@ -246,8 +248,8 @@ const closeAddPersonDialog = () => {
  */
 const handleChangeEndTime = (value: any) => {
     availableMeetingRooms({
-        startTime: dayjs(formData.value.date).format('YYYY-MM-DD') + ' ' + formData.value.startTime,
-        endTime: dayjs(formData.value.date).format('YYYY-MM-DD') + ' ' + value,
+        startTime: dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${formData.value.startTime}:${seconds}`,
+        endTime: dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${value}:${seconds}`,
     })
     .then(res => {
         roomArr.value = res.data;
@@ -274,6 +276,16 @@ const formData = ref<any>({
     checked: false,
     groupName: '',
 })
+const validateGroupName = (rule: any, value: any, callback: any) => {
+    if (formData.value.checked) {
+        if (!formData.value.groupName) {
+            callback(new Error('请填写群组名称'))
+        } else {
+            callback()
+        }
+    }
+    callback();
+}
 const rules = reactive<FormRules<typeof formData>>({
     title: [
         { required: true, message: '请输入会议主题', trigger: 'blur' }
@@ -292,6 +304,9 @@ const rules = reactive<FormRules<typeof formData>>({
     ],
     meetingRoomId: [
         { required: true, message: '请选择会议室', trigger: 'blur' }
+    ],
+    groupName: [
+        {trigger: 'blur', validator: validateGroupName }
     ]
 })
 
@@ -304,14 +319,15 @@ const submitForm = (formEl: FormInstance | undefined) => {
             formData.value.adminUserName = userInfo.value.userName;
         }
         const {createdBy, adminUserName, meetingRoomId, title, status, description,startTime, endTime, users, groupName, checked} = formData.value;
+        
         const params = ref<any>({
             createdBy,
             meetingRoomId,
             title,
             status,
             description,
-            startTime: dayjs(new Date()).format('YYYY-MM-DD') + ' ' + startTime + ':00' ,
-            endTime: dayjs(new Date()).format('YYYY-MM-DD') + ' ' + endTime + ':00',
+            startTime: dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${startTime}:${seconds}`,
+            endTime: dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${endTime}:${seconds}`,
             users,
             groupName,
         })
@@ -332,20 +348,20 @@ const submitForm = (formEl: FormInstance | undefined) => {
             addMeetingRecord(params.value)
                 .then((res) => {
                    ElMessage.success('创建成功！');
-                }).catch((err) => {
-                    console.log(err)
-                })
+                   setTimeout(() => {
+                        router.push('/home');
+                    }, 1000)
+                }).catch((err) => {})
         } else {
             params.value.id = formData.value.id;
             updateMeetingRecord(params.value)
                 .then((res) => {
                    ElMessage.success('创建成功！');
-                }).catch((err) => {
-                    console.log(err)
-                })
+                   setTimeout(() => {
+                        router.push('/home');
+                    }, 1000)
+                }).catch((err) => {})
         }
-        getGroupList();
-        // location.reload();
     })
 }
 
