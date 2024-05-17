@@ -17,7 +17,7 @@
                     <!-- 验证码 -->
                     <el-form-item prop="captcha">
                         <el-row :gutter="20">
-                            <el-col :span="12"><el-input v-model="ruleForm.captcha"></el-input></el-col>
+                            <el-col :span="12"><el-input v-model="ruleForm.captcha" @keyup.enter="submitForm(ruleFormRef)"></el-input></el-col>
                             <el-col :span="12">
                                 <div class="captcha" @click="changeCaptcha">
                                     <el-image :src="imgUrl" draggable="false" />
@@ -27,7 +27,7 @@
                     </el-form-item>
                     <!-- 登录 -->
                     <el-form-item>
-                        <el-button type="primary" @click="submitForm(ruleFormRef)">
+                        <el-button type="primary" @click="submitForm(ruleFormRef)" v-loading="loginBtnLoading">
                             登录
                         </el-button>
                     </el-form-item>
@@ -54,7 +54,8 @@ import { getCaptcha } from '@/request/api/login'
 
 // 用户信息
 const userStore = useUserStore();
-const ruleFormRef = ref<FormInstance>()
+const ruleFormRef = ref<FormInstance>();
+let loginBtnLoading = ref<boolean>(false);
 // 登录验证
 const ruleForm = reactive({
     name: '',
@@ -109,12 +110,12 @@ const changeLogin = () => {
 }
 // 账号登录 
 const submitForm = async (formEl: FormInstance | undefined) => {
-
     if (!formEl) return
     formEl.validate((valid) => {
         if (valid) {
             const { name, password, captcha } = ruleForm;
             userStore.getUserInfo({ name, password, code: captcha, uuid: uuid.value });
+            loginBtnLoading.value
         } else {
             // openVn()
             return false
@@ -133,13 +134,11 @@ const code = () => {
         appid: 'ww942086e6c44abc4b',
         agentid: '1000002',
         login_type: 'CorpApp',
-        redirect_uri: 'http%3A%2F%2Flzzxx.cn%2F%23%2Fhome',
+        redirect_uri:  'http%3A%2F%2Flzzxx.cn%2F%23%2Fhome',
         state: 'WWLogin',
         "lang": "zh",
     });
 }
-
-
 </script>
 
 <style scoped lang="scss">

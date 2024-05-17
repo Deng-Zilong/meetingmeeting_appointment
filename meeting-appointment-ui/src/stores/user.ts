@@ -31,6 +31,7 @@ export const useUserStore = defineStore('user',()=>{
     const getQWUserInfo= (code: string)=>{
         qwLogin({code})
                 .then((res: any) => {
+                    localStorage.setItem('userInfo', JSON.stringify(res.data));
                     userInfo = res.data;
                     ElMessage.success('登陆成功!');
                 })
