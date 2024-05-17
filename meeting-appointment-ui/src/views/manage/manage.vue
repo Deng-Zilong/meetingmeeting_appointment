@@ -281,20 +281,21 @@
      * @param data 获取的数据
      */
      const processData = (data: any[]) => {
-      return data.reduce((acc: any, current: any) => {
-        const obj = acc.find((group: any) => group.date === current.date);
-        const month = dayjs(current.startTime).format('M');
-        const day = dayjs(current.startTime).format('D');
-        current.time = `${dayjs(current.startTime).format('HH:mm')} - ${dayjs(current.endTime).format('HH:mm')}`;
-        current.stateValue = meetingState.find((item: any) => item.value === current.status)?.label;
-        
-        if (obj) {
-            obj.list.push(current);
-        } else {
-            acc.push({ date: current.date, month: month, day: day, list: [current] });
-        }
-        return acc;
-      }, []);
+        return data.reduce((acc: any, current: any) => {
+            current.date = dayjs(current.startTime).format('YYYY-MM-DD')
+            const obj = acc.find((group: any) => group.date === current.date);
+            const month = dayjs(current.startTime).format('M');
+            const day = dayjs(current.startTime).format('D');
+            current.time = `${dayjs(current.startTime).format('HH:mm')} - ${dayjs(current.endTime).format('HH:mm')}`;
+            current.stateValue = meetingState.find((item: any) => item.value === current.status)?.label;
+
+            if (obj) {
+                obj.list.push(current);
+            } else {
+                acc.push({ date: current.date, month: month, day: day, list: [current] });
+            }
+            return acc;
+        }, []);
     }
 
     /**

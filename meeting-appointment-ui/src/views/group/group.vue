@@ -19,9 +19,13 @@
                 <div>群组人员</div>
                 <div>操作</div>
             </div>
-            <div class="list-container" ref="timelineRef">
-                <div class="timeline-item" >
-                    <div v-for="(item, index) in dataList" :key="index" class="card-item">
+            <el-timeline class="list-container" ref="timelineRef">
+                <el-timeline-item class="timeline-item" v-for="(value, index) in dataList" :key="index">
+                    <div class="timestamp">
+                        <p><span>{{value.month}}</span>月</p>
+                        <p>{{value.day}}</p>
+                    </div>
+                    <div class="card-item" v-for="(item, index) in value.list" :key="index">
                         <div>{{ item.userName }}</div>
                         <div>{{ item.editTime }}</div>
                         <div v-if="item.isEdit"> 
@@ -34,9 +38,9 @@
                         <div><el-icon @click="editAttendees(item)" v-show="item.createdBy == currentUserId"> <Edit /></el-icon> <p class="ellipsis">{{ item.members }}</p></div>
                         <div @click="handleDeleteMeeting(item.id)"><span v-show="item.createdBy === currentUserId">删除</span></div>
                     </div>
-                </div>
+                </el-timeline-item>
                 <div class="loading" v-show="isLoading">数据加载中......</div>
-            </div>
+            </el-timeline>
         </div>
         <!-- 添加群组成员弹窗 -->
         <personTreeDialog
@@ -50,10 +54,10 @@
     </div>
 </template>
 <script lang="ts" setup>
-    import { ref, reactive, onMounted, getCurrentInstance } from 'vue'
+    import { ref, onMounted } from 'vue'
     import { ElMessage, ElMessageBox, ElTree, dayjs  } from 'element-plus'
     import { Plus } from '@element-plus/icons-vue'
-    import { getMeetingGroupList, deleteMeetingGroup, updateMeetingGroup, addMeetingGroup, getGroupUserTree } from '@/request/api/group'
+    import { getMeetingGroupList, deleteMeetingGroup, updateMeetingGroup, addMeetingGroup } from '@/request/api/group'
     import personTreeDialog from "@/components/person-tree-dialog.vue";
     import { useInfiniteScroll } from '@vueuse/core'
 
@@ -166,6 +170,30 @@
     //     users: [],            // 群组成员
     //     member?: string,
     // }
+    
+    /**
+     * @description 处理列表数据
+     * @param data 获取的数据
+     */
+     const processData = (data: any[]) => {
+         return data.reduce((acc: any, current: any) => {
+            current.date = dayjs(current.gmtCreate).format('YYYY-MM-DD');
+            const obj = acc.find((group: any) => group.date === current.date);
+            const month = dayjs(current.gmtCreate).format('M');
+            const day = dayjs(current.gmtCreate).format('D');
+            current.members = current.users.map((user: any) => user.userName).join(',');
+            current.editTime = dayjs(current.gmtCreate).format('HH:mm:ss');
+            // 群组名称是否可编辑
+            current.isEdit = true;
+
+            if (obj) {
+                obj.list.push(current);
+            } else {
+                acc.push({ date: current.date, month: month, day: day, list: [current] });
+            }
+            return acc;
+        }, []);
+    }
 
     /**
      * @description 获取群组列表
@@ -176,14 +204,7 @@
         await getMeetingGroupList(data)
             .then(res => {
                 total = res.data.length;
-                list = res.data.map((item: any) => {
-                    // 获取成员名称并用逗号连接
-                    item.members = item.users.map((user: any) => user.userName).join(',');
-                    item.editTime = dayjs(item.gmtModified).format('HH:mm');
-                    // 群组名称是否可编辑
-                    item.isEdit = true;
-                    return item
-                });
+                list = processData(res.data);
             })
             .catch((err) => {})
             .finally(() => {
@@ -212,6 +233,7 @@
         
         // 合并数据
         dataList.value = [...dataList.value, ...newData];
+        
         // page + 1
         page.value++;
         // 关闭loading
@@ -308,8 +330,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            width: 97.8rem;
-            margin: 0 auto;
             .left {
                 width: 47rem;
                 div {
@@ -395,6 +415,24 @@
                     text-align: center;
                     font-weight: 300;
                 }
+                .timestamp {
+                    position: absolute;
+                    top: 0;
+                    left: 2rem;
+                    text-align: center;
+                    p:first-child {
+                        font-size: 1rem;
+                        font-weight: 600;
+                        color: #676767;
+                        margin-bottom: .625rem;
+                    }
+                    p:last-child {
+                        font-size: 1.2rem;
+                        font-weight: 600;
+                        color: #3A3A3A;
+                    }
+                }
+                
                 &::-webkit-scrollbar {
                     width: 1.1rem;
                     border-radius: .9375rem;
@@ -411,7 +449,7 @@
                     border-radius: .9375rem;
                 }
                 .card-item {
-                    height: 4.75rem;
+                    height: 3.75rem;
                     border-radius: .625rem;
                     background: #FFFFFF;
                     box-shadow: 0 .1875rem .125rem 0 rgba(0, 0, 0, 0.04);

@@ -81,22 +81,6 @@
                 </el-timeline>
             </div>
         </div>
-        <!-- <div class="meeting-dialog">
-            <el-dialog
-                v-model="isCancelMeeting"
-                align-center
-                :show-close="false"
-                :close-on-click-modal="false"
-            >
-                <p class="meeting-text">是否确定取消会议？</p>
-                <template #footer>
-                <div class="dialog-footer">
-                    <el-button size="large" @click="isCancelMeeting = false"> 取 消 </el-button>
-                    <el-button size="large" type="primary" @click="handleConfirm"> 确 认 </el-button>
-                </div>
-                </template>
-            </el-dialog>
-        </div> -->
         <div class="transmit-dialog" >
             <el-dialog
                 v-model="isTransmitMeeting"
@@ -286,13 +270,6 @@
         // const {data: list, total} = await getData({userId: userInfo.value?.userId, page: 1, limit: limit.value});
         // data.value = list;
     }
-    
-    // // 取消会议弹窗开关
-    // let isCancelMeeting = ref<boolean>(false);
-    // /**
-    //  * @description 确认取消会议
-    //  */
-    // const handleConfirm = () =>{}
 
     let isTransmitMeeting = ref<boolean>(false);
     let message = ref<string>('已成功复制到剪贴板');
@@ -302,7 +279,7 @@
      */
     const transmitMeeting = (item: any) => {
         address.value = 
-        `会议主题: ${item.title}\n发起人: ${item.adminUserName}\n会议日期: ${item.date}\n会议时间: ${item.time}\n会议地点: ${item.meetingRoomName}\nURL: http://ggssyy.cn/#/login`;
+        `会议主题: ${item.title}\n发起人: ${item.adminUserName}\n会议日期: ${item.date}\n会议时间: ${item.time}\n会议地点: ${item.meetingRoomName}\nURL: http://llzzxx.cn/#/login`;
         isTransmitMeeting.value = true;
         navigator.clipboard.writeText(address.value).then(() => {})
         .catch(() => {

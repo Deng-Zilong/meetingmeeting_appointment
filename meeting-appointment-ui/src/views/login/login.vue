@@ -101,10 +101,11 @@ const isShow = ref(false)
 const changeLogin = () => {
     isShow.value = !isShow.value;
     if (!isShow.value) {
-        nextTick(() => {
+        return nextTick(() => {
             code();
         })
     }
+    changeCaptcha();
 }
 // 账号登录 
 const submitForm = async (formEl: FormInstance | undefined) => {
@@ -122,7 +123,6 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 }
 
 onMounted(() => {
-    changeCaptcha();
     code();
 });
 
@@ -133,7 +133,7 @@ const code = () => {
         appid: 'ww942086e6c44abc4b',
         agentid: '1000002',
         login_type: 'CorpApp',
-        redirect_uri: 'http%3A%2F%2Fggssyy.cn%2F%23%2Fhome',
+        redirect_uri: 'http%3A%2F%2Flzzxx.cn%2F%23%2Fhome',
         state: 'WWLogin',
         "lang": "zh",
     });
