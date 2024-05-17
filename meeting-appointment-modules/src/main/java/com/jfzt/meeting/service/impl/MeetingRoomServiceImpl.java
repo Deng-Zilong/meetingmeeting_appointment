@@ -298,7 +298,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      * @return {@code Result<List<TimePeriodStatusVO>>}
      */
     @Override
-    public Result<List<TimePeriodStatusVO>> isBusyByIdAndDate (Long id, LocalDate date) {
+    public Result<List<Integer>> isBusyByIdAndDate (Long id, LocalDate date) {
         if (id == null || date == null) {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
         }
@@ -306,13 +306,16 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         List<TimePeriodStatusVO> timePeriodStatusVOList = new LinkedList<>();
         LocalDateTime startTime = LocalDateTime.of(date, LocalTime.of(8, 0));
         LocalDateTime endTime = startTime.plusMinutes(30);
+        List<Integer> timeStatus = new LinkedList<>();
         for (int i = 0; i < 30; i++) {
-            TimePeriodStatusVO timePeriodStatusVO = new TimePeriodStatusVO();
+            //            TimePeriodStatusVO timePeriodStatusVO = new TimePeriodStatusVO();
             //判断是否过期
             if (now.isAfter(startTime)) {
-                timePeriodStatusVO.setStartTime(startTime);
-                timePeriodStatusVO.setEndTime(endTime);
-                timePeriodStatusVO.setStatus(TIME_PERIOD_OVERDUE);
+                //                timePeriodStatusVO.setStartTime(startTime);
+                //                timePeriodStatusVO.setEndTime(endTime);
+                //                timePeriodStatusVO.setStatus(TIME_PERIOD_OVERDUE);
+                timeStatus.add(i, TIME_PERIOD_OVERDUE);
+
             } else {
                 LambdaQueryWrapper<MeetingRecord> recordQueryWrapper = new LambdaQueryWrapper<>();
                 recordQueryWrapper.eq(MeetingRecord::getMeetingRoomId, id);
@@ -331,28 +334,30 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 List<MeetingRecord> meetingRecords = meetingRecordService.list(recordQueryWrapper);
                 //判断是否被占用
                 if (!meetingRecords.isEmpty()) {
-                    MeetingRecord meetingRecord = meetingRecords.getFirst();
-                    timePeriodStatusVO.setStartTime(startTime);
-                    timePeriodStatusVO.setEndTime(endTime);
-                    timePeriodStatusVO.setStatus(TIME_PERIOD_BUSY);
-                    timePeriodStatusVO.setMeetingTitle(meetingRecord.getTitle());
-                    SysUser user = userService.getOne(new LambdaQueryWrapper<SysUser>()
-                            .eq(SysUser::getUserId, meetingRecord.getCreatedBy()));
-                    if (user != null) {
-                        timePeriodStatusVO.setMeetingAdminUserName(user.getUserName());
-                    }
+                    //                    MeetingRecord meetingRecord = meetingRecords.getFirst();
+                    //                    timePeriodStatusVO.setStartTime(startTime);
+                    //                    timePeriodStatusVO.setEndTime(endTime);
+                    //                    timePeriodStatusVO.setStatus(TIME_PERIOD_BUSY);
+                    //                    timePeriodStatusVO.setMeetingTitle(meetingRecord.getTitle());
+                    //                    SysUser user = userService.getOne(new LambdaQueryWrapper<SysUser>()
+                    //                            .eq(SysUser::getUserId, meetingRecord.getCreatedBy()));
+                    //                    if (user != null) {
+                    //                        timePeriodStatusVO.setMeetingAdminUserName(user.getUserName());
+                    //                    }
+                    timeStatus.add(i, TIME_PERIOD_BUSY);
                 } else {
-                    timePeriodStatusVO.setStartTime(startTime);
-                    timePeriodStatusVO.setEndTime(endTime);
-                    timePeriodStatusVO.setStatus(TIME_PERIOD_AVAILABLE);
+                    //                    timePeriodStatusVO.setStartTime(startTime);
+                    //                    timePeriodStatusVO.setEndTime(endTime);
+                    //                    timePeriodStatusVO.setStatus(TIME_PERIOD_AVAILABLE);
+                    timeStatus.add(i, TIME_PERIOD_AVAILABLE);
                 }
             }
-            timePeriodStatusVOList.add(timePeriodStatusVO);
+            //            timePeriodStatusVOList.add(timePeriodStatusVO);
 
             startTime = startTime.plusMinutes(30);
             endTime = endTime.plusMinutes(30);
         }
-        return Result.success(timePeriodStatusVOList);
+        return Result.success(timeStatus);
     }
 
     /**
@@ -395,6 +400,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             MeetingRoomVO meetingRoomVO = new MeetingRoomVO();
             meetingRoomVO.setMeetingRoomId(meetingRoom.getId());
             meetingRoomVO.setRoomName(meetingRoom.getRoomName());
+            meetingRoomVO.setStatus(meetingRoom.getStatus());
             meetingRoomVOList.add(meetingRoomVO);
         }
         return Result.success(meetingRoomVOList);
