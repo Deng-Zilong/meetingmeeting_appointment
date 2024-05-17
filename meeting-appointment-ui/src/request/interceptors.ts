@@ -11,8 +11,7 @@ export function ReqResolve(req: InternalAxiosRequestConfig) {
     const token = userInfo.accessToken
         ? userInfo.accessToken
         : "";
-        // console.log(token, "token");
-        
+
     // if (!token) {
     //   return Promise.reject({ code: 401, message: "登录已过期，请重新登录！" });
     // }

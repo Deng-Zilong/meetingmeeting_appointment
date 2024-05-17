@@ -134,7 +134,7 @@ const code = () => {
         appid: 'ww942086e6c44abc4b',
         agentid: '1000002',
         login_type: 'CorpApp',
-        redirect_uri:  'http%3A%2F%2Flzzxx.cn%2F%23%2Fhome',
+        redirect_uri:  'http%3A%2F%2Fllzzxx.cn%2F%23%2Fhome',
         state: 'WWLogin',
         "lang": "zh",
     });
