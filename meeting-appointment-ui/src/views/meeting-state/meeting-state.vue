@@ -8,7 +8,7 @@
       <div class="meeting-left">
         <div class="meeting-left-date">
           <el-date-picker v-model="date" type="date" class="left-date" :disabled-date="disabledDate"
-            placeholder="选择日期" />
+            placeholder="选择日期" @change="changeDate" />
         </div>
         <div class="left-table">
           <div class="table-title">会议预约时间选择</div>
@@ -54,22 +54,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { dayjs } from 'element-plus';
 
 // 导入图片地址
 import chamber from '@/assets/img/chamber.png'
 import address from '@/assets/img/address.png'
 import capacity from '@/assets/img/capacity.png'
 import device from '@/assets/img/device.png'
-import { getTimeBusyData } from '@/request/api/home'
+import { getBusyData } from '@/request/api/home'
 
 const loading = ref(true)  // 获取数据loading
 const routes = useRoute();  // 用于传数据
 const router = useRouter() // 用于选择时间段
 
-const date = ref(new Date())  // 会议日期选择
-const currentMeetingId = ref(routes.query.id);  // 会议室id
+const date = ref<any>(new Date())  // 会议日期选择
+const currentMeetingId = ref<any>(routes.query.id);  // 会议室id
 const title = ref(routes.query.title);  // 会议室名称
 const locate = ref(routes.query.address);  // 会议室位置
 const time = ref(new Date().toLocaleTimeString().substring(0, 5))  // 显示当前时间点
@@ -124,24 +125,31 @@ const disabledDate = (date: any) => {  // 禁止选择今日之前的日期
 
 setInterval(() => {  // 更新 时间 会议室名称、位置
   time.value = new Date().toLocaleTimeString().substring(0, 5) 
-
-  currentMeetingId.value = routes.query.id
-  title.value = routes.query.title
-  locate.value = routes.query.address
 }, 100)
 
+
 onMounted(() => {
-  getTimeBusy()
   loading.value = false
 })
 
-const getTimeBusy = async () => {
-  let res:any = await getTimeBusyData()
+/**
+ * @description  每个会议室的时间状态
+ * @param {id} 会议室id
+ * @param {date} 日期
+*/
+const getBusy = async (data: {id: number, date: string}) => {
+  let res: any = await getBusyData(data)
+  // currentMeetingId.value = routes.query.id
   timeArr.value.forEach((item: any, index: number) => {
     item.state = res.data[index];
   })
 }
-// 时间段状态
+const changeDate = (val: any) => {
+  getBusy({ id: currentMeetingId.value, date: dayjs(val).format('YYYY-MM-DD') })
+}
+
+
+// 时间段状态  0：已过期1：已占用2：可预约
 const timeColor = computed(() => (state: any) => {
   switch (state) {
     case 0:
@@ -165,6 +173,14 @@ const selectTime = (item: any) => {
     })
   }
 }
+
+// 监听会议室页面切换时 传的值是否变化
+watch(() => router.currentRoute.value.query, (newValue: any) => {
+  currentMeetingId.value = newValue.id
+  title.value = newValue.title
+  locate.value = newValue.address
+  getBusy({ id: currentMeetingId.value, date: dayjs(date.value).format('YYYY-MM-DD') })  // 切换会议室时 调用会议室接口
+}, { immediate: true })
 
 
 </script>
