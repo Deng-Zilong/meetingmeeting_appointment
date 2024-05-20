@@ -12,7 +12,3 @@ spring:
             password: meetingredis
             database: 0
 
-
-
-
-

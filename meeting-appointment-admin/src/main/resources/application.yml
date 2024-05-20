@@ -6,7 +6,7 @@ spring:
   application:
     name: meeting-appointment
   profiles:
-    active: dev
+    active: prod
     include: db,log,common,modules,quartz
   # application.yml
   jackson:
@@ -34,3 +34,15 @@ mybatis-plus:
 logging:
   level:
     com.jfzt.meeting: debug
+sky:
+  jwt:
+    # 设置jwt签名加密时使用的秘钥
+    admin-secret-key: itcast
+    # 设置jwt过期时间
+    admin-ttl: 7200000000000
+    # 设置前端传递过来的令牌名称
+    admin-token-name: token
+    user-secret-key: jfzt
+    user-ttl: 7200000000000
+
+    user-token-name: authorization

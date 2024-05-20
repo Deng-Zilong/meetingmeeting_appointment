@@ -2,7 +2,7 @@ import http from "@/request/http";
 
 // 企业微信扫码登录
 export const qwLogin = (data: {code: string}) => {
-    return http.get("http://114.116.235.18:8080/meeting/user/info", data)
+    return http.get("/meeting/user/info", data)
 }
 
 // 账号密码登录

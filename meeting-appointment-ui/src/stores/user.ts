@@ -36,7 +36,7 @@ export const useUserStore = defineStore('user',()=>{
                     ElMessage.success('登陆成功!');
                 })
                 .catch((err: any) => {
-                    router.replace('/login');
+                    // router.replace('/login');
                     return err;
                 })
     }

@@ -1,19 +1,27 @@
 package com.jfzt.meeting.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.dto.AdminDTO;
 import com.jfzt.meeting.entity.vo.UserInfoVO;
+import com.jfzt.meeting.properties.JwtProperties;
 import com.jfzt.meeting.service.SysDepartmentUserService;
 import com.jfzt.meeting.service.SysUserService;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.cp.bean.WxCpUser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static com.jfzt.meeting.utils.JwtUtil.createJWT;
 
 
 /**
@@ -22,6 +30,7 @@ import java.util.List;
  * @author zhenxing.lu
  * @since 2024-04-30 10.13:51
  */
+@Slf4j
 @RestController
 @RequestMapping("/meeting/user")
 public class SysUserController {
@@ -31,10 +40,13 @@ public class SysUserController {
     private SysUserService sysUserService;
 
     @Resource
-    private RedisTemplate<String,String> redisTemplate;
+    private RedisTemplate<String,Object> redisTemplate;
 
     @Resource
     private SysDepartmentUserService sysDepartmentUserService;
+    @Autowired
+    private JwtProperties jwtProperties;
+
 
 
     /**
@@ -56,11 +68,21 @@ public class SysUserController {
             //获取部门人员
             sysDepartmentUserService.findDepartmentUser(departmentLength);
         }
-        userInfoVO.setAccessToken(accessToken);
-        userInfoVO.setUserId(wxUser.getUserId());
-        userInfoVO.setName(wxUser.getName());
-        userInfoVO.setLevel(wxUser.getIsLeader());
-        redisTemplate.opsForValue().set("userInfo"+wxUser.getUserId(), String.valueOf(userInfoVO), Duration.ofHours(2));
+        //登录成功后，生成jwt令牌
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sysUserId", wxUser.getUserId());
+        String token = createJWT(
+                jwtProperties.getAdminSecretKey(),
+                jwtProperties.getAdminTtl(),
+                claims);
+
+        UserInfoVO userInfo = UserInfoVO.builder()
+                .accessToken(token)
+                .userId(wxUser.getUserId())
+                .name(wxUser.getName())
+                .level(wxUser.getIsLeader())
+                .build();
+        redisTemplate.opsForValue().set("userInfo"+userInfo.getUserId(), JSONObject.toJSONString(userInfo), Duration.ofHours(24));
         return Result.success(userInfoVO);
     }
 
