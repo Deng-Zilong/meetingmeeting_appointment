@@ -38,10 +38,21 @@
                         <div v-else>
                             <el-input v-model="item.groupName" @blur="handleEditGroupName(index, item)" />
                         </div>
-                        <div><el-icon @click="editAttendees(item)" v-show="item.createdBy == currentUserId">
+                        <div>
+                            <el-icon @click="editAttendees(item)" v-show="item.createdBy == currentUserId">
                                 <Edit />
                             </el-icon>
-                            <p class="ellipsis">{{ item.members }}</p>
+                            <el-popover
+                                placement="bottom"
+                                :disabled="item.members?.length < 18"
+                                :width="300"
+                                trigger="hover"
+                                :content="item.members"
+                            >
+                                <template #reference>
+                                    <p class="ellipsis">{{ item.members }}</p>
+                                </template>
+                            </el-popover>
                         </div>
                         <div @click="handleDeleteMeeting(item.id)"><span
                                 v-show="item.createdBy === currentUserId">删除</span></div>
