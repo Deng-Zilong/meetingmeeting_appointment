@@ -429,6 +429,16 @@
             justify-content: space-evenly;
             background: #FFF;
             border-radius: .5rem;
+            :deep().el-checkbox__input.is-checked .el-checkbox__inner {
+              background: #FFF;  // 勾选中的小框背景色
+              border-color: red;  // 勾选中的小框边框颜色
+              &::after {
+                border-color: red;  // 勾选中的小框内 ✔的颜色
+              }
+            }
+            :deep().el-checkbox__input.is-checked+.el-checkbox__label {
+              color: red;  // 勾选中的字体颜色
+            }
           }
         }
         .meeting-bulletin {

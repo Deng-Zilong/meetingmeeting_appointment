@@ -314,10 +314,8 @@ const operate = computed(() => (item: any) => {
   if (item.status === 0 && item.createdBy === userInfo.value.userId) {
     return '修改';
     // 暂定 状态为"已取消"时 且 登陆人员=创建者时(item.createdBy === userInfo.value.userId)  可删除
-  } else if (item.status === 3 && item.createdBy === userInfo.value.userId) {
-    return '删除';
   } else {
-    return '';
+    return '删除';
   }
 })
 
@@ -340,7 +338,23 @@ const getTodayRecord = (data: { userId: string }) => {
 const modifyMeeting = (item: any) => {
   // 会议-未开始 且 登陆人员=创建者时(item.createdBy === userInfo.value.userId) 才可以修改
   if (item.status === 0 && item.createdBy === userInfo.value.userId) {
-    router.push('/meeting-appoint')
+    console.log(item,'修改')
+    router.push({
+      path: 'meeting-appoint',
+      query: {
+          id: item.id,
+          meetingRoomId: item.meetingRoomId,
+          title: item.title,
+          description: item.description,
+          startTime: item.startTime,
+          endTime: item.endTime,
+          meetingRoomName: item.meetingRoomName,
+          status: item.status,
+          createdBy: item.createdBy,
+          userName: item.adminUserName,
+          users: JSON.stringify(item.users),
+      }
+    })
   }
 }
 
@@ -350,12 +364,17 @@ const modifyMeeting = (item: any) => {
  * @param {meetingId} 会议id
  */
 
-const delMeeting = (item: any,index: number) => {
+const delMeeting = (item: any, index: number) => {  
   ElMessageBox.confirm('是否确定删除会议？')
   .then(() => {
-    getDeleteMeetingRecordData({userId: item.userId ,meetingId: item.meetingId})
-    tableData.value.splice(index, 1);
-    ElMessage.success('删除成功')
+    getDeleteMeetingRecordData({ userId: item.createdBy, meetingId: item.id })  // 删除会议室接口
+      .then((res) => {
+        ElMessage.success('删除成功')
+        getTodayRecord({ userId: userInfo.value.userId })
+      })
+      .catch((err) => {        
+        console.log(err,'删除会议记录err')
+      })
   })
   .catch(() => {
     ElMessage.info('取消删除')
@@ -700,12 +719,13 @@ const getNotice = async () => {
         .table-th {
           display: flex;
           text-align: center;
+          padding-bottom: 0.375rem;
           .title {
-            width: 180px;
+            width: 11.25rem;
           }
         }
         .table-main {
-          max-height: 19.5rem;
+          max-height: 18.6rem;
           overflow-y: auto;
           .table-tr {
             display: flex;

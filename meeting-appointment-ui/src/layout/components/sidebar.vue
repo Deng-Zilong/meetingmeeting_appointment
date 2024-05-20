@@ -25,7 +25,7 @@
     import { useRouter} from 'vue-router'
 
     const userInfo = JSON.parse(localStorage.getItem('userInfo') as string); // 当前登录的用户信息
-    const level = ref(userInfo.level); // 用户等级 0超级管理员 1管理员 2普通用户
+    const level = ref(userInfo?.level); // 用户等级 0超级管理员 1管理员 2普通用户
 
     const router = useRouter();
     // 当前路由
