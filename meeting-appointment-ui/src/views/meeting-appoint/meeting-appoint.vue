@@ -111,21 +111,19 @@ const isCreate = ref(true); // 是否是创建会议 true创建 false修改
 onMounted(() => {
     if (routes.query?.id) {
         isCreate.value = false;
-        const { id, meetingRoomId, title, description, meetingRoomName, status, createdBy, adminUserName } = routes.query;
-        const startTime: any = routes.query.startTime;
-        const endTime: any = routes.query.endTime;
+        const { id, meetingRoomId, title, description, meetingRoomName, status, createdBy, adminUserName, startTime, endTime } = routes.query;
     
         const users:any = JSON.parse(routes.query.users as string);
         const meetingPeople = Array.from(new Set(users?.map((el: any) => el.userName))).join(',');
         const meetingUserIds = Array.from(new Set(users.map((el: any) => el.userId)));
-        
+        // 重组 form 表单数据
         formData.value = {
             id: id,
             meetingRoomId: Number(meetingRoomId),
-            title: title || '',
+            title,
             description,
-            startTime: dayjs(startTime).format('HH:mm'),
-            endTime: dayjs(endTime).format('HH:mm'),
+            startTime: dayjs(startTime as string).format('HH:mm'),
+            endTime: dayjs(endTime as string).format('HH:mm'),
             meetingRoomName,
             meetingPeople,
             meetingUserIds,
@@ -137,14 +135,16 @@ onMounted(() => {
             groupName: '',
         }
     }
-    // 会议室
-    if (routes.query?.meetingRoomId || routes.query?.startTime) {
+
+    // 会议室 处理传参数据
+    if ((routes.query?.meetingRoomId || routes.query?.startTime) && !routes.query?.id) {
         formData.value.meetingRoomId = routes.query?.meetingRoomId ? Number(routes.query.meetingRoomId) : '';
         formData.value.startTime = routes.query?.startTime ? routes.query?.startTime : dayjs(new Date()).format('HH:mm');
+        console.log(1111);
+
     }
     minEndTime.value = minStartTime.value = formData.value.startTime ? formData.value.startTime : dayjs(new Date()).format('HH:m');
-    
-    // if ()
+
     // 获取群组列表
     getGroupList();
 })
@@ -171,7 +171,7 @@ let timeStart = ref('8:00'); // 开始时间
 let timeEnd = ref('22:30'); // 结束时间
 let minStartTime = ref('8:00'); // 开始最小可选时间
 let minEndTime = ref('8:00'); // 结束最小可选时间
-const seconds = dayjs(new Date()).format('ss'); // 获取当前时间的秒
+const seconds = ('00'); // 获取当前时间的秒
 
 // 会议室数组
 const roomArr = ref<any>([

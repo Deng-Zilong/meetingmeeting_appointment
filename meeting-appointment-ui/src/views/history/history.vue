@@ -205,8 +205,18 @@
             canLoadMore.value = false;
         }
         // 合并数据
-        data.value = [...data.value, ...newData];
-        console.log(data.value, 11111, newData);
+        data.value = await [ ...data.value, ...newData].reduce((acc: any, cur: any) => {
+            
+            // 找出数组中日期一样的item
+            const obj = acc.find((item:any) => cur.date == item.date);
+            // 如果存在，将它的list push到已有日期的list中
+            if (obj) {
+                obj.list.push(...cur.list);
+            } else {
+                acc.push(cur)
+            }
+            return acc;
+        }, []);
         
         // page + 1
         page.value++;

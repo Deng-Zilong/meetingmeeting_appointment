@@ -178,8 +178,8 @@ const timeArr = ref([  // 预约时间点及该时间点可预约状态
 let tableData = ref<any>([]) // 预约情况数据
 
 onMounted(async () => {
-   /* 判断扫码登录状态 */
-   const code = decodeURIComponent(route.query.code as string);
+    /* 判断扫码登录状态 */
+    const code = decodeURIComponent(route.query.code as string);
     userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}');
     const token = userInfo.value?.accessToken;
     
