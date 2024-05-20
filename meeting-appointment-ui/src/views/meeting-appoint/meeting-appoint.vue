@@ -92,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import type { ComponentSize, FormInstance, FormRules } from 'element-plus'
 import { ElMessage, dayjs } from 'element-plus'
@@ -139,8 +139,9 @@ onMounted(() => {
     // 会议室 处理传参数据
     if ((routes.query?.meetingRoomId || routes.query?.startTime) && !routes.query?.id) {
         formData.value.meetingRoomId = routes.query?.meetingRoomId ? Number(routes.query.meetingRoomId) : '';
-        formData.value.startTime = routes.query?.startTime ? routes.query?.startTime : dayjs(new Date()).format('HH:mm');
+        formData.value.startTime = routes.query?.startTime ? routes.query?.startTime : '';
     }
+    // 获取当前可选时间
     minEndTime.value = minStartTime.value = formData.value.startTime ? formData.value.startTime : dayjs(new Date()).format('HH:m');
 
     // 获取群组列表
@@ -165,6 +166,7 @@ const handleAddPerson = () => {
 const disabledDate = (date: any) => {
     return date.getTime() < Date.now() - 8.64e7
 }
+
 let timeStart = ref('8:00'); // 开始时间
 let timeEnd = ref('22:30'); // 结束时间
 let minStartTime = ref('8:00'); // 开始最小可选时间
@@ -202,11 +204,11 @@ const roomArr = ref<any>([
 
 // 添加参会人员弹窗表单数据
 let addPersonForm = ref<any>({
-    visible: false,
-    type: 3,
-    title: '添加参会人员',
-    list: [],
-    personIds: [],
+    visible: false,        // 弹窗开关
+    type: 3,               // 弹窗类型 1: 创建群组 2: 修改群组人员 3: 添加参会人员 4: 添加管理员
+    title: '添加参会人员',  // 弹窗标题
+    list: [],              // 弹窗数据
+    personIds: [],         // 选中的人员ids，用于节点树回显
 })
 
 /**
@@ -225,10 +227,12 @@ const getGroupList = () => {
 
 /**
  * @description 获取添加参会人员
- * @param type 1: 创建群组 2: 修改群组人员 3: 从群组添加人员 4: 添加管理员
+ * @param type 1: 创建群组 2: 修改群组人员 3: 添加参会人员 4: 添加管理员
  */
 const handleCheckedPerson = (type: number, tab: number, userIds: any, userNames: any, userInfo: any) => {
+    // 用逗号拼接选中人员的名字
     formData.value.meetingPeople = userNames.join(',');
+    // 用逗号拼接选中人员的id
     addPersonForm.value.personIds = userIds.join(',');
     formData.value.users = userInfo;
     closeAddPersonDialog();
@@ -262,18 +266,31 @@ const formData = ref<any>({
     // id: '',
     meetingRoomId: '',   // 会议室id
     title: '',           // 会议主题
-    description: '',
-    startTime: '',
-    endTime: '',
-    meetingRoomName: '',
-    status: 0,
-    createdBy: '',
-    adminUserName: '',
-    users: [],
-    date: dayjs(new Date()).format('YYYY-MM-DD'),
-    checked: false,
-    groupName: '',
+    description: '',     // 会议描述
+    startTime: '',       // 会议开始时间
+    endTime: '',         // 会议结束时间
+    meetingRoomName: '', // 会议室名称
+    status: 0,           // 会议室状态 默认为0
+    createdBy: '',       // 创建人id
+    adminUserName: '',   // 创建人姓名
+    users: [],           // 参会人员
+    date: dayjs(new Date()).format('YYYY-MM-DD'),  // 日期 yy-mm-dd
+    checked: false,      // 是否添加为群组
+    groupName: '',       // 群组名称
 })
+watch(()=>formData.value.date, (newValue)=> {
+    // 如果选中的日期大于今天的日期 则默认最小可选时间为8:00
+    if (newValue.getTime() > new Date().getTime()) {
+        return minStartTime.value = '7:59';
+    }
+    // 清空开始和结束时间
+    formData.value.startTime = '';
+    formData.value.endTime = '';
+    // 重置开始最小可选时间
+    minStartTime.value = dayjs(new Date()).format('HH:m');
+    
+})
+// 验证群组名称
 const validateGroupName = (rule: any, value: any, callback: any) => {
     if (formData.value.checked) {
         if (!formData.value.groupName) {
@@ -307,7 +324,10 @@ const rules = reactive<FormRules<typeof formData>>({
         {trigger: 'blur', validator: validateGroupName }
     ]
 })
-
+/**
+ * @description 提交表单
+ * @param formEl 表单实例
+ */
 const submitForm = (formEl: FormInstance | undefined) => {
     if (!formEl) return
     formEl.validate((valid) => {
@@ -316,8 +336,9 @@ const submitForm = (formEl: FormInstance | undefined) => {
             formData.value.createdBy = userInfo.value.userId;
             formData.value.adminUserName = userInfo.value.userName;
         }
+        // 解构所需数据
         const {createdBy, adminUserName, meetingRoomId, title, status, description,startTime, endTime, users, groupName, checked} = formData.value;
-        
+        // 重组参数
         const params = ref<any>({
             createdBy,
             meetingRoomId,
@@ -329,19 +350,20 @@ const submitForm = (formEl: FormInstance | undefined) => {
             users,
             groupName,
         })
+        // 是否添加为群组
         if (checked) {
-            if (!groupName) {
-                return ElMessage.warning('请输入群组名称！');
-            }
             addMeetingGroup({
-            groupName, 
-            createdBy, 
-            userName: adminUserName, 
-            users: users,
-        })
-            .then(res => {})
-            .catch(err => {})
+                groupName, 
+                createdBy, 
+                userName: adminUserName, 
+                users: users,
+            })
+                .then(res => {
+                    ElMessage.success("添加群组成功！")
+                })
+                .catch(err => {})
         }
+        // 创建会议
         if (isCreate.value) {
             addMeetingRecord(params.value)
                 .then((res) => {
@@ -351,6 +373,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
                     }, 1000)
                 }).catch((err) => {})
         } else {
+            // 修改会议
             params.value.id = formData.value.id;
             updateMeetingRecord(params.value)
                 .then((res) => {
