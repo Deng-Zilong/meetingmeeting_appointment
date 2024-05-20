@@ -13,7 +13,7 @@
                 <img src="@/assets/img/groupicon.png" alt="">
                 <span>群组管理</span>
             </el-menu-item>
-            <el-menu-item index="/manage" class="menu-item" :class="currentPath == '/manage' ? 'active menu-item' : ' menu-item'">
+            <el-menu-item index="/manage" class="menu-item" :class="currentPath == '/manage' ? 'active menu-item' : ' menu-item'" v-show="level != 2">
                 <img src="@/assets/img/manageicon.png" alt="">
                 <span>后台管理</span>
             </el-menu-item>
@@ -23,6 +23,9 @@
 <script setup lang="ts">
     import { ref, watch} from 'vue';
     import { useRouter} from 'vue-router'
+
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') as string); // 当前登录的用户信息
+    const level = ref(userInfo.level); // 用户等级 0超级管理员 1管理员 2普通用户
 
     const router = useRouter();
     // 当前路由

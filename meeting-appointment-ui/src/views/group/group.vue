@@ -324,10 +324,8 @@ const handleDeleteMeeting = async (id: string,) => {
                     ElMessage.success('删除成功!');
                     // 重置页码
                     page.value = 1;
-                    // dataList.value = [];
                     // 获取数据
                     await getDataOnScroll();
-                    console.log(dataList.value, 2222);
                 }).catch(err => { })
                 .finally(() => {
                     
@@ -336,7 +334,6 @@ const handleDeleteMeeting = async (id: string,) => {
         .catch(() => {
             ElMessage.info('已取消删除！');
         })
-    // dataList.value = await handleGroupList({userId: userInfo.value.userId, pageNum: page.value, pageSize: limit.value});
 }
 
 </script>

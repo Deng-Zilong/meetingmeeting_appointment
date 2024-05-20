@@ -259,8 +259,8 @@
         // 获取被选中成员的id
         addGroupForm.value.peopleIds = Array.from(new Set(selectedPeople.map((item: any) => item.userId)));
         addGroupForm.value.groupPeopleNames = Array.from(new Set(selectedPeople.map((item: any) => item.userName)));
-            // 获取被选中人员的 信息并去重
-            addGroupForm.value.groups = Array.from(
+        // 获取被选中人员的 信息并去重
+        addGroupForm.value.groups = Array.from(
             new Map(
                 selectedPeople.map((item: any) => [item.userId, {
                     userId: item.userId,

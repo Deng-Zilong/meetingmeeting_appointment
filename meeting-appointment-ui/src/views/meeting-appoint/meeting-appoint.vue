@@ -140,8 +140,6 @@ onMounted(() => {
     if ((routes.query?.meetingRoomId || routes.query?.startTime) && !routes.query?.id) {
         formData.value.meetingRoomId = routes.query?.meetingRoomId ? Number(routes.query.meetingRoomId) : '';
         formData.value.startTime = routes.query?.startTime ? routes.query?.startTime : dayjs(new Date()).format('HH:mm');
-        console.log(1111);
-
     }
     minEndTime.value = minStartTime.value = formData.value.startTime ? formData.value.startTime : dayjs(new Date()).format('HH:m');
 

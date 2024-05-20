@@ -214,8 +214,10 @@
      * @param {number} currentLevel 用户等级
      */
     const getSelectAdmin = async () => {
-      const res = await getSelectAdminData({ currentLevel: userInfo.value.level })
-      manageList.value = res.data
+        // 超级管理员时才可调用
+        if (userInfo.value.level != 0) return;
+        const res = await getSelectAdminData({ currentLevel: userInfo.value.level })
+        manageList.value = res.data
     }
 
     /**

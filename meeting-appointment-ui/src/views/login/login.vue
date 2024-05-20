@@ -51,6 +51,7 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { v4 as uuidv4 } from 'uuid';
 import { useUserStore } from '@/stores/user'
 import { getCaptcha } from '@/request/api/login'
+import { Md5 } from 'ts-md5';
 
 // 用户信息
 const userStore = useUserStore();
@@ -112,14 +113,15 @@ const changeLogin = () => {
 const submitForm = async (formEl: FormInstance | undefined) => {
     if (!formEl) return
     formEl.validate((valid) => {
-        if (valid) {
-            const { name, password, captcha } = ruleForm;
-            userStore.getUserInfo({ name, password, code: captcha, uuid: uuid.value });
-            loginBtnLoading.value
-        } else {
-            // openVn()
-            return false
-        }
+        if (!valid) return; 
+        const { name, captcha } = ruleForm;
+        const md5:any = new Md5();
+        // md5 加密密码
+        md5.appendAsciiStr(ruleForm.password);
+        const password = md5.end();
+        
+        userStore.getUserInfo({ name, password, code: captcha, uuid: uuid.value });
+        loginBtnLoading.value;
     })
 }
 
