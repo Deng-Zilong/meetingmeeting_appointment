@@ -27,5 +27,5 @@ export const getRoomStatusData = () => {
 
 // 查询所有公告
 export const getNoticeData = () => {
-    return http.get("/meeting/meeting-notice/notice")
+    return http.get("/meeting/meeting-notice/get-notice")
 }

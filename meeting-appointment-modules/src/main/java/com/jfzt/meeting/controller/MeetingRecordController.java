@@ -80,7 +80,7 @@ public class MeetingRecordController {
      *
      * @return {@code Result<String>}
      */
-    @DeleteMapping("/index/delete-meeting-record")
+    @DeleteMapping("/index/meeting-record")
     public Result<String> deleteMeetingRecord (@RequestParam String userId, @RequestParam Long meetingId) {
         return meetingRecordService.deleteMeetingRecord(userId, meetingId);
     }
