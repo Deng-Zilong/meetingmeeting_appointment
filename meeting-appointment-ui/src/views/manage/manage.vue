@@ -59,7 +59,19 @@
                 <div class="tr-cell">{{ item.meetingRoomName }}</div>
                 <div class="tr-cell">{{ item.time }}</div>
                 <div class="tr-cell">{{ item.title }}</div>
-                <div class="tr-cell attend-cell">{{ item.attendees }}</div>
+                <div class="tr-cell attend-cell">
+                    <el-popover
+                        placement="bottom"
+                        :disabled="item.attendees?.length < 33"
+                        :width="400"
+                        trigger="hover"
+                        :content="item.attendees"
+                    >
+                        <template #reference>
+                           {{ item.attendees }}
+                        </template>
+                    </el-popover>
+                </div>
                 <div class="tr-cell">{{ item.stateValue }}</div>
                 <div class="tr-cell"></div>
               </div>
