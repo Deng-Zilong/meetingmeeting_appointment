@@ -40,6 +40,10 @@ const routes = [
         // 后台管理
         path: "/manage",
         name: "manage",
+        meta: {
+            requiresAuth: true,
+            roles: [0, 1], // 只有超级管理员有权限  用户等级 0超级管理员 1管理员 2普通用户
+        },
         component: () => import("@/views/manage/manage.vue")
       },
       {
@@ -64,7 +68,12 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-    const token = JSON.parse(localStorage.getItem('userInfo') || '{}')?.accessToken;
+    console.log(to.meta.roles,"to");
+    
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') as string); // 用户信息
+    const token = userInfo?.accessToken; // token
+    const level = userInfo?.level; // 用户等级
+    const roles = to.meta?.roles as any[]; // 模块权限数组
 
     // 若目标路由为主页时（可能为扫码登录） 暂不判断token
     if(to.path == '/home') {
@@ -77,6 +86,10 @@ router.beforeEach((to, from, next) => {
     // 若token不存在且目标路由不为登录时 跳转到登录页面
     if (!token && to.path != '/login') {
         return next('/login');
+    }
+    // 若目标路由为后台管理页面 且 无权限时跳转到首页
+    if (to.path == '/manage' && !roles.includes(level)) {
+        return next('/');
     }
     next();
 })

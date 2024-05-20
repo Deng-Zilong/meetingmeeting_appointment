@@ -92,8 +92,31 @@
           </div>
           <div class="table-main">
             <div class="table-tr" v-for="(item, index) in tableData">
-              <div class="tr-cell">{{ item.title }}</div>
-              <div class="tr-cell">{{ item.meetingRoomName }}</div>
+              <div class="tr-cell">
+                <el-popover
+                    placement="bottom"
+                    :disabled="item.title?.length < 10"
+                    :width="100"
+                    trigger="hover"
+                    :content="item.title"
+                >
+                    <template #reference>
+                        {{ item.title }}
+                    </template>
+                </el-popover></div>
+              <div class="tr-cell">
+                <el-popover
+                    placement="bottom"
+                    :disabled="item.meetingRoomName?.length < 5"
+                    :width="100"
+                    trigger="hover"
+                    :content="item.meetingRoomName"
+                >
+                    <template #reference>
+                        {{ item.meetingRoomName }}
+                    </template>
+                </el-popover>
+              </div>
               <div class="tr-cell">{{ time(item) }}</div>
               <div class="tr-cell">{{ statusName(item.status) }}</div>
               <div class="tr-cell">{{ item.meetingNumber }}</div>
