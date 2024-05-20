@@ -255,18 +255,18 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 //之后的时间，判断是否有会议的开始时间或结束时间包含在里面，有的话且包含所有的会议室则为1已预订
                 LambdaQueryWrapper<MeetingRecord> recordQueryWrapper = new LambdaQueryWrapper<>();
                 //开始时间或结束时间包含在时间段内
-                LocalDateTime finalStartTime = startTime;
-                LocalDateTime finalEndTime = endTime;
+                LocalDateTime finalStartTime1 = startTime;
+                LocalDateTime finalStartTime2 = startTime.plusSeconds(1);
+                LocalDateTime finalEndTime1 = endTime;
+                LocalDateTime finalEndTime2 = endTime.minusSeconds(1);
                 recordQueryWrapper.and(wrapper -> wrapper
                         //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
-                        .between(MeetingRecord::getStartTime, finalStartTime, finalEndTime.minusSeconds(1))
+                        .between(MeetingRecord::getStartTime, finalStartTime1, finalEndTime2)
                         //结束时间在时间段内 前不含后含  8-9属于8.5-9不属于9-9.5
-                        .or()
-                        .between(MeetingRecord::getEndTime, finalStartTime.plusSeconds(1), finalEndTime)
+                        .or().between(MeetingRecord::getEndTime, finalStartTime2, finalEndTime1)
                         //时间段包含在开始时间(含)和结束时间(含)之间    8-9 属于8-8.5属于8.5-9
-                        .or()
-                        .lt(MeetingRecord::getStartTime, finalStartTime.plusSeconds(1))
-                        .gt(MeetingRecord::getEndTime, finalEndTime.minusSeconds(1)));
+                        .or().lt(MeetingRecord::getStartTime, finalStartTime2).gt(MeetingRecord::getEndTime, finalEndTime2));
+
                 //没有逻辑删除
                 recordQueryWrapper.and(recordQueryWrapper1 -> recordQueryWrapper1.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
                         .or()
@@ -307,7 +307,6 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
         }
         LocalDateTime now = LocalDateTime.now();
-        List<TimePeriodStatusVO> timePeriodStatusVOList = new LinkedList<>();
         LocalDateTime startTime = LocalDateTime.of(date, LocalTime.of(8, 0));
         LocalDateTime endTime = startTime.plusMinutes(30);
         List<Integer> timeStatus = new LinkedList<>();
@@ -315,11 +314,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             //            TimePeriodStatusVO timePeriodStatusVO = new TimePeriodStatusVO();
             //判断是否过期
             if (now.isAfter(startTime)) {
-                //                timePeriodStatusVO.setStartTime(startTime);
-                //                timePeriodStatusVO.setEndTime(endTime);
-                //                timePeriodStatusVO.setStatus(TIME_PERIOD_OVERDUE);
                 timeStatus.add(i, TIME_PERIOD_OVERDUE);
-
             } else {
                 LambdaQueryWrapper<MeetingRecord> recordQueryWrapper = new LambdaQueryWrapper<>();
                 recordQueryWrapper.eq(MeetingRecord::getMeetingRoomId, id);
@@ -338,26 +333,11 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 List<MeetingRecord> meetingRecords = meetingRecordService.list(recordQueryWrapper);
                 //判断是否被占用
                 if (!meetingRecords.isEmpty()) {
-                    //                    MeetingRecord meetingRecord = meetingRecords.getFirst();
-                    //                    timePeriodStatusVO.setStartTime(startTime);
-                    //                    timePeriodStatusVO.setEndTime(endTime);
-                    //                    timePeriodStatusVO.setStatus(TIME_PERIOD_BUSY);
-                    //                    timePeriodStatusVO.setMeetingTitle(meetingRecord.getTitle());
-                    //                    SysUser user = userService.getOne(new LambdaQueryWrapper<SysUser>()
-                    //                            .eq(SysUser::getUserId, meetingRecord.getCreatedBy()));
-                    //                    if (user != null) {
-                    //                        timePeriodStatusVO.setMeetingAdminUserName(user.getUserName());
-                    //                    }
                     timeStatus.add(i, TIME_PERIOD_BUSY);
                 } else {
-                    //                    timePeriodStatusVO.setStartTime(startTime);
-                    //                    timePeriodStatusVO.setEndTime(endTime);
-                    //                    timePeriodStatusVO.setStatus(TIME_PERIOD_AVAILABLE);
                     timeStatus.add(i, TIME_PERIOD_AVAILABLE);
                 }
             }
-            //            timePeriodStatusVOList.add(timePeriodStatusVO);
-
             startTime = startTime.plusMinutes(30);
             endTime = endTime.plusMinutes(30);
         }

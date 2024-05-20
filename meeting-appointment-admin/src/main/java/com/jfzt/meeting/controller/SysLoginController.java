@@ -75,21 +75,21 @@ public class SysLoginController {
      * @return 登录结果
      */
     @PostMapping(value = "login")
-    public Result<UserInfoVO> login(@RequestBody LoginVo loginVo) throws NoSuchAlgorithmException {
+    public Result<UserInfoVO> login (@RequestBody LoginVo loginVo) throws NoSuchAlgorithmException {
         //判断验证码是否正确,需要获取redis中的验证码
         String codeUuids = (String) redisTemplate.opsForValue().get(loginVo.getUuid());
-        if(StringUtils.isBlank(codeUuids)||!loginVo.getCode().equalsIgnoreCase(codeUuids)){
+        if (StringUtils.isBlank(codeUuids) || !loginVo.getCode().equalsIgnoreCase(codeUuids)) {
             log.error("用户未请求验证码或者用户验证码输入错误");
-            throw new  RRException(ErrorCodeEnum.SERVICE_ERROR_A0240);
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0240);
         }
         SysUser sysUser = sysUserService.findUser(loginVo);
-        if (sysUser == null ) {
+        if (sysUser == null) {
             log.error("用户账户不存在");
-            throw new  RRException(ErrorCodeEnum.SERVICE_ERROR_A0201);
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0201);
         }
-        if (!sysUser.getPassword().equals(loginVo.getPassword())){
+        if (!EncryptUtils.match(loginVo.getPassword(), sysUser.getPassword())) {
             log.error("用户密码错误");
-            throw new  RRException(ErrorCodeEnum.SERVICE_ERROR_A0210);
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0210);
         }
         //登录成功后，生成jwt令牌
         Map<String, Object> claims = new HashMap<>();

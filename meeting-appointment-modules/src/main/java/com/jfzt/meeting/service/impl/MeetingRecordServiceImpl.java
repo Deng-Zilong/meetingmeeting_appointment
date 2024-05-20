@@ -276,8 +276,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         if (pageNum == null || pageSize == null || pageNum < 1 || userId == null) {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
         }
-
-        // 查询用户参与的所有会议记录ID
+        //         查询用户参与的所有会议记录ID
         List<MeetingAttendees> meetingAttendees = attendeesMapper.selectList(
                 new LambdaQueryWrapper<MeetingAttendees>()
                         .eq(MeetingAttendees::getUserId, userId)
@@ -291,13 +290,12 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         if (recordIds.isEmpty()) {
             return Collections.emptyList();
         }
-
         // 查询会议记录信息
         Page<MeetingRecord> meetingRecordPage = this.baseMapper.selectPage(
                 new Page<>(pageNum, pageSize)
                 , new LambdaQueryWrapper<MeetingRecord>()
                         .in(MeetingRecord::getId, recordIds)
-                        .notIn(MeetingRecord::getStatus, MEETING_RECORD_STATUS_CANCEL)
+                        .ne(MeetingRecord::getStatus, MEETING_RECORD_STATUS_CANCEL)
                         .orderByDesc(MeetingRecord::getStartTime));
         // 构建MeetingRecordVO列表
         return meetingRecordPage.getRecords().stream()
@@ -314,13 +312,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                         recordVO.setMeetingRoomName(meetingRoom.getRoomName());
                         recordVO.setLocation(meetingRoom.getLocation());
                     }
-
                     // 设置创建人信息
                     SysUser adminUser = userService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, record.getCreatedBy()));
                     if (adminUser != null) {
                         recordVO.setAdminUserName(adminUser.getUserName());
                     }
-
                     // 设置参会人信息
                     List<String> userIds = attendeesMapper.selectUserIdsByRecordId(record.getId());
                     StringBuffer attendees = new StringBuffer();
@@ -377,7 +373,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                         List<String> userIds = attendeesMapper.selectUserIdsByRecordId(record.getId());
                         StringBuffer attendees = getStringBuffer(userIds);
                         recordVO.setAttendees(attendees.toString());
-
                         // 设置参会人员详情
                         List<SysUserVO> users = userIds.stream()
                                 .map(userService::getById)
@@ -399,11 +394,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
-     * 根据会议记录id取消会议
+     * 根据会议记录id删除会议(首页不展示非删除)
      *
      * @param userId    用户id
      * @param meetingId 会议id
-     * @return {@code Boolean}
+     * @return {@code Result<String>}
      */
     @Override
     public Result<String> deleteMeetingRecord (String userId, Long meetingId) {
@@ -432,9 +427,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      * @param meetingId 会议id
      * @return {@code Boolean}
      */
+    @Transactional
     @Override
     public Result<String> cancelMeetingRecord (String userId, Long meetingId) {
-
         //查询会议记录
         MeetingRecord meetingRecord = this.baseMapper.selectById(meetingId);
         updateRecordStatus(meetingRecord);
@@ -452,13 +447,14 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         }
         meetingRecord.setStatus(MEETING_RECORD_STATUS_CANCEL);
         this.baseMapper.updateById(meetingRecord);
+        attendeesMapper.delete(new LambdaQueryWrapper<MeetingAttendees>().eq(MeetingAttendees::getMeetingRecordId, meetingId));
         return Result.success();
     }
 
     /**
+     * @param meetingRecordDTO 会议记录DTO
      * @return com.jfzt.meeting.common.Result<java.util.Objects>
      * @Description 新增会议
-     * @Param [meetingRecordDTO]
      */
     @Override
     @Transactional
