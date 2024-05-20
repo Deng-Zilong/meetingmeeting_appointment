@@ -13,7 +13,6 @@ import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.dto.MeetingRoomDTO;
 import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomVO;
-import com.jfzt.meeting.entity.vo.TimePeriodStatusVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
@@ -268,9 +267,10 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                         .or().lt(MeetingRecord::getStartTime, finalStartTime2).gt(MeetingRecord::getEndTime, finalEndTime2));
 
                 //没有逻辑删除
-                recordQueryWrapper.and(recordQueryWrapper1 -> recordQueryWrapper1.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
-                        .or()
-                        .eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING));
+                recordQueryWrapper
+                        .and(recordQueryWrapper1 ->
+                                recordQueryWrapper1.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
+                                        .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING));
                 List<MeetingRecord> meetingRecords = meetingRecordService.list(recordQueryWrapper);
                 //根据会议室id收集获得占用不同会议室的数量
                 long size = meetingRecords.stream().collect(Collectors.groupingBy(MeetingRecord::getMeetingRoomId))

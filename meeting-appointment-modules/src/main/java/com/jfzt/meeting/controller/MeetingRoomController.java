@@ -38,17 +38,17 @@ public class MeetingRoomController {
      * @param date 日期
      * @return {@code Result<List<TimePeriodStatusVO>>}
      */
-    @GetMapping("/index/is-busy-byId-and-date")
+    @GetMapping("/index/time-period-status")
     public Result<List<Integer>> isBusyByIdAndDate (@RequestParam Long id, @RequestParam LocalDate date) {
         return meetingRoomService.isBusyByIdAndDate(id, date);
     }
 
     /**
-     * 查询当日时间段可预约状态（0：已过期1：已占用2：可预约）
+     * 查询当日可预约（0：已过期1：已占用2：可预约）
      *
      * @return {@code Result<List<Integer>>}
      */
-    @GetMapping("/index/is-busy")
+    @GetMapping("/index/today-time-period-status")
     public Result<List<Integer>> isBusy () {
         List<Integer> result = meetingRoomService.isBusy();
         return Result.success(result);
@@ -90,7 +90,7 @@ public class MeetingRoomController {
      * @param meetingRoomId 会议室
      * @return {@code Result<String>}
      */
-    @DeleteMapping("/delete-meeting-room")
+    @DeleteMapping("/meeting-room")
     public Result<String> deleteMeetingRoom (@RequestParam Long meetingRoomId) {
         return meetingRoomService.deleteMeetingRoom(meetingRoomId);
 

@@ -23,7 +23,7 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      * @param userId 用户id
      * @return {@code List<MeetingRecordVO>}
      */
-    List<MeetingRecordVO> getRecordVoList (String userId);
+    List<MeetingRecordVO> getTodayMeetingRecord (String userId);
 
     /**
      * 查询今日中心会议总次数
@@ -76,15 +76,12 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
 
     /**
      * @return com.jfzt.meeting.common.Result<java.util.Objects>
-     * @throws
      * @Description 新增会议
-     * @Param [meetingRecordDTO]
      */
     Result<Objects> addMeeting (MeetingRecordDTO meetingRecordDTO);
 
     /**
      * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingRecordVO>>
-     * @throws
      * @Description 更新会议
      * @Param [meetingRecordDTO]
      */

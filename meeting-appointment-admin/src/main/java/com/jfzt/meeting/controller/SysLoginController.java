@@ -11,8 +11,7 @@ import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.properties.JwtProperties;
 import com.jfzt.meeting.service.SysUserService;
-import com.jfzt.meeting.utils.JwtUtil;
-import com.jfzt.meeting.utils.TokenGenerator;
+import com.jfzt.meeting.utils.EncryptUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
@@ -111,6 +110,18 @@ public class SysLoginController {
         BaseContext.setCurrentUserId(sysUser.getUserId());
         BaseContext.setCurrentLevel(sysUser.getLevel());
         return Result.success(userInfo);
+    }
+
+    /**
+     * 修改密码
+     */
+    @PutMapping("updateSysAdminPassword")
+    public Result<String> addAdmin (@RequestParam String userId, @RequestParam String password) throws NoSuchAlgorithmException {
+        SysUser one = sysUserService.getOne(new QueryWrapper<SysUser>().eq("user_id", userId));
+        one.setPassword(EncryptUtils.encrypt(EncryptUtils.md5encrypt(password)));
+        log.info("MD5盐值加密后：{}", one.getPassword());
+        sysUserService.updateById(one);
+        return Result.success("添加成功");
     }
 
 }

@@ -1,7 +1,6 @@
 package com.jfzt.meeting.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
@@ -60,7 +59,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      * @return {@code List<MeetingRecordVO>}
      */
     @Override
-    public List<MeetingRecordVO> getRecordVoList (String userId) {
+    public List<MeetingRecordVO> getTodayMeetingRecord (String userId) {
         if (userId.isBlank()) {
             throw new RRException("用户id不能为空", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
         }
@@ -187,6 +186,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      * 根据用户id拼接姓名字符串返回用户信息集合
      */
     private void getUserInfo (List<String> userIds, StringBuffer attendees, ArrayList<SysUserVO> sysUserVOList) {
+        //去重
         HashSet<String> userIdSet = new LinkedHashSet<>(userIds);
         ArrayList<String> userIdList = new ArrayList<>(userIdSet);
         userIdList.forEach(userId -> {
@@ -276,7 +276,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         if (pageNum == null || pageSize == null || pageNum < 1 || userId == null) {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
         }
-        //         查询用户参与的所有会议记录ID
+        //                         查询用户参与的所有会议记录ID
         List<MeetingAttendees> meetingAttendees = attendeesMapper.selectList(
                 new LambdaQueryWrapper<MeetingAttendees>()
                         .eq(MeetingAttendees::getUserId, userId)
@@ -299,7 +299,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                         .orderByDesc(MeetingRecord::getStartTime));
         // 构建MeetingRecordVO列表
         return meetingRecordPage.getRecords().stream()
-                .filter(record -> !Objects.equals(record.getStatus(), MEETING_RECORD_STATUS_CANCEL))
                 .map(record -> {
                     MeetingRecordVO recordVO = new MeetingRecordVO();
                     record = updateRecordStatus(record);
@@ -327,7 +326,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                     recordVO.setMeetingNumber(users.size());
                     return recordVO;
                 })
-                .sorted(Comparator.comparing(MeetingRecordVO::getStartTime).reversed())
                 .collect(Collectors.toList());
     }
 

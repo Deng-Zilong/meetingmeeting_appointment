@@ -35,7 +35,7 @@ public class MeetingRecordController {
      * @return {@code Result<Integer>}
      * @description 查询当日会议总数
      */
-    @GetMapping("/index/query-record-rumber")
+    @GetMapping("/index/meeting-record-number")
     public Result<Integer> queryRecordNumber () {
         return Result.success(meetingRecordService.getRecordNumber());
     }
@@ -47,7 +47,7 @@ public class MeetingRecordController {
      */
     @GetMapping("/index/today-meeting-record")
     public Result<List<MeetingRecordVO>> queryRecordVoList (@RequestParam String userId) {
-        List<MeetingRecordVO> recordvoList = meetingRecordService.getRecordVoList(userId);
+        List<MeetingRecordVO> recordvoList = meetingRecordService.getTodayMeetingRecord(userId);
         return Result.success(recordvoList);
     }
 
@@ -106,8 +106,8 @@ public class MeetingRecordController {
     }
 
     /**
-     * @param pageNum  页码
-     * @param pageSize 每页显示条数
+     * @param pageNum      页码
+     * @param pageSize     每页显示条数
      * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingRecordVO>>
      * @description 查询所有会议记录
