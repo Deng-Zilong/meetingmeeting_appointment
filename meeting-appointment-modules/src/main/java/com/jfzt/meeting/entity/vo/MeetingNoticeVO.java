@@ -1,7 +1,9 @@
 package com.jfzt.meeting.entity.vo;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -13,6 +15,8 @@ import java.io.Serializable;
  * @since: 2024-05-14 11:33
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class MeetingNoticeVO implements Serializable {
 
     /**

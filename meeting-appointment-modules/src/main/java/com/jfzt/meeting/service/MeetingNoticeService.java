@@ -24,9 +24,8 @@ public interface MeetingNoticeService extends IService<MeetingNotice> {
 
     /**
      * 查询所有公告
-     * @param meetingNotice 公告信息
      * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
      */
-    Result<List<String>> selectAll(MeetingNotice meetingNotice);
+    Result<List<String>> selectAll();
 
 }

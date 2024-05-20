@@ -56,11 +56,10 @@ public class MeetingNoticeServiceImpl extends ServiceImpl<MeetingNoticeMapper, M
 
     /**
      * 查询所有通告信息
-     * @param meetingNotice 公告信息
      * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
      */
     @Override
-    public Result<List<String>> selectAll(MeetingNotice meetingNotice) {
+    public Result<List<String>> selectAll() {
         List<MeetingNotice> meetingNotices = meetingNoticeMapper.selectList(new QueryWrapper<>());
         return Result.success(meetingNotices.stream()
                 .filter(notice -> IsDeletedConstant.NOT_DELETED.equals(notice.getIsDeleted()))

@@ -35,12 +35,11 @@ public class MeetingNoticeController {
 
     /**
      * 查询所有公告
-     * @param meetingNotice 公告信息对象
      * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
      */
     @GetMapping("/get-notice")
-    public Result<List<String>> getNotice (MeetingNotice meetingNotice) {
-        return meetingNoticeService.selectAll(meetingNotice);
+    public Result<List<String>> getNotice () {
+        return meetingNoticeService.selectAll();
 
     }
 }
