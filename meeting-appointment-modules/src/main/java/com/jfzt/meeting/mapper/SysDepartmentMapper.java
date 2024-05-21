@@ -2,6 +2,7 @@ package com.jfzt.meeting.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.jfzt.meeting.entity.SysDepartment;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -12,6 +13,9 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface SysDepartmentMapper extends BaseMapper<SysDepartment> {
+
+    @Delete("delete from sys_department")
+    int deleteAll();
 
 }
 
