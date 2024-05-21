@@ -195,8 +195,6 @@
 
         // 打开loading
         isLoading.value = true;
-        // 延迟请求
-        await new Promise((resolve) => setTimeout(resolve, 2000));
         // 发送请求
         const {data: newData, total} = await getData({userId: userInfo.value?.userId, page: page.value, limit: limit.value});
         

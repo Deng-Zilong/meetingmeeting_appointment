@@ -134,16 +134,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useUserStore } from '@/stores/user'
 import {  getTodayMeetingRecordData, getDeleteMeetingRecordData, getCenterAllNumberData, getRoomStatusData, getTimeBusyData, getNoticeData } from '@/request/api/home'
 
 import Clock from '@/views/home/component/clock.vue'
 import GuageChart from '@/views/home/component/guageChart.vue'
 import { ElMessage, ElMessageBox, dayjs } from 'element-plus';
 import { meetingState } from '@/utils/types';
+import { qwLogin } from '@/request/api/login';
 
 const loading = ref(true);  // 获取数据loading 
-const userStore = useUserStore();
 const route = useRoute();
 const router = useRouter();
 const userInfo = ref();  // 获取用户信息 传后端数据
@@ -199,33 +198,6 @@ const timeArr = ref([  // 预约时间点及该时间点可预约状态
 ])
 
 let tableData = ref<any>([]) // 预约情况数据
-
-onMounted(async () => {
-    /* 判断扫码登录状态 */
-    const code = decodeURIComponent(route.query.code as string);
-    userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}');
-    const token = userInfo.value?.accessToken;
-    
-    // 若 code 不为 undefined 时为扫码登录
-    if (code != 'undefined') {
-      return await userStore.getQWUserInfo(code);
-    }
-    
-    // 若不是扫码登录则判断token
-    if (!token) {
-      return router.replace('/login');
-    }
-
-  getTodayRecord({ userId: userInfo.value.userId })  // 查询今日会议情况
-  
-  getCenterAllNumber()  // 查询中心会议总次数
-  getRoomStatus()  // 查询会议室状态
-  getTimeBusy()  // 查询当日时间段占用情况
-
-  getNotice()
-  loading.value = false
-});
-
 
 /******************************************* 会议室大屏 ***********************************/
 /**
@@ -412,6 +384,37 @@ const getNotice = async () => {
   const res = await getNoticeData()
   notice.value = res.data  
 }
+
+onMounted( async () => {
+    /* 判断扫码登录状态 */
+    const code = decodeURIComponent(route.query.code as string);
+    userInfo.value = JSON.parse(localStorage.getItem('userInfo') as string);
+    const token = userInfo.value?.accessToken;
+    // 扫码登录
+    if(!token) {
+        try {
+            const res:any = await qwLogin({code});
+            if (res.code !== '00000') {
+                throw new Error(res.msg);
+            }
+            userInfo.value = res.data;
+            localStorage.setItem('userInfo', JSON.stringify(res.data));
+            router.replace('/home');
+        } catch(err) {
+            router.replace('/login');
+            return;
+        }
+    }
+    // 登录成功后或已登录状态下执行
+    await Promise.all([
+        getTodayRecord({ userId: userInfo.value.userId }),  // 查询今日会议情况
+        getCenterAllNumber(),  // 查询中心会议总次数
+        getRoomStatus(),  // 查询会议室状态
+        getTimeBusy(),  // 查询当日时间段占用情况
+        getNotice(), // 查询公告
+    ])
+    loading.value = false
+});
 
 </script>
 
