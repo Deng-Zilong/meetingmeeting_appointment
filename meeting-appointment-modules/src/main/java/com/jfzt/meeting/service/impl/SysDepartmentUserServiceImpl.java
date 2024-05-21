@@ -167,13 +167,14 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
                     childrenNode.setChildrenPart(getChildren(childrenNode, all));
                     // 获取部门用户
                     List<SysDepartmentUser> departmentUsers = sysDepartmentUserService.lambdaQuery()
+                            .select(SysDepartmentUser::getUserId)
                             .eq(SysDepartmentUser::getDepartmentId , childrenNode.getDepartmentId())
                             .list();
                     // 对每个部门用户进行操作
                     departmentUsers.stream().peek(sysDepartmentUser -> {
                         // 根据用户ID获取用户
                         List<SysUser> userList = sysUserService.lambdaQuery()
-                                .eq(StringUtils.isNotBlank(sysDepartmentUser.getUserId()), SysUser::getUserId, sysDepartmentUser.getUserId())
+                                .eq(SysUser::getUserId, sysDepartmentUser.getUserId())
                                 .list();
                         // 将用户添加到用户列表中
                         sysUsers.addAll(userList);
