@@ -41,7 +41,7 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      * @return {@code List<Integer>}
      */
 
-    List<Integer> isBusy ();
+    List<Integer> getTodayTimePeriodStatus ();
 
     /**
      * 查询指定会议室当天各个时间段占用情况
@@ -50,7 +50,7 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      * @param date 日期
      * @return {@code Result<List<TimePeriodStatusVO>>}
      */
-    Result<List<TimePeriodStatusVO>> isBusyByIdAndDate (Long id, LocalDate date);
+    Result<List<TimePeriodStatusVO>> getTimePeriodStatusByIdAndDate (Long id, LocalDate date);
 
     /**
      * 根据时间段获取可用的会议室

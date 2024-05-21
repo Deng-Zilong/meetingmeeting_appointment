@@ -86,6 +86,23 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * @param e 异常
+     * @return {@code Result<String>}
+     * @description 参数缺失
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public Result<String> handleMissingServletRequestParameterException (
+            MissingServletRequestParameterException e) {
+        log.error("Exception occurred:", e);
+        StackTraceElement[] stackTrace = e.getStackTrace();
+        if (stackTrace.length > 0) {
+            String exceptionLocation = stackTrace[0].toString();
+            log.error("Exception occurred at: {}", exceptionLocation);
+        }
+        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0410);
+    }
+
+    /**
      * 处理其他未知异常
      *
      * @return {@code Result<String>}

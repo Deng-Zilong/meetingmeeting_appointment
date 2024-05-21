@@ -41,7 +41,7 @@ public class MeetingRoomController {
      */
     @GetMapping("/index/time-period-status")
     public Result<List<TimePeriodStatusVO>> getTimePeriodStatusByIdAndDate (@RequestParam Long id, @RequestParam LocalDate date) {
-        return meetingRoomService.isBusyByIdAndDate(id, date);
+        return meetingRoomService.getTimePeriodStatusByIdAndDate(id, date);
     }
 
     /**
@@ -50,8 +50,8 @@ public class MeetingRoomController {
      * @return {@code Result<List<Integer>>}
      */
     @GetMapping("/index/today-time-period-status")
-    public Result<List<Integer>> isBusy () {
-        List<Integer> result = meetingRoomService.isBusy();
+    public Result<List<Integer>> getTodayTimePeriodStatus () {
+        List<Integer> result = meetingRoomService.getTodayTimePeriodStatus();
         return Result.success(result);
     }
 

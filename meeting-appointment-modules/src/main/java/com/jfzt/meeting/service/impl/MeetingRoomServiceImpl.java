@@ -238,7 +238,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      * @return {@code List<Integer>}
      */
     @Override
-    public List<Integer> isBusy () {
+    public List<Integer> getTodayTimePeriodStatus () {
         List<Integer> timeStatus = new LinkedList<>();
         LocalDateTime now = LocalDateTime.now();
         //更新今日所有会议记录状态
@@ -303,7 +303,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      * @return {@code Result<List<TimePeriodStatusVO>>}
      */
     @Override
-    public Result<List<TimePeriodStatusVO>> isBusyByIdAndDate (Long id, LocalDate date) {
+    public Result<List<TimePeriodStatusVO>> getTimePeriodStatusByIdAndDate (Long id, LocalDate date) {
         if (id == null || date == null) {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
         }
