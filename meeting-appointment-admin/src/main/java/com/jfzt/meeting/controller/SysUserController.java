@@ -69,10 +69,10 @@ public class SysUserController {
         String accessToken = sysDepartmentUserService.findTocken();
         //获取用户详细信息
         WxCpUser wxUser = sysDepartmentUserService.findUserName(accessToken, code);
-        //获取部门信息
-        Long departmentLength = sysDepartmentUserService.findDepartment();
-        //获取部门人员
-        sysDepartmentUserService.findDepartmentUser(departmentLength);
+//        //获取部门信息
+//        Long departmentLength = sysDepartmentUserService.findDepartment();
+//        //获取部门人员
+//        sysDepartmentUserService.findDepartmentUser(departmentLength);
 
         //登录成功后，生成jwt令牌
         Map<String, Object> claims = new HashMap<>();

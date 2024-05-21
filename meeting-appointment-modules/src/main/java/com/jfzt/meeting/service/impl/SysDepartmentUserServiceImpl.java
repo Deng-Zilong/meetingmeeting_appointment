@@ -108,15 +108,15 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
         }
         List<WxCpUser> wxCpUserList = listDepartmentUserList.stream().distinct().toList();
         sysUserMapper.deleteAll();
+        sysDepartmentUserMapper.deleteAll();
         for (WxCpUser wxCpUser : wxCpUserList) {
             SysUser sysUser = new SysUser();
             sysUser.setUserId(wxCpUser.getUserId());
             sysUser.setUserName(wxCpUser.getName());
-
             sysUser.setPassword(EncryptUtils.encrypt(EncryptUtils.md5encrypt(wxCpUser.getUserId())));
             sysUser.setLevel(wxCpUser.getEnable());
             sysUserMapper.insert(sysUser);
-            sysDepartmentUserMapper.deleteAll();
+
             for (int s = 0; s < wxCpUser.getDepartIds().length; s++) {
                 SysDepartmentUser sysDepartmentUser = new SysDepartmentUser();
                 sysDepartmentUser.setUserId(wxCpUser.getUserId());
