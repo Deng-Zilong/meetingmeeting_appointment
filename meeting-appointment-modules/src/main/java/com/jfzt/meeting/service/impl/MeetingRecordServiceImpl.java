@@ -70,7 +70,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
         // 获取当天结束时间（23:59:59）
         LocalDateTime endOfDay = startOfDay.plusDays(1).minusNanos(1);
-
         recordQueryWrapper.and(wq -> wq.between(MeetingRecord::getStartTime, startOfDay, endOfDay)
                 .or().between(MeetingRecord::getEndTime, startOfDay, endOfDay));
         recordQueryWrapper
@@ -103,33 +102,13 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 //没有匹配的参会人，返回空对象，最后过滤
                 return null;
             }
-            List<String> userIdList = new ArrayList<>();
-            ArrayList<SysUserVO> sysUserVOList = new ArrayList<>();
-            StringBuffer attendees = new StringBuffer();
-            //遍历参会人，拼接姓名，获取userIdList
-            attendeesList.forEach(attendee -> {
-                userIdList.add(attendee.getUserId());
-
-                List<SysUser> userList = userService
-                        .list(new LambdaQueryWrapper<SysUser>()
-                                .eq(SysUser::getUserId, attendee.getUserId()));
-                if (userList.isEmpty()) {
-                    return;
-                }
-                SysUser user = userList.getFirst();
-                SysUserVO sysUserVO = new SysUserVO();
-                sysUserVO.setUserName(user.getUserName());
-                sysUserVO.setUserId(user.getUserId());
-                sysUserVOList.add(sysUserVO);
-
-                attendees.append(user.getUserName());
-                if (attendeesList.indexOf(attendee) != attendeesList.size() - 1) {
-                    attendees.append(",");
-                }
-
-            });
+            List<String> userIds = attendeesList.stream().map(MeetingAttendees::getUserId).toList();
             //当前用户参与会议
-            if (userIdList.contains(userId)) {
+            if (userIds.contains(userId)) {
+                List<SysUserVO> users = new ArrayList<>();
+                StringBuffer attendees = new StringBuffer();
+                //遍历参会人，拼接姓名，获取userIdList
+                getUserInfo(userIds, attendees, users);
                 //更新会议状态
                 updateRecordStatus(meetingRecord);
                 meetingRecord = this.getById(meetingRecord.getId());
@@ -150,8 +129,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 }
                 //插入参会人信息
                 meetingRecordVO.setAttendees(String.valueOf(attendees));
-                meetingRecordVO.setUsers(sysUserVOList);
-                meetingRecordVO.setMeetingNumber(userIdList.size());
+                meetingRecordVO.setUsers(users);
+                meetingRecordVO.setMeetingNumber(users.size());
             }
             return meetingRecordVO;
         }).filter(Objects::nonNull).filter(meetingRecordVO -> meetingRecordVO.getId() != null).toList();
@@ -159,33 +138,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
-     * 获取参会人姓名拼接字符串
-     *
-     * @param userIds 参会人id集合
-     * @return {@code StringBuffer}
+     * 根据用户id拼接姓名字符串并返回用户信息集合
      */
-    private StringBuffer getStringBuffer (List<String> userIds) {
-        HashSet<String> userIdSet = new LinkedHashSet<>(userIds);
-        ArrayList<String> userIdList = new ArrayList<>(userIdSet);
-        StringBuffer attendees = new StringBuffer();
-        userIdList.forEach(userId -> {
-            SysUser user = userService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, userId));
-            if (user != null) {
-                //拼接参会人姓名
-                attendees.append(user.getUserName());
-                if (userIdList.indexOf(userId) < userIdList.size() - 1) {
-                    attendees.append(",");
-                }
-            }
-        });
-        return attendees;
-    }
-
-
-    /**
-     * 根据用户id拼接姓名字符串返回用户信息集合
-     */
-    private void getUserInfo (List<String> userIds, StringBuffer attendees, ArrayList<SysUserVO> sysUserVOList) {
+    private void getUserInfo (List<String> userIds, StringBuffer attendees, List<SysUserVO> sysUserVOList) {
         //去重
         HashSet<String> userIdSet = new LinkedHashSet<>(userIds);
         ArrayList<String> userIdList = new ArrayList<>(userIdSet);
@@ -209,7 +164,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      */
     @Override
     public Integer getRecordNumber () {
-
         return Math.toIntExact(this.baseMapper.selectCount(
                 new LambdaQueryWrapper<MeetingRecord>()
                         .between(MeetingRecord::getStartTime, LocalDateTime.now().toLocalDate().atStartOfDay()
@@ -251,7 +205,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
         // 获取当天结束时间（23:59:59）
         LocalDateTime endOfDay = startOfDay.plusDays(1).minusNanos(1);
-
         recordQueryWrapper.between(MeetingRecord::getStartTime, startOfDay, endOfDay)
                 .or().between(MeetingRecord::getEndTime, startOfDay, endOfDay);
         recordQueryWrapper.and(queryWrapper -> queryWrapper.eq(MeetingRecord::getIsDeleted, NOT_DELETED));
@@ -276,7 +229,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         if (pageNum == null || pageSize == null || pageNum < 1 || userId == null) {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
         }
-        //                         查询用户参与的所有会议记录ID
+        //查询用户参与的所有会议记录ID
         List<MeetingAttendees> meetingAttendees = attendeesMapper.selectList(
                 new LambdaQueryWrapper<MeetingAttendees>()
                         .eq(MeetingAttendees::getUserId, userId)
@@ -285,7 +238,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .map(MeetingAttendees::getMeetingRecordId)
                 .sorted()
                 .collect(Collectors.toList());
-
         // 若无参与会议，则返回空列表
         if (recordIds.isEmpty()) {
             return Collections.emptyList();
@@ -304,7 +256,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                     record = updateRecordStatus(record);
                     // 设置会议信息
                     BeanUtils.copyProperties(record, recordVO);
-
                     // 设置会议室信息
                     MeetingRoom meetingRoom = meetingRoomService.getById(record.getMeetingRoomId());
                     if (meetingRoom != null) {
@@ -360,27 +311,18 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                             recordVO.setMeetingRoomName(meetingRoom.getRoomName());
                             recordVO.setLocation(meetingRoom.getLocation());
                         }
-
                         // 设置创建人信息
                         SysUser adminUser = userService.getById(record.getCreatedBy());
                         if (adminUser != null) {
                             recordVO.setAdminUserName(adminUser.getUserName());
                         }
-
                         // 设置参会人信息
                         List<String> userIds = attendeesMapper.selectUserIdsByRecordId(record.getId());
-                        StringBuffer attendees = getStringBuffer(userIds);
-                        recordVO.setAttendees(attendees.toString());
+                        StringBuffer attendees = new StringBuffer();
+                        ArrayList<SysUserVO> users = new ArrayList<>();
+                        getUserInfo(userIds, attendees, users);
                         // 设置参会人员详情
-                        List<SysUserVO> users = userIds.stream()
-                                .map(userService::getById)
-                                .filter(Objects::nonNull)
-                                .map(user -> {
-                                    SysUserVO userVO = new SysUserVO();
-                                    BeanUtils.copyProperties(user, userVO);
-                                    return userVO;
-                                })
-                                .collect(Collectors.toList());
+                        recordVO.setAttendees(attendees.toString());
                         recordVO.setUsers(users);
                         recordVO.setMeetingNumber(users.size());
                         return recordVO;
@@ -400,6 +342,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      */
     @Override
     public Result<String> deleteMeetingRecord (String userId, Long meetingId) {
+        if (userId == null || meetingId == null) {
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
+        }
         //查询会议记录
         MeetingRecord meetingRecord = this.baseMapper.selectById(meetingId);
         updateRecordStatus(meetingRecord);
@@ -428,6 +373,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     @Transactional
     @Override
     public Result<String> cancelMeetingRecord (String userId, Long meetingId) {
+        if (userId == null || meetingId == null) {
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
+        }
         //查询会议记录
         MeetingRecord meetingRecord = this.baseMapper.selectById(meetingId);
         updateRecordStatus(meetingRecord);

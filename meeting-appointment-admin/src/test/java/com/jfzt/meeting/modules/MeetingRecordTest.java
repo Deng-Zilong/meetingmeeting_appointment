@@ -41,9 +41,17 @@ public class MeetingRecordTest {
     @Test
     public void getAllRecordVoListPageTest () {
         assertThrows(RRException.class, () -> meetingRecordService.getAllRecordVoListPage(null, 1L, 10L));
-        assertThrows(RRException.class, () -> meetingRecordService.getAllRecordVoListPage("admin", 1L, 10L));
+        assertThrows(RRException.class, () -> meetingRecordService.getAllRecordVoListPage("admin", null, 10L));
         assertThrows(RRException.class, () -> meetingRecordService.getAllRecordVoListPage("admin", 1L, null));
         assertNotNull(meetingRecordService.getAllRecordVoListPage("admin", 1L, 10L));
     }
+
+    @Test
+    public void cancelMeetingRecordTest () {
+        assertThrows(RRException.class, () -> meetingRecordService.cancelMeetingRecord(null, 3L));
+        assertThrows(RRException.class, () -> meetingRecordService.cancelMeetingRecord("admin", null));
+        assertThrows(RRException.class, () -> meetingRecordService.cancelMeetingRecord("test", 0L));
+    }
+
 
 }

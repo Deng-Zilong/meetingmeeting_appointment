@@ -14,13 +14,9 @@ import java.util.List;
  */
 @Mapper
 public interface MeetingAttendeesMapper extends BaseMapper<MeetingAttendees> {
-
-
     @Select("SELECT meeting_attendees.user_id FROM meeting_attendees WHERE meeting_record_id = #{recordId} order by meeting_attendees.gmt_create desc")
     List<String> selectUserIdsByRecordId (Long recordId);
 
-    @Select("SELECT meeting_attendees.meeting_record_id FROM meeting_attendees WHERE meeting_attendees.user_id = #{userId} order by meeting_attendees.gmt_create desc")
-    List<Long> selectRecordIdsByUserId (String userId);
 }
 
 
