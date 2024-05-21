@@ -211,9 +211,7 @@ const getCenterAllNumber = () => {
         name: '中心会议总次数'
       }]
     })
-    .catch((err) => {
-      console.log(err,'中心会议总次数err')
-    })
+    .catch((err) => {})
 }
 
 /**
@@ -235,9 +233,7 @@ const getRoomStatus = () => {
     .then((res) => {
       roomMeetingData.value = res.data
     })
-    .catch((err) => {
-      console.log(err,'会议室情况err')
-    })
+    .catch((err) => {})
 }
 
 const handleRoomClick = (item: any) => {
