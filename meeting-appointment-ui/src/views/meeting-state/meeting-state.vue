@@ -13,8 +13,10 @@
         <div class="left-table">
           <div class="table-title">会议预约时间选择</div>
           <div class="table-main">
-            <div class="table-items" :class="timeColor(item.state)" v-for="item in timeArr" @click.stop="selectTime(item)">
-              {{ item.time }}
+            <div class="table-items" :class="timeColor(item.state)" v-for="item in timeArr"
+            @mouseover="handleMouseOver(item)" @mouseout="handldMouseOut" @click.stop="selectTime(item)">
+              <span v-if="hoveredItem === item && item.state === 1">发起人：{{ item.initiator }}</span>
+              <span v-else>{{ item.time }}</span>
             </div>
           </div>
         </div>
@@ -74,6 +76,7 @@ const currentMeetingId = ref<any>(routes.query.id);  // 会议室id
 const title = ref(routes.query.title);  // 会议室名称
 const locate = ref(routes.query.address);  // 会议室位置
 const time = ref(new Date().toLocaleTimeString().substring(0, 5))  // 显示当前时间点
+const hoveredItem = ref<any>(null)  // 鼠标悬浮内容
 
 // 会议室信息
 const infoArr = reactive([
@@ -101,21 +104,21 @@ const infoArr = reactive([
 
 // 会议时间点
 const timeArr = ref([
-  { time: '8:00', state: 3 }, { time: '8:30', state: 3 },
-  { time: '9:00', state: 3 }, { time: '9:30', state: 3 },
-  { time: '10:00', state: 3 }, { time: '10:30', state: 3 },
-  { time: '11:00', state: 3 }, { time: '11:30', state: 3 },
-  { time: '12:00', state: 3 }, { time: '12:30', state: 3 },
-  { time: '13:00', state: 3 }, { time: '13:30', state: 3 },
-  { time: '14:00', state: 3 }, { time: '14:30', state: 3 },
-  { time: '15:00', state: 3 }, { time: '15:30', state: 3 },
-  { time: '16:00', state: 3 }, { time: '16:30', state: 3 },
-  { time: '17:00', state: 3 }, { time: '17:30', state: 3 },
-  { time: '18:00', state: 3 }, { time: '18:30', state: 3 },
-  { time: '19:00', state: 3 }, { time: '19:30', state: 3 },
-  { time: '20:00', state: 3 }, { time: '20:30', state: 3 },
-  { time: '21:00', state: 3 }, { time: '21:30', state: 3 },
-  { time: '22:00', state: 3 }, { time: '22:30', state: 3 }
+  { time: '8:00', state: 3, initiator: '' }, { time: '8:30', state: 3, initiator: '' },
+  { time: '9:00', state: 3, initiator: '' }, { time: '9:30', state: 3, initiator: '' },
+  { time: '10:00', state: 3, initiator: '' }, { time: '10:30', state: 3, initiator: '' },
+  { time: '11:00', state: 3, initiator: '' }, { time: '11:30', state: 3, initiator: '' },
+  { time: '12:00', state: 3, initiator: '' }, { time: '12:30', state: 3, initiator: '' },
+  { time: '13:00', state: 3, initiator: '' }, { time: '13:30', state: 3, initiator: '' },
+  { time: '14:00', state: 3, initiator: '' }, { time: '14:30', state: 3, initiator: '' },
+  { time: '15:00', state: 3, initiator: '' }, { time: '15:30', state: 3, initiator: '' },
+  { time: '16:00', state: 3, initiator: '' }, { time: '16:30', state: 3, initiator: '' },
+  { time: '17:00', state: 3, initiator: '' }, { time: '17:30', state: 3, initiator: '' },
+  { time: '18:00', state: 3, initiator: '' }, { time: '18:30', state: 3, initiator: '' },
+  { time: '19:00', state: 3, initiator: '' }, { time: '19:30', state: 3, initiator: '' },
+  { time: '20:00', state: 3, initiator: '' }, { time: '20:30', state: 3, initiator: '' },
+  { time: '21:00', state: 3, initiator: '' }, { time: '21:30', state: 3, initiator: '' },
+  { time: '22:00', state: 3, initiator: '' }, { time: '22:30', state: 3, initiator: '' }
 ])
 
 
@@ -139,15 +142,16 @@ onMounted(() => {
 */
 const getBusy = async (data: {id: number, date: string}) => {
   let res: any = await getBusyData(data)
-  // currentMeetingId.value = routes.query.id
   timeArr.value.forEach((item: any, index: number) => {
-    item.state = res.data[index];
+    item.state = res.data[index].status;  // 后端返回值
+    item.initiator = res.data[index].meetingAdminUserName;    
   })
 }
+
+// 日期变化
 const changeDate = (val: any) => {
   getBusy({ id: currentMeetingId.value, date: dayjs(val).format('YYYY-MM-DD') })
 }
-
 
 // 时间段状态  0：已过期1：已占用2：可预约
 const timeColor = computed(() => (state: any) => {
@@ -158,6 +162,14 @@ const timeColor = computed(() => (state: any) => {
       return 'color-two';
   }
 })
+// 鼠标移入
+const handleMouseOver = (item: any) => {
+  hoveredItem.value = item
+}
+// 鼠标移出
+const handldMouseOut = () => {
+  hoveredItem.value = null
+}
 
 // 选择时间段
 const selectTime = (item: any) => {
