@@ -15,8 +15,7 @@
           <div class="table-main">
             <div class="table-items" :class="timeColor(item.state)" v-for="item in timeArr"
             @mouseover="handleMouseOver(item)" @mouseout="handldMouseOut" @click.stop="selectTime(item)">
-              <span v-if="hoveredItem === item && item.state === 1">发起人：{{ item.initiator }}</span>
-              <span v-else>{{ item.time }}</span>
+              {{ hoveredItem === item && item.state === 1 ? `发起人：${item.initiator}` : item.time  }}
             </div>
           </div>
         </div>
@@ -164,10 +163,12 @@ const timeColor = computed(() => (state: any) => {
 })
 // 鼠标移入
 const handleMouseOver = (item: any) => {
+  console.log(item, "移入")
   hoveredItem.value = item
 }
 // 鼠标移出
 const handldMouseOut = () => {
+  console.log("item", "移出")
   hoveredItem.value = null
 }
 
