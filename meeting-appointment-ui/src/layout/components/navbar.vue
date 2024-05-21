@@ -1,11 +1,11 @@
 <template>
   <div class="nav-box">
      <div class="left">
-          <el-dropdown>
-              <el-button type="primary">
+          <!-- <el-dropdown> -->
+              <el-button type="primary" @click="handleToHome">
                   中心会议室<el-icon class="el-icon--right"><arrow-down /></el-icon>
               </el-button>
-              <template #dropdown>
+              <!-- <template #dropdown>
                   <el-dropdown-menu>
                   <el-dropdown-item>Action 1</el-dropdown-item>
                   <el-dropdown-item>Action 2</el-dropdown-item>
@@ -13,8 +13,8 @@
                   <el-dropdown-item>Action 4</el-dropdown-item>
                   <el-dropdown-item>Action 5</el-dropdown-item>
                   </el-dropdown-menu>
-              </template>
-          </el-dropdown>
+              </template> -->
+          <!-- </el-dropdown> -->
           <el-divider direction="vertical" />
           <div v-for="(item, index) in centerRoomName">
               <el-button class="btn-margin" :class="active == item.id ? 'active' : ''" @click="handleMenu(item)" >{{item.title}}</el-button>
@@ -60,6 +60,11 @@
  ];
   let active = ref(-1); // 活动页面id
 
+  const handleToHome = () => {
+    router.push('/home')
+  }
+
+  
   /**
    * @description 点击导航栏切换页面
    * @param index 活动页id

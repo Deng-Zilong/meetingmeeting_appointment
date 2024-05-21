@@ -58,34 +58,27 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     public Result<List<MeetingGroupVO>> checkGroup (Integer pageNum, Integer pageSize, String userId) {
         SysUserVO userVO = new SysUserVO();
         // 用户参加过的所有群组集合
-        ArrayList<MeetingGroup> joinList = new ArrayList<>();
         // 判断userId是否为空
         if (StringUtils.isBlank(userId)) {
             return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0312);
         }
         // 获取当前登录用户信息
         SysUser user = sysUserService.lambdaQuery()
+                .select(SysUser::getUserId, SysUser::getUserName)
                 .eq(StringUtils.isNotBlank(userId), SysUser::getUserId, userId)
                 .one();
         BeanUtils.copyProperties(user,userVO);
 
         // 查询当前用户参与过哪些群组
-        Page<UserGroup> userGroupPage = userGroupMapper.selectPage(new Page<>(pageNum, pageSize), new LambdaQueryWrapper<UserGroup>()
-                .eq(UserGroup::getUserId, userId)
-                .orderByDesc(UserGroup::getGmtModified));
-            List<UserGroup> userGroupList = userGroupPage.getRecords();
+        List<UserGroup> groups = userGroupService.lambdaQuery().eq(UserGroup::getUserId, userId).list();
+        List<Long> idList = groups.stream().map(UserGroup::getGroupId).toList();
 
-        userGroupList.stream().peek((UserGroup) -> {
-            MeetingGroup joinGroup = lambdaQuery()
-                    .eq(UserGroup.getGroupId() != null, MeetingGroup::getId, UserGroup.getGroupId())
-                    .one();
-            // 判断joinMeeting是否为空
-            if (joinGroup == null) {
-                return;
-            }
-            //将当前用户参与过的群组添加到joinList
-            joinList.add(joinGroup);
-        }).toList();
+        // 查询当前用户参与的所有群组
+        Page<MeetingGroup> meetingGroupPage = this.baseMapper
+                .selectPage(new Page<>(pageNum, pageSize), new LambdaQueryWrapper<MeetingGroup>()
+                .in(MeetingGroup::getId, idList)
+                .orderByDesc(MeetingGroup::getGmtCreate));
+        List<MeetingGroup> joinList = meetingGroupPage.getRecords();
 
         //遍历所参与的所有群组
         List<MeetingGroupVO> collectVO = joinList.stream().map((meetingGroup) -> {
@@ -93,15 +86,19 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
             BeanUtils.copyProperties(meetingGroup, meetingGroupVO);
             // 获取创建人信息,将其姓名填入表单
             SysUser creator = sysUserService.lambdaQuery()
-                            .eq(SysUser::getUserId, meetingGroup.getCreatedBy())
-                            .one();
+                    .select(SysUser::getUserName)
+                    .eq(SysUser::getUserId, meetingGroup.getCreatedBy())
+                    .one();
             meetingGroupVO.setUserName(creator.getUserName());
 
             // 查询当前群组的所有成员
             List<UserGroup> userGroups = userGroupService.lambdaQuery()
+                    .select(UserGroup::getUserId)
                     .eq(meetingGroup.getId() != null, UserGroup::getGroupId, meetingGroup.getId())
                     .orderByAsc(UserGroup::getGmtCreate)
                     .list();
+
+
             userGroups.stream().peek((userGroup) -> {
                 SysUserVO sysUserVO = new SysUserVO();
                 if (StringUtils.isBlank(userGroup.getUserId())) {
@@ -154,7 +151,6 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
                 .eq(StringUtils.isNotBlank(meetingGroupDTO.getGroupName()), MeetingGroup::getGroupName, meetingGroupDTO.getGroupName())
                 .one()
                 .getId();
-
         // 获取meetingGroupDTO中的用户列表
         List<SysUser> userList = meetingGroupDTO.getUsers();
 
@@ -174,8 +170,6 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
                 .build();
         // 保存UserGroup
         userGroupService.save(group);
-
-
         return Result.success(ADD_SUCCESS);
     }
 
@@ -185,7 +179,6 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
      * @Param [meetingGroupDTO]
      */
     @Override
-    @Transactional
     public Result<Object> updateMeetingGroup (MeetingGroupDTO meetingGroupDTO) {
         //查询修改之前的群组
         MeetingGroup beforeGroup = lambdaQuery()
@@ -199,10 +192,16 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         MeetingGroup meetingGroup = new MeetingGroup();
         // 将meetingGroupDTO中的属性复制到meetingGroup中
         BeanUtils.copyProperties(meetingGroupDTO, meetingGroup);
-        // 保存meetingGroup
+//        MeetingGroup one = lambdaQuery().eq(MeetingGroup::getId, meetingGroupDTO.getId()).one();
+//        one.setGroupName(meetingGroupDTO.getGroupName());
+        if (meetingGroupDTO.getGroupName()!=null){
         updateById(meetingGroup);
-        if(meetingGroupDTO.getUsers() != null){
-            List<UserGroup> userGroups = userGroupService.lambdaQuery().eq(UserGroup::getGroupId, meetingGroupDTO.getId()).list();
+        }
+        if(!meetingGroupDTO.getUsers().isEmpty()){
+            List<UserGroup> userGroups = userGroupService.lambdaQuery()
+                    .select(UserGroup::getId)
+                    .eq(UserGroup::getGroupId, meetingGroupDTO.getId())
+                    .list();
             userGroupService.removeBatchByIds(userGroups);
             meetingGroupDTO.getUsers().stream().map((member) -> {
                 UserGroup group = UserGroup.builder()
@@ -213,9 +212,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
                 return group;
             }).toList();
             return Result.success(UPDATE_SUCCESS);
-
         }
-
         return Result.success(UPDATE_SUCCESS);
     }
 
@@ -228,7 +225,10 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     @Transactional
     public Result<Object> deleteMeetingGroup (Long id) {
         // 查询出MeetingGroup对象之前的UserGroup对象列表
-        List<UserGroup> userGroupList = userGroupService.lambdaQuery().eq(UserGroup::getGroupId, id).list();
+        List<UserGroup> userGroupList = userGroupService.lambdaQuery()
+                .select(UserGroup::getUserId)
+                .eq(UserGroup::getGroupId, id)
+                .list();
         if (userGroupList == null) {
             log.info(DELETE_FAIL + EXCEPTION_TYPE, RRException.class);
             throw new RRException(DELETE_FAIL, ErrorCodeEnum.SERVICE_ERROR_C0111.getCode());

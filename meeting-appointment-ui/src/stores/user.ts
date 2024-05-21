@@ -28,14 +28,15 @@ export const useUserStore = defineStore('user',()=>{
      * @description 企业微信扫码登录
      * @param code 企业微信返回code
      */
-    const getQWUserInfo= (code: string)=>{
+    const getQWUserInfo = (code: string)=>{
         qwLogin({code})
                 .then((res: any) => {
+                    localStorage.setItem('userInfo', JSON.stringify(res.data));
                     userInfo = res.data;
                     ElMessage.success('登陆成功!');
                 })
                 .catch((err: any) => {
-                    router.replace('/login');
+                    // router.replace('/login');
                     return err;
                 })
     }

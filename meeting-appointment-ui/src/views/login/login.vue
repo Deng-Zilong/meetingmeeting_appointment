@@ -17,7 +17,7 @@
                     <!-- 验证码 -->
                     <el-form-item prop="captcha">
                         <el-row :gutter="20">
-                            <el-col :span="12"><el-input v-model="ruleForm.captcha"></el-input></el-col>
+                            <el-col :span="12"><el-input v-model="ruleForm.captcha" @keyup.enter="submitForm(ruleFormRef)"></el-input></el-col>
                             <el-col :span="12">
                                 <div class="captcha" @click="changeCaptcha">
                                     <el-image :src="imgUrl" draggable="false" />
@@ -27,7 +27,7 @@
                     </el-form-item>
                     <!-- 登录 -->
                     <el-form-item>
-                        <el-button type="primary" @click="submitForm(ruleFormRef)">
+                        <el-button type="primary" @click="submitForm(ruleFormRef)" v-loading="loginBtnLoading">
                             登录
                         </el-button>
                     </el-form-item>
@@ -51,10 +51,12 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { v4 as uuidv4 } from 'uuid';
 import { useUserStore } from '@/stores/user'
 import { getCaptcha } from '@/request/api/login'
+import { Md5 } from 'ts-md5';
 
 // 用户信息
 const userStore = useUserStore();
-const ruleFormRef = ref<FormInstance>()
+const ruleFormRef = ref<FormInstance>();
+let loginBtnLoading = ref<boolean>(false);
 // 登录验证
 const ruleForm = reactive({
     name: '',
@@ -101,28 +103,29 @@ const isShow = ref(false)
 const changeLogin = () => {
     isShow.value = !isShow.value;
     if (!isShow.value) {
-        nextTick(() => {
+        return nextTick(() => {
             code();
         })
     }
+    changeCaptcha();
 }
 // 账号登录 
 const submitForm = async (formEl: FormInstance | undefined) => {
-
     if (!formEl) return
     formEl.validate((valid) => {
-        if (valid) {
-            const { name, password, captcha } = ruleForm;
-            userStore.getUserInfo({ name, password, code: captcha, uuid: uuid.value });
-        } else {
-            // openVn()
-            return false
-        }
+        if (!valid) return; 
+        const { name, captcha } = ruleForm;
+        const md5:any = new Md5();
+        // md5 加密密码
+        md5.appendAsciiStr(ruleForm.password);
+        const password = md5.end();
+        
+        userStore.getUserInfo({ name, password, code: captcha, uuid: uuid.value });
+        loginBtnLoading.value;
     })
 }
 
 onMounted(() => {
-    changeCaptcha();
     code();
 });
 
@@ -133,13 +136,11 @@ const code = () => {
         appid: 'ww942086e6c44abc4b',
         agentid: '1000002',
         login_type: 'CorpApp',
-        redirect_uri: 'http%3A%2F%2Fggssyy.cn%2F%23%2Fhome',
+        redirect_uri:  'http%3A%2F%2F192.168.212.41%3A30586%2F%23%2Fhome',
         state: 'WWLogin',
         "lang": "zh",
     });
 }
-
-
 </script>
 
 <style scoped lang="scss">

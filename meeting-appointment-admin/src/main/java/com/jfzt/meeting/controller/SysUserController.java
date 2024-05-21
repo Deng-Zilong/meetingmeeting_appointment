@@ -1,19 +1,32 @@
 package com.jfzt.meeting.controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.dto.AdminDTO;
 import com.jfzt.meeting.entity.vo.UserInfoVO;
+import com.jfzt.meeting.exception.ErrorCodeEnum;
+import com.jfzt.meeting.exception.RRException;
+import com.jfzt.meeting.properties.JwtProperties;
 import com.jfzt.meeting.service.SysDepartmentUserService;
 import com.jfzt.meeting.service.SysUserService;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.cp.bean.WxCpUser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static com.jfzt.meeting.utils.JwtUtil.createJWT;
 
 
 /**
@@ -22,6 +35,7 @@ import java.util.List;
  * @author zhenxing.lu
  * @since 2024-04-30 10.13:51
  */
+@Slf4j
 @RestController
 @RequestMapping("/meeting/user")
 public class SysUserController {
@@ -31,48 +45,63 @@ public class SysUserController {
     private SysUserService sysUserService;
 
     @Resource
-    private RedisTemplate<String,String> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Resource
     private SysDepartmentUserService sysDepartmentUserService;
+    @Autowired
+    private JwtProperties jwtProperties;
 
 
     /**
      * 获取token，部门，部门人员
+     *
      * @return userInfoVO
      */
     @GetMapping(value = "info")
     @Transactional
-    public Result<UserInfoVO> info(@RequestParam("code") String code) throws WxErrorException {
-        String testName = "admin";
-        UserInfoVO userInfoVO = new UserInfoVO();
+    public Result<UserInfoVO> info(@RequestParam("code") String code) throws WxErrorException, NoSuchAlgorithmException {
+        if(StringUtils.isBlank(code)){
+            log.error("用户扫码登录失败请重新扫码");
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A02011);
+        }
         //获取登录token
         String accessToken = sysDepartmentUserService.findTocken();
         //获取用户详细信息
         WxCpUser wxUser = sysDepartmentUserService.findUserName(accessToken, code);
-        if (wxUser.getUserId().equals(testName)){
-            //获取部门信息
-            Long departmentLength = sysDepartmentUserService.findDepartment();
-            //获取部门人员
-            sysDepartmentUserService.findDepartmentUser(departmentLength);
-        }
-        userInfoVO.setAccessToken(accessToken);
-        userInfoVO.setUserId(wxUser.getUserId());
-        userInfoVO.setName(wxUser.getName());
-        userInfoVO.setLevel(wxUser.getIsLeader());
-        redisTemplate.opsForValue().set("userInfo"+wxUser.getUserId(), String.valueOf(userInfoVO), Duration.ofHours(2));
-        return Result.success(userInfoVO);
+        //获取部门信息
+        Long departmentLength = sysDepartmentUserService.findDepartment();
+        //获取部门人员
+        sysDepartmentUserService.findDepartmentUser(departmentLength);
+
+        //登录成功后，生成jwt令牌
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sysUserId", wxUser.getUserId());
+        String token = createJWT(
+                jwtProperties.getAdminSecretKey(),
+                jwtProperties.getAdminTtl(),
+                claims);
+
+        UserInfoVO userInfo = UserInfoVO.builder()
+                .accessToken(token)
+                .userId(wxUser.getUserId())
+                .name(wxUser.getName())
+                .level(wxUser.getIsLeader())
+                .build();
+        redisTemplate.opsForValue().set("userInfo" + userInfo.getUserId(), JSONObject.toJSONString(userInfo), Duration.ofHours(24));
+        return Result.success(userInfo);
     }
 
 
     /**
      * 获取不是管理员的企业微信用户姓名
-     * @param sysUser 用户对象
+     *
+     * @param sysUser      用户对象
      * @param currentLevel 当前登录用户的权限等级
-     * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
+     * @return com.jfzt.meeting.common.Result<java.util.List < java.lang.String>>
      */
-    @GetMapping("/selectName")
-    public Result<List<String>> selectList(SysUser sysUser, @RequestParam("currentLevel") Integer currentLevel){
+    @GetMapping("/select-name")
+    public Result<List<String>> selectList(SysUser sysUser, @RequestParam("currentLevel") Integer currentLevel) {
         return sysUserService.selectAll(sysUser, currentLevel);
 
     }
@@ -80,32 +109,35 @@ public class SysUserController {
 
     /**
      * 查询所有的管理员
+     *
      * @param currentLevel 当前登录用户的权限等级
-     * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
+     * @return com.jfzt.meeting.common.Result<java.util.List < java.lang.String>>
      */
-    @GetMapping("/selectAdmin")
-    public Result<List<SysUser>> selectAdmin(@RequestParam("currentLevel") Integer currentLevel){
+    @GetMapping("/select-admin")
+    public Result<List<SysUser>> selectAdmin(@RequestParam("currentLevel") Integer currentLevel) {
         return sysUserService.selectAdmin(currentLevel);
     }
 
     /**
      * 删除管理员,只有超级管理员可以操作
+     *
      * @param adminDTO 用户DTO对象
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
-    @PutMapping("/deleteAdmin")
-    public Result<Integer> deleteAdmin (@RequestBody AdminDTO adminDTO) {
+    @PutMapping("/delete-admin")
+    public Result<Integer> deleteAdmin(@RequestBody AdminDTO adminDTO) {
         return sysUserService.deleteAdmin(adminDTO.getUserId());
     }
 
 
     /**
      * 新增管理员,只有超级管理员可以操作
+     *
      * @param adminDTO 用户DTO对象
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
-    @PutMapping("/addAdmin")
-    public Result<Integer> addAdmin (@RequestBody AdminDTO adminDTO) {
+    @PutMapping("/add-admin")
+    public Result<Integer> addAdmin(@RequestBody AdminDTO adminDTO) {
         return sysUserService.addAdmin(adminDTO.getUserIds());
     }
 }

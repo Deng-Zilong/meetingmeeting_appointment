@@ -1,5 +1,5 @@
 <template>
-    <el-dialog v-model="visible" :title="title" class="add-group-dialog" width="18.75rem">
+    <el-dialog v-model="visible" :title="title" class="add-group-dialog" width="18.75rem" :before-close="closeDialog">
         <el-select
             v-model="search"
             clearable
@@ -59,6 +59,10 @@
     import { defineProps, defineEmits, ref, getCurrentInstance, watch, onMounted, nextTick } from 'vue';
     import { getGroupUserTree } from '@/request/api/group'
 
+    const userInfo = ref<any>(JSON.parse(localStorage.getItem('userInfo') as string) || '');
+    const currentUserId = ref<string>(userInfo.value.userId);
+    const currentUserName = ref<string>(userInfo.value.name);
+
     // 获取父组件传值
     const props = defineProps<{
         modelValue: boolean
@@ -105,7 +109,7 @@
      */
      const handleAddGroupReq = () => {
         getGroupUserTree()
-            .then(res => {
+          .then(res => {
                 addGroupForm.value.list = treeUserListToChildren(res.data);
             })
             .catch(err => {
@@ -120,11 +124,19 @@
         data.forEach((item: any) => {
             // 如果当前节点有 treeUsers，则创建一个代表 treeUsers 的虚拟节点
             if (item.treeUsers && item.treeUsers.length > 0) {
-                const userListNode = item.treeUsers.map((user: any) => {
+              const userListNode = item.treeUsers.map((user: any) => {
+                if (props.type == 4 && user.level == 2) {
                     user.departmentName = user.userName;
                     user.isTreeUsersNode = true;
                     return user;
-                })
+                }
+                if (props.type !== 4) {
+                    user.departmentName = user.userName;
+                    user.isTreeUsersNode = true;
+                    return user;
+                }
+              }).filter((item: any) => item !== undefined)
+
                 // 将这个虚拟节点插入到 childrenPart 的最前面
                 item.childrenPart.unshift(...userListNode);
             }
@@ -159,17 +171,24 @@
      * @description 获取选中人员信息
      */
      const handleChangeGroupPeople = (value: any) => {
-        // 强制刷新视图
-        getCurrentInstance()?.appContext.config.globalProperties.$forceUpdate();
-        // 将选中的userId添加到 groupPeopleIds 中
-        addGroupForm.value.peopleIds?.push(value);
-    }
+         // 将选中的userId添加到 groupPeopleIds 中
+         addGroupForm.value.peopleIds = Array.from(new Set([...addGroupForm.value.peopleIds, value]));
+        }
 
     let groupPeopleList = ref<any>([]); // 远程搜索群组成员列表
     /**
      * @description 远程搜索群组成员
      */
-    const remoteSearchGroupPeople = (query: string = 'null') => {
+    let times = 0; // 搜索框输入值的次数
+    const remoteSearchGroupPeople = (query: string) => {
+        // 当query不为空时 即 用户输入过值
+        if (query != '') {
+            times++;
+        }
+        // 当query为空 且 用户一直未输入值时 搜索框的值为null
+        if(query == '' && times == 0) {
+            query = 'null';
+        }
         likeByName({name: query})
             .then((res: any) => {
                 groupPeopleList.value = res.data;
@@ -193,9 +212,10 @@
             if (active.value == 1 && treeGroupRef.value) {
                 handleGroupTree();
             }
-            allIds.value = [...groupPersonIds.value, ...addGroupForm.value.peopleIds];
-            allName.value = [...groupUserNames.value, ...addGroupForm.value.groupPeopleNames];
-            allInfo.value = [...groupUserInfo.value, ...addGroupForm.value.groups];
+            allIds.value = Array.from(new Set([...groupPersonIds.value, ...addGroupForm.value.peopleIds, currentUserId.value ]));
+            allName.value = Array.from(new Set([...groupUserNames.value, ...addGroupForm.value.groupPeopleNames, currentUserName.value]));
+            allInfo.value = Array.from(new Set([...groupUserInfo.value, ...addGroupForm.value.groups, {userId: currentUserId.value, userName: currentUserName.value}]));
+            
             return emit ('submitDialog',props.type, active.value, allIds.value, allName.value, allInfo.value);
             
         }
@@ -239,8 +259,8 @@
         // 获取被选中成员的id
         addGroupForm.value.peopleIds = Array.from(new Set(selectedPeople.map((item: any) => item.userId)));
         addGroupForm.value.groupPeopleNames = Array.from(new Set(selectedPeople.map((item: any) => item.userName)));
-            // 获取被选中人员的 信息并去重
-            addGroupForm.value.groups = Array.from(
+        // 获取被选中人员的 信息并去重
+        addGroupForm.value.groups = Array.from(
             new Map(
                 selectedPeople.map((item: any) => [item.userId, {
                     userId: item.userId,

@@ -32,6 +32,7 @@ public class GlobalExceptionHandler {
         result.setMsg(e.getMessage());
         return result;
     }
+
     /**
      * 处理io流异常
      */
@@ -42,20 +43,22 @@ public class GlobalExceptionHandler {
         result.setMsg(e.getMessage());
         return result;
     }
+
     /**
      * 多结果异常
      */
     @ExceptionHandler(TooManyResultsException.class)
-    public Result<String> TooManyRException(TooManyResultsException e){
-        log.error(SYSTEM_ERROR_B0001.getDescription() + EXCEPTION_TYPE,e.getMessage());
+    public Result<String> TooManyRException (TooManyResultsException e) {
+        log.error(SYSTEM_ERROR_B0001.getDescription() + EXCEPTION_TYPE, e.getMessage());
         return Result.fail(SYSTEM_ERROR_B0001);
     }
+
     /**
      * 空指针异常
      */
     @ExceptionHandler(NullPointerException.class)
-    public Result<String> NullPointerException(NullPointerException e){
-        log.error(SERVICE_ERROR_A0400.getDescription() + EXCEPTION_TYPE,e.getMessage());
+    public Result<String> NullPointerException (NullPointerException e) {
+        log.error(SERVICE_ERROR_A0400.getDescription() + EXCEPTION_TYPE, e.getMessage());
         return Result.fail(SERVICE_ERROR_A0400);
     }
 
@@ -81,16 +84,22 @@ public class GlobalExceptionHandler {
         result.setMsg(ErrorCodeEnum.SERVICE_ERROR_C0200.getDescription());
         return result;
     }
-//
-//    /**
-//     * 处理其他未知异常
-//     *
-//     * @return {@code Result<String>}
-//     */
-//    @ExceptionHandler(Exception.class)
-//    public Result<String> handleException () {
-//        return Result.fail(ErrorCodeEnum.SYSTEM_ERROR_B0001);
-//    }
+
+    /**
+     * 处理其他未知异常
+     *
+     * @return {@code Result<String>}
+     */
+    @ExceptionHandler(Exception.class)
+    public Result<String> handleException (Exception e) {
+        log.error("Exception occurred:", e);
+        StackTraceElement[] stackTrace = e.getStackTrace();
+        if (stackTrace.length > 0) {
+            String exceptionLocation = stackTrace[0].toString();
+            log.error("Exception occurred at: {}", exceptionLocation);
+        }
+        return Result.fail(ErrorCodeEnum.SYSTEM_ERROR_B0001);
+    }
 
 
 }

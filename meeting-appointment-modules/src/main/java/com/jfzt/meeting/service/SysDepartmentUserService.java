@@ -8,6 +8,7 @@ import com.jfzt.meeting.entity.SysUser;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.cp.bean.WxCpUser;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 /**
@@ -23,7 +24,7 @@ public interface SysDepartmentUserService extends IService<SysDepartmentUser> {
 
     Long findDepartment () throws WxErrorException;
 
-    void findDepartmentUser (Long departmentLength) throws WxErrorException;
+    void findDepartmentUser (Long departmentLength) throws WxErrorException, NoSuchAlgorithmException;
 
 
     Result<List<SysDepartment>> gainUsers();

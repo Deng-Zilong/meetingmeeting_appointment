@@ -1,6 +1,7 @@
 package com.jfzt.meeting.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.context.BaseContext;
@@ -9,8 +10,9 @@ import com.jfzt.meeting.entity.vo.LoginVo;
 import com.jfzt.meeting.entity.vo.UserInfoVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
+import com.jfzt.meeting.properties.JwtProperties;
 import com.jfzt.meeting.service.SysUserService;
-import com.jfzt.meeting.utils.TokenGenerator;
+import com.jfzt.meeting.utils.EncryptUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,6 +27,10 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.jfzt.meeting.utils.JwtUtil.createJWT;
 
 
 /**
@@ -44,7 +50,8 @@ public class SysLoginController {
     @Resource
     private RedisTemplate<String,Object> redisTemplate;
 
-
+    @Autowired
+    private JwtProperties jwtProperties;
 
     /**
      * 验证码
@@ -68,36 +75,54 @@ public class SysLoginController {
      * @return 登录结果
      */
     @PostMapping(value = "login")
-    public Result<UserInfoVO> login(@RequestBody LoginVo loginVo) throws NoSuchAlgorithmException {
+    public Result<UserInfoVO> login (@RequestBody LoginVo loginVo) throws NoSuchAlgorithmException {
         //判断验证码是否正确,需要获取redis中的验证码
         String codeUuids = (String) redisTemplate.opsForValue().get(loginVo.getUuid());
-        if(StringUtils.isBlank(codeUuids)||!loginVo.getCode().equalsIgnoreCase(codeUuids)){
+        if (StringUtils.isBlank(codeUuids) || !loginVo.getCode().equalsIgnoreCase(codeUuids)) {
             log.error("用户未请求验证码或者用户验证码输入错误");
-            throw new  RRException(ErrorCodeEnum.SERVICE_ERROR_A0240);
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0240);
         }
         SysUser sysUser = sysUserService.findUser(loginVo);
-        if (sysUser == null ) {
+        if (sysUser == null) {
             log.error("用户账户不存在");
-            throw new  RRException(ErrorCodeEnum.SERVICE_ERROR_A0201);
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0201);
         }
-        if (!sysUser.getPassword().equals(loginVo.getPassword())){
+        if (!EncryptUtils.match(loginVo.getPassword(), sysUser.getPassword())) {
             log.error("用户密码错误");
-            throw new  RRException(ErrorCodeEnum.SERVICE_ERROR_A0210);
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0210);
         }
-        //生成一个token
-        String accessToken = TokenGenerator.generateValue();
-        //获取用户信息
-        UserInfoVO userInfo = new UserInfoVO();
-        userInfo.setAccessToken(accessToken);
-        userInfo.setUserId(sysUser.getUserId());
-        userInfo.setName(sysUser.getUserName());
-        userInfo.setLevel(sysUser.getLevel());
+        //登录成功后，生成jwt令牌
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sysUserId", sysUser.getUserId());
+        String token = createJWT(
+                jwtProperties.getAdminSecretKey(),
+                jwtProperties.getAdminTtl(),
+                claims);
+
+        UserInfoVO userInfo = UserInfoVO.builder()
+                .accessToken(token)
+                .userId(sysUser.getUserId())
+                .name(sysUser.getUserName())
+                .level(sysUser.getLevel())
+                .build();
         //存入到redis中
         redisTemplate.opsForValue().set("userInfo"+userInfo.getUserId(), JSONObject.toJSONString(userInfo), Duration.ofHours(24));
         //存入当前登录用户到ThreadLocal中
         BaseContext.setCurrentUserId(sysUser.getUserId());
         BaseContext.setCurrentLevel(sysUser.getLevel());
         return Result.success(userInfo);
+    }
+
+    /**
+     * 修改密码
+     */
+    @PutMapping("updateSysAdminPassword")
+    public Result<String> addAdmin (@RequestParam String userId, @RequestParam String password) throws NoSuchAlgorithmException {
+        SysUser one = sysUserService.getOne(new QueryWrapper<SysUser>().eq("user_id", userId));
+        one.setPassword(EncryptUtils.encrypt(EncryptUtils.md5encrypt(password)));
+        log.info("MD5盐值加密后：{}", one.getPassword());
+        sysUserService.updateById(one);
+        return Result.success("添加成功");
     }
 
 }

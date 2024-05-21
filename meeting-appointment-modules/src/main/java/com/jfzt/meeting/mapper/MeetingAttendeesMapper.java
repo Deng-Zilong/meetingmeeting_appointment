@@ -11,14 +11,12 @@ import java.util.List;
  * @author zilong.deng
  * @description 针对表【meeting_attendees(参会人员表)】的数据库操作Mapper
  * @createDate 2024-04-28 11:30:57
- * @Entity com.jfzt.meeting.entity.MeetingAttendees
  */
 @Mapper
 public interface MeetingAttendeesMapper extends BaseMapper<MeetingAttendees> {
-
-
     @Select("SELECT meeting_attendees.user_id FROM meeting_attendees WHERE meeting_record_id = #{recordId} order by meeting_attendees.gmt_create desc")
     List<String> selectUserIdsByRecordId (Long recordId);
+
 }
 
 

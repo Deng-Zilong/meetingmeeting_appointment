@@ -23,12 +23,12 @@
 }
 
 /* 去除历史记录中时间线的padding */
-.history .el-timeline-item__wrapper {
+ .el-timeline-item__wrapper {
   padding-left: 0 !important;
 }
 
 /* 改变 时间线中日期的样式 */
-.history .el-timeline-item__timestamp {
+ .el-timeline-item__timestamp {
   display: inline;
   position: absolute;
   left: 1.125rem;
@@ -36,29 +36,15 @@
 }
 
 /* 隐藏时间线的线条和节点 */
-.history .el-timeline-item__tail,
+.el-timeline-item__tail,
 .el-timeline-item__node {
   display: none !important;
 }
 
 /* 去除时间线子节点的下padding */
-.history .el-timeline-item {
+.el-timeline-item {
   padding-bottom: 0 !important;
 }
-
-/* 
-.history .meeting-dialog .el-dialog, 
-.group .delete-box .el-message-box {
-  width: 30rem !important;
-  height: 15rem !important;
-  border-radius: 15px;
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.8);
-  box-sizing: border-box;
-  border: 3px solid rgba(50, 104, 220, 0.9);
-  box-shadow: 0px 3px 8px 0px rgba(0, 0, 0, 0.2);
-  border-radius: 1.25rem !important;
-} */
 
 
 

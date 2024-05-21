@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 
 import java.util.List;
 
@@ -35,7 +34,7 @@ public class RedisTest {
     void contextLoads () throws JsonProcessingException {
 
         ObjectMapper objectMapper = new ObjectMapper();
-        List<MeetingRecordVO> recordVoList = meetingRecordService.getRecordVoList("dzl");
+        List<MeetingRecordVO> recordVoList = meetingRecordService.getTodayMeetingRecord("dzl");
         log.info("recordVoList:{}", recordVoList);
         log.info("----------------------------------------");
         //转JSON

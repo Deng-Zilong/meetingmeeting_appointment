@@ -17,7 +17,7 @@ import java.util.List;
  */
 @CrossOrigin
 @RestController
-@RequestMapping("/meetingNotice")
+@RequestMapping("meeting/meeting-notice")
 public class MeetingNoticeController {
 
     @Resource
@@ -28,19 +28,18 @@ public class MeetingNoticeController {
      * @param meetingNoticeVO 公告信息VO对象
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
-    @PostMapping("/addNotice")
+    @PostMapping("/add-notice")
     public Result<Integer> addNotice (@RequestBody MeetingNoticeVO meetingNoticeVO) {
         return meetingNoticeService.addNotice(meetingNoticeVO);
     }
 
     /**
      * 查询所有公告
-     * @param meetingNotice 公告信息对象
      * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
      */
-    @GetMapping("/getNotice")
-    public Result<List<String>> getNotice (MeetingNotice meetingNotice) {
-        return meetingNoticeService.selectAll(meetingNotice);
+    @GetMapping("/get-notice")
+    public Result<List<String>> getNotice () {
+        return meetingNoticeService.selectAll();
 
     }
 }

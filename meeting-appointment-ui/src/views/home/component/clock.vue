@@ -4,10 +4,6 @@
     <!-- 小时刻度 -->
     <template v-for="i in 12" :key="i">
 
-      <!-- <line v-if="i === 12 || i === 3 || i === 6 || i === 9" :x1="0" :y1="0"
-        :x2="90 * Math.cos((i - 3) * (Math.PI / 6))" :y2="90 * Math.sin((i - 3) * (Math.PI / 6))" stroke="#666"
-        :stroke-width="2" /> -->
-
       <!-- 12点 刻度线 -->
       <line v-if="i === 12" :x1="0" :y1="-60" :x2="90 * Math.cos((i - 3) * (Math.PI / 6))"
         :y2="80 * Math.sin((i - 3) * (Math.PI / 6))" stroke="#fff" :stroke-width="2" />
@@ -21,10 +17,6 @@
       <line v-if="i === 9" :x1="-60" :y1="0" :x2="80 * Math.cos((i - 3) * (Math.PI / 6))"
         :y2="90 * Math.sin((i - 3) * (Math.PI / 6))" stroke="#fff" :stroke-width="2" />
 
-      <!-- 时刻数字显示 -->
-      <!-- <text v-if="i === 12 || i === 3 || i === 6 || i === 9" :x="95 * Math.cos((i - 3) * (Math.PI / 6))"
-        :y="95 * Math.sin((i - 3) * (Math.PI / 6))" text-anchor="middle" alignment-baseline="central" fill="#333"
-        font-size="10px">{{ i }}</text> -->
     </template>
     <!-- 时针 -->
     <line class="hand hour-hand" :x1="0" :y1="0" :x2="45 * Math.cos(currentHourRad)" :y2="45 * Math.sin(currentHourRad)"
@@ -50,9 +42,12 @@ export default defineComponent({
 
     const updateTime = () => {
       now.value = new Date();
-      currentHourRad.value = ((now.value.getHours() % 12) * (Math.PI / 6)) + (now.value.getMinutes() * (Math.PI / 360));
-      currentMinuteRad.value = (now.value.getMinutes() * (Math.PI / 30)) + (now.value.getSeconds() * (Math.PI / 1800));
-      currentSecondRad.value = (now.value.getSeconds() * (Math.PI / 30));
+      // currentHourRad.value = ((now.value.getHours() % 12) * (Math.PI / 6)) + (now.value.getMinutes() * (Math.PI / 360));
+      // currentMinuteRad.value = (now.value.getMinutes() * (Math.PI / 30)) + (now.value.getSeconds() * (Math.PI / 1800));
+      // currentSecondRad.value = (now.value.getSeconds() * (Math.PI / 30));
+      currentHourRad.value = (now.value.getHours() % 12 + now.value.getMinutes() / 60) * (Math.PI / 6) - Math.PI / 2
+      currentMinuteRad.value = (now.value.getMinutes() + now.value.getSeconds() / 60) * (Math.PI / 30) - Math.PI / 2
+      currentSecondRad.value = (now.value.getSeconds() + now.value.getMilliseconds() / 1000) * (Math.PI / 30) - Math.PI / 2
     };
 
     watchEffect(() => {

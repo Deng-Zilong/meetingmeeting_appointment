@@ -6,7 +6,6 @@ import com.jfzt.meeting.entity.dto.MeetingRoomDTO;
 import com.jfzt.meeting.entity.dto.TimePeriodDTO;
 import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomVO;
-import com.jfzt.meeting.entity.vo.TimePeriodStatusVO;
 import com.jfzt.meeting.service.MeetingRoomService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,17 +38,17 @@ public class MeetingRoomController {
      * @param date 日期
      * @return {@code Result<List<TimePeriodStatusVO>>}
      */
-    @GetMapping("/index/isBusyByIdAndDate")
-    public Result<List<TimePeriodStatusVO>> isBusyByIdAndDate (@RequestParam Long id, @RequestParam LocalDate date) {
+    @GetMapping("/index/time-period-status")
+    public Result<List<Integer>> isBusyByIdAndDate (@RequestParam Long id, @RequestParam LocalDate date) {
         return meetingRoomService.isBusyByIdAndDate(id, date);
     }
 
     /**
-     * 查询当日时间段可预约状态（0：已过期1：已占用2：可预约）
+     * 查询当日可预约（0：已过期1：已占用2：可预约）
      *
      * @return {@code Result<List<Integer>>}
      */
-    @GetMapping("/index/isBusy")
+    @GetMapping("/index/today-time-period-status")
     public Result<List<Integer>> isBusy () {
         List<Integer> result = meetingRoomService.isBusy();
         return Result.success(result);
@@ -60,7 +59,7 @@ public class MeetingRoomController {
      *
      * @return {@code Result<List<MeetingRoomStatusVO>>}
      */
-    @GetMapping("/index/meetingRoomStatus")
+    @GetMapping("/index/meeting-room-status")
     public Result<List<MeetingRoomStatusVO>> getMeetingRoomStatus () {
         List<MeetingRoomStatusVO> meetingRoomStatusVOList = meetingRoomService.getMeetingRoomStatus();
         return Result.success(meetingRoomStatusVOList);
@@ -72,8 +71,8 @@ public class MeetingRoomController {
      * @param timePeriodDTO 时间段
      * @return {@code Result<List<MeetingRoomVO>>}
      */
-    @PostMapping("/createMeeting/availableMeetingRooms")
-    public Result<List<MeetingRoomVO>> getAvailableMeetingRooms (@RequestBody TimePeriodDTO timePeriodDTO) {
+    @GetMapping("/create-meeting/available-meeting-rooms")
+    public Result<List<MeetingRoomVO>> getAvailableMeetingRooms (TimePeriodDTO timePeriodDTO) {
         return meetingRoomService.getAvailableMeetingRooms(timePeriodDTO.getStartTime(), timePeriodDTO.getEndTime());
     }
 
@@ -81,7 +80,7 @@ public class MeetingRoomController {
      * @param meetingRoom 会议室
      * @return {@code Result<String>}
      */
-    @PostMapping("/addMeetingRoom")
+    @PostMapping("/add-meeting-room")
     public Result<String> addMeetingRoom (@RequestBody MeetingRoom meetingRoom) {
         return meetingRoomService.addMeetingRoom(meetingRoom);
 
@@ -91,7 +90,7 @@ public class MeetingRoomController {
      * @param meetingRoomId 会议室
      * @return {@code Result<String>}
      */
-    @DeleteMapping("/deleteMeetingRoom")
+    @DeleteMapping("/meeting-room")
     public Result<String> deleteMeetingRoom (@RequestParam Long meetingRoomId) {
         return meetingRoomService.deleteMeetingRoom(meetingRoomId);
 
@@ -99,22 +98,24 @@ public class MeetingRoomController {
 
     /**
      * 修改会议室状态
+     *
      * @param meetingRoomDTO 会议室DTO对象
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
-    @PutMapping("/updateStatus")
+    @PutMapping("/update-status")
     public Result<Integer> updateStatus (@RequestBody MeetingRoomDTO meetingRoomDTO) {
         return meetingRoomService.updateStatus(meetingRoomDTO);
     }
 
 
     /**
-     * 查询未被禁用的会议室的id
+     * 查询被禁用的会议室的id
+     *
      * @param currentLevel 当前登录用户的权限等级
-     * @return com.jfzt.meeting.common.Result<java.util.List<<java.lang.Integer>>
+     * @return com.jfzt.meeting.common.Result<java.util.List < < java.lang.Integer>>
      */
-    @GetMapping("/index/allRoom")
-    public Result<List<MeetingRoomVO>> selectUsableRoom (@RequestParam("currentLevel") Integer currentLevel) {
+    @GetMapping("/index/all-room")
+    public Result<List<Long>> selectUsableRoom (@RequestParam("currentLevel") Integer currentLevel) {
         return meetingRoomService.selectUsableRoom(currentLevel);
 
     }

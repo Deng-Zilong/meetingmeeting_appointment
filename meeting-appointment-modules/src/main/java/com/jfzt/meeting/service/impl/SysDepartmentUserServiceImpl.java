@@ -12,6 +12,7 @@ import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.service.SysDepartmentService;
 import com.jfzt.meeting.service.SysDepartmentUserService;
 import com.jfzt.meeting.service.SysUserService;
+import com.jfzt.meeting.utils.EncryptUtils;
 import com.jfzt.meeting.utils.HttpClientUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -84,21 +86,20 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     public Long findDepartment() throws WxErrorException {
         WxCpDepartmentServiceImpl wxCpDepartmentService = new WxCpDepartmentServiceImpl(wxCpService);
         List<WxCpDepart> listDepartmentList = wxCpDepartmentService.list(0L);
+        sysDepartmentMapper.deleteAll();
         //存入信息
         for (WxCpDepart listDepartment : listDepartmentList) {
             SysDepartment sysDepartment = new SysDepartment();
             sysDepartment.setDepartmentId(listDepartment.getId());
             sysDepartment.setDepartmentName(listDepartment.getName());
             sysDepartment.setParentId(listDepartment.getParentId());
-            LambdaQueryWrapper<SysDepartment> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            sysDepartmentMapper.delete(lambdaQueryWrapper);
             sysDepartmentMapper.insert(sysDepartment);
         }
         return (long) listDepartmentList.size();
     }
 
     @Override
-    public void findDepartmentUser(Long departmentLength) throws WxErrorException {
+    public void findDepartmentUser(Long departmentLength) throws WxErrorException, NoSuchAlgorithmException {
         WxCpUserServiceImpl wxCpUserService = new WxCpUserServiceImpl(wxCpService);
         List<WxCpUser> listDepartmentUserList = new ArrayList<>();
         for (int i = 1; i < departmentLength + 1; i++) {
@@ -106,21 +107,20 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
             listDepartmentUserList.addAll(wxCpUser);
         }
         List<WxCpUser> wxCpUserList = listDepartmentUserList.stream().distinct().toList();
+        sysUserMapper.deleteAll();
         for (WxCpUser wxCpUser : wxCpUserList) {
             SysUser sysUser = new SysUser();
             sysUser.setUserId(wxCpUser.getUserId());
             sysUser.setUserName(wxCpUser.getName());
-            sysUser.setPassword(wxCpUser.getUserId());
+
+            sysUser.setPassword(EncryptUtils.encrypt(EncryptUtils.md5encrypt(wxCpUser.getUserId())));
             sysUser.setLevel(wxCpUser.getEnable());
-            LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            sysUserMapper.delete(lambdaQueryWrapper);
             sysUserMapper.insert(sysUser);
+            sysDepartmentUserMapper.deleteAll();
             for (int s = 0; s < wxCpUser.getDepartIds().length; s++) {
                 SysDepartmentUser sysDepartmentUser = new SysDepartmentUser();
                 sysDepartmentUser.setUserId(wxCpUser.getUserId());
                 sysDepartmentUser.setDepartmentId(wxCpUser.getDepartIds()[s]);
-                LambdaQueryWrapper<SysDepartmentUser> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
-                sysDepartmentUserMapper.delete(lambdaQueryWrapper1);
                 sysDepartmentUserMapper.insert(sysDepartmentUser);
             }
         }
@@ -167,13 +167,14 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
                     childrenNode.setChildrenPart(getChildren(childrenNode, all));
                     // 获取部门用户
                     List<SysDepartmentUser> departmentUsers = sysDepartmentUserService.lambdaQuery()
+                            .select(SysDepartmentUser::getUserId)
                             .eq(SysDepartmentUser::getDepartmentId , childrenNode.getDepartmentId())
                             .list();
                     // 对每个部门用户进行操作
                     departmentUsers.stream().peek(sysDepartmentUser -> {
                         // 根据用户ID获取用户
                         List<SysUser> userList = sysUserService.lambdaQuery()
-                                .eq(StringUtils.isNotBlank(sysDepartmentUser.getUserId()), SysUser::getUserId, sysDepartmentUser.getUserId())
+                                .eq(SysUser::getUserId, sysDepartmentUser.getUserId())
                                 .list();
                         // 将用户添加到用户列表中
                         sysUsers.addAll(userList);

@@ -6,7 +6,7 @@
         <div class="screen-title">中心会议室大屏</div>
         <div class="screen-main">
           <div class="main-table">
-            <div class="main-items" v-for="item in roomMeetingData" @click.stop="handleRoomClick(item)">
+            <div class="main-items" :class="item.status === 1 ? 'pointer' : 'ban'" v-for="item in roomMeetingData" @click.stop="handleRoomClick(item)">
               <div class="name">{{ item.roomName }}</div>
               <div class="state">{{ roomStatus(item.status) }}</div>
             </div>
@@ -26,7 +26,7 @@
           <el-icon><ChatRound /></el-icon>
           <div class="info-text">
             <div class="text-scroll">
-              告示信息滚动告示信息滚动告示信息滚动告示信息滚动告示信息滚动信息滚动告示信息滚动告示信息滚动告示信息滚动结束🔚
+              {{ notice[0] || '暂无公告' }}
             </div>
           </div>
         </div>
@@ -53,7 +53,7 @@
               <div class="rule-title">预约规则</div>
               <div class="rule-main">
                 <div class="rule-scroll">
-                  <div class="scroll-item" v-for="item in 10"> · 预约前请先登录预约前请先登录预约前请先登录</div>
+                  <div class="scroll-item" v-for="item in appointRule">{{ item }}</div>
                 </div>
               </div>
             </div>
@@ -61,7 +61,7 @@
               <div class="rule-title">取消规则</div>
               <div class="rule-main">
                 <div class="rule-scroll">
-                  <div class="scroll-item" v-for="item in 10"> · 预约前请先登录预约前请先登录预约前请先登录</div>
+                  <div class="scroll-item" v-for="item in cancelRule">{{ item }}</div>
                 </div>
               </div>
             </div>
@@ -92,8 +92,31 @@
           </div>
           <div class="table-main">
             <div class="table-tr" v-for="(item, index) in tableData">
-              <div class="tr-cell">{{ item.title }}</div>
-              <div class="tr-cell">{{ item.meetingRoomName }}</div>
+              <div class="tr-cell">
+                <el-popover
+                    placement="bottom"
+                    :disabled="item.title?.length < 10"
+                    :width="100"
+                    trigger="hover"
+                    :content="item.title"
+                >
+                    <template #reference>
+                        {{ item.title }}
+                    </template>
+                </el-popover></div>
+              <div class="tr-cell">
+                <el-popover
+                    placement="bottom"
+                    :disabled="item.meetingRoomName?.length < 5"
+                    :width="100"
+                    trigger="hover"
+                    :content="item.meetingRoomName"
+                >
+                    <template #reference>
+                        {{ item.meetingRoomName }}
+                    </template>
+                </el-popover>
+              </div>
               <div class="tr-cell">{{ time(item) }}</div>
               <div class="tr-cell">{{ statusName(item.status) }}</div>
               <div class="tr-cell">{{ item.meetingNumber }}</div>
@@ -111,20 +134,44 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useUserStore } from '@/stores/user'
-import {  getTodayMeetingRecordData, getDeleteMeetingRecordData, getCenterAllNumberData, getRoomStatusData, getTimeBusyData, } from '@/request/api/home'
+import {  getTodayMeetingRecordData, getDeleteMeetingRecordData, getCenterAllNumberData, getRoomStatusData, getTimeBusyData, getNoticeData } from '@/request/api/home'
 
 import Clock from '@/views/home/component/clock.vue'
 import GuageChart from '@/views/home/component/guageChart.vue'
 import { ElMessage, ElMessageBox, dayjs } from 'element-plus';
 import { meetingState } from '@/utils/types';
+import { qwLogin } from '@/request/api/login';
 
 const loading = ref(true);  // 获取数据loading 
-const userStore = useUserStore();
 const route = useRoute();
 const router = useRouter();
-const userInfo = ref();
+const userInfo = ref();  // 获取用户信息 传后端数据
 
+const appointRule = ref<any>([
+  "点击首页“会议室预约”按钮",
+  "点击自已想预约的会议室名称",
+  "紧急预约可直接点击“空闲中”会议室",
+  "点击自己想预约会议的时间",
+  "长期预约会议室可使用“企微”预约",
+  "点击首页“会议室预约”按钮",
+  "点击自已想预约的会议室名称",
+  "紧急预约可直接点击“空闲中”会议室",
+  "点击自己想预约会议的时间",
+  "长期预约会议室可使用“企微”预约",
+])
+const cancelRule = ref<any>([
+  "点击首页“取消预约”按钮",
+  "点击“历史记录”-“取消会议”",
+  "取消后若该会议室空闲可重新预约",
+  "“修改会议”≠“取消会议”",
+  "取消会议后“历史记录”该记录消失",
+  "点击首页“取消预约”按钮",
+  "点击“历史记录”-“取消会议”",
+  "取消后若该会议室空闲可重新预约",
+  "“修改会议”≠“取消会议”",
+  "取消会议后“历史记录”该记录消失",
+])
+let notice = ref<any>('暂无公告信息'); // 公告信息
 let gaugeData = ref<any>([ // echarts数据展示 今日总预约数
   {
     value: 0,
@@ -151,54 +198,8 @@ const timeArr = ref([  // 预约时间点及该时间点可预约状态
 ])
 
 let tableData = ref<any>([]) // 预约情况数据
-// let table = [
-//   {
-//     id: 1,//     title: "test会议1",
-//     description: "会议内容1",
-//     startTime: "2024-04-30 11:22:10",
-//     endTime: "2024-04-30 11:23:11",
-//     meetingRoomId: 4,
-//     status: 3,
-//     createdBy: "dzl",
-//     gmtCreate: "2024-04-29 15:23:21",
-//     gmtModified: "2024-04-30 03:59:30",
-//     isDeleted: 0,
-//     adminUserName: "邓子龙",
-//     meetingRoomName: "会议室4",
-//     meetingNumber: 3,
-//     attendees: "邓子龙,zhangsan,lisi",
-//     location: 4
-//   }
-// ]
 
-onMounted(async () => {
-   /* 判断扫码登录状态 */
-   const code = decodeURIComponent(route.query.code as string);
-    userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}');
-    const token = userInfo.value?.accessToken;
-    console.log(token, "token");
-    
-  
-    // 若 code 不为 undefined 时为扫码登录
-    if (code != 'undefined') {
-      return await userStore.getQWUserInfo(code);
-    }
-    
-    // 若不是扫码登录则判断token
-    if (!token) {
-      return router.replace('/login');
-    }
-
-  tableData.value = getTodayRecord({ userId: userStore.userInfo.userId })  // 查询今日会议情况
-  getCenterAllNumber()  // 查询中心会议总次数
-  getRoomStatus()  // 查询会议室状态
-  getTimeBusy()  // 查询当日时间段占用情况
-
-  loading.value = false
-});
-
-
-/* 会议室大屏 */
+/******************************************* 会议室大屏 ***********************************/
 /**
  * @description 今日中心会议总次数
 */
@@ -244,13 +245,13 @@ const handleRoomClick = (item: any) => {
       router.push({
       path: '/meeting-appoint',
       query: {
-        meetingRoomId: item.id
+        meetingRoomId: item.id  // 首页 会议室 跳转到预约页面 传会议室id
       }
     })
   }
 }
 
-/* 预约时间选择 */
+/******************************************* 预约时间选择 ***********************************/
 /**
  * @description 查询当日时间段占用情况
  * 时间状态  0：已过期 1：已预定 2：可预约
@@ -275,11 +276,17 @@ const selectTime = (item: any) => {
   if ([0, 1].includes(item.state)) {
     return;
   } else {
-    router.push('/meeting-appoint')
+    router.push({
+      path: '/meeting-appoint',
+      query: {
+        startTime: item.time  // 首页 时间点 跳转到预约页面 传时间点time
+      }
+    })
   }
 }
 
-/* 会议室预约情况 */
+
+/******************************************* 会议室预约情况 ***********************************/
 
 /**
  * @description 处理列表数据
@@ -298,14 +305,12 @@ const statusName = computed(() => (status: any) => {
 
 // 操作 展示状态
 const operate = computed(() => (item: any) => {
-  // 会议-未开始 且 登陆人员=创建者时(item.createdBy === userStore.userInfo.userId) 才可以修改
-  if (item.status === 0 && item.createdBy === 'dzl') {
+  // 会议-未开始 且 登陆人员=创建者时(item.createdBy === userInfo.value.userId) 才可以修改
+  if (item.status === 0 && item.createdBy === userInfo.value.userId) {
     return '修改';
-    // 暂定 状态为"已取消"时 且 登陆人员=创建者时(item.createdBy === userStore.userInfo.userId)  可删除
-  } else if (item.status === 3 && item.createdBy === 'dzl') {
-    return '删除';
+    // 暂定 状态为"已取消"时 且 登陆人员=创建者时(item.createdBy === userInfo.value.userId)  可删除
   } else {
-    return '';
+    return '删除';
   }
 })
 
@@ -313,24 +318,38 @@ const operate = computed(() => (item: any) => {
  * @description 查询今日会议情况
  * @param {userId} 用户id
  */
-const getTodayRecord = async (data: { userId: string }) => {
-  let list:any = []
-  await getTodayMeetingRecordData(data)
+const getTodayRecord = (data: { userId: string }) => {
+  getTodayMeetingRecordData(data)
     .then((res) => {
-      list = res.data
+      tableData.value = res.data
     })
     .catch((err) => {
       console.log(err, '查询今日会议情况err')
     })
-  return list;
 }
 
 
 // 点击修改会议
 const modifyMeeting = (item: any) => {
-  // 会议-未开始 且 登陆人员=创建者时(item.createdBy === userStore.userInfo.userId) 才可以修改
-  if (item.status === 0 && item.createdBy === 'dzl') {
-    router.push('/meeting-appoint')
+  // 会议-未开始 且 登陆人员=创建者时(item.createdBy === userInfo.value.userId) 才可以修改
+  if (item.status === 0 && item.createdBy === userInfo.value.userId) {
+    console.log(item,'修改')
+    router.push({
+      path: 'meeting-appoint',
+      query: {
+          id: item.id,
+          meetingRoomId: item.meetingRoomId,
+          title: item.title,
+          description: item.description,
+          startTime: item.startTime,
+          endTime: item.endTime,
+          meetingRoomName: item.meetingRoomName,
+          status: item.status,
+          createdBy: item.createdBy,
+          userName: item.adminUserName,
+          users: JSON.stringify(item.users),
+      }
+    })
   }
 }
 
@@ -340,17 +359,62 @@ const modifyMeeting = (item: any) => {
  * @param {meetingId} 会议id
  */
 
-const delMeeting = (item: any,index: number) => {
+const delMeeting = (item: any, index: number) => {  
   ElMessageBox.confirm('是否确定删除会议？')
   .then(() => {
-    getDeleteMeetingRecordData({userId: item.userId ,meetingId: item.meetingId})
-    tableData.value.splice(index, 1);
-    ElMessage.success('删除成功')
+    getDeleteMeetingRecordData({ userId: item.createdBy, meetingId: item.id })  // 删除会议室接口
+      .then((res) => {
+        ElMessage.success('删除成功')
+        getTodayRecord({ userId: userInfo.value.userId })
+      })
+      .catch((err) => {        
+        console.log(err,'删除会议记录err')
+      })
   })
   .catch(() => {
     ElMessage.info('取消删除')
   })
 }
+
+/******************************************* 公告 ***********************************/
+/**
+ * @description 查询所有公告
+ */
+const getNotice = async () => {
+  const res = await getNoticeData()
+  notice.value = res.data  
+}
+
+onMounted( async () => {
+    /* 判断扫码登录状态 */
+    const code = decodeURIComponent(route.query.code as string);
+    userInfo.value = JSON.parse(localStorage.getItem('userInfo') as string);
+    const token = userInfo.value?.accessToken;
+    // 扫码登录
+    if(!token) {
+        try {
+            const res:any = await qwLogin({code});
+            if (res.code !== '00000') {
+                throw new Error(res.msg);
+            }
+            userInfo.value = res.data;
+            localStorage.setItem('userInfo', JSON.stringify(res.data));
+            router.replace('/home');
+        } catch(err) {
+            router.replace('/login');
+            return;
+        }
+    }
+    // 登录成功后或已登录状态下执行
+    await Promise.all([
+        getTodayRecord({ userId: userInfo.value.userId }),  // 查询今日会议情况
+        getCenterAllNumber(),  // 查询中心会议总次数
+        getRoomStatus(),  // 查询会议室状态
+        getTimeBusy(),  // 查询当日时间段占用情况
+        getNotice(), // 查询公告
+    ])
+    loading.value = false
+});
 
 </script>
 
@@ -407,7 +471,6 @@ const delMeeting = (item: any,index: number) => {
             box-sizing: border-box;
             border: 1px solid rgba(111, 167, 249, 0.8);
             box-shadow: inset 0px 0px 30px 0px rgba(16, 127, 255, 0.3);
-            cursor: pointer;
             .name {
               font-size: 1.1rem;
               color: #6A6A6A;
@@ -417,6 +480,13 @@ const delMeeting = (item: any,index: number) => {
               font-weight: bold;
               color: #1273DB;
             }
+          }
+          // main-items 会议室状态为空闲1 为小手，其他为 禁止
+          .pointer {
+            cursor: pointer;
+          }
+          .ban {
+            cursor: not-allowed;
           }
         }
       }
@@ -574,6 +644,11 @@ const delMeeting = (item: any,index: number) => {
                   text-overflow: ellipsis; /* 使用省略的文本表示溢出的内容 */
                   padding: 0 5px;
                   margin-bottom: 5px;
+                  &::before {
+                    content: '·';
+                    margin-right: .125rem;
+                    color: #676767;
+                  }
                 }
               }
               // 鼠标 悬停时停止滚动
@@ -670,12 +745,13 @@ const delMeeting = (item: any,index: number) => {
         .table-th {
           display: flex;
           text-align: center;
+          padding-bottom: 0.375rem;
           .title {
-            width: 180px;
+            width: 11.25rem;
           }
         }
         .table-main {
-          max-height: 19.5rem;
+          max-height: 18.6rem;
           overflow-y: auto;
           .table-tr {
             display: flex;
