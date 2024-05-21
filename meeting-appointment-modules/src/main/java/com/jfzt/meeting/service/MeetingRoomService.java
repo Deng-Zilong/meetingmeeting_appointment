@@ -6,6 +6,7 @@ import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.dto.MeetingRoomDTO;
 import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomVO;
+import com.jfzt.meeting.entity.vo.TimePeriodStatusVO;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -49,7 +50,7 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      * @param date 日期
      * @return {@code Result<List<TimePeriodStatusVO>>}
      */
-    Result<List<Integer>> isBusyByIdAndDate (Long id, LocalDate date);
+    Result<List<TimePeriodStatusVO>> isBusyByIdAndDate (Long id, LocalDate date);
 
     /**
      * 根据时间段获取可用的会议室
@@ -62,6 +63,7 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
 
     /**
      * 更新会议室状态
+     *
      * @param meetingRoomDTO 会议室DTO对象
      * @return @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
@@ -71,7 +73,7 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      * 查询被禁用的会议室的id
      *
      * @param currentLevel 当前登录用户的权限等级
-     * @return com.jfzt.meeting.common.Result<java.util.List<<java.lang.Integer>>
+     * @return com.jfzt.meeting.common.Result<java.util.List < < java.lang.Integer>>
      */
-    Result<List<Long>> selectUsableRoom(Integer currentLevel);
+    Result<List<Long>> selectUsableRoom (Integer currentLevel);
 }
