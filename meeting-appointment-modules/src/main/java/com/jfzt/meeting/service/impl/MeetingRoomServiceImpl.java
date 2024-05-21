@@ -13,6 +13,7 @@ import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.dto.MeetingRoomDTO;
 import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomVO;
+import com.jfzt.meeting.entity.vo.TimePeriodStatusVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
@@ -302,19 +303,22 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      * @return {@code Result<List<TimePeriodStatusVO>>}
      */
     @Override
-    public Result<List<Integer>> isBusyByIdAndDate (Long id, LocalDate date) {
+    public Result<List<TimePeriodStatusVO>> isBusyByIdAndDate (Long id, LocalDate date) {
         if (id == null || date == null) {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
         }
+        List<TimePeriodStatusVO> timePeriodStatusVOList = new LinkedList<>();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startTime = LocalDateTime.of(date, LocalTime.of(8, 0));
         LocalDateTime endTime = startTime.plusMinutes(30);
-        List<Integer> timeStatus = new LinkedList<>();
+        //        List<Integer> timeStatus = new LinkedList<>();
         for (int i = 0; i < 30; i++) {
-            //            TimePeriodStatusVO timePeriodStatusVO = new TimePeriodStatusVO();
+            TimePeriodStatusVO timePeriodStatusVO = new TimePeriodStatusVO();
             //判断是否过期
             if (now.isAfter(startTime)) {
-                timeStatus.add(i, TIME_PERIOD_OVERDUE);
+                timePeriodStatusVO.setStartTime(startTime);
+                timePeriodStatusVO.setEndTime(endTime);
+                timePeriodStatusVO.setStatus(TIME_PERIOD_OVERDUE);
             } else {
                 LambdaQueryWrapper<MeetingRecord> recordQueryWrapper = new LambdaQueryWrapper<>();
                 recordQueryWrapper.eq(MeetingRecord::getMeetingRoomId, id);
@@ -333,15 +337,28 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 List<MeetingRecord> meetingRecords = meetingRecordService.list(recordQueryWrapper);
                 //判断是否被占用
                 if (!meetingRecords.isEmpty()) {
-                    timeStatus.add(i, TIME_PERIOD_BUSY);
+                    MeetingRecord meetingRecord = meetingRecords.getFirst();
+                    timePeriodStatusVO.setStartTime(startTime);
+                    timePeriodStatusVO.setEndTime(endTime);
+                    timePeriodStatusVO.setStatus(TIME_PERIOD_BUSY);
+                    timePeriodStatusVO.setMeetingTitle(meetingRecord.getTitle());
+                    SysUser user = userService.getOne(new LambdaQueryWrapper<SysUser>()
+                            .eq(SysUser::getUserId, meetingRecord.getCreatedBy()));
+                    if (user != null) {
+                        timePeriodStatusVO.setMeetingAdminUserName(user.getUserName());
+                    }
                 } else {
-                    timeStatus.add(i, TIME_PERIOD_AVAILABLE);
+                    timePeriodStatusVO.setStartTime(startTime);
+                    timePeriodStatusVO.setEndTime(endTime);
+                    timePeriodStatusVO.setStatus(TIME_PERIOD_AVAILABLE);
                 }
             }
+            timePeriodStatusVOList.add(timePeriodStatusVO);
+
             startTime = startTime.plusMinutes(30);
             endTime = endTime.plusMinutes(30);
         }
-        return Result.success(timeStatus);
+        return Result.success(timePeriodStatusVOList);
     }
 
     /**

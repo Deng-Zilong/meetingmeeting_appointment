@@ -6,6 +6,7 @@ import com.jfzt.meeting.entity.dto.MeetingRoomDTO;
 import com.jfzt.meeting.entity.dto.TimePeriodDTO;
 import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomVO;
+import com.jfzt.meeting.entity.vo.TimePeriodStatusVO;
 import com.jfzt.meeting.service.MeetingRoomService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ public class MeetingRoomController {
      * @return {@code Result<List<TimePeriodStatusVO>>}
      */
     @GetMapping("/index/time-period-status")
-    public Result<List<Integer>> isBusyByIdAndDate (@RequestParam Long id, @RequestParam LocalDate date) {
+    public Result<List<TimePeriodStatusVO>> getTimePeriodStatusByIdAndDate (@RequestParam Long id, @RequestParam LocalDate date) {
         return meetingRoomService.isBusyByIdAndDate(id, date);
     }
 
