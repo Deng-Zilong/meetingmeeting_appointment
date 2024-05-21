@@ -29,3 +29,8 @@ export const getRoomStatusData = () => {
 export const getNoticeData = () => {
     return http.get("/meeting/meeting-notice/get-notice")
 }
+
+// 根据会议室id和日期 查询时间段可预约状态
+export const getBusyData = (data: {id: number, date: string}) => {
+  return http.get("/meeting/index/time-period-status", data)
+}
