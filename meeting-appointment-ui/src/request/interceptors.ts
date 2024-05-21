@@ -1,5 +1,4 @@
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
-import { useUserStore } from "@/stores/user";
 import { ElMessage } from "element-plus";
 // import router from "../router";
 // 请求拦截
@@ -28,16 +27,12 @@ export function ReqReject(error: AxiosError) {
 }
 // 响应拦截
 export function ResResolve(res: any) {
-    //   if (config.data.code == 401) {
-    //     // router.push("/403");
-    //   }
+    // 验证码不判断状态码
     if (res.config.url === "/meeting/user/captcha.jpg") {
         return res;
     }
-    
-    // if (res.status === '00000') {
+
     if (res.status === 200) {
-        // if (res.data.code == 200) {
         if (res.data.code === '00000') {
             return res.data;
         } else {
@@ -46,7 +41,7 @@ export function ResResolve(res: any) {
         }
     }
 }
-// 相应拦截错误处理
+// 响应拦截错误处理
 export function ResReject(error: AxiosError) {
     // router.push("/500");
     return Promise.reject(error);

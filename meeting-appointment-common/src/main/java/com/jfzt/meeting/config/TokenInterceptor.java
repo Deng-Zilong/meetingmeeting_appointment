@@ -42,11 +42,6 @@ public class  TokenInterceptor  implements HandlerInterceptor {
             //当前拦截到的不是动态方法，直接放行
             return true;
         }
-        //放行OPTIONS请求
-//        if (HttpMethod.GET.toString().equals(request.getMethod())) {
-//            System.out.println("OPTIONS请求，放行");
-//            return true;
-//        }
         //1、从请求头中获取令牌
         String token = request.getHeader(jwtProperties.getUserTokenName());
         String accessToken = "accessToken";
@@ -55,11 +50,8 @@ public class  TokenInterceptor  implements HandlerInterceptor {
             log.info("jwt校验:{}", token);
             Claims claims = JwtUtil.parseJWT(jwtProperties.getAdminSecretKey(), token);
             JSONObject jsonObject =JSONObject.parseObject((String) redisTemplate.opsForValue().get("userInfo"+claims.get("sysUserId")));
-            if(!jsonObject.get(accessToken).equals(token)){
-                return false;
-            }
+            return jsonObject.get(accessToken).equals(token);
             //3、通过，放行
-            return true;
         } catch (Exception ex) {
             //4、不通过，响应401状态码
             response.setStatus(401);

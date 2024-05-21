@@ -1,5 +1,4 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import { useUserStore } from '@/stores/user'
 
 const routes = [
   {
@@ -68,8 +67,6 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-    console.log(to.meta.roles,"to");
-    
     const userInfo = JSON.parse(localStorage.getItem('userInfo') as string); // 用户信息
     const token = userInfo?.accessToken; // token
     const level = userInfo?.level; // 用户等级

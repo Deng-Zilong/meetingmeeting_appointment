@@ -89,13 +89,11 @@
     import { useInfiniteScroll } from '@vueuse/core'
     import { Close } from '@element-plus/icons-vue'
 
-    import { useUserStore } from '@/stores/user';
     import { meetingState } from '@/utils/types';
     import personTreeDialog from "@/components/person-tree-dialog.vue";
     import { getUsableRoomData, getMeetingBanData, addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData } from '@/request/api/manage'
 
     // let loading = ref(true) // 加载状态
-    const userStore = useUserStore() // 获取用户信息
     let userInfo = ref<any>({});  // 获取用户信息 用于传后端参数
     
     // 会议室状态 0-暂停使用 1-空闲 2-使用中
@@ -208,7 +206,7 @@
         ElMessageBox.confirm('确定上传公告吗？')
         .then(() => {
           ElMessage.success('上传公告成功')
-          addNoticeData({ currentLevel: userStore.userInfo.level, currentUserId: userInfo.value.userId, substance: item }) // 上传公告
+          addNoticeData({ currentLevel: userInfo.value.level, currentUserId: userInfo.value.userId, substance: item }) // 上传公告
           input.value = ''  // 上传公告后清空输入框
         })
         .catch(() => {
@@ -349,8 +347,6 @@
         if (!canLoadMore.value || isLoading.value) return;
         // 打开loading
         isLoading.value = true;
-        // 延迟请求
-        await new Promise((resolve) => setTimeout(resolve, 2000));
         // 发送请求
         const {data: newData, total} = await getAllRecord({ pageNum: page.value, pageSize: limit.value, currentLevel: userInfo.value.level })  // 查询所有会议记录        
         

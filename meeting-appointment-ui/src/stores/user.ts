@@ -28,7 +28,7 @@ export const useUserStore = defineStore('user',()=>{
      * @description 企业微信扫码登录
      * @param code 企业微信返回code
      */
-    const getQWUserInfo= (code: string)=>{
+    const getQWUserInfo = (code: string)=>{
         qwLogin({code})
                 .then((res: any) => {
                     localStorage.setItem('userInfo', JSON.stringify(res.data));

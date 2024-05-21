@@ -233,8 +233,6 @@ const getDataOnScroll = async () => {
     if (!canLoadMore.value || isLoading.value) return;
     // 打开loading
     isLoading.value = true;
-    // 延迟请求
-    await new Promise((resolve) => setTimeout(resolve, 2000));
     // 发送请求
     const { data: newData, total } = await handleGroupList({ userId: userInfo.value.userId, pageNum: page.value, pageSize: limit.value });
 

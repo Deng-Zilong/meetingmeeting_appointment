@@ -195,8 +195,6 @@
 
         // 打开loading
         isLoading.value = true;
-        // 延迟请求
-        await new Promise((resolve) => setTimeout(resolve, 2000));
         // 发送请求
         const {data: newData, total} = await getData({userId: userInfo.value?.userId, page: page.value, limit: limit.value});
         
@@ -289,7 +287,7 @@
      */
     const transmitMeeting = (item: any) => {
         address.value = 
-        `会议主题: ${item.title}\n发起人: ${item.adminUserName}\n会议日期: ${item.date}\n会议时间: ${item.time}\n会议地点: ${item.meetingRoomName}\nURL: http://llzzxx.cn/#/login`;
+        `会议主题: ${item.title}\n发起人: ${item.adminUserName}\n会议日期: ${item.date}\n会议时间: ${item.time}\n会议地点: ${item.meetingRoomName}\nURL: http://192.168.212.41:30586/#/login`;
         isTransmitMeeting.value = true;
         navigator.clipboard.writeText(address.value).then(() => {})
         .catch(() => {

@@ -1,10 +1,13 @@
 package com.jfzt.meeting.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.dto.AdminDTO;
 import com.jfzt.meeting.entity.vo.UserInfoVO;
+import com.jfzt.meeting.exception.ErrorCodeEnum;
+import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.properties.JwtProperties;
 import com.jfzt.meeting.service.SysDepartmentUserService;
 import com.jfzt.meeting.service.SysUserService;
@@ -58,7 +61,10 @@ public class SysUserController {
     @GetMapping(value = "info")
     @Transactional
     public Result<UserInfoVO> info(@RequestParam("code") String code) throws WxErrorException, NoSuchAlgorithmException {
-        String testName = "admin";
+        if(StringUtils.isBlank(code)){
+            log.error("用户扫码登录失败请重新扫码");
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A02011);
+        }
         //获取登录token
         String accessToken = sysDepartmentUserService.findTocken();
         //获取用户详细信息
