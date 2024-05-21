@@ -1,6 +1,7 @@
 package com.jfzt.meeting.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.context.BaseContext;
