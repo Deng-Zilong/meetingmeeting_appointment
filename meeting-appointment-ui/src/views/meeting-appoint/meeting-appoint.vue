@@ -46,7 +46,7 @@
                             placeholder="选择日期" />
                     </el-form-item>
                     <el-form-item label="当前可选地点" prop="meetingRoom">
-                        <el-select v-model="formData.meetingRoomId" placeholder="请选择">
+                        <el-select v-model="formData.meetingRoomId" placeholder="请选择" @change="handleChangeRoom">
                             <el-option v-for="item in roomArr" :key="item.meetingRoomId" :label="item.roomName" :value="item.meetingRoomId" />
                         </el-select>
                     </el-form-item>
@@ -238,6 +238,7 @@ const handleCheckedPerson = (type: number, tab: number, userIds: any, userNames:
     formData.value.users = userInfo;
     closeAddPersonDialog();
 }
+
 /**
  * @description 关闭添加人员弹窗
  */
@@ -283,6 +284,14 @@ const handleAvailableMeetingRooms = (startTime: string, endTime: string) => {
         formData.value.meetingRoomId = '';
     })
     .catch(err => {})
+}
+
+/**
+ * @description 获取选中会议室的id
+ * @param value 会议室id
+ */
+const handleChangeRoom = (value: any) => {
+    formData.value.meetingRoomId = value;
 }
 
 // 表单验证
