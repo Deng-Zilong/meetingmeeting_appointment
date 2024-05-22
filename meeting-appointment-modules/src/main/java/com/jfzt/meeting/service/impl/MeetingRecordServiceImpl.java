@@ -351,7 +351,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         meetingRecord = this.baseMapper.selectById(meetingId);
         if (meetingRecord.getStatus().equals(MEETING_RECORD_STATUS_NOT_START)) {
             throw new RRException("当前会议状态无法删除！", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
-        } else if (meetingRecord.getCreatedBy().equals(userId)) {
+        }
+        if (!meetingRecord.getCreatedBy().equals(userId)) {
             //会议创建人才可以删除会议
             throw new RRException("当前用户没有删除权限！", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
         }
