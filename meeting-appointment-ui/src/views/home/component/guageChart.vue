@@ -81,7 +81,6 @@ const refreshChart = () => {
       enterable: true, // 鼠标是否可进入提示框浮层中，默认false
       confine: true, // 是否将tooltip框限制在图表的区域内
       formatter: function (params: any) { // 提示框浮层内容格式器，支持字符串模板和回调函数两种形式
-        // console.log('params:', params)
         return params.marker + params.name + ': ' + params.value || '--'
       },
       backgroundColor: 'transparent', 

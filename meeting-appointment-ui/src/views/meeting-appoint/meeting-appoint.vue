@@ -452,6 +452,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
             align-items: center;
             font-size: 1.1rem;
             font-weight: 100;
+            cursor: pointer;
 
             .el-icon {
                 color: #3268DC;

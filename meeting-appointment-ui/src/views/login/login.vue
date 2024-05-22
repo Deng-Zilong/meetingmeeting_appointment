@@ -177,6 +177,7 @@ const code = () => {
                 .el-image {
                     width: 100%;
                     height: 2.125rem;
+                    cursor: pointer;
                 }
             }
 

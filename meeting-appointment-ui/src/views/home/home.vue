@@ -180,8 +180,8 @@ let gaugeData = ref<any>([ // echarts数据展示 今日总预约数
 ])
 let roomMeetingData = ref<any>([]) // 会议室状态信息
 const timeArr = ref([  // 预约时间点及该时间点可预约状态
-  { time: '8:00', state: 3 }, { time: '8:30', state: 3 },
-  { time: '9:00', state: 3 }, { time: '9:30', state: 3 },
+  { time: '08:00', state: 3 }, { time: '08:30', state: 3 },
+  { time: '09:00', state: 3 }, { time: '09:30', state: 3 },
   { time: '10:00', state: 3 }, { time: '10:30', state: 3 },
   { time: '11:00', state: 3 }, { time: '11:30', state: 3 },
   { time: '12:00', state: 3 }, { time: '12:30', state: 3 },
@@ -319,9 +319,7 @@ const getTodayRecord = (data: { userId: string }) => {
     .then((res) => {
       tableData.value = res.data
     })
-    .catch((err) => {
-      console.log(err, '查询今日会议情况err')
-    })
+    .catch((err) => {})
 }
 
 
@@ -329,7 +327,6 @@ const getTodayRecord = (data: { userId: string }) => {
 const modifyMeeting = (item: any) => {
   // 会议-未开始 且 登陆人员=创建者时(item.createdBy === userInfo.value.userId) 才可以修改
   if (item.status === 0 && item.createdBy === userInfo.value.userId) {
-    console.log(item,'修改')
     router.push({
       path: 'meeting-appoint',
       query: {
@@ -363,9 +360,7 @@ const delMeeting = (item: any, index: number) => {
         ElMessage.success('删除成功')
         getTodayRecord({ userId: userInfo.value.userId })
       })
-      .catch((err) => {        
-        console.log(err,'删除会议记录err')
-      })
+      .catch((err) => {})
   })
   .catch(() => {
     ElMessage.info('取消删除')

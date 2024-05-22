@@ -103,8 +103,8 @@ const infoArr = reactive([
 
 // 会议时间点
 const timeArr = ref([
-  { time: '8:00', state: 3, initiator: '' }, { time: '8:30', state: 3, initiator: '' },
-  { time: '9:00', state: 3, initiator: '' }, { time: '9:30', state: 3, initiator: '' },
+  { time: '08:00', state: 3, initiator: '' }, { time: '08:30', state: 3, initiator: '' },
+  { time: '09:00', state: 3, initiator: '' }, { time: '09:30', state: 3, initiator: '' },
   { time: '10:00', state: 3, initiator: '' }, { time: '10:30', state: 3, initiator: '' },
   { time: '11:00', state: 3, initiator: '' }, { time: '11:30', state: 3, initiator: '' },
   { time: '12:00', state: 3, initiator: '' }, { time: '12:30', state: 3, initiator: '' },

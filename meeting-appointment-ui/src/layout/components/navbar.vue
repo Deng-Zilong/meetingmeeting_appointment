@@ -14,14 +14,13 @@
   </div>
 </template>
 <script setup lang="ts">
-  import { computed, ref, watch } from "vue";
+  import { computed, onMounted, ref, watch } from "vue";
   import { useRouter } from "vue-router";
   import { meetingStatus } from '@/stores/meeting-status'
   const router = useRouter();
   const useMeetingStatus = meetingStatus();
   let centerRoomName = ref<any>([]); // 会议室目录
   centerRoomName.value = [...useMeetingStatus.centerRoomName];
-  console.log(centerRoomName.value, "centerRoomName");
   
 
   let active = ref(-1); // 活动页面id
@@ -56,6 +55,9 @@
   // 取消预约按钮禁用状态
   const cancelDisable = computed(() => {
       return router.currentRoute.value.name == 'history';
+  })
+  onMounted(() => {
+    useMeetingStatus.getCenterRoomName();
   })
   
 

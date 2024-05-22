@@ -192,9 +192,7 @@
           getUsableRoom({ currentLevel: userInfo.value.level });
           useMeetingStatus.getCenterRoomName();
         })
-        .catch((err) => {
-          console.log(err, '禁用err');
-        })
+        .catch((err) => {})
     }
 
 /******************************************* 公告 ***********************************/
@@ -242,9 +240,7 @@
         .then(() => {
           getSelectAdmin()
         })
-        .catch((err) => {
-          console.log(err,'删除管理员err');
-        })
+        .catch((err) => {})
     }
     // 操作管理员--删除管理员
     const handleDelPeople = (index: number) => {
@@ -326,15 +322,8 @@
         .then((res) => {
           total = res.data.length;
           list = processData(res.data);
-          // manageData.value = list
-          // loading.value = false;
         })
-        .catch((err) => {
-          console.log(err, "所有会议记录err");
-        })
-        // .finally(() => {
-        //   loading.value = false;
-        // })
+        .catch((err) => { })
       return {
         data: list,
         total,
