@@ -14,7 +14,7 @@
           <div class="table-title">会议预约时间选择</div>
           <div class="table-main">
             <div class="table-items" :class="timeColor(item.state)" v-for="item in timeArr"
-            @mouseover="handleMouseOver(item)" @mouseout="handldMouseOut" @click.stop="selectTime(item)">
+            @mouseover="handleMouseOver(item)" @mouseout="handleMouseOut" @click.stop="selectTime(item)">
               {{ hoveredItem === item && item.state === 1 ? `发起人：${item.initiator}` : item.time  }}
             </div>
           </div>
@@ -103,8 +103,8 @@ const infoArr = reactive([
 
 // 会议时间点
 const timeArr = ref([
-  { time: '8:00', state: 3, initiator: '' }, { time: '8:30', state: 3, initiator: '' },
-  { time: '9:00', state: 3, initiator: '' }, { time: '9:30', state: 3, initiator: '' },
+  { time: '08:00', state: 3, initiator: '' }, { time: '08:30', state: 3, initiator: '' },
+  { time: '09:00', state: 3, initiator: '' }, { time: '09:30', state: 3, initiator: '' },
   { time: '10:00', state: 3, initiator: '' }, { time: '10:30', state: 3, initiator: '' },
   { time: '11:00', state: 3, initiator: '' }, { time: '11:30', state: 3, initiator: '' },
   { time: '12:00', state: 3, initiator: '' }, { time: '12:30', state: 3, initiator: '' },
@@ -163,12 +163,10 @@ const timeColor = computed(() => (state: any) => {
 })
 // 鼠标移入
 const handleMouseOver = (item: any) => {
-  console.log(item, "移入")
   hoveredItem.value = item
 }
 // 鼠标移出
-const handldMouseOut = () => {
-  console.log("item", "移出")
+const handleMouseOut = () => {
   hoveredItem.value = null
 }
 

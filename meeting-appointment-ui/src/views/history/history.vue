@@ -135,10 +135,7 @@
     // }
     
     onMounted(async() => {
-        // data.value = await getData({userId: userInfo.value.userId, page: page.value, limit: limit.value});
         await getDataOnScroll();
-        console.log(data.value, "data.value");
-        
     })
 
     /**

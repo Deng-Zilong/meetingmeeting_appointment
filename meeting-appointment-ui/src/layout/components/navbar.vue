@@ -1,23 +1,10 @@
 <template>
   <div class="nav-box">
      <div class="left">
-          <!-- <el-dropdown> -->
-              <el-button type="primary" @click="handleToHome">
-                  中心会议室<el-icon class="el-icon--right"><arrow-down /></el-icon>
-              </el-button>
-              <!-- <template #dropdown>
-                  <el-dropdown-menu>
-                  <el-dropdown-item>Action 1</el-dropdown-item>
-                  <el-dropdown-item>Action 2</el-dropdown-item>
-                  <el-dropdown-item>Action 3</el-dropdown-item>
-                  <el-dropdown-item>Action 4</el-dropdown-item>
-                  <el-dropdown-item>Action 5</el-dropdown-item>
-                  </el-dropdown-menu>
-              </template> -->
-          <!-- </el-dropdown> -->
+          <el-button type="primary" @click="handleToHome">中心会议室目录</el-button>
           <el-divider direction="vertical" />
-          <div v-for="(item, index) in centerRoomName">
-              <el-button class="btn-margin" :class="active == item.id ? 'active' : ''" @click="handleMenu(item)" >{{item.title}}</el-button>
+          <div v-for="(item, index) in useMeetingStatus.centerRoomName">
+              <el-button class="btn-margin"  :class="active == item.id ? 'active' : ''" :disabled="item.status == 0" @click="handleMenu(item)" >{{item.roomName}}</el-button>
           </div>
       </div>
      <div class="right">
@@ -27,37 +14,15 @@
   </div>
 </template>
 <script setup lang="ts">
-  import { computed, ref, watch } from "vue";
+  import { computed, onMounted, ref, watch } from "vue";
   import { useRouter } from "vue-router";
-  import { ArrowDown } from '@element-plus/icons-vue';
+  import { meetingStatus } from '@/stores/meeting-status'
   const router = useRouter();
-  const centerRoomName = [
-    { 
-      id: 1,
-      title: '广政通宝会议室',
-      address: '西南裙一 3 F 一 广政通宝会议室'
-    },
-    { 
-      id: 2,
-      title: 'EN-2F-02 恰谈室会议室',
-      address: '西南裙一 3 F 一 EN-2F-02 恰谈室会议室'
-    },
-    { 
-      id: 3,
-      title: 'EN-2F-03 恰谈室会议室',
-      address: '西南裙一 3 F 一 EN-2F-03 恰谈室会议室'
-    },
-    { 
-      id: 4,
-      title: 'EN-3F-02 恰谈室会议室',
-      address: '西南裙一 3 F 一 EN-3F-02 恰谈室会议室'
-    },
-    { 
-      id: 5,
-      title: 'EN-3F-03 恰谈室会议室',
-      address: '西南裙一 3 F 一 EN-3F-03 恰谈室会议室'
-    }
- ];
+  const useMeetingStatus = meetingStatus();
+  let centerRoomName = ref<any>([]); // 会议室目录
+  centerRoomName.value = [...useMeetingStatus.centerRoomName];
+  
+
   let active = ref(-1); // 活动页面id
 
   const handleToHome = () => {
@@ -74,7 +39,7 @@
       path: '/meeting-state',
       query: {
         id: item.id,
-        title: item.title,
+        title: item.roomName,
         address: item.address,
       }
     });
@@ -90,6 +55,9 @@
   // 取消预约按钮禁用状态
   const cancelDisable = computed(() => {
       return router.currentRoute.value.name == 'history';
+  })
+  onMounted(() => {
+    useMeetingStatus.getCenterRoomName();
   })
   
 

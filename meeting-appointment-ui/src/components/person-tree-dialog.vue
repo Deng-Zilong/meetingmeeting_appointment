@@ -89,8 +89,6 @@
     watch(() => props.modelValue, (newValue) => {
         visible.value = newValue;
         if (props.type == 2) {
-            console.log(props.peopleIds);
-            
             addGroupForm.value.peopleIds = props.peopleIds;
         }
         handleAddGroupReq();
@@ -112,9 +110,7 @@
           .then(res => {
                 addGroupForm.value.list = treeUserListToChildren(res.data);
             })
-            .catch(err => {
-                console.log(err, "err");
-            })
+            .catch(err => {})
             .finally(() => {})
     }
     /**

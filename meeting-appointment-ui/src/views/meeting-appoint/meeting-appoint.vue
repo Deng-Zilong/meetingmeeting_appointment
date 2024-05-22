@@ -26,7 +26,7 @@
                 <div class="appoint-row">
                     <el-form-item label="开始时间" prop="startTime">
                         <el-time-select v-model="formData.startTime" :start="timeStart" :min-time="minStartTime" step="00:15" :end="timeEnd"
-                            placeholder="请选择" @change="minEndTime = formData.startTime"/>
+                            placeholder="请选择" @change="handleChangeStartTime"/>
                     </el-form-item>
                     <el-form-item label="结束时间" prop="endTime">
                         <el-time-select 
@@ -46,7 +46,7 @@
                             placeholder="选择日期" />
                     </el-form-item>
                     <el-form-item label="当前可选地点" prop="meetingRoom">
-                        <el-select v-model="formData.meetingRoomId" placeholder="请选择">
+                        <el-select v-model="formData.meetingRoomId" placeholder="请选择" @change="handleChangeRoom">
                             <el-option v-for="item in roomArr" :key="item.meetingRoomId" :label="item.roomName" :value="item.meetingRoomId" />
                         </el-select>
                     </el-form-item>
@@ -142,7 +142,8 @@ onMounted(() => {
         formData.value.startTime = routes.query?.startTime ? routes.query?.startTime : '';
     }
     // 获取当前可选时间
-    minEndTime.value = minStartTime.value = formData.value.startTime ? formData.value.startTime : dayjs(new Date()).format('HH:m');
+    minStartTime.value = dayjs(new Date()).format('HH:m');
+    minEndTime.value = formData.value.startTime ? formData.value.startTime : dayjs(new Date()).format('HH:m');
 
     // 获取群组列表
     getGroupList();
@@ -237,6 +238,7 @@ const handleCheckedPerson = (type: number, tab: number, userIds: any, userNames:
     formData.value.users = userInfo;
     closeAddPersonDialog();
 }
+
 /**
  * @description 关闭添加人员弹窗
  */
@@ -245,18 +247,51 @@ const closeAddPersonDialog = () => {
 }
 
 /**
+ * @description 根据开始时间获取可用会议室
+ * @param value 选中的开始时间
+ */
+const handleChangeStartTime = (value: any) => {
+    minEndTime = value;
+    if (!formData.value.endTime || !value) return;
+    const startTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${value}:${seconds}`;
+    const endTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${formData.value.endTime}:${seconds}`;
+    handleAvailableMeetingRooms(startTime, endTime);
+}
+
+/**
  * @description 根据结束时间获取可用会议室
  * @param value 选中的结束时间
  */
 const handleChangeEndTime = (value: any) => {
+    if (!formData.value.startTime || !value) return;
+    const startTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${formData.value.startTime}:${seconds}`;
+    const endTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${value}:${seconds}`;
+    handleAvailableMeetingRooms(startTime, endTime);
+}
+
+/**
+ * @description 根据开始时间和结束时间获取可用会议室
+ * @param startTime 开始时间
+ * @param endTime 结束时间
+ */
+const handleAvailableMeetingRooms = (startTime: string, endTime: string) => {
     availableMeetingRooms({
-        startTime: dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${formData.value.startTime}:${seconds}`,
-        endTime: dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${value}:${seconds}`,
+        startTime,
+        endTime,
     })
     .then(res => {
         roomArr.value = res.data;
+        formData.value.meetingRoomId = '';
     })
     .catch(err => {})
+}
+
+/**
+ * @description 获取选中会议室的id
+ * @param value 会议室id
+ */
+const handleChangeRoom = (value: any) => {
+    formData.value.meetingRoomId = value;
 }
 
 // 表单验证
@@ -318,7 +353,7 @@ const rules = reactive<FormRules<typeof formData>>({
         { required: true, type: 'date', message: '请选择日期', trigger: 'change' }
     ],
     meetingRoomId: [
-        { required: true, message: '请选择会议室', trigger: 'blur' }
+        { required: true, message: '请选择会议室', trigger: 'change' }
     ],
     groupName: [
         {trigger: 'blur', validator: validateGroupName }
@@ -350,6 +385,10 @@ const submitForm = (formEl: FormInstance | undefined) => {
             users,
             groupName,
         })
+        // 判断开时间是否大于结束时间
+        if (startTime > endTime) {
+            return ElMessage.error("开始时间不能大于或等于结束时间！")
+        }
         // 是否添加为群组
         if (checked) {
             addMeetingGroup({
@@ -413,6 +452,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
             align-items: center;
             font-size: 1.1rem;
             font-weight: 100;
+            cursor: pointer;
 
             .el-icon {
                 color: #3268DC;

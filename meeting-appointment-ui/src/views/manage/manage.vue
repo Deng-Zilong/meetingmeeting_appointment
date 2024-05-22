@@ -89,12 +89,14 @@
     import { useInfiniteScroll } from '@vueuse/core'
     import { Close } from '@element-plus/icons-vue'
 
+    import { meetingStatus } from '@/stores/meeting-status'
     import { meetingState } from '@/utils/types';
     import personTreeDialog from "@/components/person-tree-dialog.vue";
     import { getUsableRoomData, getMeetingBanData, addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData } from '@/request/api/manage'
 
     // let loading = ref(true) // 加载状态
     let userInfo = ref<any>({});  // 获取用户信息 用于传后端参数
+    const useMeetingStatus = meetingStatus();
     
     // 会议室状态 0-暂停使用 1-空闲 2-使用中
     let checkList = ref()  // 选中会议室 为禁用会议室
@@ -187,11 +189,10 @@
       }
       getMeetingBanData({ id: item.id, status: item.status, currentLevel: userInfo.value.level })  // 会议室禁用
         .then(() => {
-          getUsableRoom({ currentLevel: userInfo.value.level })
+          getUsableRoom({ currentLevel: userInfo.value.level });
+          useMeetingStatus.getCenterRoomName();
         })
-        .catch((err) => {
-          console.log(err, '禁用err');
-        })
+        .catch((err) => {})
     }
 
 /******************************************* 公告 ***********************************/
@@ -239,9 +240,7 @@
         .then(() => {
           getSelectAdmin()
         })
-        .catch((err) => {
-          console.log(err,'删除管理员err');
-        })
+        .catch((err) => {})
     }
     // 操作管理员--删除管理员
     const handleDelPeople = (index: number) => {
@@ -323,15 +322,8 @@
         .then((res) => {
           total = res.data.length;
           list = processData(res.data);
-          // manageData.value = list
-          // loading.value = false;
         })
-        .catch((err) => {
-          console.log(err, "所有会议记录err");
-        })
-        // .finally(() => {
-        //   loading.value = false;
-        // })
+        .catch((err) => { })
       return {
         data: list,
         total,

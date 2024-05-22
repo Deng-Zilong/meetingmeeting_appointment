@@ -119,9 +119,17 @@ public class SysLoginController {
     @PutMapping("updateSysAdminPassword")
     public Result<String> addAdmin (@RequestParam String userId, @RequestParam String password) throws NoSuchAlgorithmException {
         SysUser one = sysUserService.getOne(new QueryWrapper<SysUser>().eq("user_id", userId));
-        one.setPassword(EncryptUtils.encrypt(EncryptUtils.md5encrypt(password)));
-        log.info("MD5盐值加密后：{}", one.getPassword());
-        sysUserService.updateById(one);
+        if (one == null) {
+            SysUser sysUser = new SysUser();
+            sysUser.setUserId(userId);
+            sysUser.setUserName(userId);
+            sysUser.setPassword(EncryptUtils.encrypt(EncryptUtils.md5encrypt(password)));
+            sysUserService.save(sysUser);
+        } else {
+            one.setPassword(EncryptUtils.encrypt(EncryptUtils.md5encrypt(password)));
+            log.info("MD5盐值加密后：{}", one.getPassword());
+            sysUserService.updateById(one);
+        }
         return Result.success("添加成功");
     }
 

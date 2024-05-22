@@ -180,8 +180,8 @@ let gaugeData = ref<any>([ // echarts数据展示 今日总预约数
 ])
 let roomMeetingData = ref<any>([]) // 会议室状态信息
 const timeArr = ref([  // 预约时间点及该时间点可预约状态
-  { time: '8:00', state: 3 }, { time: '8:30', state: 3 },
-  { time: '9:00', state: 3 }, { time: '9:30', state: 3 },
+  { time: '08:00', state: 3 }, { time: '08:30', state: 3 },
+  { time: '09:00', state: 3 }, { time: '09:30', state: 3 },
   { time: '10:00', state: 3 }, { time: '10:30', state: 3 },
   { time: '11:00', state: 3 }, { time: '11:30', state: 3 },
   { time: '12:00', state: 3 }, { time: '12:30', state: 3 },
@@ -211,9 +211,7 @@ const getCenterAllNumber = () => {
         name: '中心会议总次数'
       }]
     })
-    .catch((err) => {
-      console.log(err,'中心会议总次数err')
-    })
+    .catch((err) => {})
 }
 
 /**
@@ -235,9 +233,7 @@ const getRoomStatus = () => {
     .then((res) => {
       roomMeetingData.value = res.data
     })
-    .catch((err) => {
-      console.log(err,'会议室情况err')
-    })
+    .catch((err) => {})
 }
 
 const handleRoomClick = (item: any) => {
@@ -309,9 +305,12 @@ const operate = computed(() => (item: any) => {
   if (item.status === 0 && item.createdBy === userInfo.value.userId) {
     return '修改';
     // 暂定 状态为"已取消"时 且 登陆人员=创建者时(item.createdBy === userInfo.value.userId)  可删除
-  } else {
+  } else if (item.createdBy === userInfo.value.userId) {
     return '删除';
+  } else {
+    return '';
   }
+
 })
 
 /**
@@ -323,9 +322,7 @@ const getTodayRecord = (data: { userId: string }) => {
     .then((res) => {
       tableData.value = res.data
     })
-    .catch((err) => {
-      console.log(err, '查询今日会议情况err')
-    })
+    .catch((err) => {})
 }
 
 
@@ -333,7 +330,6 @@ const getTodayRecord = (data: { userId: string }) => {
 const modifyMeeting = (item: any) => {
   // 会议-未开始 且 登陆人员=创建者时(item.createdBy === userInfo.value.userId) 才可以修改
   if (item.status === 0 && item.createdBy === userInfo.value.userId) {
-    console.log(item,'修改')
     router.push({
       path: 'meeting-appoint',
       query: {
@@ -367,9 +363,7 @@ const delMeeting = (item: any, index: number) => {
         ElMessage.success('删除成功')
         getTodayRecord({ userId: userInfo.value.userId })
       })
-      .catch((err) => {        
-        console.log(err,'删除会议记录err')
-      })
+      .catch((err) => {})
   })
   .catch(() => {
     ElMessage.info('取消删除')
@@ -392,6 +386,9 @@ onMounted( async () => {
     const token = userInfo.value?.accessToken;
     // 扫码登录
     if(!token) {
+        // if (code === 'undefined') {
+        //     return router.replace('/login');
+        // }
         try {
             const res:any = await qwLogin({code});
             if (res.code !== '00000') {
