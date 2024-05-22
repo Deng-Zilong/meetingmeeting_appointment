@@ -305,9 +305,12 @@ const operate = computed(() => (item: any) => {
   if (item.status === 0 && item.createdBy === userInfo.value.userId) {
     return '修改';
     // 暂定 状态为"已取消"时 且 登陆人员=创建者时(item.createdBy === userInfo.value.userId)  可删除
-  } else {
+  } else if (item.createdBy === userInfo.value.userId) {
     return '删除';
+  } else {
+    return '';
   }
+
 })
 
 /**
