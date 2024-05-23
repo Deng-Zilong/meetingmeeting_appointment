@@ -23,7 +23,7 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      * @param meetingRoom 会议室
      * @return {@code Boolean}
      */
-    Result<String> addMeetingRoom (MeetingRoom meetingRoom);
+    Result<Integer> addMeetingRoom (MeetingRoom meetingRoom, String userId);
 
 
     /**
@@ -39,7 +39,7 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      * @param meetingRoomId 会议室id
      * @return {@code Result<String>}
      */
-    Result<String> deleteMeetingRoom (Long meetingRoomId);
+    Result<Integer> deleteMeetingRoom (Long meetingRoomId, Integer currentLevel);
 
     /**
      * 查询当天各个时间段会议室占用情况
