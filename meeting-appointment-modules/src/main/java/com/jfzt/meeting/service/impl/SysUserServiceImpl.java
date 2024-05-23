@@ -21,6 +21,9 @@ import org.springframework.stereotype.Service;
 
 import java.awt.image.BufferedImage;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,22 +42,47 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     private SysUserMapper sysUserMapper;
 
     @Resource
-    private RedisTemplate<String,Object> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
     @Resource
     private Producer producer;
 
 
+    /**
+     * 根据用户id拼接姓名字符串并返回用户信息集合
+     */
+    @Override
+    public void getUserInfo (List<String> userIds, StringBuffer attendees, List<SysUserVO> sysUserVOList) {
+        //去重
+        HashSet<String> userIdSet = new LinkedHashSet<>(userIds);
+        ArrayList<String> userIdList = new ArrayList<>(userIdSet);
+        userIdList.forEach(userId -> {
+            SysUser user = this.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, userId));
+            if (user != null) {
+                //拼接参会人姓名
+                if (sysUserVOList != null) {
+                    sysUserVOList.add(new SysUserVO(user.getUserId(), user.getUserName()));
+                }
+                if (attendees != null) {
+                    attendees.append(user.getUserName());
+                    if (userIdList.indexOf(userId) < userIdList.size() - 1) {
+                        attendees.append(",");
+                    }
+                }
+            }
+        });
+    }
 
     /**
      * 获取所有不是管理员的企业微信用户的姓名
-     * @param sysUser 用户信息
+     *
+     * @param sysUser      用户信息
      * @param currentLevel 当前登录用户的权限等级
-     * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
+     * @return com.jfzt.meeting.common.Result<java.util.List < java.lang.String>>
      */
     @Override
-    public Result<List<String>> selectAll(SysUser sysUser, Integer currentLevel) {
+    public Result<List<String>> selectAll (SysUser sysUser, Integer currentLevel) {
         // 判断当前登录用户的权限等级
-        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)){
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)) {
             // 获取所有的用户信息
             List<SysUser> sysUsers = sysUserMapper.selectList(new QueryWrapper<>());
             return Result.success(sysUsers.stream()
@@ -70,13 +98,14 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
     /**
      * 查询所有的管理员
+     *
      * @param currentLevel 当前登录用户的权限等级
-     * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
+     * @return com.jfzt.meeting.common.Result<java.util.List < java.lang.String>>
      */
     @Override
-    public Result<List<SysUser>> selectAdmin(Integer currentLevel) {
+    public Result<List<SysUser>> selectAdmin (Integer currentLevel) {
         // 判断当前登录用户的权限等级
-        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)){
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)) {
             // 查询用户的信息
             List<SysUser> sysUsers = sysUserMapper.selectList(new QueryWrapper<>());
             return Result.success(sysUsers.stream()
@@ -89,11 +118,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
     /**
      * 新增管理员
+     *
      * @param userIds 用户id
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @Override
-    public Result<Integer> addAdmin(List<String> userIds) {
+    public Result<Integer> addAdmin (List<String> userIds) {
         int row = 0;
         for (String userId : userIds) {
             SysUser sysUser = sysUserMapper.selectByUserId(userId);
@@ -102,7 +132,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             }
             row = sysUserMapper.addAdmin(userId);
         }
-        if (row > 0){
+        if (row > 0) {
             return Result.success(ErrorCodeEnum.SUCCESS);
         }
         log.error("修改用户权限等级失败！");
@@ -111,17 +141,18 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
     /**
      * 删除管理员
+     *
      * @param userId 用户id
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @Override
-    public Result<Integer> deleteAdmin(String userId) {
+    public Result<Integer> deleteAdmin (String userId) {
         SysUser sysUser = sysUserMapper.selectByUserId(userId);
-        if (MessageConstant.EMPLOYEE_LEVEL.equals(sysUser.getLevel())){
+        if (MessageConstant.EMPLOYEE_LEVEL.equals(sysUser.getLevel())) {
             return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0400);
         }
         int row = sysUserMapper.deleteAdmin(userId);
-        if (row > 0){
+        if (row > 0) {
             return Result.success(ErrorCodeEnum.SUCCESS);
         }
         log.error("修改用户权限等级失败！");
@@ -130,33 +161,34 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
     /**
      * 返回验证码图片，存储到redis
+     *
      * @param uuid
      * @return
      */
     @Override
-    public BufferedImage getCaptcha(String uuid) {
-        String code =producer.createText();
-        redisTemplate.opsForValue().set(uuid,code, Duration.ofSeconds(60));
+    public BufferedImage getCaptcha (String uuid) {
+        String code = producer.createText();
+        redisTemplate.opsForValue().set(uuid, code, Duration.ofSeconds(60));
         return producer.createImage(code);
     }
 
     @Override
-    public SysUser findUser(LoginVo loginVo) {
+    public SysUser findUser (LoginVo loginVo) {
 
         LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(SysUser::getUserId,loginVo.getName());
+        lambdaQueryWrapper.eq(SysUser::getUserId, loginVo.getName());
         SysUser sysUser = sysUserMapper.selectOne(lambdaQueryWrapper);
         return sysUser;
     }
 
     /**
+     * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.SysUserVO>>
+     * @throws
      * @Description 成员树模糊查询
      * @Param [name]
-     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.SysUserVO>>
-     * @exception
      */
     @Override
-    public Result<List<SysUserVO>> findByName(String name) {
+    public Result<List<SysUserVO>> findByName (String name) {
         // 根据用户名查询用户信息，并将其转换为SysUserVO对象
         return Result.success(lambdaQuery()
                 // 判断用户名是否为空

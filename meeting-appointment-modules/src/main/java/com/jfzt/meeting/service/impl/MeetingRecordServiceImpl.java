@@ -108,7 +108,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 List<SysUserVO> users = new ArrayList<>();
                 StringBuffer attendees = new StringBuffer();
                 //遍历参会人，拼接姓名，获取userIdList
-                getUserInfo(userIds, attendees, users);
+                userService.getUserInfo(userIds, attendees, users);
                 //更新会议状态
                 updateRecordStatus(meetingRecord);
                 meetingRecord = this.getById(meetingRecord.getId());
@@ -137,25 +137,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     }
 
-    /**
-     * 根据用户id拼接姓名字符串并返回用户信息集合
-     */
-    private void getUserInfo (List<String> userIds, StringBuffer attendees, List<SysUserVO> sysUserVOList) {
-        //去重
-        HashSet<String> userIdSet = new LinkedHashSet<>(userIds);
-        ArrayList<String> userIdList = new ArrayList<>(userIdSet);
-        userIdList.forEach(userId -> {
-            SysUser user = userService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, userId));
-            if (user != null) {
-                //拼接参会人姓名
-                sysUserVOList.add(new SysUserVO(user.getUserId(), user.getUserName()));
-                attendees.append(user.getUserName());
-                if (userIdList.indexOf(userId) < userIdList.size() - 1) {
-                    attendees.append(",");
-                }
-            }
-        });
-    }
 
     /**
      * 查询今日中心会议总次数
@@ -271,7 +252,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                     List<String> userIds = attendeesMapper.selectUserIdsByRecordId(record.getId());
                     StringBuffer attendees = new StringBuffer();
                     ArrayList<SysUserVO> users = new ArrayList<>();
-                    getUserInfo(userIds, attendees, users);
+                    userService.getUserInfo(userIds, attendees, users);
                     recordVO.setAttendees(attendees.toString());
                     recordVO.setUsers(users);
                     recordVO.setMeetingNumber(users.size());
@@ -320,7 +301,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                         List<String> userIds = attendeesMapper.selectUserIdsByRecordId(record.getId());
                         StringBuffer attendees = new StringBuffer();
                         ArrayList<SysUserVO> users = new ArrayList<>();
-                        getUserInfo(userIds, attendees, users);
+                        userService.getUserInfo(userIds, attendees, users);
                         // 设置参会人员详情
                         recordVO.setAttendees(attendees.toString());
                         recordVO.setUsers(users);

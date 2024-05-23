@@ -212,20 +212,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 //插入参会人拼接字符串
                 List<String> userIds = attendeesMapper.selectUserIdsByRecordId(meetingRecord.getId());
                 StringBuffer attendees = new StringBuffer();
-                userIds.forEach(userId1 -> {
-                    SysUser user = userService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, userId1));
-                    //拼接参会人姓名
-                    if (user != null) {
-                        SysUser first = userService.lambdaQuery()
-                                .eq(SysUser::getUserId, userId1)
-                                .list()
-                                .getFirst();
-                        attendees.append(first.getUserName());
-                        if (userIds.indexOf(userId1) != userIds.size() - 1) {
-                            attendees.append(",");
-                        }
-                    }
-                });
+                userService.getUserInfo(userIds, attendees, null);
                 meetingRoomStatusVO.setAttendees(attendees.toString());
             }
             return meetingRoomStatusVO;
