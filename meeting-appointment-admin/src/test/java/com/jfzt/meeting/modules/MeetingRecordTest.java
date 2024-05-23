@@ -3,6 +3,8 @@ package com.jfzt.meeting.modules;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.service.MeetingRecordService;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -59,7 +61,6 @@ public class MeetingRecordTest {
         //        when(meetingRecordService.getRecordNumber()).thenReturn(1);
         //        assertEquals(1, meetingRecordService.getRecordNumber());
     }
-
     @Test
     public void getAllRecordVoListPageTest () {
         assertThrows(RRException.class, () -> meetingRecordService.getAllRecordVoListPage(null, 1L, 10L));
@@ -73,6 +74,16 @@ public class MeetingRecordTest {
         assertThrows(RRException.class, () -> meetingRecordService.cancelMeetingRecord("admin", null));
         assertThrows(RRException.class, () -> meetingRecordService.cancelMeetingRecord("test", 0L));
     }
+
+    @Test
+    public void getAllMeetingRecordVoListPageTest () {
+        assertNull(meetingRecordService.getAllMeetingRecordVoListPage(1L, 10L, 0));
+        assertNull(meetingRecordService.getAllMeetingRecordVoListPage(1L, 10L, 1));
+        assertNull(meetingRecordService.getAllMeetingRecordVoListPage(1L, 10L, 2));
+        assertNull(meetingRecordService.getAllMeetingRecordVoListPage(null, 10L, 0));
+        assertNull(meetingRecordService.getAllMeetingRecordVoListPage(1L, null, 0));
+    }
+
 
 
 }

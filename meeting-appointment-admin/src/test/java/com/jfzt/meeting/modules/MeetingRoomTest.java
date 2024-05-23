@@ -1,7 +1,11 @@
 package com.jfzt.meeting.modules;
 
+import com.jfzt.meeting.entity.dto.MeetingRoomDTO;
+import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.service.MeetingRoomService;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,6 +52,28 @@ public class MeetingRoomTest {
     public void getAvailableMeetingRoomsTest () {
         assertDoesNotThrow(() -> meetingRoomService.getAvailableMeetingRooms(LocalDateTime.now(), LocalDateTime.now().plusHours(1)));
         assertNotNull(meetingRoomService.getAvailableMeetingRooms(LocalDateTime.now(), LocalDateTime.now().plusHours(1)));
+    }
+
+    /**
+     * 测试修改会议室状态
+     */
+    @Test
+    public void updateStatusTest () {
+        assertEquals("00000", meetingRoomService.updateStatus(new MeetingRoomDTO(1L,0,0)).getCode());
+        assertEquals("00000", meetingRoomService.updateStatus(new MeetingRoomDTO(null,0,0)).getCode());
+        assertEquals("00000", meetingRoomService.updateStatus(new MeetingRoomDTO(1L,null,0)).getCode());
+        assertEquals("00000", meetingRoomService.updateStatus(new MeetingRoomDTO(1L,0,2)).getCode());
+        assertEquals("00000", meetingRoomService.updateStatus(new MeetingRoomDTO(1L,0,1)).getCode());
+    }
+
+    /**
+     * 测试查询被禁用的会议室id
+     */
+    @Test
+    public void selectUsableRoomTest () {
+        assertNotNull(meetingRoomService.selectUsableRoom(0));
+        assertNotNull(meetingRoomService.selectUsableRoom(1));
+        assertNotNull(meetingRoomService.selectUsableRoom(2));
     }
 
 }
