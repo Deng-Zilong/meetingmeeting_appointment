@@ -2,6 +2,7 @@ package com.jfzt.meeting.constant;
 
 /**
  * 信息提示类
+ *
  * @Author: chenyu.di
  * @since: 2024-05-08 18:06
  */
@@ -19,6 +20,7 @@ public class MessageConstant {
     public static final String ADD_SUCCESS = "添加成功！";
     public static final String UPDATE_SUCCESS = "修改成功！";
     public static final String NO_USER = "成员不能为空！";
+    public static final String CREATE_SUCCESS = "创建成功！";
 
     /**
      * 权限处理提示信息

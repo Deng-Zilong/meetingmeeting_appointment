@@ -413,7 +413,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .collect(Collectors.toList());
         // 保存MeetingAttendees列表
         meetingAttendeesService.saveBatch(attendeesList);
-        return Result.success(UPDATE_SUCCESS);
+        return Result.success(CREATE_SUCCESS);
     }
 
     /**
@@ -451,7 +451,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .collect(Collectors.toList());
         // 更新MeetingAttendees列表
         meetingAttendeesService.saveBatch(attendeesList);
-        return Result.success();
+        return Result.success(UPDATE_SUCCESS);
     }
 
 
