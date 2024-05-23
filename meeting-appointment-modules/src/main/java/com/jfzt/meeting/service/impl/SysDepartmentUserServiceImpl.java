@@ -1,6 +1,5 @@
 package com.jfzt.meeting.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.SysDepartment;
@@ -23,12 +22,14 @@ import me.chanjar.weixin.cp.api.impl.WxCpUserServiceImpl;
 import me.chanjar.weixin.cp.bean.WxCpDepart;
 import me.chanjar.weixin.cp.bean.WxCpUser;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -141,12 +142,14 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
         // 获取成员树
         List<SysDepartment> departments = departmentList.stream()
                 // 过滤顶级部门
-                .filter(sysDepartment -> sysDepartment.getParentId() == 0)
+                .filter(sysDepartment -> sysDepartment.getParentId() == 5201314)
                 // 排序
                 .sorted((node1, node2) -> Math.toIntExact(node1.getDepartmentId() - node2.getDepartmentId()))
                 // 递归设置子部门
-                .peek(topNode -> topNode.setChildrenPart(getChildren(topNode, departmentList)))
-                .collect(Collectors.toList());
+                .peek((topNode) -> topNode.setChildrenPart(getChildren(topNode, departmentList)))
+                .toList()
+                .getFirst()
+                .getChildrenPart();
         return Result.success(departments);
     }
 
