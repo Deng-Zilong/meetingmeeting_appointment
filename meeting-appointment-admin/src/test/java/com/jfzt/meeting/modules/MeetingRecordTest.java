@@ -32,10 +32,32 @@ public class MeetingRecordTest {
     @Autowired
     MeetingRecordService meetingRecordService;
 
+    @BeforeEach
+    public void setUp () {
+        // 初始化测试数据，重置状态等
+        //        MockitoAnnotations.openMocks(this);
+
+    }
+
+    @AfterEach
+    public void tearDown () {
+        // 清理测试数据
+    }
+
     @Test
     public void recordNumberTest () {
+        //        MeetingRecordDTO meetingRecordDTO = new MeetingRecordDTO();
+        //        meetingRecordDTO.setTitle("测试会议");
+        //        meetingRecordDTO.setMeetingRoomId(1L);
+        //        meetingRecordDTO.setCreatedBy("admin");
+        //        meetingRecordDTO.setStartTime(LocalDateTime.now().plusHours(2));
+        //        meetingRecordDTO.setEndTime(LocalDateTime.now().plusHours(3));
+        //        meetingRecordService.addMeeting(meetingRecordDTO);
         assertNotNull(meetingRecordService.getRecordNumber());
         assertDoesNotThrow(() -> meetingRecordService.getRecordNumber());
+        // 配置Mock对象的行为
+        //        when(meetingRecordService.getRecordNumber()).thenReturn(1);
+        //        assertEquals(1, meetingRecordService.getRecordNumber());
     }
 
     @Test

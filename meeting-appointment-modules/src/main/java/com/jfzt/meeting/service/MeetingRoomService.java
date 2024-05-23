@@ -33,6 +33,12 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      */
     List<MeetingRoomStatusVO> getMeetingRoomStatus ();
 
+    /**
+     * 删除今日会议记录
+     *
+     * @param meetingRoomId 会议室id
+     * @return {@code Result<String>}
+     */
     Result<String> deleteMeetingRoom (Long meetingRoomId);
 
     /**

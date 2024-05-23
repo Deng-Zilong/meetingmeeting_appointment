@@ -173,7 +173,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         List<MeetingRoom> meetingRoomList = list(
                 new LambdaQueryWrapper<MeetingRoom>()
                         .eq(MeetingRoom::getIsDeleted, NOT_DELETED)
-                        .orderByAsc(MeetingRoom::getLocation));
+                        .orderByAsc(MeetingRoom::getId));
 
         return meetingRoomList.stream().map(meetingRoom -> {
             MeetingRoomStatusVO meetingRoomStatusVO = new MeetingRoomStatusVO();

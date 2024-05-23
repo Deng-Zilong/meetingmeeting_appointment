@@ -26,7 +26,7 @@ public class MeetingRoomStatusVO {
     /**
      * 会议室位置
      */
-    private Integer location;
+    private String location;
     /**
      * 会议室状态（0暂停使用,1空闲，2使用中）
      */

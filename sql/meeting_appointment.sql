@@ -64,7 +64,7 @@ create table meeting_room
     id           bigint unsigned auto_increment comment 'id'
         primary key,
     room_name    varchar(50)                          not null comment '会议室名称',
-    location     int                                  not null comment '会议室位置',
+    location     VARCHAR(50)                          not null comment '会议室位置',
     capacity     int                                  null comment '容量',
     status       tinyint    default 1                 not null comment '会议室状态（0暂停使用,1可使用/空闲 2为使用中不保存至数据库，实时获取）',
     gmt_create   datetime   default CURRENT_TIMESTAMP not null comment '添加时间',

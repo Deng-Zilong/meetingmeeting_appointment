@@ -32,8 +32,16 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      */
     Integer getRecordNumber ();
 
+    /**
+     * @param meetingRecord 会议记录
+     * @return {@code MeetingRecord}
+     * @description 更新会议记录
+     */
     MeetingRecord updateRecordStatus (MeetingRecord meetingRecord);
 
+    /**
+     * 更新今日会议记录状态
+     */
     void updateTodayRecordStatus ();
 
     /**

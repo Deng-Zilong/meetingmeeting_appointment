@@ -37,7 +37,7 @@ public class MeetingRoom implements Serializable {
     /**
      * 会议室位置
      */
-    private Integer location;
+    private String location;
 
     /**
      * 容量
