@@ -357,17 +357,17 @@ const modifyMeeting = (item: any) => {
 
 const delMeeting = (item: any, index: number) => {  
   ElMessageBox.confirm('是否确定删除会议？')
-  .then(() => {
-    getDeleteMeetingRecordData({ userId: item.createdBy, meetingId: item.id })  // 删除会议室接口
-      .then((res) => {
-        ElMessage.success('删除成功')
-        getTodayRecord({ userId: userInfo.value.userId })
-      })
+      .then(() => {
+        getDeleteMeetingRecordData({userId: userInfo.value.userId, meetingId: item.id})  // 删除会议室接口
+            .then((res) => {
+              ElMessage.success('删除成功')
+              getTodayRecord({userId: userInfo.value.userId})
+            })
       .catch((err) => {})
-  })
-  .catch(() => {
-    ElMessage.info('取消删除')
-  })
+      })
+      .catch(() => {
+        ElMessage.info('取消删除')
+      })
 }
 
 /******************************************* 公告 ***********************************/
