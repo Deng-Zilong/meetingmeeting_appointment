@@ -46,3 +46,12 @@ sky:
     user-ttl: 7200000000000
 
     user-token-name: authorization
+
+# 企业微信配置
+qiyewx:
+  corpid: ww942086e6c44abc4b
+  corpsecret: Rnf3LVxbAdTfvGVTirgwVbgsaDoBv_MTXrmawAu9qHQ
+  agentId: 1000002
+  #回调配置
+  token: 9zTIV
+  encodingAESKey: fha6hIaBwGCkU3R4IgV2SRHOCYd5EmVVVrKq71HqSQX

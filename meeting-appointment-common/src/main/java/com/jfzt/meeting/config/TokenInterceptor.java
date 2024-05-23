@@ -52,7 +52,7 @@ public class TokenInterceptor implements HandlerInterceptor {
             //3、通过，放行
         } catch (Exception ex) {
             //4、不通过，响应401状态码
-            response.setStatus(401);
+            response.setStatus(402);
             return false;
         }
     }

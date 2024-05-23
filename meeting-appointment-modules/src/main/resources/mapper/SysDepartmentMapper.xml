@@ -16,4 +16,12 @@
         id,department_id,department_name,
         parent_id,is_deleted
     </sql>
+    <insert id="insertAll" parameterType="com.jfzt.meeting.entity.SysDepartment">
+        insert into customer (department_id,department_name,parent_id)
+        values
+    <foreach collection="sysDepartmentLists" item="id" index="index" separator=",">
+        (#{department_id,jdbcType=BIGINT}, #{departmentName,jdbcType=VARBINARY}, #{parentId,jdbcType=BIGINT})
+    </foreach>
+
+    </insert>
 </mapper>

@@ -1,8 +1,8 @@
 spring:
     datasource:
-        url: jdbc:mysql://192.168.212.41:32306/meeting-appointment?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8
-        username: meeting-appointment
-        password: OOLd8P7zK
+        url: jdbc:mysql://1.94.57.107:3306/meeting_appointment?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8
+        username: root
+        password: meetingmysql
         driver-class-name: com.mysql.cj.jdbc.Driver
         type: com.alibaba.druid.pool.DruidDataSource
     data:

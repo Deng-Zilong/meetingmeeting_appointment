@@ -87,20 +87,25 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     public Long findDepartment() throws WxErrorException {
         WxCpDepartmentServiceImpl wxCpDepartmentService = new WxCpDepartmentServiceImpl(wxCpService);
         List<WxCpDepart> listDepartmentList = wxCpDepartmentService.list(0L);
-        sysDepartmentMapper.deleteAll();
+        List<SysDepartment> sysDepartmentList = sysDepartmentMapper.selectList(null);
+        if (sysDepartmentList.size() != 0){
+            return (long) sysDepartmentList.size();
+        }
         //存入信息
+        List<SysDepartment> sysDepartmentLists = new ArrayList<>();
         for (WxCpDepart listDepartment : listDepartmentList) {
             SysDepartment sysDepartment = new SysDepartment();
             sysDepartment.setDepartmentId(listDepartment.getId());
             sysDepartment.setDepartmentName(listDepartment.getName());
             sysDepartment.setParentId(listDepartment.getParentId());
-            sysDepartmentMapper.insert(sysDepartment);
+            sysDepartmentLists.add(sysDepartment);
         }
+        sysDepartmentMapper.insertAll(sysDepartmentLists);
         return (long) listDepartmentList.size();
     }
 
     @Override
-    public void findDepartmentUser(Long departmentLength) throws WxErrorException, NoSuchAlgorithmException {
+    public Boolean findDepartmentUser(Long departmentLength) throws WxErrorException, NoSuchAlgorithmException {
         WxCpUserServiceImpl wxCpUserService = new WxCpUserServiceImpl(wxCpService);
         List<WxCpUser> listDepartmentUserList = new ArrayList<>();
         for (int i = 1; i < departmentLength + 1; i++) {
@@ -108,8 +113,9 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
             listDepartmentUserList.addAll(wxCpUser);
         }
         List<WxCpUser> wxCpUserList = listDepartmentUserList.stream().distinct().toList();
-        sysUserMapper.deleteAll();
-        sysDepartmentUserMapper.deleteAll();
+        if (wxCpUserList.size() != 0){
+            return true;
+        }
         for (WxCpUser wxCpUser : wxCpUserList) {
             SysUser sysUser = new SysUser();
             sysUser.setUserId(wxCpUser.getUserId());
@@ -117,7 +123,6 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
             sysUser.setPassword(EncryptUtils.encrypt(EncryptUtils.md5encrypt(wxCpUser.getUserId())));
             sysUser.setLevel(wxCpUser.getEnable());
             sysUserMapper.insert(sysUser);
-
             for (int s = 0; s < wxCpUser.getDepartIds().length; s++) {
                 SysDepartmentUser sysDepartmentUser = new SysDepartmentUser();
                 sysDepartmentUser.setUserId(wxCpUser.getUserId());
@@ -125,7 +130,7 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
                 sysDepartmentUserMapper.insert(sysDepartmentUser);
             }
         }
-
+        return true;
     }
 
 
