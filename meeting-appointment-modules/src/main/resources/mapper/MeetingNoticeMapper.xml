@@ -20,6 +20,6 @@
 
     <select id="selectList" resultMap="BaseResultMap">
         SELECT id,substance,user_id,gmt_create,gmt_modified,is_deleted
-        FROM meeting_notice  ORDER BY gmt_create DESC
+        FROM meeting_notice  where is_deleted = 0 ORDER BY gmt_create DESC
     </select>
 </mapper>
