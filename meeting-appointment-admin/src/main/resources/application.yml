@@ -6,7 +6,7 @@ spring:
   application:
     name: meeting-appointment
   profiles:
-    active: dev
+    active: prod
     include: db,log,common,modules,quartz
   # application.yml
   jackson:
