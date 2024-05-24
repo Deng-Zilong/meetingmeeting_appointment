@@ -75,13 +75,16 @@ public class MeetingRecordTest {
         assertThrows(RRException.class, () -> meetingRecordService.cancelMeetingRecord("test", 0L));
     }
 
+    /**
+     * 测试查询所有的会议记录信息
+     */
     @Test
     public void getAllMeetingRecordVoListPageTest () {
-        assertNull(meetingRecordService.getAllMeetingRecordVoListPage(1L, 10L, 0));
-        assertNull(meetingRecordService.getAllMeetingRecordVoListPage(1L, 10L, 1));
-        assertNull(meetingRecordService.getAllMeetingRecordVoListPage(1L, 10L, 2));
-        assertNull(meetingRecordService.getAllMeetingRecordVoListPage(null, 10L, 0));
-        assertNull(meetingRecordService.getAllMeetingRecordVoListPage(1L, null, 0));
+        assertNotNull(meetingRecordService.getAllMeetingRecordVoListPage(1L, 10L, 0));
+        assertNotNull(meetingRecordService.getAllMeetingRecordVoListPage(1L, 10L, 1));
+        assertThrows(RRException.class, () -> meetingRecordService.getAllMeetingRecordVoListPage(1L, 10L, 2));
+        assertThrows(RRException.class, () -> meetingRecordService.getAllMeetingRecordVoListPage(null, 10L, 0));
+        assertThrows(RRException.class, () -> meetingRecordService.getAllMeetingRecordVoListPage(1L, null, 0));
     }
 
 

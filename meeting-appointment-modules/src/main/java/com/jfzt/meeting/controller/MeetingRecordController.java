@@ -114,6 +114,8 @@ public class MeetingRecordController {
      */
     @GetMapping("meeting-record/select-all-meeting-record")
     public Result<List<MeetingRecordVO>> getRecordPage (@RequestParam Long pageNum, @RequestParam Long pageSize, @RequestParam("currentLevel") Integer currentLevel) {
-        return meetingRecordService.getAllMeetingRecordVoListPage(pageNum, pageSize, currentLevel);
+        List<MeetingRecordVO> allMeetingRecordVoListPage = meetingRecordService.getAllMeetingRecordVoListPage(pageNum, pageSize, currentLevel);
+        return Result.success(allMeetingRecordVoListPage);
+
     }
 }

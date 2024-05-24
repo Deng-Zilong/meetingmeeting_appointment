@@ -1,7 +1,6 @@
 package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
-import com.jfzt.meeting.entity.MeetingNotice;
 import com.jfzt.meeting.entity.vo.MeetingNoticeVO;
 import com.jfzt.meeting.service.MeetingNoticeService;
 import jakarta.annotation.Resource;
@@ -15,7 +14,6 @@ import java.util.List;
  * @Author: xuchang.yang
  * @since: 2024-04-29 16:44
  */
-@CrossOrigin
 @RestController
 @RequestMapping("meeting/meeting-notice")
 public class MeetingNoticeController {

@@ -1,5 +1,6 @@
 package com.jfzt.meeting.modules;
 
+import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.service.SysUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -18,32 +19,34 @@ public class SysUserTest {
     @Autowired
     private SysUserService sysUserService;
     /**
-     * ²âÊÔ²éÑ¯ËùÓĞµÄ¹ÜÀíÔ±
+     * æµ‹è¯•æŸ¥è¯¢æ‰€æœ‰ç®¡ç†å‘˜
      */
     @Test
     public void selectAdmin() {
-        assertNull(sysUserService.selectAdmin(0));
-        assertNull(sysUserService.selectAdmin(1));
-        assertNull(sysUserService.selectAdmin(2));
+        assertNotNull(sysUserService.selectAdmin(0));
+        assertNull(sysUserService.selectAdmin(1).getData());
+        assertNull(sysUserService.selectAdmin(2).getData());
     }
 
     /**
-     * ²âÊÔÉ¾³ı¹ÜÀíÔ±
+     * æµ‹è¯•åˆ é™¤ç®¡ç†å‘˜
      */
     @Test
     public void deleteAdmin() {
-        assertEquals("00000", sysUserService.deleteAdmin("QianRuoXiaMo").getCode());
+        assertThrows(RRException.class, () -> sysUserService.deleteAdmin("QianRuoXiaMo"));
+        assertEquals("00000", sysUserService.deleteAdmin("LiuYiSi").getCode());
     }
 
 
     /**
-     * ²âÊÔĞÂÔö¹ÜÀíÔ±,Ö»ÓĞ³¬¼¶¹ÜÀíÔ±¿ÉÒÔ²Ù×÷
+     * æµ‹è¯•æ–°å¢ç®¡ç†å‘˜
      */
     @Test
     public void addAdmin() {
         List<String> list = new ArrayList<>();
         list.add("QianRuoXiaMo");
         list.add("XingChen");
-        assertEquals("00000", sysUserService.addAdmin(list).getCode());
+        // assertEquals("00000", sysUserService.addAdmin(list).getCode());
+        assertThrows(RRException.class, () -> sysUserService.addAdmin(list));
     }
 }

@@ -1,6 +1,7 @@
 package com.jfzt.meeting.modules;
 
 import com.jfzt.meeting.entity.vo.MeetingNoticeVO;
+import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.service.MeetingNoticeService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -20,30 +21,31 @@ public class MeetNoticeTest {
 
     @BeforeEach
     public void setUp () {
-        // ³õÊ¼»¯²âÊÔÊý¾Ý£¬ÖØÖÃ×´Ì¬µÈ
+        // åˆå§‹åŒ–æµ‹è¯•æ•°æ®,é‡ç½®çŠ¶æ€ç­‰
     }
 
     @AfterEach
     public void tearDown () {
-        // ÇåÀí²âÊÔÊý¾Ý
+        // æ¸…ç†æµ‹è¯•æ•°æ®
     }
 
     /**
-     * ²âÊÔ²éÑ¯ËùÓÐ¹«¸æ
+     * æµ‹è¯•æŸ¥è¯¢æ‰€æœ‰å…¬å‘Š
      */
     @Test
     public void getMeetingNoticeTest () {
-        assertNull(meetingNoticeService.selectAll());
+        assertNotNull(meetingNoticeService.selectAll());
     }
 
 
     /**
-     * ²âÊÔÐÂÔö¹«¸æ
+     * æµ‹è¯•æ–°å¢žå…¬å‘Š
      */
-    //@Test
+    @Test
     public void addMeetingNoticeTest () {
-        assertEquals("00000", meetingNoticeService.addNotice(new MeetingNoticeVO("Ô¤Ô¼ÏµÍ³Íê³É£¡", 0, "dzl")).getCode());
-        assertEquals("00000", meetingNoticeService.addNotice(new MeetingNoticeVO("Ô¤Ô¼ÏµÍ³Íê³É£¡", 0, null)).getCode());
-        assertEquals("00000", meetingNoticeService.addNotice(new MeetingNoticeVO(null, 2, "dzl")).getCode());
+        assertEquals("00000", meetingNoticeService.addNotice(new MeetingNoticeVO("å“ˆå“ˆå“ˆå“ˆ1", 0, "dzl")).getCode());
+        assertThrows(RRException.class, () -> meetingNoticeService.addNotice(new MeetingNoticeVO("å“ˆå“ˆå“ˆå“ˆ2", 0, "")));
+        assertThrows(RRException.class, () -> meetingNoticeService.addNotice(new MeetingNoticeVO("", 0, "dzl")));
+        assertThrows(RRException.class, () -> meetingNoticeService.addNotice(new MeetingNoticeVO("å“ˆå“ˆå“ˆå“ˆ1", 2, "dzl")));
     }
 }
