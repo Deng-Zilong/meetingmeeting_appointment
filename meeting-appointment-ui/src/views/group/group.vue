@@ -26,7 +26,7 @@
                         <p><span>{{ value.month }}</span>月</p>
                         <p>{{ value.day }}</p>
                     </div>
-                    <div class="card-item" v-for="(item, index) in value.list" :key="index">
+                    <div class="card-item" v-for="(item, key) in value.list" :key="index">
                         <div>{{ item.userName }}</div>
                         <div>{{ item.editTime }}</div>
                         <div v-if="item.isEdit">
@@ -36,7 +36,7 @@
                             {{ item.groupName }}
                         </div>
                         <div v-else>
-                            <el-input v-model="item.groupName" @blur="handleEditGroupName(index, item)" />
+                            <el-input v-model="item.groupName" @blur="handleEditGroupName(index, key, item)" />
                         </div>
                         <div>
                             <el-icon @click="editAttendees(item)" v-show="item.createdBy == currentUserId">
@@ -152,19 +152,18 @@ const handleCreateGroup = () => {
         userName: userInfo.value.name,
         users: groups.value,
     })
-        .then(res => {
+        .then(async res => {
             ElMessage.success('创建成功!');
             groupTitle.value = '';
             groupPeopleNames.value = '';
             groups.value = [];
+            // 重置页码
+            page.value = 1;
+            // 获取数据
+            await getDataOnScroll();
         })
         .catch(err => { })
-        .finally(() => {
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-
-        })
+        .finally(() => {})
 }
 /************************** 创建群组结束 **************************/
 
@@ -285,22 +284,23 @@ const updateGroupInfo = async (data: { id: string; groupName?: string; users?: [
             ElMessage.success('修改成功');
         })
         .catch(err => { })
-        .finally(() => {
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
+        .finally(async () => {
+            // 重置页码
+            page.value = 1;
+            // 获取数据
+            await getDataOnScroll();
         })
 }
 /**
  * @description 修改群组名称
  * @param index 下标
  */
-const handleEditGroupName = async (index: number, item: any) => {
+const handleEditGroupName = async (index: number, key: number, item: any) => {
     if (!item.groupName) {
         ElMessage.warning('群组名称不可为空！');
         return;
     }
-    dataList.value[index].isEdit = true;
+    dataList.value[index].list[key].isEdit = true;
     updateGroupInfo({ id: item.id, groupName: item.groupName });
 }
 /**
@@ -443,7 +443,6 @@ const handleDeleteMeeting = async (id: string,) => {
 
         .title {
             height: 3rem;
-            ;
 
             div {
                 font-size: 1.2rem;

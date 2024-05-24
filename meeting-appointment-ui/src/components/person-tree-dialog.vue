@@ -43,6 +43,7 @@
                 :props="defaultGroupProps"
                 :default-checked-keys="groupPersonIds"
                 :default-expanded-keys="groupPersonIds"
+                :default-expand-all="false"
             />
         </el-scrollbar>
         <template #footer>
@@ -88,9 +89,7 @@
     const visible = ref(false) // 弹框显示
     watch(() => props.modelValue, (newValue) => {
         visible.value = newValue;
-        if (props.type == 2) {
-            addGroupForm.value.peopleIds = props.peopleIds;
-        }
+        addGroupForm.value.peopleIds = props.peopleIds;
         handleAddGroupReq();
     })
 

@@ -45,9 +45,9 @@
                         <el-date-picker v-model="formData.date" type="date" class="date" :disabled-date="disabledDate"
                             placeholder="选择日期" />
                     </el-form-item>
-                    <el-form-item label="当前可选地点" prop="meetingRoom">
+                    <el-form-item label="当前可选地点" prop="meetingRoomId">
                         <el-select v-model="formData.meetingRoomId" placeholder="请选择" @change="handleChangeRoom">
-                            <el-option v-for="item in roomArr" :key="item.meetingRoomId" :label="item.roomName" :value="item.meetingRoomId" />
+                            <el-option v-for="item in roomArr" :key="item.id" :label="item.roomName" :value="String(item.id)" />
                         </el-select>
                     </el-form-item>
                 </div>
@@ -84,15 +84,15 @@
             :type="addPersonForm.type"
             :list="addPersonForm.list" 
             :groupList="addPersonForm.list" 
-            :peopleIds="addPersonForm.PeopleIds"
-            :groupPersonIds="addPersonForm.PeopleIds"
+            :peopleIds="addPersonForm.personIds"
+            :groupPersonIds="addPersonForm.personIds"
             @close-dialog="closeAddPersonDialog" 
             @submit-dialog="handleCheckedPerson" />
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import type { ComponentSize, FormInstance, FormRules } from 'element-plus'
 import { ElMessage, dayjs } from 'element-plus'
@@ -100,9 +100,11 @@ import { Plus } from '@element-plus/icons-vue'
 import personTreeDialog from '@/components/person-tree-dialog.vue'
 import { addMeetingGroup, getMeetingGroupList } from '@/request/api/group'
 import { addMeetingRecord, availableMeetingRooms, updateMeetingRecord } from '@/request/api/meeting-appoint'
+import { meetingStatus } from '@/stores/meeting-status'
 
 const routes = useRoute();
 const router = useRouter();
+const useMeetingStatus = meetingStatus();
 const userInfo = ref<any>(JSON.parse(localStorage.getItem('userInfo') as string) || '');
 const currentUserId = ref<string>(userInfo.value.userId);
 
@@ -115,18 +117,17 @@ onMounted(() => {
     
         const users:any = JSON.parse(routes.query.users as string);
         const meetingPeople = Array.from(new Set(users?.map((el: any) => el.userName))).join(',');
-        const meetingUserIds = Array.from(new Set(users.map((el: any) => el.userId)));
+        addPersonForm.value.personIds = Array.from(new Set(users.map((el: any) => el.userId)));
         // 重组 form 表单数据
         formData.value = {
             id: id,
-            meetingRoomId: Number(meetingRoomId),
+            meetingRoomId,
             title,
             description,
             startTime: dayjs(startTime as string).format('HH:mm'),
             endTime: dayjs(endTime as string).format('HH:mm'),
             meetingRoomName,
             meetingPeople,
-            meetingUserIds,
             status,
             createdBy,
             adminUserName,
@@ -138,7 +139,7 @@ onMounted(() => {
 
     // 会议室 处理传参数据
     if ((routes.query?.meetingRoomId || routes.query?.startTime) && !routes.query?.id) {
-        formData.value.meetingRoomId = routes.query?.meetingRoomId ? Number(routes.query.meetingRoomId) : '';
+        formData.value.meetingRoomId = routes.query?.meetingRoomId ? routes.query.meetingRoomId : '';
         formData.value.startTime = routes.query?.startTime ? routes.query?.startTime : '';
     }
     // 获取当前可选时间
@@ -175,33 +176,7 @@ let minEndTime = ref('8:00'); // 结束最小可选时间
 const seconds = ('00'); // 获取当前时间的秒
 
 // 会议室数组
-const roomArr = ref<any>([
-    {
-        meetingRoomId: 1,
-        roomName: '广政通宝',
-        address: '西南裙一 3 F 一 广政通宝'
-    },
-    {
-        meetingRoomId: 2,
-        roomName: 'EN-2F-02 恰谈室',
-        address: '西南裙一 3 F 一 EN-2F-02 恰谈室'
-    },
-    {
-        meetingRoomId: 3,
-        roomName: 'EN-2F-03 恰谈室',
-        address: '西南裙一 3 F 一 EN-2F-03 恰谈室'
-    },
-    {
-        meetingRoomId: 4,
-        roomName: 'EN-3F-02 恰谈室',
-        address: '西南裙一 3 F 一 EN-3F-02 恰谈室'
-    },
-    {
-        meetingRoomId: 5,
-        roomName: 'EN-3F-03 恰谈室',
-        address: '西南裙一 3 F 一 EN-3F-03 恰谈室'
-    }
-])
+const roomArr = ref<any>(useMeetingStatus.centerRoomName);
 
 // 添加参会人员弹窗表单数据
 let addPersonForm = ref<any>({
@@ -233,8 +208,8 @@ const getGroupList = () => {
 const handleCheckedPerson = (type: number, tab: number, userIds: any, userNames: any, userInfo: any) => {
     // 用逗号拼接选中人员的名字
     formData.value.meetingPeople = userNames.join(',');
-    // 用逗号拼接选中人员的id
-    addPersonForm.value.personIds = userIds.join(',');
+    // 选中人员的id
+    addPersonForm.value.personIds = userIds;
     formData.value.users = userInfo;
     closeAddPersonDialog();
 }
@@ -251,7 +226,7 @@ const closeAddPersonDialog = () => {
  * @param value 选中的开始时间
  */
 const handleChangeStartTime = (value: any) => {
-    minEndTime = value;
+    minEndTime.value = value;
     if (!formData.value.endTime || !value) return;
     const startTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${value}:${seconds}`;
     const endTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${formData.value.endTime}:${seconds}`;
@@ -406,7 +381,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
         if (isCreate.value) {
             addMeetingRecord(params.value)
                 .then((res) => {
-                   ElMessage.success('创建成功！');
+                   ElMessage.success('会议创建成功！');
                    setTimeout(() => {
                         router.push('/home');
                     }, 1000)
@@ -416,7 +391,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
             params.value.id = formData.value.id;
             updateMeetingRecord(params.value)
                 .then((res) => {
-                   ElMessage.success('创建成功！');
+                   ElMessage.success('会议修改成功！');
                    setTimeout(() => {
                         router.push('/home');
                     }, 1000)

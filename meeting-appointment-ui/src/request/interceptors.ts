@@ -1,6 +1,6 @@
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { ElMessage } from "element-plus";
-// import router from "../router";
+import router from "@/router";
 // 请求拦截
 export function ReqResolve(req: InternalAxiosRequestConfig) {
     if (req.url === "/meeting/user/login" || req.url === "/meeting/user/captcha.jpg" || req.url === "/meeting/user/info") { 
@@ -31,7 +31,6 @@ export function ResResolve(res: any) {
     if (res.config.url === "/meeting/user/captcha.jpg") {
         return res;
     }
-
     if (res.status === 200) {
         if (res.data.code === '00000') {
             return res.data;
@@ -43,6 +42,12 @@ export function ResResolve(res: any) {
 }
 // 响应拦截错误处理
 export function ResReject(error: AxiosError) {
+    if (error.response?.status == 402) {
+        delete localStorage.userInfo;
+        router.replace("/login");
+        ElMessage.warning("登录已过期，请重新登录！");
+        return Promise.reject(error);
+    }
     // router.push("/500");
     return Promise.reject(error);
 }

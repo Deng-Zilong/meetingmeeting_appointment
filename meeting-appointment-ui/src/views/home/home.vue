@@ -92,7 +92,7 @@
           </div>
           <div class="table-main">
             <div class="table-tr" v-for="(item, index) in tableData">
-              <div class="tr-cell">
+              <div class="tr-cell tr-title">
                 <el-popover
                     placement="bottom"
                     :disabled="item.title?.length < 10"
@@ -120,9 +120,11 @@
               <div class="tr-cell">{{ time(item) }}</div>
               <div class="tr-cell">{{ statusName(item.status) }}</div>
               <div class="tr-cell">{{ item.meetingNumber }}</div>
-              <div class="tr-cell" :style="{ 'color': (operate(item) === '修改' ? '#3268DC' : '') }"
-              @click="operate(item) === '修改' ? modifyMeeting(item) : delMeeting(item,index) ">
-                {{ operate(item) }}
+              <div>
+                  <div class="tr-cell" :style="{ 'color': (operate(item) === '修改' ? '#3268DC' : '') }"
+                  @click="operate(item) === '修改' ? modifyMeeting(item) : delMeeting(item,index) ">
+                    {{ operate(item) }}
+                  </div>
               </div>
             </div>
           </div>
@@ -750,6 +752,9 @@ onMounted( async () => {
         .table-main {
           max-height: 18.6rem;
           overflow-y: auto;
+          &::-webkit-scrollbar {
+            display: none;
+          }
           .table-tr {
             display: flex;
             text-align: center;
@@ -767,6 +772,11 @@ onMounted( async () => {
               &:last-child {
                 cursor: pointer;
               }
+            }
+            // 会议主题单元格单独设置
+            .tr-title {
+                text-align: left;
+                padding-left: 15px;
             }
           }
         }

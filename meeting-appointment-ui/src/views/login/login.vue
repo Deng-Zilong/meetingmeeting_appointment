@@ -27,7 +27,7 @@
                     </el-form-item>
                     <!-- 登录 -->
                     <el-form-item>
-                        <el-button type="primary" @click="submitForm(ruleFormRef)" v-loading="loginBtnLoading">
+                        <el-button type="primary" @click="submitForm(ruleFormRef)" :loading="loginBtnLoading">
                             登录
                         </el-button>
                     </el-form-item>
@@ -35,10 +35,9 @@
             </div>
 
             <!-- 扫码登录 -->
-            <div id="login-scan" v-else>
-            </div>
+            <div id="login-scan" v-else></div>
 
-            <el-button type="primary" @click="changeLogin">
+            <el-button type="primary" @click="changeLogin" :loading="loginBtnLoading">
                 点击{{ isShow == false ? '账号' : '扫码' }}登录
             </el-button>
         </div>
@@ -98,8 +97,10 @@ const changeCaptcha = async() => {
     }
 }
 
-// 账号切换
-const isShow = ref(false)
+const isShow = ref(false); // 登录方式切换 false扫码 true账号
+/**
+ * @description 切换登录方式
+ */
 const changeLogin = () => {
     isShow.value = !isShow.value;
     if (!isShow.value) {
@@ -112,20 +113,25 @@ const changeLogin = () => {
 // 账号登录 
 const submitForm = async (formEl: FormInstance | undefined) => {
     if (!formEl) return
-    formEl.validate((valid) => {
-        if (!valid) return; 
+    formEl.validate(async(valid) => {
+        if (!valid) return;
+        // 打开loading
+        loginBtnLoading.value = true;
+        // 解构数据
         const { name, captcha } = ruleForm;
-        const md5:any = new Md5();
         // md5 加密密码
+        const md5:any = new Md5();
         md5.appendAsciiStr(ruleForm.password);
         const password = md5.end();
-        
-        userStore.getUserInfo({ name, password, code: captcha, uuid: uuid.value });
-        loginBtnLoading.value;
+        // 登录请求
+        await userStore.getUserInfo({ name, password, code: captcha, uuid: uuid.value });
+        // 关闭 button loading
+        loginBtnLoading.value = false;
     })
 }
 
 onMounted(() => {
+    // 展示扫码登录
     code();
 });
 
