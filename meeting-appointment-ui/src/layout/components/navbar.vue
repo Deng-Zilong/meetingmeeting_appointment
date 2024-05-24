@@ -1,10 +1,14 @@
 <template>
   <div class="nav-box">
      <div class="left">
-          <el-button type="primary" @click="handleToHome">中心会议室目录</el-button>
-          <el-divider direction="vertical" />
-          <div v-for="(item, index) in useMeetingStatus.centerRoomName">
-              <el-button class="btn-margin"  :class="active == item.id ? 'active' : ''" :disabled="item.status == 0" @click="handleMenu(item)" >{{item.roomName}}</el-button>
+          <div class="left-menu">
+            <el-button type="primary" @click="handleToHome">中心会议室目录</el-button>
+            <el-divider direction="vertical" />
+          </div>
+          <div class="my-main-scrollbar">
+            <div class="left-items" v-for="(item, index) in useMeetingStatus.centerRoomName">
+                <el-button class="btn-margin"  :class="active == item.id ? 'active' : ''" :disabled="item.status == 0" @click="handleMenu(item)" >{{item.roomName}}</el-button>
+            </div>
           </div>
       </div>
      <div class="right">
@@ -19,8 +23,6 @@
   import { meetingStatus } from '@/stores/meeting-status'
   const router = useRouter();
   const useMeetingStatus = meetingStatus();
-  let centerRoomName = ref<any>([]); // 会议室目录
-  centerRoomName.value = [...useMeetingStatus.centerRoomName];
   
 
   let active = ref(-1); // 活动页面id
@@ -40,7 +42,8 @@
       query: {
         id: item.id,
         title: item.roomName,
-        address: item.address,
+        address: item.location,
+        person: item.person  // 暂无
       }
     });
   }
@@ -75,17 +78,46 @@
       border-bottom: 1px solid var(--el-border-color);
       .left {
           display: flex;
-          justify-content: flex-start;
           align-items: center;
-          .btn-margin {
-              margin-right: .625rem;
+          width: calc(100% - 720px);
+          overflow-x: auto;
+          position: relative;
+          .left-menu {
+            display: flex;
+            align-items: center;
           }
-          .active {
-              background-color:#409EFF;
+          .my-main-scrollbar{
+            display: flex;
+            align-items: center;
+            &::before {
+              z-index: 1;
+              width: 8.125rem;
+              height: 100%;
+              content: '';
+              background: linear-gradient(to left,rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.95) 10.5%, rgba(255, 255, 255, 0.8) 30.5%, rgba(254, 254, 254, 0.3) 86.8%, rgba(254, 254, 254, 0.3) 100%);
+              position: absolute;
+              top: 1;
+              right: 0;
+            }
+            .left-items {
+              &:last-child {
+                margin-right: 8.125rem;
+              }
+              .btn-margin {
+                  margin-right: .625rem;
+              }
+              .active {
+                  background-color:#409EFF;
+              }
+            }
           }
       }
-      .right a {
+      .right {
+        display: flex;
+        width: 200px;
+        a {
           margin-left: .625rem;
+        }
       }
       .left, .right {
           margin: 0;

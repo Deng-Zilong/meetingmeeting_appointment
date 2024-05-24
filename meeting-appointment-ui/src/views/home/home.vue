@@ -5,7 +5,7 @@
       <div class="every-block screen">
         <div class="screen-title">中心会议室大屏</div>
         <div class="screen-main">
-          <div class="main-table">
+          <div class="main-table my-main-scrollbar">
             <div class="main-items" :class="item.status === 1 ? 'pointer' : 'ban'" v-for="item in roomMeetingData" @click.stop="handleRoomClick(item)">
               <div class="name">{{ item.roomName }}</div>
               <div class="state">{{ roomStatus(item.status) }}</div>
@@ -90,7 +90,7 @@
             <div class="title">人数</div>
             <div class="title">操作</div>
           </div>
-          <div class="table-main">
+          <div class="table-main my-main-scrollbar">
             <div class="table-tr" v-for="(item, index) in tableData">
               <div class="tr-cell tr-title">
                 <el-popover
@@ -459,6 +459,7 @@ onMounted( async () => {
           gap: 10px;
           width: 770px;
           height: 320px;
+          overflow-y: auto;
           .main-items {
             display: flex;
             flex-direction: column;  // 控制内部元素垂直排列
@@ -470,6 +471,11 @@ onMounted( async () => {
             box-sizing: border-box;
             border: 1px solid rgba(111, 167, 249, 0.8);
             box-shadow: inset 0px 0px 30px 0px rgba(16, 127, 255, 0.3);
+            height: 90px;
+            // 滚动条宽度
+            // &::-webkit-scrollbar {
+            //   width: 0.01rem;
+            // }
             .name {
               font-size: 1.1rem;
               color: #6A6A6A;

@@ -10,6 +10,11 @@ export const getMeetingBanData = (data: {id: number, status: number, currentLeve
   return http.put("/meeting/update-status", data)
 }
 
+// 新增会议室
+export const addRoomData = (data: {createdBy: string, roomName: string, location: string, capacity: number}) => {
+  return http.post("/meeting/add-meeting-room", data)
+}
+
 // 上传公告
 export const addNoticeData = (data: { currentLevel: number, currentUserId: string, substance: string }) => {
   return http.post("/meeting/meeting-notice/add-notice", data)

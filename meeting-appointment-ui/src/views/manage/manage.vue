@@ -1,21 +1,45 @@
 <template>
   <div class="manage">
     <div class="theme">
-      <div class="theme-left">
+
+      <div class="theme-left" :style="{ width: userInfo.level === 0 ? '84%' : '100%'}">
         <div class="left-common meeting-set">
-          <el-checkbox-group v-model="checkList" :style="{ width: userInfo.level === 0 ? '85.62%' : '89.67%'}">
-            <el-checkbox v-for="item in checkItem" :label="item.label" :value="item.id" @change="changeCheckAll(item)" />
+          <el-checkbox-group v-model="checkList" class="my-main-scrollbar" :style="{ width: userInfo.level === 0 ? '88%' : '91.8%'}">
+            <el-checkbox data-hover-text="右键可以删除会议室" v-for="item in checkItem" :label="item.roomName" :value="item.id" @change="changeCheckAll(item)" @contextmenu.prevent="onRightClick" />
           </el-checkbox-group>
-          <div class="text">会议室禁用设置</div>
+          <div class="text-button" @click="addMeetingRoom">新增会议室</div>
+          <el-dialog v-model="addMeetingVisible" title="新增会议室" width="30%">
+            <el-form :model="addMeetingForm">
+              <el-form-item label="会议室名称">
+                <el-input v-model="addMeetingForm.roomName" />
+              </el-form-item>
+              <el-form-item label="会议室位置">
+                <el-input v-model="addMeetingForm.location" />
+              </el-form-item>
+              <el-form-item label="会议室容量">
+                <el-input type="number" min="1" v-model="addMeetingForm.capacity" />
+              </el-form-item>
+            </el-form>
+            <template #footer>
+            <div class="dialog-footer">
+              <el-button @click="addMeetingVisible = false">取消</el-button>
+              <el-button type="primary" @click="addMeetingInfo(addMeetingForm)">
+                确认
+              </el-button>
+            </div>
+          </template>
+          </el-dialog>
         </div>
         <div class="left-common meeting-bulletin">
           <el-input v-model="input" placeholder="请输入公告" :style="{ width: userInfo.level === 0 ? '88%' : '91.8%'}" />
-          <div class="text upload-text" @click="uploadBulletin(input)">上传新公告</div>
+          <div class="text-button" @click="uploadBulletin(input)">上传新公告</div>
         </div>
       </div>
+
       <div class="theme-right" v-if="userInfo.level === 0">
-        <el-icon class="plus-icon" @click="handleAddManage"><Plus /></el-icon>
-        
+        <el-tooltip content="新增管理员" placement="top" effect="light">
+          <el-icon class="plus-icon" @click="handleAddManage"><Plus /></el-icon>
+        </el-tooltip>
         <!-- 添加群组成员弹窗 -->
         <personTreeDialog 
             v-model="addGroupVisible" 
@@ -92,7 +116,11 @@
     import { meetingStatus } from '@/stores/meeting-status'
     import { meetingState } from '@/utils/types';
     import personTreeDialog from "@/components/person-tree-dialog.vue";
-    import { getUsableRoomData, getMeetingBanData, addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData } from '@/request/api/manage'
+    import { 
+      getUsableRoomData, getMeetingBanData, addRoomData,
+       addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData 
+      } from '@/request/api/manage'
+      
 
     // let loading = ref(true) // 加载状态
     let userInfo = ref<any>({});  // 获取用户信息 用于传后端参数
@@ -100,37 +128,46 @@
     
     // 会议室状态 0-暂停使用 1-空闲 2-使用中
     let checkList = ref()  // 选中会议室 为禁用会议室
-    let checkItem = ref<any>([  // 会议室
-      { 
-        id: 1,
-        label: '广政通宝会议室',
-        status: 1
-      },
-      { 
-        id: 2,
-        label: 'EN-2F-02 恰谈室会议室',
-        status: 1
-      },
-      { 
-        id: 3,
-        label: 'EN-2F-03 恰谈室会议室',
-        status: 1
-      },
-      { 
-        id: 4,
-        label: 'EN-3F-02 恰谈室会议室',
-        status: 1
-      },
-      { 
-        id: 5,
-        label: 'EN-3F-03 恰谈室会议室',
-        status: 1
-      },
-    ])
-    let input = ref<any>(''); 
+    // let checkItem = ref<any>([  // 会议室
+    //   { 
+    //     id: 1,
+    //     label: '广政通宝会议室',
+    //     status: 1
+    //   },
+    //   { 
+    //     id: 2,
+    //     label: 'EN-2F-02 恰谈室会议室',
+    //     status: 1
+    //   },
+    //   { 
+    //     id: 3,
+    //     label: 'EN-2F-03 恰谈室会议室',
+    //     status: 1
+    //   },
+    //   { 
+    //     id: 4,
+    //     label: 'EN-3F-02 恰谈室会议室',
+    //     status: 1
+    //   },
+    //   { 
+    //     id: 5,
+    //     label: 'EN-3F-03 恰谈室会议室',
+    //     status: 1
+    //   },
+    // ])
+    let checkItem = useMeetingStatus.centerRoomName;
+    let addMeetingVisible = ref(false)  // 新增会议室弹窗
+    // 新增会议室信息
+    let addMeetingForm = ref<any>({
+      roomName: '',
+      location: '',
+      capacity: ''
+    })
+
+    let input = ref<any>('');   // 公告信息框
     let manageList = ref<any>([])  // 所有管理员列表
-    
     let manageData = ref<any>([]); // 所有会议记录数据
+    
     const timelineRef = ref(null); // 获取dom节点
     let limit = ref(10); // 默认限制条数 10
     let page = ref(1); // 默认页数 1
@@ -143,12 +180,10 @@
     
     onMounted(() => {
       userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}');  // 用户信息
-      // userInfo.value.level = 1
       getUsableRoom({ currentLevel: userInfo.value.level }) // 查询未被禁用的会议室
       getSelectAdmin()  // 查询所有管理员
-      getDataOnScroll()
-      // manageData.value = getAllRecord({ pageNum: page.value, pageSize: limit.value, currentLevel: userInfo.value.level })  // 查询所有会议记录
-      
+      getDataOnScroll()  // 滚动加载
+      useMeetingStatus.getCenterRoomName();  // 获取所有会议室及状态
     })
 
 /******************************************* 会议室 ***********************************/
@@ -193,6 +228,34 @@
           useMeetingStatus.getCenterRoomName();
         })
         .catch((err) => {})
+    }
+
+    /**
+     * @description 添加会议室
+    */
+    const addMeetingRoom = () => {
+      addMeetingVisible.value = true
+      // 点进新增会议室就将表单数据清空
+      addMeetingForm.value = {
+        roomName: '',
+        location: '',
+        capacity: ''
+      }
+    }
+    const addMeetingInfo = (addMeetingForm: any) => {
+      addMeetingVisible.value = false
+      const { roomName, location, capacity } = addMeetingForm.value
+      addRoomData({ createdBy: userInfo.value.userId, roomName, location, capacity: Number(capacity) })
+      .then(() => {
+        ElMessage.success('新增会议室成功')
+      })
+      .catch(() => {
+        ElMessage.warning('取消新增会议室')
+      })
+    }
+    const onRightClick = (event: any) => {
+      // 在这里处理右键点击事件
+      console.log('右键点击事件触发', event);
     }
 
 /******************************************* 公告 ***********************************/
@@ -401,27 +464,30 @@
     }
   }
   .manage {
-    // background-color: #f5f5f5;
     padding: 0 26px;
     .theme {
       display: flex;
       height: 90px;
       margin-bottom: 10px;
+      // 左边两个长条的公共样式
       .theme-left {
-        // min-width: 80%;
-        width: 100%;
         height: 2.8rem;
         .left-common {
           display: flex;
           align-items: center;
           height: 100%;
-          .text {
+          .text-button {
             color: #FFF;
             background: #409EFF;
             border-radius: .5rem;
             padding: .35rem 1.5rem;
+            cursor: pointer;
+            &:hover {
+              background: #01509e;
+            }
           }
         }
+        // 会议室设置单独样式
         .meeting-set {
           .el-checkbox-group {
             display: flex;
@@ -429,6 +495,31 @@
             justify-content: space-evenly;
             background: #FFF;
             border-radius: .5rem;
+            padding: 0 0.8rem;
+            
+            // 每个会议室的hover提示
+            .el-checkbox {
+              &::after {
+                content: attr(data-hover-text);
+                display: none;
+                position: absolute;
+                left: 20px;
+                top: -10px;
+                width: fit-content;
+                font-size: 0.75rem;
+                font-style: normal;
+                border: 1px solid #cecccc;
+                border-radius: .5rem;
+                color: #000;
+                background: #FFF;
+                padding: 10px;
+              }
+              &:hover::after {
+                display: block;
+              }
+            }
+
+            // 改变el-checkbox 点击样式
             :deep().el-checkbox__input.is-checked .el-checkbox__inner {
               background: #FFF;  // 勾选中的小框背景色
               border-color: red;  // 勾选中的小框边框颜色
@@ -441,16 +532,13 @@
             }
           }
         }
+        // 公告单独样式
         .meeting-bulletin {
           :deep().el-input {
             .el-input__wrapper {
               border-radius: .5rem;
               box-shadow: none;
             }
-          }
-
-          .upload-text {
-            cursor: pointer;
           }
         }
       }
@@ -464,9 +552,7 @@
         border-radius: .5rem;
         margin-top: .8rem;
         padding: 0 0.8rem;
-        // padding-left: 0.8rem;
         .plus-icon {
-          position: relative;
           width: 1.9rem;
           height: 1.9rem;
           // color: #3268DC;
@@ -475,24 +561,6 @@
           background: #409EFF;
           border-radius: 1.5rem;
           cursor: pointer;
-          &::after {
-            content: '新增管理员';
-            display: none;
-            position: absolute;
-            left: -50%;
-            bottom: 110%;
-            width: 60px;
-            font-size: 0.75rem;
-            font-style: normal;
-            border: 1px solid #cecccc;
-            border-radius: .5rem;
-            color: #535353;
-            background: rgb(243, 242, 242);
-            padding: 10px;
-          }
-          &:hover::after {
-            display: block;
-          }
         }
         .operate-people {
             color: #FFF;

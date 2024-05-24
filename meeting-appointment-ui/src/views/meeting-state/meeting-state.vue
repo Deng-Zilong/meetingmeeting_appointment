@@ -74,9 +74,12 @@ const date = ref<any>(new Date())  // 会议日期选择
 const currentMeetingId = ref<any>(routes.query.id);  // 会议室id
 const title = ref(routes.query.title);  // 会议室名称
 const locate = ref(routes.query.address);  // 会议室位置
+const person = ref(routes.query.person);  // 会议室容量人数
 const time = ref(new Date().toLocaleTimeString().substring(0, 5))  // 显示当前时间点
 const hoveredItem = ref<any>(null)  // 鼠标悬浮内容
 
+// const personInfo = computed(() => `${person.value}人`);  // 会议室容量人数  拼接个“人”
+const personInfo = (10+"人")  // 会议室容量人数  暂定
 // 会议室信息
 const infoArr = reactive([
   {
@@ -92,7 +95,7 @@ const infoArr = reactive([
   {
     src: capacity,
     title: '会议室容量',
-    info: '10人'
+    info: personInfo
   },
   {
     src: device,
@@ -190,6 +193,7 @@ watch(() => router.currentRoute.value.query, (newValue: any) => {
   currentMeetingId.value = newValue.id
   title.value = newValue.title
   locate.value = newValue.address
+  person.value = routes.query.person  // 会议室容量人数
   getBusy({ id: currentMeetingId.value, date: dayjs(date.value).format('YYYY-MM-DD') })  // 切换会议室时 调用会议室接口
 }, { immediate: true })
 
