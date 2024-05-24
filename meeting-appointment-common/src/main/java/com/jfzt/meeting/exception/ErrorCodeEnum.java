@@ -58,6 +58,7 @@ public enum ErrorCodeEnum {
      * 一级宏观错误码
      */
     SERVICE_ERROR_C0001("C0001", "调用第三方服务出错"),
+    SERVICE_ERROR_C00011("C00011", "调用第三方服务出错url网页访问失败"),
     /**
      * 二级宏观错误码
      */
