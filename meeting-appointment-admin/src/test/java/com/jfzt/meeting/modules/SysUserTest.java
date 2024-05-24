@@ -34,7 +34,7 @@ public class SysUserTest {
     @Test
     public void deleteAdmin() {
         assertThrows(RRException.class, () -> sysUserService.deleteAdmin("QianRuoXiaMo"));
-        assertEquals("00000", sysUserService.deleteAdmin("LiuYiSi").getCode());
+        assertThrows(RRException.class, () -> sysUserService.deleteAdmin(""));
     }
 
 
@@ -44,9 +44,6 @@ public class SysUserTest {
     @Test
     public void addAdmin() {
         List<String> list = new ArrayList<>();
-        list.add("QianRuoXiaMo");
-        list.add("XingChen");
-        // assertEquals("00000", sysUserService.addAdmin(list).getCode());
         assertThrows(RRException.class, () -> sysUserService.addAdmin(list));
     }
 }

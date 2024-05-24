@@ -15,7 +15,6 @@ import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.service.SysUserService;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -125,6 +124,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     @Override
     public Result<Integer> addAdmin (List<String> userIds) {
         int row = 0;
+        if (userIds.isEmpty()){
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
+        }
         for (String userId : userIds) {
             SysUser sysUser = sysUserMapper.selectByUserId(userId);
             if (MessageConstant.ADMIN_LEVEL.equals(sysUser.getLevel())) {
@@ -147,6 +149,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
      */
     @Override
     public Result<Integer> deleteAdmin (String userId) {
+        if (userId.isEmpty()){
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
+        }
         SysUser sysUser = sysUserMapper.selectByUserId(userId);
         if (MessageConstant.EMPLOYEE_LEVEL.equals(sysUser.getLevel())) {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
@@ -161,9 +166,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
     /**
      * 返回验证码图片，存储到redis
-     *
-     * @param uuid
-     * @return
+     * @param uuid 唯一标识
+     * @return BufferedImage
      */
     @Override
     public BufferedImage getCaptcha (String uuid) {
@@ -177,13 +181,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
         LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(SysUser::getUserId, loginVo.getName());
-        SysUser sysUser = sysUserMapper.selectOne(lambdaQueryWrapper);
-        return sysUser;
+        return sysUserMapper.selectOne(lambdaQueryWrapper);
     }
 
     /**
      * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.SysUserVO>>
-     * @throws
      * @Description 成员树模糊查询
      * @Param [name]
      */

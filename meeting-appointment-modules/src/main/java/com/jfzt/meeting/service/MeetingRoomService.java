@@ -20,8 +20,10 @@ import java.util.List;
 public interface MeetingRoomService extends IService<MeetingRoom> {
 
     /**
+     * 新增会议室
+     *
      * @param meetingRoom 会议室
-     * @return {@code Boolean}
+     * @return {@code Result<Integer>}
      */
     Result<Integer> addMeetingRoom (MeetingRoom meetingRoom, String userId);
 
@@ -34,12 +36,12 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
     List<MeetingRoomStatusVO> getMeetingRoomStatus ();
 
     /**
-     * 删除今日会议记录
+     * 删除会议室
      *
-     * @param meetingRoomId 会议室id
-     * @return {@code Result<String>}
+     * @param id 会议室id
+     * @return {@code Result<Integer>}
      */
-    Result<Integer> deleteMeetingRoom (Long meetingRoomId, Integer currentLevel);
+    Result<Integer> deleteMeetingRoom (Long id, Integer currentLevel);
 
     /**
      * 查询当天各个时间段会议室占用情况
