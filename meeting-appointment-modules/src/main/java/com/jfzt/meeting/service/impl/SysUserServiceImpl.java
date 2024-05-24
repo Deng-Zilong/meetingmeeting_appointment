@@ -38,7 +38,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         implements SysUserService {
 
 
-    @Autowired
+    @Resource
     private SysUserMapper sysUserMapper;
 
     @Resource
@@ -149,7 +149,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     public Result<Integer> deleteAdmin (String userId) {
         SysUser sysUser = sysUserMapper.selectByUserId(userId);
         if (MessageConstant.EMPLOYEE_LEVEL.equals(sysUser.getLevel())) {
-            return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0400);
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
         }
         int row = sysUserMapper.deleteAdmin(userId);
         if (row > 0) {

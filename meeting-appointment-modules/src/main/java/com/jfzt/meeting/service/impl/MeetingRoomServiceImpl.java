@@ -100,9 +100,10 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         SysUser sysUser = sysUserMapper.selectByUserId(userId);
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(sysUser.getLevel()) || MessageConstant.ADMIN_LEVEL.equals(sysUser.getLevel())) {
             if (meetingRoom.getRoomName().isEmpty() || meetingRoom.getLocation().isEmpty()
-                    || meetingRoom.getCreatedBy().isEmpty() || meetingRoom.getCapacity() == null){
+                    || meetingRoom.getCapacity() == null){
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
             }
+            meetingRoom.setCreatedBy(userId);
             int result = meetingRoomMapper.insert(meetingRoom);
             if (result > 0) {
                 return Result.success();
@@ -128,9 +129,9 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                     return Result.success();
                 }
             }
-            return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0400);
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
         }
-        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
+        throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0301);
     }
 
 
@@ -147,6 +148,9 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             log.error(UPDATE_FAIL + EXCEPTION_TYPE, RRException.class);
             throw new RRException(UPDATE_FAIL, ErrorCodeEnum.SERVICE_ERROR_A0421.getCode());
         }
+        if (meetingRoomDTO.getStatus() == null){
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
+        }
         // 获取当前登录用户的权限等级
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(meetingRoomDTO.getCurrentLevel()) || MessageConstant.ADMIN_LEVEL.equals(meetingRoomDTO.getCurrentLevel())) {
             int row = meetingRoomMapper.updateStatus(meetingRoomDTO.getId(), meetingRoomDTO.getStatus());
@@ -156,7 +160,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             log.error("修改会议室状态失败！");
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
         }
-        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
+        throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0301);
     }
 
     /**
@@ -174,7 +178,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                     .collect(Collectors.toList());
             return Result.success(collect);
         }
-        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
+        throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0301);
 
     }
 
