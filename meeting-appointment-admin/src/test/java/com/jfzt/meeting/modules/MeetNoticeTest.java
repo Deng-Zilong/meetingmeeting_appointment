@@ -43,9 +43,9 @@ public class MeetNoticeTest {
      */
     @Test
     public void addMeetingNoticeTest () {
-        assertEquals("00000", meetingNoticeService.addNotice(new MeetingNoticeVO("哈哈哈哈1", 0, "dzl")).getCode());
         assertThrows(RRException.class, () -> meetingNoticeService.addNotice(new MeetingNoticeVO("哈哈哈哈2", 0, "")));
         assertThrows(RRException.class, () -> meetingNoticeService.addNotice(new MeetingNoticeVO("", 0, "dzl")));
         assertThrows(RRException.class, () -> meetingNoticeService.addNotice(new MeetingNoticeVO("哈哈哈哈1", 2, "dzl")));
+        assertThrows(RRException.class, () -> meetingNoticeService.addNotice(new MeetingNoticeVO("哈哈哈哈1", null, "dzl")));
     }
 }

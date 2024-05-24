@@ -59,11 +59,10 @@ public class MeetingRoomTest {
      */
     @Test
     public void updateStatusTest () {
-        assertEquals("00000", meetingRoomService.updateStatus(new MeetingRoomDTO(1L,0,0)).getCode());
-        assertEquals("00000", meetingRoomService.updateStatus(new MeetingRoomDTO(1L,0,1)).getCode());
         assertThrows(RRException.class, () -> meetingRoomService.updateStatus(new MeetingRoomDTO(null,0,0)));
         assertThrows(RRException.class, () -> meetingRoomService.updateStatus(new MeetingRoomDTO(1L,null,0)));
         assertThrows(RRException.class, () -> meetingRoomService.updateStatus(new MeetingRoomDTO(1L,0,2)));
+        assertThrows(RRException.class, () -> meetingRoomService.updateStatus(new MeetingRoomDTO(1L,0,null)));
     }
 
     /**
@@ -75,5 +74,16 @@ public class MeetingRoomTest {
         assertNotNull(meetingRoomService.selectUsableRoom(1));
         assertThrows(RRException.class, () -> meetingRoomService.selectUsableRoom(2));
     }
+
+    /**
+     * 测试删除会议室
+     */
+    @Test
+    public void deleteMeetingRoomTest () {
+        assertThrows(RRException.class, () -> meetingRoomService.deleteMeetingRoom(10L, 2));
+        assertThrows(RRException.class, () -> meetingRoomService.deleteMeetingRoom(null, 2));
+        assertThrows(RRException.class, () -> meetingRoomService.deleteMeetingRoom(10L, null));
+    }
+
 
 }

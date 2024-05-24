@@ -41,7 +41,8 @@ public class MeetingNoticeServiceImpl extends ServiceImpl<MeetingNoticeMapper, M
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(meetingNoticeVO.getCurrentLevel()) ||
                 MessageConstant.ADMIN_LEVEL.equals(meetingNoticeVO.getCurrentLevel()) ||
                 meetingNoticeVO.getCurrentLevel() == null){
-            if (meetingNoticeVO.getCurrentUserId().isEmpty() || meetingNoticeVO.getSubstance().isEmpty()){
+            if (meetingNoticeVO.getCurrentUserId().isEmpty() || meetingNoticeVO.getSubstance().isEmpty() ||
+                    meetingNoticeVO.getCurrentLevel() == null){
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
             }
             MeetingNotice meetingNotice = new MeetingNotice();

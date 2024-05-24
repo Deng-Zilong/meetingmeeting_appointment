@@ -90,12 +90,12 @@ public class MeetingRoomController {
 
     /**
      * 删除会议室
-     * @param meetingRoomId 会议室
+     * @param id 会议室id
      * @return {@code Result<String>}
      */
     @DeleteMapping("/delete-meeting-room")
-    public Result<Integer> deleteMeetingRoom (@RequestParam Long meetingRoomId, @RequestParam("currentLevel") Integer currentLevel) {
-        return meetingRoomService.deleteMeetingRoom(meetingRoomId, currentLevel);
+    public Result<Integer> deleteMeetingRoom (@RequestParam Long id, @RequestParam("currentLevel") Integer currentLevel) {
+        return meetingRoomService.deleteMeetingRoom(id, currentLevel);
 
     }
 
