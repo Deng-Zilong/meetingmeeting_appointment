@@ -132,14 +132,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             if (MessageConstant.ADMIN_LEVEL.equals(sysUser.getLevel())) {
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
             }
-            row = sysUserMapper.addAdmin(userId);
+            row += sysUserMapper.addAdmin(userId);
         }
         if (row > 0) {
-            return Result.success(ErrorCodeEnum.SUCCESS);
+            return Result.success(row);
+        } else {
+            log.error("修改用户权限等级失败！");
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
         }
-        log.error("修改用户权限等级失败！");
-        throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
     }
+
 
     /**
      * 删除管理员
@@ -158,7 +160,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         }
         int row = sysUserMapper.deleteAdmin(userId);
         if (row > 0) {
-            return Result.success(ErrorCodeEnum.SUCCESS);
+            return Result.success(row);
         }
         log.error("修改用户权限等级失败！");
         throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);

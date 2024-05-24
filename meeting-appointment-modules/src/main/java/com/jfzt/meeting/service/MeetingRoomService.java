@@ -25,7 +25,7 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      * @param meetingRoom 会议室
      * @return {@code Result<Integer>}
      */
-    Result<Integer> addMeetingRoom (MeetingRoom meetingRoom, String userId);
+    Result<Integer> addMeetingRoom (MeetingRoom meetingRoom);
 
 
     /**

@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MeetingRecordStatusConstant;
 import com.jfzt.meeting.constant.MessageConstant;
-import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.SysUser;
@@ -22,16 +21,12 @@ import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MeetingRoomService;
 import com.jfzt.meeting.service.SysUserService;
-import io.jsonwebtoken.Claims;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -44,7 +39,6 @@ import static com.jfzt.meeting.constant.MeetingRoomStatusConstant.*;
 import static com.jfzt.meeting.constant.MessageConstant.EXCEPTION_TYPE;
 import static com.jfzt.meeting.constant.MessageConstant.UPDATE_FAIL;
 import static com.jfzt.meeting.constant.TimePeriodStatusConstant.*;
-import static com.jfzt.meeting.context.BaseContext.removeCurrentLevel;
 
 /**
  * @author zilong.deng
@@ -95,18 +89,25 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      * @return {@code Integer}
      */
     @Override
-    public Result<Integer> addMeetingRoom (MeetingRoom meetingRoom, String userId) {
-        // 根据userId查询用户信息
-        SysUser sysUser = sysUserMapper.selectByUserId(userId);
+    public Result<Integer> addMeetingRoom (MeetingRoom meetingRoom) {
+        // 根据创建人Id查询用户信息
+        SysUser sysUser = sysUserMapper.selectByUserId(meetingRoom.getCreatedBy());
+        // 查询会议室名称,判断是否有重复的会议室名称
+        List<MeetingRoom> roomList = meetingRoomMapper.selectList(new QueryWrapper<>());
+        List<String> roomName = roomList.stream().map(MeetingRoom::getRoomName).collect(Collectors.toList());
+        for (String room : roomName) {
+            if (meetingRoom.getRoomName().equals(room)){
+                throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
+            }
+        }
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(sysUser.getLevel()) || MessageConstant.ADMIN_LEVEL.equals(sysUser.getLevel())) {
             if (meetingRoom.getRoomName().isEmpty() || meetingRoom.getLocation().isEmpty()
                     || meetingRoom.getCapacity() == null){
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
             }
-            meetingRoom.setCreatedBy(userId);
             int result = meetingRoomMapper.insert(meetingRoom);
             if (result > 0) {
-                return Result.success();
+                return Result.success(result);
             }
             return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0421);
         }
@@ -123,18 +124,24 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     @Override
     public Result<Integer> deleteMeetingRoom (Long id, Integer currentLevel) {
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel) ||
-                MessageConstant.ADMIN_LEVEL.equals(currentLevel) || currentLevel != null) {
+                MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
             // 删除会议室
             if (id != null) {
                 int result = meetingRoomMapper.deleteById(id);
                 if (result > 0) {
-                    return Result.success();
+                    return Result.success(result);
+                }else {
+                    throw new RRException(ErrorCodeEnum.SYSTEM_ERROR_B0001);
                 }
+            } else {
+                throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0301);
             }
-            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
+        } else {
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0301);
         }
-        throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0301);
     }
+
+
 
 
     /**
@@ -158,7 +165,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 MessageConstant.ADMIN_LEVEL.equals(meetingRoomDTO.getCurrentLevel())) {
             int row = meetingRoomMapper.updateStatus(meetingRoomDTO.getId(), meetingRoomDTO.getStatus());
             if (row > 0) {
-                return Result.success(ErrorCodeEnum.SUCCESS);
+                return Result.success(row);
             }
             log.error("修改会议室状态失败！");
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);

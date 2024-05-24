@@ -79,17 +79,19 @@ public class MeetingRoomController {
 
     /**
      * 新增会议室
+     *
      * @param meetingRoom 会议室
      * @return {@code Result<String>}
      */
     @PostMapping("/add-meeting-room")
-    public Result<Integer> addMeetingRoom (@RequestBody MeetingRoom meetingRoom, @RequestParam() String userId) {
-        return meetingRoomService.addMeetingRoom(meetingRoom, userId);
+    public Result<Integer> addMeetingRoom (@RequestBody MeetingRoom meetingRoom) {
+        return meetingRoomService.addMeetingRoom(meetingRoom);
     }
 
 
     /**
      * 删除会议室
+     *
      * @param id 会议室id
      * @return {@code Result<String>}
      */

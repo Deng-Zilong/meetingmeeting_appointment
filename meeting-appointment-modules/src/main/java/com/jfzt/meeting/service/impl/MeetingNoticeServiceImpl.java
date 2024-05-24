@@ -39,8 +39,7 @@ public class MeetingNoticeServiceImpl extends ServiceImpl<MeetingNoticeMapper, M
     public Result<Integer> addNotice(MeetingNoticeVO meetingNoticeVO) {
         // 判断当前用户是否是管理员或超级管理员
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(meetingNoticeVO.getCurrentLevel()) ||
-                MessageConstant.ADMIN_LEVEL.equals(meetingNoticeVO.getCurrentLevel()) ||
-                meetingNoticeVO.getCurrentLevel() == null){
+                MessageConstant.ADMIN_LEVEL.equals(meetingNoticeVO.getCurrentLevel())){
             if (meetingNoticeVO.getCurrentUserId().isEmpty() || meetingNoticeVO.getSubstance().isEmpty() ||
                     meetingNoticeVO.getCurrentLevel() == null){
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
@@ -50,11 +49,15 @@ public class MeetingNoticeServiceImpl extends ServiceImpl<MeetingNoticeMapper, M
             meetingNotice.setSubstance(meetingNoticeVO.getSubstance());
             int insert = meetingNoticeMapper.insert(meetingNotice);
             if (insert > 0){
-                return Result.success();
+                return Result.success(insert);
+            } else {
+                return Result.fail(ErrorCodeEnum.SYSTEM_ERROR_B0001);
             }
+        } else {
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0301);
         }
-        throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0301);
     }
+
 
 
 
