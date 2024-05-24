@@ -31,6 +31,11 @@ public class MeetingRoomStatusVO {
      * 会议室状态（0暂停使用,1空闲，2使用中）
      */
     private Integer status;
+
+    /**
+     * 容量
+     */
+    private Integer capacity;
     /**
      * 会议主题
      */
