@@ -61,7 +61,7 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      * @param currentLevel 当前登录用户的权限等级
      * @return @return {@code List<MeetingRecordVO>}
      */
-    Result<List<MeetingRecordVO>> getAllMeetingRecordVoListPage (Long pageNum, Long pageSize, Integer currentLevel);
+    List<MeetingRecordVO> getAllMeetingRecordVoListPage (Long pageNum, Long pageSize, Integer currentLevel);
 
 
     /**

@@ -269,7 +269,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      * @description 查询所有会议记录
      */
     @Override
-    public Result<List<MeetingRecordVO>> getAllMeetingRecordVoListPage (Long pageNum, Long pageSize, Integer currentLevel) {
+    public List<MeetingRecordVO> getAllMeetingRecordVoListPage (Long pageNum, Long pageSize, Integer currentLevel) {
         // 获取当前登录用户的权限等级
         if (SUPER_ADMIN_LEVEL.equals(currentLevel) || ADMIN_LEVEL.equals(currentLevel)) {
             // 检查参数
@@ -279,7 +279,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             // 查询所有会议记录
             Page<MeetingRecord> meetingRecordPage = this.baseMapper.selectPage(new Page<>(pageNum, pageSize), new LambdaQueryWrapper<MeetingRecord>().notIn(MeetingRecord::getStatus, MEETING_RECORD_STATUS_CANCEL));
             // 构建MeetingRecordVO列表
-            return Result.success(meetingRecordPage.getRecords().stream()
+            return meetingRecordPage.getRecords().stream()
                     .map(record -> {
                         MeetingRecordVO recordVO = new MeetingRecordVO();
                         record = updateRecordStatus(record);
@@ -309,9 +309,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                         return recordVO;
                     })
                     .sorted(Comparator.comparing(MeetingRecordVO::getStartTime).reversed())
-                    .collect(Collectors.toList()));
+                    .collect(Collectors.toList());
         }
-        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
+        throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0301);
     }
 
     /**
