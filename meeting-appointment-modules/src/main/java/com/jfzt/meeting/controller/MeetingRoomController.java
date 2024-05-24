@@ -78,22 +78,24 @@ public class MeetingRoomController {
     }
 
     /**
+     * 新增会议室
      * @param meetingRoom 会议室
      * @return {@code Result<String>}
      */
     @PostMapping("/add-meeting-room")
-    public Result<String> addMeetingRoom (@RequestBody MeetingRoom meetingRoom) {
-        return meetingRoomService.addMeetingRoom(meetingRoom);
-
+    public Result<Integer> addMeetingRoom (@RequestBody MeetingRoom meetingRoom, @RequestParam() String userId) {
+        return meetingRoomService.addMeetingRoom(meetingRoom, userId);
     }
 
+
     /**
+     * 删除会议室
      * @param meetingRoomId 会议室
      * @return {@code Result<String>}
      */
-    @DeleteMapping("/meeting-room")
-    public Result<String> deleteMeetingRoom (@RequestParam Long meetingRoomId) {
-        return meetingRoomService.deleteMeetingRoom(meetingRoomId);
+    @DeleteMapping("/delete-meeting-room")
+    public Result<Integer> deleteMeetingRoom (@RequestParam Long meetingRoomId, @RequestParam("currentLevel") Integer currentLevel) {
+        return meetingRoomService.deleteMeetingRoom(meetingRoomId, currentLevel);
 
     }
 

@@ -1,6 +1,7 @@
 package com.jfzt.meeting.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.SysUser;
@@ -8,6 +9,7 @@ import com.jfzt.meeting.entity.dto.AdminDTO;
 import com.jfzt.meeting.entity.vo.UserInfoVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
+import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.properties.JwtProperties;
 import com.jfzt.meeting.service.SysDepartmentUserService;
 import com.jfzt.meeting.service.SysUserService;
@@ -19,15 +21,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import static com.jfzt.meeting.utils.JwtUtil.createJWT;
-
 
 /**
  * 获取企业信息
@@ -43,7 +42,8 @@ public class SysUserController {
 
     @Resource
     private SysUserService sysUserService;
-
+    @Resource
+    private SysUserMapper sysUserMapper;
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
 
@@ -51,8 +51,6 @@ public class SysUserController {
     private SysDepartmentUserService sysDepartmentUserService;
     @Autowired
     private JwtProperties jwtProperties;
-
-
     /**
      * 获取token，部门，部门人员
      *
@@ -61,18 +59,22 @@ public class SysUserController {
     @GetMapping(value = "info")
     @Transactional
     public Result<UserInfoVO> info(@RequestParam("code") String code) throws WxErrorException, NoSuchAlgorithmException {
-        if(StringUtils.isBlank(code)){
+        if (StringUtils.isBlank(code)) {
             log.error("用户扫码登录失败请重新扫码");
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A02011);
         }
         //获取登录token
         String accessToken = sysDepartmentUserService.findTocken();
+        log.info("获取登录token成功");
         //获取用户详细信息
         WxCpUser wxUser = sysDepartmentUserService.findUserName(accessToken, code);
-//        //获取部门信息
-//        Long departmentLength = sysDepartmentUserService.findDepartment();
-//        //获取部门人员
-//        sysDepartmentUserService.findDepartmentUser(departmentLength);
+        log.info("获取用户详细信息成功"+wxUser);
+        //获取部门信息
+        Long departmentLength = sysDepartmentUserService.findDepartment();
+        log.info("获取部门信息成功");
+        //获取部门人员
+        Boolean flg = sysDepartmentUserService.findDepartmentUser(departmentLength);
+        log.info("获取部门人员成功"+flg);
 
         //登录成功后，生成jwt令牌
         Map<String, Object> claims = new HashMap<>();
@@ -81,12 +83,14 @@ public class SysUserController {
                 jwtProperties.getAdminSecretKey(),
                 jwtProperties.getAdminTtl(),
                 claims);
-
+        LambdaQueryWrapper<SysUser> sysUserLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        sysUserLambdaQueryWrapper.eq(SysUser::getUserId,wxUser.getUserId());
+        Integer userId = sysUserMapper.selectOne(sysUserLambdaQueryWrapper).getLevel();
         UserInfoVO userInfo = UserInfoVO.builder()
                 .accessToken(token)
                 .userId(wxUser.getUserId())
                 .name(wxUser.getName())
-                .level(wxUser.getIsLeader())
+                .level(userId)
                 .build();
         redisTemplate.opsForValue().set("userInfo" + userInfo.getUserId(), JSONObject.toJSONString(userInfo), Duration.ofHours(24));
         return Result.success(userInfo);

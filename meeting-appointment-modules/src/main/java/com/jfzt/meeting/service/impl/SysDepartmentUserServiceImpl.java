@@ -1,6 +1,5 @@
 package com.jfzt.meeting.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.SysDepartment;
@@ -23,12 +22,14 @@ import me.chanjar.weixin.cp.api.impl.WxCpUserServiceImpl;
 import me.chanjar.weixin.cp.bean.WxCpDepart;
 import me.chanjar.weixin.cp.bean.WxCpUser;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -86,20 +87,25 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     public Long findDepartment() throws WxErrorException {
         WxCpDepartmentServiceImpl wxCpDepartmentService = new WxCpDepartmentServiceImpl(wxCpService);
         List<WxCpDepart> listDepartmentList = wxCpDepartmentService.list(0L);
-        sysDepartmentMapper.deleteAll();
+        List<SysDepartment> sysDepartmentList = sysDepartmentMapper.selectList(null);
+        if (sysDepartmentList.size() != 0){
+            return (long) sysDepartmentList.size();
+        }
         //存入信息
+        List<SysDepartment> sysDepartmentLists = new ArrayList<>();
         for (WxCpDepart listDepartment : listDepartmentList) {
             SysDepartment sysDepartment = new SysDepartment();
             sysDepartment.setDepartmentId(listDepartment.getId());
             sysDepartment.setDepartmentName(listDepartment.getName());
             sysDepartment.setParentId(listDepartment.getParentId());
-            sysDepartmentMapper.insert(sysDepartment);
+            sysDepartmentLists.add(sysDepartment);
         }
+        sysDepartmentMapper.insertAll(sysDepartmentLists);
         return (long) listDepartmentList.size();
     }
 
     @Override
-    public void findDepartmentUser(Long departmentLength) throws WxErrorException, NoSuchAlgorithmException {
+    public Boolean findDepartmentUser(Long departmentLength) throws WxErrorException, NoSuchAlgorithmException {
         WxCpUserServiceImpl wxCpUserService = new WxCpUserServiceImpl(wxCpService);
         List<WxCpUser> listDepartmentUserList = new ArrayList<>();
         for (int i = 1; i < departmentLength + 1; i++) {
@@ -107,8 +113,9 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
             listDepartmentUserList.addAll(wxCpUser);
         }
         List<WxCpUser> wxCpUserList = listDepartmentUserList.stream().distinct().toList();
-        sysUserMapper.deleteAll();
-        sysDepartmentUserMapper.deleteAll();
+        if (wxCpUserList.size() != 0){
+            return true;
+        }
         for (WxCpUser wxCpUser : wxCpUserList) {
             SysUser sysUser = new SysUser();
             sysUser.setUserId(wxCpUser.getUserId());
@@ -116,7 +123,6 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
             sysUser.setPassword(EncryptUtils.encrypt(EncryptUtils.md5encrypt(wxCpUser.getUserId())));
             sysUser.setLevel(wxCpUser.getEnable());
             sysUserMapper.insert(sysUser);
-
             for (int s = 0; s < wxCpUser.getDepartIds().length; s++) {
                 SysDepartmentUser sysDepartmentUser = new SysDepartmentUser();
                 sysDepartmentUser.setUserId(wxCpUser.getUserId());
@@ -124,7 +130,7 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
                 sysDepartmentUserMapper.insert(sysDepartmentUser);
             }
         }
-
+        return true;
     }
 
 
@@ -141,12 +147,14 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
         // 获取成员树
         List<SysDepartment> departments = departmentList.stream()
                 // 过滤顶级部门
-                .filter(sysDepartment -> sysDepartment.getParentId() == 0)
+                .filter(sysDepartment -> sysDepartment.getParentId() == 5201314)
                 // 排序
                 .sorted((node1, node2) -> Math.toIntExact(node1.getDepartmentId() - node2.getDepartmentId()))
                 // 递归设置子部门
-                .peek(topNode -> topNode.setChildrenPart(getChildren(topNode, departmentList)))
-                .collect(Collectors.toList());
+                .peek((topNode) -> topNode.setChildrenPart(getChildren(topNode, departmentList)))
+                .toList()
+                .getFirst()
+                .getChildrenPart();
         return Result.success(departments);
     }
 

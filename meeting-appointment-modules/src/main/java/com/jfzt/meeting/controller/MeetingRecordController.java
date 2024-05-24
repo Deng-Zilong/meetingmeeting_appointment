@@ -76,7 +76,7 @@ public class MeetingRecordController {
 
 
     /**
-     * 删除会议
+     * 删除会议,首页今日会议不展示，历史记录不做删除，非取消会议
      *
      * @return {@code Result<String>}
      */

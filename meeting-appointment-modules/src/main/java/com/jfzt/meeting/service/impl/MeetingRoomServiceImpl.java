@@ -18,14 +18,20 @@ import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
 import com.jfzt.meeting.mapper.MeetingRoomMapper;
+import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MeetingRoomService;
 import com.jfzt.meeting.service.SysUserService;
+import io.jsonwebtoken.Claims;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -49,6 +55,10 @@ import static com.jfzt.meeting.context.BaseContext.removeCurrentLevel;
 @Service
 public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, MeetingRoom>
         implements MeetingRoomService {
+
+    @Resource
+    private SysUserMapper sysUserMapper;
+
 
     private MeetingRoomMapper meetingRoomMapper;
 
@@ -80,28 +90,37 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     }
 
     /**
+     * 新增会议室
      * @param meetingRoom 会议室对象
      * @return {@code Boolean}
      */
     @Override
-    public Result<String> addMeetingRoom (MeetingRoom meetingRoom) {
-        int result = meetingRoomMapper.insert(meetingRoom);
-        if (result > 0) {
-            return Result.success(MessageConstant.SUCCESS);
+    public Result<Integer> addMeetingRoom (MeetingRoom meetingRoom, String userId) {
+        // 根据userId查询用户信息
+        SysUser sysUser = sysUserMapper.selectByUserId(userId);
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(sysUser.getLevel()) || MessageConstant.ADMIN_LEVEL.equals(sysUser.getLevel())) {
+            if (meetingRoom.getRoomName().isEmpty() || meetingRoom.getLocation().isEmpty()
+                    || meetingRoom.getCreatedBy().isEmpty() || meetingRoom.getCapacity() == null){
+                throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
+            }
+            int result = meetingRoomMapper.insert(meetingRoom);
+            if (result > 0) {
+                return Result.success();
+            }
+            return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0421);
         }
-        return Result.fail(MessageConstant.FAIL);
+        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
     }
+
+
 
     /**
      * @param meetingRoomId 会议室id
      * @return {@code Boolean}
      */
     @Override
-    public Result<String> deleteMeetingRoom (Long meetingRoomId) {
-        // 获取当前登录用户的权限等级
-        Integer level = BaseContext.getCurrentLevel();
-        removeCurrentLevel();
-        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(level) || MessageConstant.ADMIN_LEVEL.equals(level)) {
+    public Result<Integer> deleteMeetingRoom (Long meetingRoomId, Integer currentLevel) {
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel) || MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
             // 删除会议室
             if (meetingRoomId != null) {
                 int result = meetingRoomMapper.deleteById(meetingRoomId);
@@ -111,13 +130,13 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             }
             return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0400);
         }
-        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0312);
+        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
     }
 
 
     /**
      * 修改会议室状态
-     *
+     * @param meetingRoomDTO 会议室DTO对象
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
     @Override
@@ -142,7 +161,6 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
     /**
      * 查询被禁用的会议室的id
-     *
      * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.util.List < < java.lang.Integer>>
      */
@@ -173,7 +191,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         List<MeetingRoom> meetingRoomList = list(
                 new LambdaQueryWrapper<MeetingRoom>()
                         .eq(MeetingRoom::getIsDeleted, NOT_DELETED)
-                        .orderByAsc(MeetingRoom::getLocation));
+                        .orderByAsc(MeetingRoom::getId));
 
         return meetingRoomList.stream().map(meetingRoom -> {
             MeetingRoomStatusVO meetingRoomStatusVO = new MeetingRoomStatusVO();
@@ -212,20 +230,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 //插入参会人拼接字符串
                 List<String> userIds = attendeesMapper.selectUserIdsByRecordId(meetingRecord.getId());
                 StringBuffer attendees = new StringBuffer();
-                userIds.forEach(userId1 -> {
-                    SysUser user = userService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, userId1));
-                    //拼接参会人姓名
-                    if (user != null) {
-                        SysUser first = userService.lambdaQuery()
-                                .eq(SysUser::getUserId, userId1)
-                                .list()
-                                .getFirst();
-                        attendees.append(first.getUserName());
-                        if (userIds.indexOf(userId1) != userIds.size() - 1) {
-                            attendees.append(",");
-                        }
-                    }
-                });
+                userService.getUserInfo(userIds, attendees, null);
                 meetingRoomStatusVO.setAttendees(attendees.toString());
             }
             return meetingRoomStatusVO;

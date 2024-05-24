@@ -54,7 +54,7 @@ public class MeetingRecordVO implements Serializable {
     /**
      * 会议室地点
      */
-    private Integer location;
+    private String location;
 
     /**
      * 参会人数
