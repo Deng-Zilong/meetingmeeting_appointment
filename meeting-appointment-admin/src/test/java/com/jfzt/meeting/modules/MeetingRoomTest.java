@@ -60,10 +60,10 @@ public class MeetingRoomTest {
     @Test
     public void updateStatusTest () {
         assertEquals("00000", meetingRoomService.updateStatus(new MeetingRoomDTO(1L,0,0)).getCode());
-        assertEquals("00000", meetingRoomService.updateStatus(new MeetingRoomDTO(null,0,0)).getCode());
-        assertEquals("00000", meetingRoomService.updateStatus(new MeetingRoomDTO(1L,null,0)).getCode());
-        assertEquals("00000", meetingRoomService.updateStatus(new MeetingRoomDTO(1L,0,2)).getCode());
         assertEquals("00000", meetingRoomService.updateStatus(new MeetingRoomDTO(1L,0,1)).getCode());
+        assertThrows(RRException.class, () -> meetingRoomService.updateStatus(new MeetingRoomDTO(null,0,0)));
+        assertThrows(RRException.class, () -> meetingRoomService.updateStatus(new MeetingRoomDTO(1L,null,0)));
+        assertThrows(RRException.class, () -> meetingRoomService.updateStatus(new MeetingRoomDTO(1L,0,2)));
     }
 
     /**
@@ -73,7 +73,7 @@ public class MeetingRoomTest {
     public void selectUsableRoomTest () {
         assertNotNull(meetingRoomService.selectUsableRoom(0));
         assertNotNull(meetingRoomService.selectUsableRoom(1));
-        assertNotNull(meetingRoomService.selectUsableRoom(2));
+        assertThrows(RRException.class, () -> meetingRoomService.selectUsableRoom(2));
     }
 
 }
