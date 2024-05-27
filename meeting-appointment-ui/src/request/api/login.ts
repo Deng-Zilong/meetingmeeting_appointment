@@ -1,5 +1,10 @@
 import http from "@/request/http";
 
+// 获取企业微信二维码
+export const getQrCode = () => {
+    return http.get("/meeting/user/qr-code")
+}
+
 // 企业微信扫码登录
 export const qwLogin = (data: {code: string}) => {
     return http.get("/meeting/user/info", data)
