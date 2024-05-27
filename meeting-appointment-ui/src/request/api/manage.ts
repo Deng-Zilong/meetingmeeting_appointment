@@ -15,6 +15,11 @@ export const addRoomData = (data: {createdBy: string, roomName: string, location
   return http.post("/meeting/add-meeting-room", data)
 }
 
+// 删除会议室
+export const deleteRoomDate = (data: { currentLevel: number, id: number }) => {
+  return http.delete("/meeting/delete-meeting-room", data)
+}
+
 // 上传公告
 export const addNoticeData = (data: { currentLevel: number, currentUserId: string, substance: string }) => {
   return http.post("/meeting/meeting-notice/add-notice", data)

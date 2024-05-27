@@ -7,6 +7,10 @@
     <main>
       <div class="meeting-left">
         <div class="meeting-left-date">
+          <div class="two-icon">
+            <el-icon @click="deleteDate"><ArrowUpBold /></el-icon>
+            <el-icon @click="addDate"><ArrowDownBold /></el-icon>
+          </div>
           <el-date-picker v-model="date" type="date" class="left-date" :disabled-date="disabledDate"
             placeholder="选择日期" @change="changeDate" />
         </div>
@@ -70,7 +74,7 @@ const loading = ref(true)  // 获取数据loading
 const routes = useRoute();  // 用于传数据
 const router = useRouter() // 用于选择时间段
 
-const date = ref<any>(new Date())  // 会议日期选择
+const date = ref<any>(dayjs().startOf('date').format('YYYY-MM-DD'))  // 会议日期选择
 const currentMeetingId = ref<any>(routes.query.id);  // 会议室id
 const title = ref(routes.query.title);  // 会议室名称
 const locate = ref(routes.query.address);  // 会议室位置
@@ -78,8 +82,7 @@ const person = ref(routes.query.person);  // 会议室容量人数
 const time = ref(new Date().toLocaleTimeString().substring(0, 5))  // 显示当前时间点
 const hoveredItem = ref<any>(null)  // 鼠标悬浮内容
 
-// const personInfo = computed(() => `${person.value}人`);  // 会议室容量人数  拼接个“人”
-const personInfo = (10+"人")  // 会议室容量人数  暂定
+const personInfo = computed(() => `${person.value}人`);  // 会议室容量人数  拼接个“人”
 // 会议室信息
 const infoArr = reactive([
   {
@@ -123,9 +126,21 @@ const timeArr = ref([
   { time: '22:00', state: 3, initiator: '' }, { time: '22:30', state: 3, initiator: '' }
 ])
 
-
 const disabledDate = (date: any) => {  // 禁止选择今日之前的日期
   return date.getTime() < Date.now() - 8.64e7
+}
+
+// 前一天
+const deleteDate = () => {
+  // 当前日期为今天，不可以减少日期 做判断
+  if (dayjs(date.value).subtract(1, 'day').format('YYYY-MM-DD') < dayjs(new Date()).format('YYYY-MM-DD'))
+    return;
+  date.value = dayjs(date.value).subtract(1, 'day').format('YYYY-MM-DD')
+}
+
+// 后一天
+const addDate = () => {
+  date.value = dayjs(date.value).add(1, 'day').format('YYYY-MM-DD')
 }
 
 setInterval(() => {  // 更新 时间 会议室名称、位置
@@ -242,9 +257,17 @@ watch(() => router.currentRoute.value.query, (newValue: any) => {
           height: 3rem !important;
           font-size: 1.5rem !important;
         }
+
+        .two-icon {
+          display: flex;
+          flex-direction: column;
+          justify-content: space-around;
+          margin-right: 10px;
+        }
       }
 
       .left-table {
+        // margin: 10px 0;
         .table-title {
           display: flex;
           justify-content: center;
@@ -261,13 +284,15 @@ watch(() => router.currentRoute.value.query, (newValue: any) => {
           display: grid;
           grid-template-columns: repeat(6, 1fr);
           grid-template-rows: repeat(5, auto);
-          gap: 4px;
+          gap: 7px;
           border-radius: 0 0 15px 15px;
           box-shadow: inset 0px 1px 8px 0px #DBE9F7;
-          padding: 5px;
+          padding: 7px;
 
           .table-items {
-            padding: 29px;
+            // padding: 29px;
+            height: 79px;
+            line-height: 79px;
             text-align: center;
             background: #FFF;
             overflow: hidden;
@@ -277,6 +302,8 @@ watch(() => router.currentRoute.value.query, (newValue: any) => {
             transition: transform 0.2s ease;
 
             &:hover {
+              font-size: 1.3rem;
+              color: #FFF;
               background-color: #1273DB;
               transform: scale(1.06);
             }

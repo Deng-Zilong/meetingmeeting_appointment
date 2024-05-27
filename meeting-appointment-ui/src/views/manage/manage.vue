@@ -5,8 +5,10 @@
       <div class="theme-left" :style="{ width: userInfo.level === 0 ? '84%' : '100%'}">
         <div class="left-common meeting-set">
           <el-checkbox-group v-model="checkList" class="my-main-scrollbar" :style="{ width: userInfo.level === 0 ? '88%' : '91.8%'}">
-            <el-checkbox data-hover-text="右键可以删除会议室" v-for="item in checkItem" :label="item.roomName" :value="item.id" @change="changeCheckAll(item)" @contextmenu.prevent="onRightClick" />
+            <el-checkbox data-hover-text="右键可以删除会议室" v-for="item in useMeetingStatus.centerRoomName" :label="item.roomName" :value="item.id"
+             @change="changeCheckAll(item)" @contextmenu.prevent="onRightClick(item)" />
           </el-checkbox-group>
+          <!-- <el-input class="no-room" placeholder="暂无会议室" v-if="checkItem==''"></el-input> -->
           <div class="text-button" @click="addMeetingRoom">新增会议室</div>
           <el-dialog v-model="addMeetingVisible" title="新增会议室" width="30%">
             <el-form :model="addMeetingForm">
@@ -23,7 +25,7 @@
             <template #footer>
             <div class="dialog-footer">
               <el-button @click="addMeetingVisible = false">取消</el-button>
-              <el-button type="primary" @click="addMeetingInfo(addMeetingForm)">
+              <el-button type="primary" @click="addMeetingInfo()">
                 确认
               </el-button>
             </div>
@@ -117,7 +119,7 @@
     import { meetingState } from '@/utils/types';
     import personTreeDialog from "@/components/person-tree-dialog.vue";
     import { 
-      getUsableRoomData, getMeetingBanData, addRoomData,
+      getUsableRoomData, getMeetingBanData, addRoomData, deleteRoomDate,
        addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData 
       } from '@/request/api/manage'
       
@@ -128,34 +130,6 @@
     
     // 会议室状态 0-暂停使用 1-空闲 2-使用中
     let checkList = ref()  // 选中会议室 为禁用会议室
-    // let checkItem = ref<any>([  // 会议室
-    //   { 
-    //     id: 1,
-    //     label: '广政通宝会议室',
-    //     status: 1
-    //   },
-    //   { 
-    //     id: 2,
-    //     label: 'EN-2F-02 恰谈室会议室',
-    //     status: 1
-    //   },
-    //   { 
-    //     id: 3,
-    //     label: 'EN-2F-03 恰谈室会议室',
-    //     status: 1
-    //   },
-    //   { 
-    //     id: 4,
-    //     label: 'EN-3F-02 恰谈室会议室',
-    //     status: 1
-    //   },
-    //   { 
-    //     id: 5,
-    //     label: 'EN-3F-03 恰谈室会议室',
-    //     status: 1
-    //   },
-    // ])
-    let checkItem = useMeetingStatus.centerRoomName;
     let addMeetingVisible = ref(false)  // 新增会议室弹窗
     // 新增会议室信息
     let addMeetingForm = ref<any>({
@@ -195,7 +169,7 @@
       getUsableRoomData(data)
         .then((res) => {
           checkList.value = res.data;
-          checkItem.value.forEach((item: any) => {
+          useMeetingStatus.centerRoomName.value.forEach((item: any) => {
             // 选中时，将会议室状态改为0 (0-暂停使用  1-空闲)
             if (checkList.value.includes(item.id)) {
               item.status = 0;
@@ -242,20 +216,32 @@
         capacity: ''
       }
     }
-    const addMeetingInfo = (addMeetingForm: any) => {
+    const addMeetingInfo = () => {
       addMeetingVisible.value = false
       const { roomName, location, capacity } = addMeetingForm.value
       addRoomData({ createdBy: userInfo.value.userId, roomName, location, capacity: Number(capacity) })
       .then(() => {
         ElMessage.success('新增会议室成功')
+        useMeetingStatus.getCenterRoomName()
       })
       .catch(() => {
         ElMessage.warning('取消新增会议室')
       })
     }
+    /**
+     * @description 删除会议室
+     * @param {currentLevel} 用户等级 0超级管理员 1管理员 2员工
+     * @param {id} 会议室id
+    */ 
     const onRightClick = (event: any) => {
       // 在这里处理右键点击事件
-      console.log('右键点击事件触发', event);
+      deleteRoomDate({ currentLevel: userInfo.value.level, id: event.id })
+        .then(() => {
+          ElMessage.success('删除会议室成功')
+          useMeetingStatus.getCenterRoomName()
+        })
+        .catch((err) => {})
+      console.log('右键点击事件触发', event.id);
     }
 
 /******************************************* 公告 ***********************************/
@@ -489,6 +475,14 @@
         }
         // 会议室设置单独样式
         .meeting-set {
+          .no-room {
+            position: absolute;
+            // background: #FFF;
+            border-radius: .5rem;
+            // padding: 0 0.8rem;
+            // width: fit-content;
+            width: 60.8%;
+          }
           .el-checkbox-group {
             display: flex;
             align-items: center;
