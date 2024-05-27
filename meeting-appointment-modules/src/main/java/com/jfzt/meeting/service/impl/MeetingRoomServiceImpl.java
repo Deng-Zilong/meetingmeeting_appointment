@@ -418,7 +418,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         List<MeetingRoomVO> meetingRoomVOList = new ArrayList<>();
         for (MeetingRoom meetingRoom : meetingRooms) {
             MeetingRoomVO meetingRoomVO = new MeetingRoomVO();
-            meetingRoomVO.setMeetingRoomId(meetingRoom.getId());
+            meetingRoomVO.setId(meetingRoom.getId());
             meetingRoomVO.setRoomName(meetingRoom.getRoomName());
             meetingRoomVO.setStatus(meetingRoom.getStatus());
             meetingRoomVOList.add(meetingRoomVO);
