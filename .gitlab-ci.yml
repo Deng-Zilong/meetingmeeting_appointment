@@ -31,7 +31,7 @@ variables:
   FRONT_BRANCH: "include"
 
   #【请修改】后端Dockerfile存在路径(参考上述目录结构)
-  DOCKERFILE_PATH: "../docker/Dockerfile"
+  DOCKERFILE_PATH: "./src/main/resources/Dockerfile"
 
   #【请修改】1 项目名称 不能使用_用-代替,2【前端】项目用web或app结尾，前、后端 "PROJECT_NAME" 不一样； 3【后端】采用-backend结尾
   #正例：前端jf-training-web 后端jf-training-backend
