@@ -44,9 +44,7 @@ export function ResResolve(res: any) {
   }
 }
 // 响应拦截错误处理
-export function ResReject(error: AxiosError) {
-    console.log(error, "error.response?.status");
-    
+export function ResReject(error: AxiosError) {    
   if (error.response?.status == 402) {
     delete localStorage.userInfo;
     router.replace("/login");

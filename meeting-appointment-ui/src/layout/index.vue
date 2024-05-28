@@ -47,8 +47,7 @@ const userId = userInfo?.userId; // 用户id
  * @description 退出登录
  */
 const exitLogin = () => {
-  // 删除用户信息
-  deleteInfo(userId)
+  deleteInfo({userId})
     .then(res=> {
         // 重置用户信息
         userStore.resetUserInfo();
