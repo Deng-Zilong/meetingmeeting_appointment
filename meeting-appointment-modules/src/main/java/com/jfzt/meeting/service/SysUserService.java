@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author zilong.deng
@@ -77,4 +78,12 @@ public interface SysUserService extends IService<SysUser> {
      * @Param [name]
      */
     Result<List<SysUserVO>> findByName (String name);
+
+    /**
+     * QR code 返回前端二维码
+     * @return
+     */
+    Map<String, String> userQrCode();
+
+    String getUrlCode();
 }

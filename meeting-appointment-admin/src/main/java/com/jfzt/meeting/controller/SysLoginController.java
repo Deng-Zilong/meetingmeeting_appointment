@@ -114,6 +114,17 @@ public class SysLoginController {
     }
 
     /**
+     * 退出登录
+     * @param userId
+     * @return
+     */
+    @GetMapping("delete")
+    public Result delete (@RequestParam("userId") String userId){
+        redisTemplate.opsForValue().getAndDelete("userInfo"+userId);
+        return Result.success("删除成功");
+    }
+
+    /**
      * 修改密码
      */
     @PutMapping("updateSysAdminPassword")
