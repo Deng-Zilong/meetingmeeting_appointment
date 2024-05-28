@@ -66,9 +66,21 @@ public class SysUserController {
         return Result.success(map);
     }
     /**
-     * 获取token，部门，部门人员
+     *构造oauth2授权的url连接.
+     */
+    @GetMapping(value = "oauth2/authorize")
+    public Result<UserInfoVO> authorize() throws WxErrorException {
+        String url = sysUserService.getUrlCode();
+        log.info("urlsssssssssssssssssssssssss"+url);
+        //获取登录token
+        String accessToken = sysDepartmentUserService.findTocken();
+        log.info("accessTokenaaaaaaaaaaaaaaa"+accessToken);
+        return null;
+    }
+
+    /**
      *
-     * @return userInfoVO
+     * 获取token，部门，部门人员
      */
     @GetMapping(value = "info")
     @Transactional
