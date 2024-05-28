@@ -77,4 +77,12 @@ public interface SysUserService extends IService<SysUser> {
      * @Param [name]
      */
     Result<List<SysUserVO>> findByName (String name);
+
+    /**
+     * QR code 返回前端二维码
+     * @return
+     */
+    Map<String, String> userQrCode();
+
+    String getUrlCode();
 }

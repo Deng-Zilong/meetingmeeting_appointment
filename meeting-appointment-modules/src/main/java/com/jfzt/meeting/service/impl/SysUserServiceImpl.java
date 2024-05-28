@@ -20,10 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.awt.image.BufferedImage;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -44,6 +41,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     private RedisTemplate<String, Object> redisTemplate;
     @Resource
     private Producer producer;
+    @Autowired
+    private WxCpServiceImpl wxCpService;
+    @Autowired
+    private WxCpDefaultConfiguration wxCpDefaultConfiguration;
+    @Autowired
+    private WxCpTpServiceImpl wxCpTpService;
 
 
     /**
@@ -211,6 +214,21 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
                         .build())
                 // 将SysUserVO对象collect到列表中
                 .collect(Collectors.toList()));
+    }
+
+    @Override
+    public Map<String, String> userQrCode() {
+        String url = wxCpService.buildQrConnectUrl(wxCpDefaultConfiguration.getUrl(),wxCpDefaultConfiguration.getState());
+        Map<String,String> map = new HashMap<>(1);
+        map.put("url",url);
+        return map;
+    }
+
+    @Override
+    public String getUrlCode() {
+        WxCpTpOAuth2ServiceImpl wxCpTpOAuth2Service = new WxCpTpOAuth2ServiceImpl(wxCpTpService);
+        String url = wxCpTpOAuth2Service.buildAuthorizeUrl(wxCpDefaultConfiguration.getUrl(),wxCpDefaultConfiguration.getState(),wxCpDefaultConfiguration.getScope());
+        return url;
     }
 }
 

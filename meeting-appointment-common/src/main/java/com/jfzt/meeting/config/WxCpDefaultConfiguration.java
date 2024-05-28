@@ -52,11 +52,10 @@ public class WxCpDefaultConfiguration {
     public WxCpServiceImpl wxCp() {
         WxCpDefaultConfigImpl config = new WxCpDefaultConfigImpl();
         // 设置微信企业号的appid
-        config.setCorpId("ww942086e6c44abc4b");
+        config.setCorpId(corpid);
         // 设置微信企业号的app corpSecret
-        config.setCorpSecret("Rnf3LVxbAdTfvGVTirgwVbgsaDoBv_MTXrmawAu9qHQ");
-        // 设置微信企业号应用ID
-        config.setAgentId(1000002);
+        config.setCorpSecret(corpsecret);
+        config.setAgentId(agentId);
         WxCpServiceImpl wxCpService = new WxCpServiceImpl();
         wxCpService.setWxCpConfigStorage(config);
         return wxCpService;
