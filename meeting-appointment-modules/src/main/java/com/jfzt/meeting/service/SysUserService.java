@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author zilong.deng

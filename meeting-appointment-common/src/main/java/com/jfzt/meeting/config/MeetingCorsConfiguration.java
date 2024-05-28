@@ -35,7 +35,7 @@ public class MeetingCorsConfiguration implements WebMvcConfigurer {
                 // 拦截所有路径
                 .addPathPatterns("/**")
                 // 排除登录和错误处理路径
-                .excludePathPatterns("/meeting/user/info","/meeting/user/captcha.jpg","/meeting/user/login","/quartz/Department");
+                .excludePathPatterns("/meeting/user/info","/meeting/user/captcha.jpg","/meeting/user/login","/quartz/receiving-users","/quartz/test","/meeting/user/qr-code","/meeting/user/oauth2/authorize");
     }
 
 }
