@@ -51,6 +51,20 @@ public class SysUserController {
     private SysDepartmentUserService sysDepartmentUserService;
     @Autowired
     private JwtProperties jwtProperties;
+
+
+
+    /**
+     * QR code 返回前端二维码
+     * @return Result<Map<String, String>>
+     */
+    @GetMapping(value = "qr-code")
+    public Result<Map<String, String>> qrCode(){
+        //返回一个地址
+        Map<String,String> map = sysUserService.userQrCode();
+
+        return Result.success(map);
+    }
     /**
      * 获取token，部门，部门人员
      *
