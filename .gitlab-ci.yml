@@ -1,134 +1,64 @@
-variables:
-  # 目录结构展示
-  # --live-venue-reservation-b
-  #   --live-venue-reservation-java
-  #     --Dockerfile
-  #     --jfmcn-admin
-  #         --src
-  #         --target
-  #             --xxx.jar
-  #     --jfmcn-business
-  #     --jfmcn-common
-  #   --live-venue-reservation-js
-  #     --src
-  #   --.gitlab-ci.yml
+#  项目根目录/
+#    ├── .gitlab-ci.yml
+#    ├── 前端文件夹/
+#    │    └── .gitlab-ci.yml
+#    └── 后端文件夹/
+#         └── .gitlab-ci.yml
+#         └── Dockerfile
 
+# 说明：java后端有一次测试阶段，使用的是 - mvn verify。
+# 执行mvn verify命令后,Maven 将会自动执行项目中定义的测试和检查过程,包括单元测试、集成测试、代码风格检查、代码覆盖率检查等
+
+# 此配置文件用于定义GitLab CI/CD的管道，以自动化构建和部署前端和后端项目。
+# 它通过`include`指令包含前端和后端项目的特定CI配置，并定义了一些全局变量，
+# 这些变量在前后端的构建和部署过程中被引用
+# 1. "前端文件夹/.gitlab-ci.yml" - 用于包含H5版本的知识产权系统配置
+# 2. "后端文件夹/.gitlab-ci.yml" - 用于包含服务器版本的知识产权系统配置
+include:
+  # 分别包含前端和后端项目的CI配置文件。
+  - local: "meeting-appointment-ui/.gitlab-ci.yml"  # 包含H5项目的CI配置
+  - local: "meeting-appointment-admin/.gitlab-ci.yml"  # 包含服务端项目的CI配置
+
+variables:
   #【请修改】后端文件夹路径
-  BACK_PATH: "./"
+  BACK_PATH: "meeting-appointment-admin"
 
   #【请修改】前端文件夹路径
   FRONT_PATH: "meeting-appointment-ui"
 
+  # 设置后端分支和前端分支的默认值
+  BACK_BRANCH: "include"
+  FRONT_BRANCH: "include"
+
   #【请修改】后端Dockerfile存在路径(参考上述目录结构)
-  DOCKERFILE_PATH: "Dockerfile"
+  DOCKERFILE_PATH: "../docker/Dockerfile"
 
   #【请修改】1 项目名称 不能使用_用-代替,2【前端】项目用web或app结尾，前、后端 "PROJECT_NAME" 不一样； 3【后端】采用-backend结尾
   #正例：前端jf-training-web 后端jf-training-backend
   #反例：前端jf___training-web 后端jf___training
   #反例：前端jf-training 后端jf-training
   #反例：前端JF-TRAINING 后端JF-TRAINING  不能使用大写
-  FRONT_PROJECT_NAME: "meeting-appointment-web"
+  FRONT_PROJECT_NAME: "jf-meeting-appointment-web"
 
   #【请修改】后端项目名称(要求同上)
-  BACK_PROJECT_NAME: "meeting-appointment-backend"
-
-  #【请修改】前端项目打包方式 npm run build:$ENVIRONMENT
-  ENVIRONMENT: "pro"
+  BACK_PROJECT_NAME: "jf-meeting-appointment-backend"
 
   #【请修改】Jar包的端口号，建议各项目组设置后端服务用8080端口
-  JAR_PORT: 8080
+  JAR_PORT: 8901
 
   #【请修改】后端Jar包存在地址(参考上述目录结构)
-#  JAR_PATH = "./meeting-appointment-admin/target"
-  JAR_PATH: "meeting-appointment-admin/target/*.jar"
+  JAR_PATH: "./target/*.jar"
 
+  #【请修改】前端项目打包方式 $BUILD_COMMAND run build:$ENVIRONMENT
+  BUILD_COMMAND: "npm"
+  ENVIRONMENT: "develop"
+
+  # 定义生产环境使用的Docker镜像标签
+  # 使用CI_COMMIT_TAG环境变量，该变量在持续集成流程中由GitLab CI/CD自动设置，
+  # 代表当前构建的标签（通常是版本号）。
   PROD_DOCKER_TAG: "${CI_COMMIT_TAG}"
+
+  # 定义一般开发或测试环境使用的Docker镜像标签
+  # 使用CI_COMMIT_SHORT_SHA环境变量，该变量是由GitLab CI/CD自动设置，
+  # 代表当前提交的短版SHA值，用于区分不同的提交版本。
   DOCKER_TAG: "${CI_COMMIT_SHORT_SHA}"
-  PROJECT_TYPE: "backend"
-
-stages:
-  - build
-  - deploy
-
-
-# develop环境打包-后端
-build_and_push_develop_back:
-  tags:
-    - jifu-dev
-  image: registry.jifu.ytx.com/jifu_dev/base_image_jdk21_maven_node18:v3.0
-  stage: build
-  script:
-    - cd ${BACK_PATH}
-    - mvn clean install package
-    - sed -i 's|<JAR_PATH>|'${JAR_PATH}'|g'  $DOCKERFILE_PATH
-    - cat $DOCKERFILE_PATH
-    - bash  /opt/deploy/scripts/build-image.sh develop ${BACK_PROJECT_NAME} ${DOCKER_TAG}
-  only:
-    refs:
-      - branches
-    changes:
-      - server/**
-  except:
-    refs:
-      - tags
-
-# # develop环境部署-后端
-deploy_to_develop_back:
-  tags:
-    - jifu-dev
-  image: registry.jifu.ytx.com/library/kubectl:1.23.1
-  stage: deploy
-  script:
-    - sh /opt/deploy/scripts/deploy.sh develop ${BACK_PROJECT_NAME} ${DOCKER_TAG} ${JAR_PORT}
-  needs: ["build_and_push_develop_back"]
-  when: on_success
-  only:
-    refs:
-      - branches
-    changes:
-      - server/**
-  except:
-    refs:
-      - tags
-
-# develop环境打包-前端
-build_and_push_develop_front:
-  tags:
-    - jifu-dev
-  image: registry.jifu.ytx.com/jifu_dev/base_image_jdk21_maven_node18:v3.0
-  stage: build
-  script:
-    - export PROJECT_TYPE="frontend"
-    - cd ${FRONT_PATH}
-    - npm config set registry https://registry.npmmirror.com
-    - npm install --no-frozen-lockfile
-    - npm run build:${ENVIRONMENT}
-    - bash /opt/deploy/scripts/build-image.sh develop ${FRONT_PROJECT_NAME} ${DOCKER_TAG}
-  only:
-    refs:
-      - branches
-    changes:
-      - server/**
-  except:
-    refs:
-      - tags
-
-# develop环境部署-前端
-deploy_to_develop_front:
-  tags:
-    - jifu-dev
-  image: registry.jifu.ytx.com/library/kubectl:1.23.1
-  stage: deploy
-  script:
-    - export PROJECT_TYPE="frontend"
-    - sh /opt/deploy/scripts/deploy.sh develop ${FRONT_PROJECT_NAME} ${DOCKER_TAG} 80
-  needs: ["build_and_push_develop_front"]
-  when: on_success
-  only:
-    refs:
-      - branches
-    changes:
-      - server/**
-  except:
-    refs:
-      - tags
