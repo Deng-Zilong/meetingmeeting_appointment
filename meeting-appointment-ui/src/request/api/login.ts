@@ -19,3 +19,8 @@ export const Login = (data: {name: string, password: string, uuid: string, code:
 export const getCaptcha = (data: {uuid: string}) => {
     return http.get("/meeting/user/captcha.jpg", data, 'arraybuffer',)
 }
+
+// 退出登录
+export const deleteInfo = (data: {userId: string}) => {
+    return http.get("/meeting/user/delete", data)
+}
