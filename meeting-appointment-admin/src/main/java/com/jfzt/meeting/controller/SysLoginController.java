@@ -69,19 +69,22 @@ public class SysLoginController {
         IOUtils.close(out);
     }
 
+
     /**
      * 用户登录
      * @param loginVo 登录信息
      * @return 登录结果
      */
     @PostMapping(value = "login")
-    public Result<UserInfoVO> login (@RequestBody LoginVo loginVo) throws NoSuchAlgorithmException {
+    public Result<UserInfoVO> login (@RequestBody LoginVo loginVo) {
         //判断验证码是否正确,需要获取redis中的验证码
         String codeUuids = (String) redisTemplate.opsForValue().get(loginVo.getUuid());
         if (StringUtils.isBlank(codeUuids) || !loginVo.getCode().equalsIgnoreCase(codeUuids)) {
             log.error("用户未请求验证码或者用户验证码输入错误");
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0240);
         }
+
+
         SysUser sysUser = sysUserService.findUser(loginVo);
         if (sysUser == null) {
             log.error("用户账户不存在");
@@ -90,6 +93,16 @@ public class SysLoginController {
         if (!EncryptUtils.match(loginVo.getPassword(), sysUser.getPassword())) {
             log.error("用户密码错误");
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0210);
+        }
+        JSONObject jsonObject = JSONObject.parseObject((String) redisTemplate.opsForValue().get("userInfo" + loginVo.getName()));
+        if (jsonObject != null){
+            UserInfoVO userInfo = UserInfoVO.builder()
+                    .accessToken(jsonObject.get("accessToken").toString())
+                    .userId(jsonObject.get("userId").toString())
+                    .name(jsonObject.get("name").toString())
+                    .level((Integer) jsonObject.get("level"))
+                    .build();
+            return Result.success(userInfo);
         }
         //登录成功后，生成jwt令牌
         Map<String, Object> claims = new HashMap<>();
