@@ -1,0 +1,90 @@
+
+# 配置文件定义了项目的构建和部署流程
+# 包括变量定义、阶段设置以及各个阶段的任务配置
+
+# 定义配置文件中的变量
+variables:
+  # 项目类型，指定为"backend"
+  PROJECT_TYPE: "backend"
+
+# 定义了整个构建流程所包含的阶段
+stages:
+  - test # 测试阶段
+  - build # 构建阶段
+  - deploy # 部署阶段
+
+# develop环境java单元测试任务
+# 该任务在test阶段执行，负责进行后端的单元测试
+test_to_develop_back:
+  tags:
+    - jifu-dev # 用于指定执行该任务的 Runner 标签
+  image: registry.jifu.ytx.com/jifu_dev/base_image_jdk21_maven_node18:v3.0 # 指定任务运行时使用的 Docker 镜像
+  stage: test # 指定该任务属于测试阶段
+  # 这是一个执行脚本操作的配置段
+  script:
+      # 切换到指定的后端路径
+      - cd ${BACK_PATH}
+      # 执行mvn verify命令后,Maven 将会自动执行项目中定义的测试和检查过程,包括单元测试、集成测试、代码风格检查、代码覆盖率检查等
+      - mvn verify
+  rules:
+    # 规则定义任务的执行条件
+    - if: '$CI_COMMIT_BRANCH == $BACK_BRANCH && $CI_COMMIT_MESSAGE =~ /build/' # 分支和提交信息匹配条件
+      changes:
+        - $BACK_PATH/** # 指定触发构建的文件路径条件
+        - .gitlab-ci.yml # 指定触发构建的文件路径条件
+      when: on_success # 当前任务成功执行时触发后续任务
+    - if: '$CI_COMMIT_TAG' # 排除标签提交的情况
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "web"' # 允许手动触发
+
+# develop环境打包-后端任务
+# 该任务负责在build阶段进行后端应用的打包并推送至开发环境。
+# 执行条件包括特定的分支、提交信息匹配以及触发源。
+build_and_push_develop_back:
+  tags:
+    - jifu-dev  # 指定使用的机器标签
+  image: registry.jifu.ytx.com/jifu_dev/base_image_jdk21_maven_node18:v3.0  # 指定任务运行时使用的Docker镜像
+  stage: build  # 指定任务所在的阶段
+  script:
+    # 执行的脚本命令，包括清理、构建、打包和镜像制作等步骤
+    - cd ${BACK_PATH} # 进入后端项目路径
+    - mvn clean install package # 执行maven构建命令
+    - sed -i 's|<JAR_PATH>|'${JAR_PATH}'|g'  $DOCKERFILE_PATH # 替换Dockerfile中的变量
+    - cat $DOCKERFILE_PATH # 输出Dockerfile内容，用于检查
+    - bash  /opt/deploy/scripts/build-image.sh develop ${BACK_PROJECT_NAME} ${DOCKER_TAG} # 执行制作镜像的脚本
+  needs: [ "test_to_develop_back" ] # 指定该任务依赖于前面的测试任务
+  when: on_success # 仅在前一任务成功时执行
+  rules:
+    # 定义任务执行的条件
+    - if: '$CI_COMMIT_BRANCH == $BACK_BRANCH && $CI_COMMIT_MESSAGE =~ /build/' # 分支和提交信息匹配条件
+      changes:
+        - $BACK_PATH/** # 指定触发构建的文件路径条件
+        - .gitlab-ci.yml # 指定触发构建的文件路径条件
+      when: on_success # 当前任务成功执行时触发后续任务
+    - if: '$CI_COMMIT_TAG' # 排除标签提交的情况
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "web"' # 允许手动触发
+
+
+# deploy_to_develop_back: 发布到开发环境的后端任务
+# 该任务用于在部署阶段将打包好的后端应用程序部署到开发环境。
+# 执行条件基于CI环境变量和提交信息的匹配，以及触发源的检查。
+deploy_to_develop_back:
+  tags:
+    - jifu-dev  # 任务标签，用于指定执行该任务的 Runner
+  image: registry.jifu.ytx.com/library/kubectl:1.23.1 # 指定使用 kubectl 镜像以进行部署操作
+  stage: deploy # 任务所属的阶段，此处为部署阶段
+  script:
+    # 执行部署脚本，传入环境、项目名、镜像标签和JAR服务端口
+    - sh /opt/deploy/scripts/deploy.sh develop ${BACK_PROJECT_NAME} ${DOCKER_TAG} ${JAR_PORT}
+  needs: ["build_and_push_develop_back"] # 指定该任务依赖于前面的构建和推送镜像到开发环境的任务
+  when: on_success # 仅在前一个任务成功时执行
+  rules:
+    # 定义任务执行的规则，包括条件和触发机制
+    - if: '$CI_COMMIT_BRANCH == $BACK_BRANCH && $CI_COMMIT_MESSAGE =~ /build/' # 分支必须为指定的后端分支，且提交信息包含"build"
+      changes:
+        - $BACK_PATH/** # 指定只有当后端代码路径或.gitlab-ci.yml发生变化时才触发任务
+      when: on_success # 前一个任务成功时触发
+    - if: '$CI_COMMIT_TAG' # 排除标签提交的情况，不执行该任务
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "web"' # 允许通过网页手动触发该任务
