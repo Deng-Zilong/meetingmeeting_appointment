@@ -697,20 +697,24 @@ onMounted( async () => {
         display: grid;
         grid-template-columns: repeat(6, 1fr); /* 创建6列，每列等宽 */
         grid-template-rows: repeat(5, auto); /* 创建5行，自动高度适应内容 */
-        gap: 4px; /* 设置单元格之间的间距 */
+        gap: 7px; /* 设置单元格之间的间距 */
         background: #F5F7FA;
         border-radius: 0 0 15px 15px;
-        padding: 5px;
+        padding: 7px;
         
         .choose-cell {
-          padding: 20px;
+          height: 57px;
+          line-height: 57px;
           text-align: center;
           overflow: hidden; /* 防止内容溢出 */
+          font-size: 0.8rem;
           background: #FFF;
           border-radius: 5px;
           box-shadow: 1px 1px 2px 1px #DBE9F7;
           &:hover {
             cursor: pointer;
+            font-size: 1rem;
+            color: #FFF;
             background-color: #1273DB;
             transform: scale(1.06);
           }
