@@ -21,7 +21,7 @@ export function ReqResolve(req: InternalAxiosRequestConfig) {
    * * 加上 token
    * ! 认证方案: JWT Bearer
    */
-//   req.headers.Authorization = token;
+  req.headers.Authorization = token;
   return req;
 }
 // 请求拦截错误处理
