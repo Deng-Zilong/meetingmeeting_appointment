@@ -1,11 +1,6 @@
-
 # 配置文件定义了项目的构建和部署流程
 # 包括变量定义、阶段设置以及各个阶段的任务配置
 
-# 定义配置文件中的变量
-variables:
-  # 项目类型，指定为"backend"
-  PROJECT_TYPE: "backend"
 
 # 定义了整个构建流程所包含的阶段
 stages:
@@ -88,3 +83,4 @@ deploy_to_develop_back:
     - if: '$CI_COMMIT_TAG' # 排除标签提交的情况，不执行该任务
       when: never
     - if: '$CI_PIPELINE_SOURCE == "web"' # 允许通过网页手动触发该任务
+
