@@ -136,7 +136,7 @@ public class SysLoginController {
      */
     @GetMapping("delete")
     public Result delete (@RequestParam("userId") String userId){
-        redisTemplate.opsForValue().getAndDelete("userInfo:"+userId);
+//        redisTemplate.opsForValue().getAndDelete("userInfo:"+userId);
         return Result.success("删除成功");
     }
 
