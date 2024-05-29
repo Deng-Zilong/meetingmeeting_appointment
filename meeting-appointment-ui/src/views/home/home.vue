@@ -240,12 +240,8 @@ const getRoomStatus = () => {
 
 const handleRoomClick = (item: any) => {
     if(item.status === 1) {
-      router.push({
-      path: '/meeting-appoint',
-      query: {
-        meetingRoomId: item.id  // 首页 会议室 跳转到预约页面 传会议室id
-      }
-    })
+      sessionStorage.setItem('meetingInfo', JSON.stringify({meetingRoomId: String(item.id)}));
+      router.push('/meeting-appoint')
   }
 }
 
@@ -274,12 +270,8 @@ const selectTime = (item: any) => {
   if ([0, 1].includes(item.state)) {
     return;
   } else {
-    router.push({
-      path: '/meeting-appoint',
-      query: {
-        startTime: item.time  // 首页 时间点 跳转到预约页面 传时间点time
-      }
-    })
+    sessionStorage.setItem('meetingInfo', JSON.stringify({startTime: item.time}));
+    router.push('/meeting-appoint')
   }
 }
 
@@ -332,22 +324,8 @@ const getTodayRecord = (data: { userId: string }) => {
 const modifyMeeting = (item: any) => {
   // 会议-未开始 且 登陆人员=创建者时(item.createdBy === userInfo.value.userId) 才可以修改
   if (item.status === 0 && item.createdBy === userInfo.value.userId) {
-    router.push({
-      path: 'meeting-appoint',
-      query: {
-          id: item.id,
-          meetingRoomId: item.meetingRoomId,
-          title: item.title,
-          description: item.description,
-          startTime: item.startTime,
-          endTime: item.endTime,
-          meetingRoomName: item.meetingRoomName,
-          status: item.status,
-          createdBy: item.createdBy,
-          userName: item.adminUserName,
-          users: JSON.stringify(item.users),
-      }
-    })
+    sessionStorage.setItem('meetingInfo', JSON.stringify(item));
+    router.push('/meeting-appoint')
   }
 }
 
