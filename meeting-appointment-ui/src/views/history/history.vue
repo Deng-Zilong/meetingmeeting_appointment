@@ -284,7 +284,7 @@
      */
     const transmitMeeting = (item: any) => {
         address.value = 
-        `会议主题: ${item.title}\n发起人: ${item.adminUserName}\n会议日期: ${item.date}\n会议时间: ${item.time}\n会议地点: ${item.meetingRoomName}\nURL: http://172.17.34.48:32375/#/login`;
+        `会议主题: ${item.title}\n发起人: ${item.adminUserName}\n会议日期: ${item.date}\n会议时间: ${item.time}\n会议地点: ${item.meetingRoomName}\nURL: http://llzzxx.cn/#/login`;
         isTransmitMeeting.value = true;
         navigator.clipboard.writeText(address.value).then(() => {})
         .catch(() => {

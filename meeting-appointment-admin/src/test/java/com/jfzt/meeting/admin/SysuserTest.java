@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.naming.directory.DirContext;
+import javax.naming.directory.SearchResult;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +46,15 @@ public class SysuserTest {
         assertThrows(RRException.class, () -> sysUserService.userQrCode());
 
 
+    }
+
+    @Test
+    public void qrCode1() {
+        ADUserUtils utils = new ADUserUtils();
+        utils.searchInformation(utils.root);
+
+//        utils.add("JimGreen");
+        utils.close();
     }
 
 

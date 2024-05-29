@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.config.WxCpDefaultConfiguration;
 import com.jfzt.meeting.context.BaseContext;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.vo.LoginVo;
@@ -49,7 +50,8 @@ public class SysLoginController {
 
     @Resource
     private RedisTemplate<String,Object> redisTemplate;
-
+    @Autowired
+    private WxCpDefaultConfiguration wxCpDefaultConfiguration;
     @Autowired
     private JwtProperties jwtProperties;
 
@@ -78,14 +80,14 @@ public class SysLoginController {
     @PostMapping(value = "login")
     public Result<UserInfoVO> login (@RequestBody LoginVo loginVo) {
         //判断验证码是否正确,需要获取redis中的验证码
-        String codeUuids = (String) redisTemplate.opsForValue().get(loginVo.getUuid());
+        String codeUuids = (String) redisTemplate.opsForValue().get("uuid:"+loginVo.getUuid());
         if (StringUtils.isBlank(codeUuids) || !loginVo.getCode().equalsIgnoreCase(codeUuids)) {
             log.error("用户未请求验证码或者用户验证码输入错误");
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0240);
         }
 
 
-        SysUser sysUser = sysUserService.findUser(loginVo);
+        SysUser sysUser = sysUserService.findUser(loginVo.getName());
         if (sysUser == null) {
             log.error("用户账户不存在");
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0201);
@@ -94,16 +96,18 @@ public class SysLoginController {
             log.error("用户密码错误");
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0210);
         }
-        JSONObject jsonObject = JSONObject.parseObject((String) redisTemplate.opsForValue().get("userInfo" + loginVo.getName()));
+        JSONObject jsonObject = JSONObject.parseObject((String) redisTemplate.opsForValue().get("userInfo:" + loginVo.getName()));
         if (jsonObject != null){
             UserInfoVO userInfo = UserInfoVO.builder()
                     .accessToken(jsonObject.get("accessToken").toString())
                     .userId(jsonObject.get("userId").toString())
                     .name(jsonObject.get("name").toString())
                     .level((Integer) jsonObject.get("level"))
+                    .url(wxCpDefaultConfiguration.getUrl())
                     .build();
             return Result.success(userInfo);
         }
+
         //登录成功后，生成jwt令牌
         Map<String, Object> claims = new HashMap<>();
         claims.put("sysUserId", sysUser.getUserId());
@@ -111,15 +115,15 @@ public class SysLoginController {
                 jwtProperties.getAdminSecretKey(),
                 jwtProperties.getAdminTtl(),
                 claims);
-
         UserInfoVO userInfo = UserInfoVO.builder()
                 .accessToken(token)
                 .userId(sysUser.getUserId())
                 .name(sysUser.getUserName())
                 .level(sysUser.getLevel())
+                .url(wxCpDefaultConfiguration.getUrl())
                 .build();
         //存入到redis中
-        redisTemplate.opsForValue().set("userInfo"+userInfo.getUserId(), JSONObject.toJSONString(userInfo), Duration.ofHours(24));
+        redisTemplate.opsForValue().set("userInfo:"+userInfo.getUserId(), JSONObject.toJSONString(userInfo), Duration.ofHours(24));
         //存入当前登录用户到ThreadLocal中
         BaseContext.setCurrentUserId(sysUser.getUserId());
         BaseContext.setCurrentLevel(sysUser.getLevel());
@@ -128,17 +132,18 @@ public class SysLoginController {
 
     /**
      * 退出登录
-     * @param userId
-     * @return
+     * @return Result
      */
     @GetMapping("delete")
     public Result delete (@RequestParam("userId") String userId){
-        redisTemplate.opsForValue().getAndDelete("userInfo"+userId);
+        redisTemplate.opsForValue().getAndDelete("userInfo:"+userId);
         return Result.success("删除成功");
     }
 
+
     /**
-     * 修改密码
+     *
+     * @return Result<String>
      */
     @PutMapping("updateSysAdminPassword")
     public Result<String> addAdmin (@RequestParam String userId, @RequestParam String password) throws NoSuchAlgorithmException {

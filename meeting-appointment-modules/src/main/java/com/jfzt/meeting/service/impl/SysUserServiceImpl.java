@@ -182,15 +182,15 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     @Override
     public BufferedImage getCaptcha (String uuid) {
         String code = producer.createText();
-        redisTemplate.opsForValue().set(uuid, code, Duration.ofSeconds(60));
+        redisTemplate.opsForValue().set("uuid:"+uuid, code, Duration.ofSeconds(60));
         return producer.createImage(code);
     }
 
     @Override
-    public SysUser findUser (LoginVo loginVo) {
+    public SysUser findUser (String userId) {
 
         LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(SysUser::getUserId, loginVo.getName());
+        lambdaQueryWrapper.eq(SysUser::getUserId, userId);
         return sysUserMapper.selectOne(lambdaQueryWrapper);
     }
 

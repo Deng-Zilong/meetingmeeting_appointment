@@ -3,7 +3,6 @@ package com.jfzt.meeting.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.SysUser;
-import com.jfzt.meeting.entity.vo.LoginVo;
 import com.jfzt.meeting.entity.vo.SysUserVO;
 import org.apache.ibatis.annotations.Param;
 
@@ -67,10 +66,10 @@ public interface SysUserService extends IService<SysUser> {
     /**
      * 查询用户信息
      *
-     * @param loginVo
+     * @param userId
      * @return
      */
-    SysUser findUser (LoginVo loginVo);
+    SysUser findUser (String userId);
 
     /**
      * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.SysUserVO>>

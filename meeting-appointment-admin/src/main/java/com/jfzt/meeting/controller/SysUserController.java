@@ -1,15 +1,14 @@
 package com.jfzt.meeting.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.config.WxCpDefaultConfiguration;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.dto.AdminDTO;
 import com.jfzt.meeting.entity.vo.UserInfoVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
-import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.properties.JwtProperties;
 import com.jfzt.meeting.service.SysDepartmentUserService;
 import com.jfzt.meeting.service.SysUserService;
@@ -43,10 +42,9 @@ public class SysUserController {
     @Resource
     private SysUserService sysUserService;
     @Resource
-    private SysUserMapper sysUserMapper;
-    @Resource
     private RedisTemplate<String, Object> redisTemplate;
-
+    @Autowired
+    private WxCpDefaultConfiguration wxCpDefaultConfiguration;
     @Resource
     private SysDepartmentUserService sysDepartmentUserService;
     @Autowired
@@ -66,15 +64,14 @@ public class SysUserController {
         return Result.success(map);
     }
     /**
-     *构造oauth2授权的url连接.
+     * 构造oauth2授权的url连接.
+     * @return Result<UserInfoVO>
      */
     @GetMapping(value = "oauth2/authorize")
     public Result<UserInfoVO> authorize() throws WxErrorException {
         String url = sysUserService.getUrlCode();
-        log.info("urlsssssssssssssssssssssssss"+url);
         //获取登录token
         String accessToken = sysDepartmentUserService.findTocken();
-        log.info("accessTokenaaaaaaaaaaaaaaa"+accessToken);
         return null;
     }
 
@@ -109,16 +106,15 @@ public class SysUserController {
                 jwtProperties.getAdminSecretKey(),
                 jwtProperties.getAdminTtl(),
                 claims);
-        LambdaQueryWrapper<SysUser> sysUserLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        sysUserLambdaQueryWrapper.eq(SysUser::getUserId,wxUser.getUserId());
-        Integer userId = sysUserMapper.selectOne(sysUserLambdaQueryWrapper).getLevel();
+        Integer userId = sysUserService.findUser(wxUser.getUserId()).getLevel();
         UserInfoVO userInfo = UserInfoVO.builder()
                 .accessToken(token)
                 .userId(wxUser.getUserId())
                 .name(wxUser.getName())
                 .level(userId)
+                .url(wxCpDefaultConfiguration.getUrl())
                 .build();
-        redisTemplate.opsForValue().set("userInfo" + userInfo.getUserId(), JSONObject.toJSONString(userInfo), Duration.ofHours(24));
+        redisTemplate.opsForValue().set("userInfo:" + userInfo.getUserId(), JSONObject.toJSONString(userInfo), Duration.ofHours(24));
         return Result.success(userInfo);
     }
 

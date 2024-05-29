@@ -47,7 +47,7 @@ public class TokenInterceptor implements HandlerInterceptor {
         try {
             log.info("jwt校验:{}", token);
             Claims claims = JwtUtil.parseJWT(jwtProperties.getAdminSecretKey(), token);
-            JSONObject jsonObject = JSONObject.parseObject((String) redisTemplate.opsForValue().get("userInfo" + claims.get("sysUserId")));
+            JSONObject jsonObject = JSONObject.parseObject((String) redisTemplate.opsForValue().get("userInfo:" + claims.get("sysUserId")));
             Boolean flag = jsonObject.get(accessToken).equals(token);
             return flag;
             //3、通过，放行
