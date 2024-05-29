@@ -116,7 +116,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                         List<MeetingRoom> meetingRoomList = meetingRoomService
                                 .list(new LambdaQueryWrapper<MeetingRoom>()
                                         .eq(MeetingRoom::getId, meetingRecord.getMeetingRoomId()));
-                        if (meetingRoomList != null) {
+                        if (!meetingRoomList.isEmpty()) {
                             MeetingRoom meetingRoom = meetingRoomList.getFirst();
                             meetingRecordVO.setMeetingRoomName(meetingRoom.getRoomName());
                             meetingRecordVO.setLocation(meetingRoom.getLocation());
