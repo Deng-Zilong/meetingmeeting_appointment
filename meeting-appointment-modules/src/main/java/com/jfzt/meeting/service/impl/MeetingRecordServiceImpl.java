@@ -10,9 +10,11 @@ import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
+import com.jfzt.meeting.entity.vo.PeriodTimesVO;
 import com.jfzt.meeting.entity.vo.SysUserVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
+import com.jfzt.meeting.job.MeetingReminderScheduler;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
 import com.jfzt.meeting.mapper.MeetingRecordMapper;
 import com.jfzt.meeting.service.MeetingAttendeesService;
@@ -22,6 +24,7 @@ import com.jfzt.meeting.service.SysUserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -252,7 +255,10 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 recordVO.setAdminUserName(adminUser.getUserName());
             }
             // 设置参会人信息
-            List<String> userIds = attendeesMapper.selectUserIdsByRecordId(record.getId());
+            List<String> userIds = attendeesMapper.selectList(
+                            new LambdaQueryWrapper<MeetingAttendees>()
+                                    .eq(MeetingAttendees::getMeetingRecordId, record.getId()))
+                    .stream().map(MeetingAttendees::getUserId).collect(Collectors.toList());
             StringBuffer attendees = new StringBuffer();
             ArrayList<SysUserVO> users = new ArrayList<>();
             userService.getUserInfo(userIds, attendees, users);
@@ -301,7 +307,10 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                     recordVO.setAdminUserName(adminUser.getUserName());
                 }
                 // 设置参会人信息
-                List<String> userIds = attendeesMapper.selectUserIdsByRecordId(record.getId());
+                List<String> userIds = attendeesMapper.selectList(
+                                new LambdaQueryWrapper<MeetingAttendees>()
+                                        .eq(MeetingAttendees::getMeetingRecordId, record.getId()))
+                        .stream().map(MeetingAttendees::getUserId).collect(Collectors.toList());
                 StringBuffer attendees = new StringBuffer();
                 ArrayList<SysUserVO> users = new ArrayList<>();
                 userService.getUserInfo(userIds, attendees, users);
@@ -338,7 +347,10 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             throw new RRException("当前用户没有删除权限！", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
         }
         //判断用户是否为参会人
-        List<String> userIds = attendeesMapper.selectUserIdsByRecordId(meetingId);
+        List<String> userIds = attendeesMapper.selectList(
+                        new LambdaQueryWrapper<MeetingAttendees>()
+                                .eq(MeetingAttendees::getMeetingRecordId, meetingId))
+                .stream().map(MeetingAttendees::getUserId).toList();
         if (userIds.contains(userId)) {
             //删除
             meetingRecord.setIsDeleted(IS_DELETED);

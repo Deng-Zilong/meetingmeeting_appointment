@@ -305,7 +305,10 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 meetingRoomStatusVO.setMeetingEndTime(meetingRecord.getEndTime());
                 meetingRoomStatusVO.setMeetingStartTime(meetingRecord.getStartTime());
                 //插入参会人拼接字符串
-                List<String> userIds = attendeesMapper.selectUserIdsByRecordId(meetingRecord.getId());
+                List<String> userIds = attendeesMapper.selectList(
+                                new LambdaQueryWrapper<MeetingAttendees>()
+                                        .eq(MeetingAttendees::getMeetingRecordId, meetingRecord.getId()))
+                        .stream().map(MeetingAttendees::getUserId).toList();
                 StringBuffer attendees = new StringBuffer();
                 userService.getUserInfo(userIds, attendees, null);
                 meetingRoomStatusVO.setAttendees(attendees.toString());
