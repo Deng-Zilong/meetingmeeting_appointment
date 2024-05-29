@@ -13,16 +13,13 @@ import com.jfzt.meeting.entity.vo.MeetingRecordVO;
 import com.jfzt.meeting.entity.vo.SysUserVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
-import com.jfzt.meeting.job.MeetingRemindTask;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
 import com.jfzt.meeting.mapper.MeetingRecordMapper;
 import com.jfzt.meeting.service.MeetingAttendeesService;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MeetingRoomService;
 import com.jfzt.meeting.service.SysUserService;
-import com.jfzt.meeting.utils.TimerTaskUtil;
 import jakarta.annotation.Resource;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,9 +38,9 @@ import static com.jfzt.meeting.constant.MessageConstant.*;
  * @description 针对表【meeting_record(会议记录表)】的数据库操作Service实现
  * @since 2024-04-28 11:47:39
  */
-@Slf4j
 @Service
-public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, MeetingRecord> implements MeetingRecordService {
+public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, MeetingRecord>
+        implements MeetingRecordService {
 
     @Resource
     private MeetingAttendeesService meetingAttendeesService;
@@ -54,10 +51,12 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     @Resource
     private MeetingAttendeesMapper attendeesMapper;
 
+
     /**
+     * 获取当天用户参与的所有会议
+     *
      * @param userId 用户id
      * @return {@code List<MeetingRecordVO>}
-     * @description 获取当天用户参与的所有会议
      */
     @Override
     public List<MeetingRecordVO> getTodayMeetingRecord (String userId) {
@@ -90,7 +89,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             }
             MeetingRecordVO meetingRecordVO = new MeetingRecordVO();
             //通过会议id找到参会人列表
-            List<MeetingAttendees> attendeesList = meetingAttendeesService.list(new LambdaQueryWrapper<MeetingAttendees>().eq(MeetingAttendees::getMeetingRecordId, meetingRecord.getId()));
+            List<MeetingAttendees> attendeesList = meetingAttendeesService.list(
+                    new LambdaQueryWrapper<MeetingAttendees>()
+                            .eq(MeetingAttendees::getMeetingRecordId, meetingRecord.getId()));
             if (attendeesList.isEmpty()) {
                 //没有匹配的参会人，返回空对象，最后过滤
                 return null;
@@ -108,7 +109,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 //插入会议信息
                 BeanUtils.copyProperties(meetingRecord, meetingRecordVO);
                 //插入会议室信息
-                List<MeetingRoom> meetingRoomList = meetingRoomService.list(new LambdaQueryWrapper<MeetingRoom>().eq(MeetingRoom::getId, meetingRecord.getMeetingRoomId()));
+                List<MeetingRoom> meetingRoomList = meetingRoomService.
+                        list(new LambdaQueryWrapper<MeetingRoom>().eq(MeetingRoom::getId, meetingRecord.getMeetingRoomId()));
                 if (meetingRoomList != null) {
                     MeetingRoom meetingRoom = meetingRoomList.getFirst();
                     meetingRecordVO.setMeetingRoomName(meetingRoom.getRoomName());
@@ -129,19 +131,25 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     }
 
+
     /**
+     * 查询今日中心会议总次数
+     *
      * @return {@code Integer}
-     * @description 查询今日中心会议总次数
      */
     @Override
     public Integer getRecordNumber () {
-        return Math.toIntExact(this.baseMapper.selectCount(new LambdaQueryWrapper<MeetingRecord>().between(MeetingRecord::getStartTime, LocalDateTime.now().toLocalDate().atStartOfDay(), LocalDateTime.now().toLocalDate().atTime(23, 59, 59))));
+        return Math.toIntExact(this.baseMapper.selectCount(
+                new LambdaQueryWrapper<MeetingRecord>()
+                        .between(MeetingRecord::getStartTime, LocalDateTime.now().toLocalDate().atStartOfDay()
+                                , LocalDateTime.now().toLocalDate().atTime(23, 59, 59))));
     }
 
     /**
+     * 更新会议状态
+     *
      * @param meetingRecord 会议记录
      * @return {@code MeetingRecord}
-     * @description 更新会议状态
      */
     @Override
     public MeetingRecord updateRecordStatus (MeetingRecord meetingRecord) {
@@ -161,7 +169,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
-     * @description 更新今日所有会议状态
+     * 更新今日所有会议状态
      */
     @Override
     public void updateTodayRecordStatus () {
@@ -172,7 +180,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
         // 获取当天结束时间（23:59:59）
         LocalDateTime endOfDay = startOfDay.plusDays(1).minusNanos(1);
-        recordQueryWrapper.between(MeetingRecord::getStartTime, startOfDay, endOfDay).or().between(MeetingRecord::getEndTime, startOfDay, endOfDay);
+        recordQueryWrapper.between(MeetingRecord::getStartTime, startOfDay, endOfDay)
+                .or().between(MeetingRecord::getEndTime, startOfDay, endOfDay);
         recordQueryWrapper.and(queryWrapper -> queryWrapper.eq(MeetingRecord::getIsDeleted, NOT_DELETED));
         //展示未取消的会议
         recordQueryWrapper.and(queryWrapper -> queryWrapper.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START).or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING).or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_END));
@@ -184,9 +193,10 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
+     * 分页获取用户参与的所有会议
+     *
      * @param userId 用户id
      * @return {@code List<MeetingRecordVO>}
-     * @description 分页获取用户参与的所有会议
      */
     @Override
     public List<MeetingRecordVO> getAllRecordVoListPage (String userId, Long pageNum, Long pageSize) {
@@ -406,6 +416,45 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         // 更新MeetingAttendees列表
         meetingAttendeesService.saveBatch(attendeesList);
         return Result.success(UPDATE_SUCCESS);
+    }
+
+
+    @Override
+    public Result<List<PeriodTimesVO>> getTimePeriodTimes() {
+        ArrayList<PeriodTimesVO> list = new ArrayList<>();
+        LocalDateTime startTime = LocalDateTime.now().toLocalDate().atStartOfDay().plusHours(9);
+        LocalDateTime endTime = startTime.plusMinutes(30);
+        LocalDateTime startTimeAll = LocalDateTime.now().toLocalDate().atStartOfDay().minusDays(7);
+        LocalDateTime endTimeAll = LocalDateTime.now().toLocalDate().atStartOfDay();
+        List<MeetingRecord> records = lambdaQuery().between(MeetingRecord::getGmtCreate, startTimeAll, endTimeAll).list();
+        for (int i = 0; i < 18; i++) {
+
+            LocalDateTime finalStartTime = startTime;
+            LocalDateTime finalEndTime = endTime;
+            long count = records.stream().map(record -> {
+
+                LocalTime startTimes = record.getStartTime().toLocalTime();
+                LocalTime endTimes = record.getEndTime().toLocalTime();
+                if (finalStartTime.plusMinutes(1).toLocalTime().isAfter(startTimes) && finalStartTime.toLocalTime().isBefore(endTimes) ||
+                        finalEndTime.plusMinutes(1).toLocalTime().isAfter(startTimes) && finalEndTime.toLocalTime().isBefore(endTimes) ||
+                        finalStartTime.plusMinutes(1).toLocalTime().isAfter(startTimes) && finalEndTime.minusMinutes(1).toLocalTime().isBefore(endTimes)
+                ) {
+                    return record;
+                }
+                return null;
+            }).filter(Objects::nonNull).count();
+
+
+            list.add(PeriodTimesVO.builder()
+                    .count(count)
+                    .startTime(startTime)
+                    .endTime(endTime)
+                    .build());
+            startTime = startTime.plusMinutes(30);
+
+            endTime = endTime.plusMinutes(30);
+        }
+        return Result.success(list);
     }
 
 

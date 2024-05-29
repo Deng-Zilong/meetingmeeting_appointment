@@ -5,6 +5,7 @@ import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
+import com.jfzt.meeting.entity.vo.PeriodTimesVO;
 
 import java.util.List;
 import java.util.Objects;
@@ -88,4 +89,6 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      * @Param [meetingRecordDTO]
      */
     Result<List<MeetingRecordVO>> updateMeeting (MeetingRecordDTO meetingRecordDTO);
+
+    Result<List<PeriodTimesVO>> getTimePeriodTimes();
 }

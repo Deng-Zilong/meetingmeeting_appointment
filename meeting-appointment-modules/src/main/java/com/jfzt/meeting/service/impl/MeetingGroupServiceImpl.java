@@ -72,7 +72,9 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         // 查询当前用户参与过哪些群组
         List<UserGroup> groups = userGroupService.lambdaQuery().eq(UserGroup::getUserId, userId).list();
         List<Long> idList = groups.stream().map(UserGroup::getGroupId).toList();
-
+        if (idList.isEmpty()){
+            return Result.success();
+        }
         // 查询当前用户参与的所有群组
         Page<MeetingGroup> meetingGroupPage = this.baseMapper
                 .selectPage(new Page<>(pageNum, pageSize), new LambdaQueryWrapper<MeetingGroup>()

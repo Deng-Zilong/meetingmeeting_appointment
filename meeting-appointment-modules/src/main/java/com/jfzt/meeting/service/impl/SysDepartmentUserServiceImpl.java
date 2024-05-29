@@ -183,7 +183,6 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
                     childrenNode.setChildrenPart(getChildren(childrenNode, all));
                     // 获取部门用户
                     List<SysDepartmentUser> departmentUsers = sysDepartmentUserService.lambdaQuery()
-                            .select(SysDepartmentUser::getUserId)
                             .eq(SysDepartmentUser::getDepartmentId , childrenNode.getDepartmentId())
                             .list();
                     // 对每个部门用户进行操作
