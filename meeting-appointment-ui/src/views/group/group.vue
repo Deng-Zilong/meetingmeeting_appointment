@@ -2,7 +2,7 @@
     <div class="group">
         <div class="theme">
             <div class="left">
-                <el-input v-model="groupTitle" style="width: 240px" placeholder="请输入" />
+                <el-input v-model="groupTitle" style="width: 40rem" maxlength="15" placeholder="请输入" />
                 <div>群组名称</div>
             </div>
             <div class="center">
@@ -152,15 +152,16 @@ const handleCreateGroup = () => {
         userName: userInfo.value.name,
         users: groups.value,
     })
-        .then(async res => {
+        .then(res => {
             ElMessage.success('创建成功!');
             groupTitle.value = '';
             groupPeopleNames.value = '';
-            groups.value = [];
             // 重置页码
             page.value = 1;
             // 获取数据
-            await getDataOnScroll();
+            getDataOnScroll();
+            groups.value = [];
+            
         })
         .catch(err => { })
         .finally(() => {})
@@ -284,11 +285,11 @@ const updateGroupInfo = async (data: { id: string; groupName?: string; users?: [
             ElMessage.success('修改成功');
         })
         .catch(err => { })
-        .finally(async () => {
+        .finally(() => {
             // 重置页码
             page.value = 1;
             // 获取数据
-            await getDataOnScroll();
+            getDataOnScroll();
         })
 }
 /**
@@ -329,12 +330,12 @@ const handleDeleteMeeting = async (id: string,) => {
     })
         .then(() => {
             deleteMeetingGroup({ id })
-                .then(async res => {
+                .then(res => {
                     ElMessage.success('删除成功!');
                     // 重置页码
                     page.value = 1;
                     // 获取数据
-                    await getDataOnScroll();
+                    getDataOnScroll();
                 }).catch(err => { })
                 .finally(() => {
                     
@@ -408,10 +409,12 @@ const handleDeleteMeeting = async (id: string,) => {
 
         .right {
             transition: transform 0.2s ease;
-            user-select: none;
-
+            cursor: pointer;
             &:active {
                 transform: scale(0.96);
+            }
+            &:hover {
+                background: rgba(90, 149, 238, 0.6);
             }
         }
 
@@ -429,7 +432,7 @@ const handleDeleteMeeting = async (id: string,) => {
             color: #FFFFFF;
             border-radius: .5rem;
             background: #409EFF;
-            cursor: pointer;
+            user-select: none;
         }
     }
 

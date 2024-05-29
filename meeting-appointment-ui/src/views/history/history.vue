@@ -106,10 +106,9 @@
     import { cancelMeetingRecord, getHistoryList } from '@/request/api/history'
     import { meetingState } from '@/utils/types'
     
-    const userInfo = ref<any>(JSON.parse(localStorage.getItem('userInfo') as string));
     const router = useRouter();
     
-
+    const userInfo = ref<any>(JSON.parse(localStorage.getItem('userInfo') as string));
     const currentUserId = userInfo.value?.userId; // 当前登录人id
 
     const timelineRef = ref(null); // 获取dom节点
@@ -231,22 +230,8 @@
     );
 
     const handleEditMeeting = (item: any) => {
-        router.push({
-            path: 'meeting-appoint',
-            query: {
-                id: item.id,
-                meetingRoomId: item.meetingRoomId,
-                title: item.title,
-                description: item.description,
-                startTime: item.startTime,
-                endTime: item.endTime,
-                meetingRoomName: item.meetingRoomName,
-                status: item.status,
-                createdBy: item.createdBy,
-                userName: item.adminUserName,
-                users: JSON.stringify(item.users),
-            }
-        })
+        sessionStorage.setItem('meetingInfo', JSON.stringify(item))
+        router.push('/meeting-appoint')
     }
 
     /**
@@ -272,8 +257,6 @@
                 })
         })
         .catch(() => {})
-        // const {data: list, total} = await getData({userId: userInfo.value?.userId, page: 1, limit: limit.value});
-        // data.value = list;
     }
 
     let isTransmitMeeting = ref<boolean>(false);
@@ -284,7 +267,7 @@
      */
     const transmitMeeting = (item: any) => {
         address.value = 
-        `会议主题: ${item.title}\n发起人: ${item.adminUserName}\n会议日期: ${item.date}\n会议时间: ${item.time}\n会议地点: ${item.meetingRoomName}\nURL: http://llzzxx.cn/#/login`;
+        `会议主题: ${item.title}\n发起人: ${item.adminUserName}\n会议日期: ${item.date}\n会议时间: ${item.time}\n会议地点: ${item.meetingRoomName}\nURL:${userInfo.value.url}/#/login`;
         isTransmitMeeting.value = true;
         navigator.clipboard.writeText(address.value).then(() => {})
         .catch(() => {

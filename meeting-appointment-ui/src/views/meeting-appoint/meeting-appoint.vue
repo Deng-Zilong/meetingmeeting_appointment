@@ -46,7 +46,7 @@
                             placeholder="选择日期" />
                     </el-form-item>
                     <el-form-item label="当前可选地点" prop="meetingRoomId">
-                        <el-select v-model="formData.meetingRoomId" placeholder="请选择" @change="handleChangeRoom">
+                        <el-select v-model.string="formData.meetingRoomId" placeholder="请选择" @change="handleChangeRoom">
                             <el-option v-for="item in roomArr" :key="item.id" :label="item.roomName" :value="String(item.id)" />
                         </el-select>
                     </el-form-item>
@@ -111,36 +111,41 @@ const currentUserId = ref<string>(userInfo.value.userId);
 const isCreate = ref(true); // 是否是创建会议 true创建 false修改
 
 onMounted(() => {
-    if (routes.query?.id) {
+    // 获取会议相关参数
+    const meetingInfo = JSON.parse(sessionStorage.getItem('meetingInfo') as string);
+    // 历史记录修改
+    if (meetingInfo?.id) {
+        // 修改会议
         isCreate.value = false;
-        const { id, meetingRoomId, title, description, meetingRoomName, status, createdBy, adminUserName, startTime, endTime } = routes.query;
+        // 解构所需数据
+        const { id, meetingRoomId, title, description, meetingRoomName, status, createdBy, adminUserName, startTime, endTime, users } = meetingInfo;
     
-        const users:any = JSON.parse(routes.query.users as string);
-        const meetingPeople = Array.from(new Set(users?.map((el: any) => el.userName))).join(',');
-        addPersonForm.value.personIds = Array.from(new Set(users.map((el: any) => el.userId)));
+        const meetingPeople = Array.from(new Set(users?.map((el: any) => el.userName))).join(','); // 获取参会人名字并去重
+        addPersonForm.value.personIds = Array.from(new Set(users.map((el: any) => el.userId))); // 获取参会人id并去重 用于成员树回显
         // 重组 form 表单数据
         formData.value = {
-            id: id,
-            meetingRoomId,
-            title,
-            description,
-            startTime: dayjs(startTime as string).format('HH:mm'),
-            endTime: dayjs(endTime as string).format('HH:mm'),
-            meetingRoomName,
-            meetingPeople,
-            status,
-            createdBy,
-            adminUserName,
-            users,
-            date: dayjs(new Date()).format('YYYY-MM-DD'),
-            groupName: '',
+            id: id,             // 会议id
+            meetingRoomId: String(meetingRoomId),      // 会议室id
+            title,              // 会议名称
+            description,        // 会议描述
+            startTime: dayjs(startTime as string).format('HH:mm'), // 会议开始时间
+            endTime: dayjs(endTime as string).format('HH:mm'),     // 会议结束时间
+            meetingRoomName,     // 会议室名称
+            meetingPeople,       // 参会人名字
+            status,              // 会议状态
+            createdBy,           // 创建人id
+            adminUserName,       // 创建人名字
+            users,               // 参会人列表
+            date: dayjs(new Date()).format('YYYY-MM-DD'),  // 会议日期
+            groupName: '',       // 群组名称
         }
     }
 
-    // 会议室 处理传参数据
-    if ((routes.query?.meetingRoomId || routes.query?.startTime) && !routes.query?.id) {
-        formData.value.meetingRoomId = routes.query?.meetingRoomId ? routes.query.meetingRoomId : '';
-        formData.value.startTime = routes.query?.startTime ? routes.query?.startTime : '';
+    // 预约会议室 处理传参数据
+    if ((meetingInfo?.meetingRoomId || meetingInfo?.startTime) && !meetingInfo?.id) {
+        const { meetingRoomId, startTime } = meetingInfo;
+        formData.value.meetingRoomId = meetingRoomId ? meetingRoomId : '';
+        formData.value.startTime = startTime ? startTime : '';
     }
     // 获取当前可选时间
     minStartTime.value = dayjs(new Date()).format('HH:m');
@@ -192,13 +197,13 @@ let addPersonForm = ref<any>({
  */
 const getGroupList = () => {
     getMeetingGroupList({userId: userInfo.value.userId, pageNum: 1, pageSize: 1000})
-            .then(res => {
-                addPersonForm.value.list = res.data.map((item: any) => {
-                    item.userName = item.groupName;
-                    return item
-                });
-            })
-            .catch((err) => {})
+        .then(res => {
+            addPersonForm.value.list = res.data.map((item: any) => {
+                item.userName = item.groupName;
+                return item
+            });
+        })
+        .catch((err) => {})
 }
 
 /**
@@ -256,7 +261,6 @@ const handleAvailableMeetingRooms = (startTime: string, endTime: string) => {
     })
     .then(res => {
         roomArr.value = res.data;
-        formData.value.meetingRoomId = '';
     })
     .catch(err => {})
 }

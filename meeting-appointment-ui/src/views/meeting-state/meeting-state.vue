@@ -193,13 +193,12 @@ const selectTime = (item: any) => {
   if ([0, 1].includes(item.state)) {
     return;
   } else {
-    router.push({
-      path: '/meeting-appoint',
-      query: {
+    const meetingInfo = {
         meetingRoomId: currentMeetingId.value,  // 将会议室id传到 预约页面
         startTime: item.time  // 将点击的时间点传到 预约页面
-      }
-    })
+    }
+    sessionStorage.setItem('meetingInfo', JSON.stringify(meetingInfo));
+    router.push('/meeting-appoint');
   }
 }
 
@@ -263,6 +262,8 @@ watch(() => router.currentRoute.value.query, (newValue: any) => {
           flex-direction: column;
           justify-content: space-around;
           margin-right: 10px;
+          color: #a8abb2;
+          cursor: pointer;
         }
       }
 
