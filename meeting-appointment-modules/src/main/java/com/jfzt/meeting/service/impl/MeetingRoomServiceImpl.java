@@ -101,8 +101,10 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
             }
         }
-        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(sysUser.getLevel()) || MessageConstant.ADMIN_LEVEL.equals(sysUser.getLevel())) {
-            if (meetingRoom.getRoomName().isEmpty() || meetingRoom.getLocation().isEmpty() || meetingRoom.getCapacity() == null) {
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(sysUser.getLevel())
+                || MessageConstant.ADMIN_LEVEL.equals(sysUser.getLevel())) {
+            if (meetingRoom.getRoomName().isEmpty() || meetingRoom.getLocation().isEmpty()
+                    || meetingRoom.getCapacity() == null) {
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
             }
             int result = meetingRoomMapper.insert(meetingRoom);
@@ -121,7 +123,8 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      */
     @Override
     public Result<Integer> deleteMeetingRoom (Long id, Integer currentLevel) {
-        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel) || MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)
+                || MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
             // 删除会议室
             if (id != null) {
                 int result = meetingRoomMapper.deleteById(id);
@@ -156,7 +159,8 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
         }
         // 获取当前登录用户的权限等级
-        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(meetingRoomDTO.getCurrentLevel()) || MessageConstant.ADMIN_LEVEL.equals(meetingRoomDTO.getCurrentLevel())) {
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(meetingRoomDTO.getCurrentLevel())
+                || MessageConstant.ADMIN_LEVEL.equals(meetingRoomDTO.getCurrentLevel())) {
             int row = meetingRoomMapper.updateStatus(meetingRoomDTO.getId(), meetingRoomDTO.getStatus());
             if (row > 0) {
                 return Result.success(row);
@@ -176,8 +180,9 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     public Result<List<Long>> selectUsableRoom (Integer currentLevel) {
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel) || MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
             List<MeetingRoom> roomList = meetingRoomMapper.selectList(new QueryWrapper<>());
-            List<Long> collect = roomList.stream().filter(
-                            room -> MEETINGROOM_STATUS_PAUSE.equals(room.getStatus()))
+            List<Long> collect = roomList
+                    .stream()
+                    .filter(room -> MEETINGROOM_STATUS_PAUSE.equals(room.getStatus()))
                     .map(MeetingRoom::getId)
                     .collect(Collectors.toList());
             return Result.success(collect);
@@ -212,7 +217,8 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             //遍历七天
             for (int i = 0; i < 7; i++) {
                 // 跳过周末
-                if (startTime.toLocalDate().getDayOfWeek() == DayOfWeek.SATURDAY || startTime.toLocalDate().getDayOfWeek() == DayOfWeek.SUNDAY) {
+                if (startTime.toLocalDate().getDayOfWeek() == DayOfWeek.SATURDAY
+                        || startTime.toLocalDate().getDayOfWeek() == DayOfWeek.SUNDAY) {
                     startTime = startTime.plusDays(1);
                     endTime = endTime.plusDays(1);
                 }
@@ -224,11 +230,14 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                     count = count + meetingRecordList.stream().filter(record -> {
                         //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
                         return Objects.equals(record.getMeetingRoomId(), meetingRoom.getId())
-                                && (record.getStartTime().isAfter(finalStartTime.minusSeconds(1)) && record.getStartTime().isBefore(finalEndTime)
+                                && (record.getStartTime().isAfter(finalStartTime.minusSeconds(1))
+                                && record.getStartTime().isBefore(finalEndTime)
                                 //结束时间在时间段内 前不含后含  8-9属于8.5-9不属于9-9.5
-                                || record.getEndTime().isAfter(finalStartTime) && record.getEndTime().isBefore(finalEndTime.plusSeconds(1))
+                                || record.getEndTime().isAfter(finalStartTime)
+                                && record.getEndTime().isBefore(finalEndTime.plusSeconds(1))
                                 //时间段包含在开始时间(含)和结束时间(含)之间    8-9 属于8-8.5属于8.5-9
-                                || record.getStartTime().isBefore(finalStartTime.plusSeconds(1)) && record.getEndTime().isAfter(finalEndTime.minusSeconds(1)));
+                                || record.getStartTime().isBefore(finalStartTime.plusSeconds(1))
+                                && record.getEndTime().isAfter(finalEndTime.minusSeconds(1)));
                     }).count();
                     //被占用，总数加
                     log.info("时间段：{}--{},count:{}", startTime, endTime, count);
@@ -321,7 +330,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         //每段30分钟遍历时间，在当前时间之前的时间段状态为0已过期
         for (int i = 0; i < 30; i++) {
             //时间段开始在当前时间前
-            if (now.isAfter(startTime)) {
+            if (now.isAfter(endTime)) {
                 timeStatus.add(i, TIME_PERIOD_OVERDUE);
             } else {
                 //之后的时间，判断是否有会议的开始时间或结束时间包含在里面，有的话且包含所有的会议室则为1已预订
@@ -346,7 +355,9 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                         .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING));
                 List<MeetingRecord> meetingRecords = meetingRecordService.list(recordQueryWrapper);
                 //根据会议室id收集获得占用不同会议室的数量
-                long size = meetingRecords.stream().collect(Collectors.groupingBy(MeetingRecord::getMeetingRoomId)).size();
+                long size = meetingRecords.stream()
+                        .collect(Collectors.groupingBy(MeetingRecord::getMeetingRoomId))
+                        .size();
                 //获取可使用的会议室总数
                 long count = this.count(new LambdaQueryWrapper<MeetingRoom>()
                         .eq(MeetingRoom::getIsDeleted, NOT_DELETED)
@@ -381,11 +392,10 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startTime = LocalDateTime.of(date, LocalTime.of(8, 0));
         LocalDateTime endTime = startTime.plusMinutes(30);
-        //        List<Integer> timeStatus = new LinkedList<>();
         for (int i = 0; i < 30; i++) {
             TimePeriodStatusVO timePeriodStatusVO = new TimePeriodStatusVO();
             //判断是否过期
-            if (now.isAfter(startTime)) {
+            if (now.isAfter(endTime)) {
                 timePeriodStatusVO.setStartTime(startTime);
                 timePeriodStatusVO.setEndTime(endTime);
                 timePeriodStatusVO.setStatus(TIME_PERIOD_OVERDUE);
