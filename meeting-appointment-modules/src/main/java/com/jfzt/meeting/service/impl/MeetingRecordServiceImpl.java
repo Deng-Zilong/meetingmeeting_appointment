@@ -14,7 +14,6 @@ import com.jfzt.meeting.entity.vo.PeriodTimesVO;
 import com.jfzt.meeting.entity.vo.SysUserVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
-import com.jfzt.meeting.job.MeetingReminderScheduler;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
 import com.jfzt.meeting.mapper.MeetingRecordMapper;
 import com.jfzt.meeting.service.MeetingAttendeesService;
@@ -24,7 +23,6 @@ import com.jfzt.meeting.service.SysUserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

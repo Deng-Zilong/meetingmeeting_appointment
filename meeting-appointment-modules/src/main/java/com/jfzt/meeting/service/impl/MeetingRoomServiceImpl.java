@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MeetingRecordStatusConstant;
 import com.jfzt.meeting.constant.MessageConstant;
+import com.jfzt.meeting.entity.MeetingAttendees;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.SysUser;

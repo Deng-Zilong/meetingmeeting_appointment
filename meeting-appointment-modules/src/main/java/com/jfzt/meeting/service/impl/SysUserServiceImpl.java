@@ -232,7 +232,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     @Override
     public String getUrlCode() {
         WxCpTpOAuth2ServiceImpl wxCpTpOAuth2Service = new WxCpTpOAuth2ServiceImpl(wxCpTpService);
-        String url = wxCpTpOAuth2Service.buildAuthorizeUrl(wxCpDefaultConfiguration.getUrl(),wxCpDefaultConfiguration.getState(),wxCpDefaultConfiguration.getScope());
+        String url = wxCpTpOAuth2Service.buildAuthorizeUrl(wxCpDefaultConfiguration.getUrl()+"/#/home",wxCpDefaultConfiguration.getState(),wxCpDefaultConfiguration.getScope());
         return url;
     }
 }

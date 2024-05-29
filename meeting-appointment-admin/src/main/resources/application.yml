@@ -64,7 +64,7 @@ qiyewx:
   corpid: wwfa655ac032fa1cff
   corpsecret: RMwzcCbnfM37ZY4_mkvgb-AKh61rS-i3NUB7sngsTP0
   agentId: 1000021
-  url: http://172.17.34.48:32375/#/home
+  url: http://172.17.34.48:32375
   #回调配置
   token: 9zTIV
   encodingAESKey: fha6hIaBwGCkU3R4IgV2SRHOCYd5EmVVVrKq71HqSQX
