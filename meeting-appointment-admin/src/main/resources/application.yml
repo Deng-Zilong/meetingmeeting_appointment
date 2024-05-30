@@ -62,7 +62,7 @@ sky:
 # 企业微信配置
 qiyewx:
   corpid: wwfa655ac032fa1cff
-  corpsecret: uZongcdBQh3eOrsos2x910dVA2gMtE4KFG7KP0ewfUc
+  corpsecret: RMwzcCbnfM37ZY4_mkvgb-AKh61rS-i3NUB7sngsTP0
   agentId: 1000021
   url: http://172.17.34.48:32375
   #回调配置

@@ -89,6 +89,9 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      * @Param [meetingRecordDTO]
      */
     Result<List<MeetingRecordVO>> updateMeeting (MeetingRecordDTO meetingRecordDTO);
-
+    /**
+     * @Description 统计七日内各时间段预约频率
+     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.PeriodTimesVO>>
+     */
     Result<List<PeriodTimesVO>> getTimePeriodTimes();
 }

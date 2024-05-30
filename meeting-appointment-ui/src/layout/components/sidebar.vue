@@ -45,14 +45,15 @@
         opacity: 1;
         background: #FFFFFF;
         .menu-item {
-            margin-top: 1rem;
+            margin-top: .6rem;
         }
         .menu-item img {
             margin-right: .625rem;
+            padding: 0 .625rem;
         }
         .menu-item span{
-            font-size: 1rem;
-            font-weight: 600;
+            font-size: 1.1rem;
+            font-weight: 400;
             line-height: normal;
             letter-spacing: 0.05em;
             color: #0256FF;

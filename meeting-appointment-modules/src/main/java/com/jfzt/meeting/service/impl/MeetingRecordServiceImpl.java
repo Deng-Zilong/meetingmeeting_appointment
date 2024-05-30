@@ -449,8 +449,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         }
         // 使用meetingRecord中的数据更新数据库中的数据
         updateById(meetingRecord);
-        List<MeetingAttendees> meetingAttendees = meetingAttendeesService.
-                lambdaQuery()
+        List<MeetingAttendees> meetingAttendees = meetingAttendeesService.lambdaQuery()
                 .eq(meetingRecord.getId() != null, MeetingAttendees::getMeetingRecordId, meetingRecord.getId())
                 .list();
         attendeesMapper.deleteBatchIds(meetingAttendees);
@@ -461,13 +460,17 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                         .builder()
                         .userId(user.getUserId())
                         .meetingRecordId(meetingRecord.getId())
-                        .build()).collect(Collectors.toList());
+                        .build())
+                .collect(Collectors.toList());
         // 更新MeetingAttendees列表
         meetingAttendeesService.saveBatch(attendeesList);
         return Result.success(UPDATE_SUCCESS);
     }
 
-
+    /**
+     * @Description 统计七日内各时间段预约频率
+     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.PeriodTimesVO>>
+     */
     @Override
     public Result<List<PeriodTimesVO>> getTimePeriodTimes () {
         ArrayList<PeriodTimesVO> list = new ArrayList<>();
@@ -492,7 +495,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 }
                 return null;
             }).filter(Objects::nonNull).count();
-
 
             list.add(PeriodTimesVO.builder()
                     .count(count)

@@ -2,6 +2,9 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-weight: 350;
+  font-style: normal;
+  font-family: Noto Sans SC, serif;
 }
 
 /* 滚动条样式 不占位置 */
