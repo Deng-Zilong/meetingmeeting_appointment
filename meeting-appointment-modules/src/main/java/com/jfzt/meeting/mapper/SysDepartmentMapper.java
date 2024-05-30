@@ -2,6 +2,7 @@ package com.jfzt.meeting.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.jfzt.meeting.entity.SysDepartment;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
 
@@ -20,6 +21,12 @@ public interface SysDepartmentMapper extends BaseMapper<SysDepartment> {
      * @param sysDepartmentLists
      */
     void insertAll(List<SysDepartment> sysDepartmentLists);
+
+    /**
+     * 删除非0的部门
+     */
+    @Delete("delete from sys_department where department_id !=0")
+    void deleteAll();
 }
 
 

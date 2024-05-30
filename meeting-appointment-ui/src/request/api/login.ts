@@ -10,6 +10,11 @@ export const qwLogin = (data: {code: string}) => {
     return http.get("/meeting/user/info", data)
 }
 
+// 企业微信扫码登录
+export const qwLogins = () => {
+    return http.get("/meeting/user/infos")
+}
+
 // 账号密码登录
 export const Login = (data: {name: string, password: string, uuid: string, code: string}) => {
     return http.post("/meeting/user/login", data)
