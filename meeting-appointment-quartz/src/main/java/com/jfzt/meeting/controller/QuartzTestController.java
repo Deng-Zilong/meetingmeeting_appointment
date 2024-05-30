@@ -93,12 +93,11 @@ public class QuartzTestController {
                     log.info("新增用户");
                     WxCpUserServiceImpl wxCpUserService = new WxCpUserServiceImpl(wxCpService);
                     WxCpUser wxCpUser = wxCpUserService.getById(callBackParam.getAllFieldsMap().get("UserID").toString());
-                    log.info("11111111111111111111111111111111"+wxCpUser);
                     SysUser sysUser = new SysUser();
                     sysUser.setUserId(callBackParam.getAllFieldsMap().get("UserID").toString());
                     sysUser.setUserName(wxCpUser.getName());
                     sysUser.setLevel(3);
-                    sysUser.setPassword(EncryptUtils.encrypt("Aa111111"));
+                    sysUser.setPassword(EncryptUtils.encrypt(EncryptUtils.md5encrypt("Aa111111")));
                     sysUserMapper.insert(sysUser);
                     SysDepartmentUser sysDepartmentUser = new SysDepartmentUser();
                     sysDepartmentUser.setUserId(callBackParam.getAllFieldsMap().get("UserID").toString());
