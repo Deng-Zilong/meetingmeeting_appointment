@@ -20,7 +20,10 @@ public interface MeetingRoomMapper extends BaseMapper<MeetingRoom> {
      * @param status 会议室状态（0暂停使用,1可使用/空闲 2为使用中不保存至数据库，实时获取）
      * @return java.lang.Integer
      */
-    Integer updateStatus(@Param("id") Long id, @Param("status") Integer status);
+    Integer updateStatus (@Param("id") Long id, @Param("status") Integer status);
+
+    @Select("select * from meeting_room where id = #{roomId}")
+    MeetingRoom getByRoomId (Long roomId);
 
 }
 
