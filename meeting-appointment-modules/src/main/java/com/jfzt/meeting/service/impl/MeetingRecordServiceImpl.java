@@ -238,11 +238,10 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             // 设置会议信息
             BeanUtils.copyProperties(record, recordVO);
             // 设置会议室信息
-            MeetingRoom meetingRoom = meetingRoomService.getById(record.getMeetingRoomId());
-            if (meetingRoom != null) {
-                recordVO.setMeetingRoomName(meetingRoom.getRoomName());
-                recordVO.setLocation(meetingRoom.getLocation());
-            }
+            //不使用逻辑删除
+            MeetingRoom meetingRoom = meetingRoomMapper.getByRoomId(record.getMeetingRoomId());
+            recordVO.setMeetingRoomName(meetingRoom.getRoomName());
+            recordVO.setLocation(meetingRoom.getLocation());
             // 设置创建人信息
             SysUser adminUser = userService.getOne(new LambdaQueryWrapper<SysUser>()
                     .eq(SysUser::getUserId, record.getCreatedBy()));
@@ -291,11 +290,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 // 设置会议信息
                 BeanUtils.copyProperties(record, recordVO);
                 // 设置会议室信息
-                MeetingRoom meetingRoom = meetingRoomService.getById(record.getMeetingRoomId());
-                if (meetingRoom != null) {
-                    recordVO.setMeetingRoomName(meetingRoom.getRoomName());
-                    recordVO.setLocation(meetingRoom.getLocation());
-                }
+                //不使用逻辑删除
+                MeetingRoom meetingRoom = meetingRoomMapper.getByRoomId(record.getMeetingRoomId());
                 // 设置创建人信息
                 SysUser adminUser = userService.getById(record.getCreatedBy());
                 if (adminUser != null) {
