@@ -1,6 +1,5 @@
 package com.jfzt.meeting.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.SysDepartment;
@@ -63,6 +62,9 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     @Resource
     private SysUserService sysUserService;
 
+    String s ="0";
+    String tes = "errcode";
+
 
 
     @Override
@@ -80,19 +82,21 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
         tokenCode.put("code", code);
         String responseAll = httpClientUtil.doGet("https://qyapi.weixin.qq.com/cgi-bin/auth/getuserinfo", tokenCode);
         JSONObject responseAllList = JSONObject.fromObject(responseAll);
+        if(!s.equals(responseAllList.getString(tes))){
+            log.error("请求企业微信失败");
+            throw new RRException(responseAllList.toString());
+        }
         String userid = responseAllList.getString("userid");
         //获取用户详细信息
         WxCpUserServiceImpl wxCpUserService = new WxCpUserServiceImpl(wxCpService);
         return wxCpUserService.getById(userid);
     }
 
+
     @Override
     public Long findDepartment() throws WxErrorException {
         WxCpDepartmentServiceImpl wxCpDepartmentService = new WxCpDepartmentServiceImpl(wxCpService);
         List<WxCpDepart> listDepartmentList = wxCpDepartmentService.list(0L);
-        if (1==1){
-            throw  new RRException(listDepartmentList.toString());
-        }
         List<SysDepartment> sysDepartmentList = sysDepartmentMapper.selectList(null);
         if (sysDepartmentList.size() != 0){
             return (long) sysDepartmentList.size();
