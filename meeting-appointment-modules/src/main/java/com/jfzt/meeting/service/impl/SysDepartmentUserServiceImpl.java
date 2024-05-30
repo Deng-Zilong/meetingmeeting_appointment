@@ -73,18 +73,13 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     @Override
     public WxCpUser findUserName(String accessToken, String code) throws WxErrorException {
         //获取用户user_ticket
-        String s ="0";
-        String tes = "errcode";
         HttpClientUtil httpClientUtil = new HttpClientUtil();
         HashMap<String, String> tokenCode = new HashMap<>(2);
         tokenCode.put("access_token", accessToken);
         tokenCode.put("code", code);
         String responseAll = httpClientUtil.doGet("https://qyapi.weixin.qq.com/cgi-bin/auth/getuserinfo", tokenCode);
+
         JSONObject responseAllList = JSONObject.fromObject(responseAll);
-        if(!s.equals(responseAllList.getString(tes))){
-            log.error("请求企业微信失败");
-            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_C00011);
-        }
         String userid = responseAllList.getString("userid");
         //获取用户详细信息
         WxCpUserServiceImpl wxCpUserService = new WxCpUserServiceImpl(wxCpService);
@@ -95,19 +90,25 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     public Long findDepartment() throws WxErrorException {
         WxCpDepartmentServiceImpl wxCpDepartmentService = new WxCpDepartmentServiceImpl(wxCpService);
         List<WxCpDepart> listDepartmentList = wxCpDepartmentService.list(0L);
+        log.info("listDepartmentList"+listDepartmentList);
         List<SysDepartment> sysDepartmentList = sysDepartmentMapper.selectList(null);
+        if (1==1){
+            throw new RuntimeException(sysDepartmentList.toString());
+        }
         if (sysDepartmentList.size() != 0){
             return (long) sysDepartmentList.size();
         }
         //存入信息
         List<SysDepartment> sysDepartmentLists = new ArrayList<>();
         for (WxCpDepart listDepartment : listDepartmentList) {
+            log.info("listDepartment"+listDepartment);
             SysDepartment sysDepartment = new SysDepartment();
             sysDepartment.setDepartmentId(listDepartment.getId());
             sysDepartment.setDepartmentName(listDepartment.getName());
             sysDepartment.setParentId(listDepartment.getParentId());
             sysDepartmentLists.add(sysDepartment);
         }
+
         sysDepartmentMapper.insertAll(sysDepartmentLists);
         return (long) listDepartmentList.size();
     }
