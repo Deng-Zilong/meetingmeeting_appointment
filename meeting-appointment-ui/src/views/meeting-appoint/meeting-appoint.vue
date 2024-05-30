@@ -92,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue'
+import { onMounted, reactive, ref, watch, onUnmounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import type { ComponentSize, FormInstance, FormRules } from 'element-plus'
 import { ElMessage, dayjs } from 'element-plus'
@@ -404,6 +404,10 @@ const submitForm = (formEl: FormInstance | undefined) => {
     })
 }
 
+onBeforeUnmount(() => {
+    // 清除sessionStorage
+    sessionStorage.clear();
+})
 </script>
 
 <style lang="scss" scoped>
