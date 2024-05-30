@@ -79,9 +79,6 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
         tokenCode.put("access_token", accessToken);
         tokenCode.put("code", code);
         String responseAll = httpClientUtil.doGet("https://qyapi.weixin.qq.com/cgi-bin/auth/getuserinfo", tokenCode);
-        if (1==1){
-            throw new RRException(responseAll);
-        }
         JSONObject responseAllList = JSONObject.fromObject(responseAll);
         String userid = responseAllList.getString("userid");
         //获取用户详细信息
