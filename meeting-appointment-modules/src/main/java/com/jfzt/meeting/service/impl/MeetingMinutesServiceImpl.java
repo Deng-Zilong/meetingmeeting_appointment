@@ -2,6 +2,7 @@ package com.jfzt.meeting.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingMinutes;
 import com.jfzt.meeting.entity.MeetingMinutesVO;
 import com.jfzt.meeting.entity.MeetingRecord;
@@ -62,6 +63,24 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
             }
             return meetingMinutesVO;
         }).toList();
+    }
+    /**
+     * @Description 保存会议纪要
+     * @Param [meetingMinutes]
+     * @return com.jfzt.meeting.common.Result<java.lang.Object>
+     */
+    @Override
+    public Result<Object> saveOrUpdateMinutes(MeetingMinutes meetingMinutes) {
+        MeetingMinutes selfMinutes = lambdaQuery().eq(MeetingMinutes::getMeetingRecordId, meetingMinutes.getMeetingRecordId())
+                .eq(MeetingMinutes::getUserId, meetingMinutes.getUserId())
+                .one();
+        if (selfMinutes == null){
+            save(meetingMinutes);
+        }else {
+            meetingMinutes.setId(selfMinutes.getId());
+            updateById(meetingMinutes);
+        }
+        return Result.success();
     }
 
 }
