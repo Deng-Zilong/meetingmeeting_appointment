@@ -90,7 +90,7 @@ public class MeetingRecordController {
      * @return com.jfzt.meeting.common.Result<java.util.Objects>
      * @Description 新增会议
      */
-    @PostMapping("/index/add-meeting-record")
+    @PostMapping("/index/meeting-record")
     public Result<Objects> addMeetingRecord (@RequestBody MeetingRecordDTO meetingRecordDTO) {
         return meetingRecordService.addMeeting(meetingRecordDTO);
     }
@@ -100,7 +100,7 @@ public class MeetingRecordController {
      * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingRecordVO>>
      * @Description 更新会议
      */
-    @PutMapping("/index/update-meeting-record")
+    @PutMapping("/index/meeting-record")
     public Result<List<MeetingRecordVO>> updateMeetingRecord (@RequestBody MeetingRecordDTO meetingRecordDTO) {
         return meetingRecordService.updateMeeting(meetingRecordDTO);
     }

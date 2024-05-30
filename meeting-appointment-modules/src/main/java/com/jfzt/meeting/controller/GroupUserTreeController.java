@@ -30,7 +30,7 @@ public class GroupUserTreeController {
      * @Param [userName]
      * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.SysDepartment>>
      */
-    @GetMapping("/get-group-user-tree")
+    @GetMapping("/group-user-tree")
     public Result<List<SysDepartment>> getGroupUserTree(){
         return sysDepartmentUserService.gainUsers();
     }

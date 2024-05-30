@@ -17,17 +17,14 @@ import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
 import com.jfzt.meeting.mapper.MeetingRecordMapper;
 import com.jfzt.meeting.service.*;
-import com.jfzt.meeting.utils.WxUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -426,7 +423,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .gt(MeetingRecord::getEndTime, meetingRecord.getEndTime().minusSeconds(1)));
         List<MeetingRecord> meetingRecords = list(queryWrapper);
         if (!meetingRecords.isEmpty()) {
-            throw new RRException("当前会议室已被占用！", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+            throw new RRException(OCCUPIED, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
         }
         // 保存meetingRecord
         save(meetingRecord);
