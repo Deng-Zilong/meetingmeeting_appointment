@@ -1,60 +1,26 @@
 <template>
   <div class="manage">
-    <div class="theme">
-
-      <div class="theme-left" :style="{ width: userInfo.level === 0 ? '84%' : '100%'}">
-        <div class="left-common meeting-set">
-          <el-checkbox-group v-model="checkList" class="my-main-scrollbar" :style="{ width: userInfo.level === 0 ? '88%' : '91.8%'}">
-            <el-checkbox data-hover-text="右键可以删除会议室" v-for="item in useMeetingStatus.centerRoomName" :label="item.roomName" :value="item.id"
-             @change="changeCheckAll(item)" @contextmenu.prevent="onRightClick(item)" />
-          </el-checkbox-group>
-          <!-- <el-input class="no-room" placeholder="暂无会议室" v-if="checkItem==''"></el-input> -->
-          <div class="text-button" @click="addMeetingRoom">新增会议室</div>
-          <el-dialog v-model="addMeetingVisible" title="新增会议室" width="30%">
-            <el-form :model="addMeetingForm">
-              <el-form-item label="会议室名称">
-                <el-input v-model="addMeetingForm.roomName" />
-              </el-form-item>
-              <el-form-item label="会议室位置">
-                <el-input v-model="addMeetingForm.location" />
-              </el-form-item>
-              <el-form-item label="会议室容量">
-                <el-input type="number" min="1" v-model="addMeetingForm.capacity" />
-              </el-form-item>
-            </el-form>
-            <template #footer>
-            <div class="dialog-footer">
-              <el-button @click="addMeetingVisible = false">取消</el-button>
-              <el-button type="primary" @click="addMeetingInfo()">
-                确认
-              </el-button>
-            </div>
-          </template>
-          </el-dialog>
-        </div>
-        <div class="left-common meeting-bulletin">
-          <el-input v-model="input" placeholder="请输入公告" :style="{ width: userInfo.level === 0 ? '88%' : '91.8%'}" />
-          <div class="text-button" @click="uploadBulletin(input)">上传新公告</div>
-        </div>
+    <div class="manage-theme">
+      <div class="theme-left">
+          <el-input v-model="input" placeholder="请输入公告" />
+          <el-button type="primary" @click="uploadBulletin(input)">上传新公告</el-button>
       </div>
-
+      <el-button class="theme-mid" type="primary">更新人员</el-button>
       <div class="theme-right" v-if="userInfo.level === 0">
         <el-tooltip content="新增管理员" placement="top" effect="light">
-          <el-icon class="plus-icon" @click="handleAddManage"><Plus /></el-icon>
+          <el-button type="primary" @click="handleAddManage">增加管理员</el-button>
         </el-tooltip>
-        <!-- 添加群组成员弹窗 -->
-        <personTreeDialog 
-            v-model="addGroupVisible" 
-            title="添加管理员"
-            :type="type"
-            @close-dialog="closeAddPersonDialog" 
-            @submit-dialog="handleCheckedPerson" />
-            
+         <!-- 添加群组成员弹窗 -->
+         <personTreeDialog 
+          v-model="addGroupVisible" 
+          title="添加管理员"
+          :type="type"
+          @close-dialog="closeAddPersonDialog" 
+          @submit-dialog="handleCheckedPerson" 
+        />
         <el-popover trigger="hover" :width="180" :popper-style="{ maxHeight: '250px', overflow: 'auto'}">
           <template #reference>
-            <div class="operate-people">
-              操作管理员<el-icon><arrow-down /></el-icon>
-            </div>
+              <el-button type="primary">删除管理员</el-button>
           </template>
           <div class="people-items" v-if="manageList?.length" v-for="(item, index) in manageList">
             <span>{{ item.userName }}</span>
@@ -64,49 +30,62 @@
         </el-popover>
       </div>
     </div>
-    <div class="manage-table">
-      <div class="table-th">
-        <div class="title">会议室名称</div>
-        <div class="title">会议时间</div>
-        <div class="title">会议主题</div>
-        <div class="title attend-cell">参会人员</div>
-        <div class="title">会议状态</div>
-        <div class="title">其他</div>
-      </div>
-      <div class="table-container">
-        <el-timeline ref="timelineRef">
-          <el-timeline-item  placement="top" v-for="(value, index) in manageData">
-            <div class="table-left">
-              <p>{{ value.month }}月</p>
-              <p>{{ value.day }}</p>
-            </div>
-            <div class="table-main">
-              <div class="table-tr" v-for="(item, index) in value.list">
-                <div class="tr-cell">{{ item.meetingRoomName }}</div>
-                <div class="tr-cell">{{ item.time }}</div>
-                <div class="tr-cell">{{ item.title }}</div>
-                <div class="tr-cell attend-cell">
-                    <el-popover
-                        placement="bottom"
-                        :disabled="item.attendees?.length < 33"
-                        :width="400"
-                        trigger="hover"
-                        :content="item.attendees"
-                    >
-                        <template #reference>
-                           {{ item.attendees }}
-                        </template>
-                    </el-popover>
+    <el-tabs v-model="activeName" class="manage-tabs" @tab-click="handleClick">
+      
+      <el-tab-pane label="会议列表" name="first">
+        <div class="tab-table">
+          <div class="table-th">
+            <div class="title">会议室名称</div>
+            <div class="title">会议时间</div>
+            <div class="title">会议主题</div>
+            <div class="title attend-cell">参会人员</div>
+            <div class="title">会议状态</div>
+            <div class="title">其他</div>
+          </div>
+          <div class="table-container">
+            <el-timeline ref="timelineRef">
+              <el-timeline-item  placement="top" v-for="(value, index) in manageData">
+                <div class="table-left">
+                  <p>{{ value.month }}月</p>
+                  <p>{{ value.day }}</p>
                 </div>
-                <div class="tr-cell">{{ item.stateValue }}</div>
-                <div class="tr-cell"></div>
-              </div>
-            </div>
-          </el-timeline-item>
-          <div class="loading" v-show="isLoading">数据加载中......</div>
-        </el-timeline>
-      </div>
-    </div>
+                <div class="table-main">
+                  <div class="table-tr" v-for="(item, index) in value.list">
+                    <div class="tr-cell">{{ item.meetingRoomName }}</div>
+                    <div class="tr-cell">{{ item.time }}</div>
+                    <div class="tr-cell">{{ item.title }}</div>
+                    <div class="tr-cell attend-cell">
+                        <el-popover
+                            placement="bottom"
+                            :disabled="item.attendees?.length < 33"
+                            :width="400"
+                            trigger="hover"
+                            :content="item.attendees"
+                        >
+                            <template #reference>
+                              {{ item.attendees }}
+                            </template>
+                        </el-popover>
+                    </div>
+                    <div class="tr-cell">{{ item.stateValue }}</div>
+                    <div class="tr-cell"></div>
+                  </div>
+                </div>
+              </el-timeline-item>
+              <div class="loading" v-show="isLoading">数据加载中......</div>
+            </el-timeline>
+          </div>
+        </div>
+      </el-tab-pane>
+
+      <el-tab-pane label="操作会议室" name="second" class="second-tab">
+        <ManageRoom />
+        <!-- 新增会议室 -->
+        
+      </el-tab-pane>
+      
+      <el-tab-pane label="柱状图统计" name="third">Role</el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 <script lang="ts" setup>
@@ -118,10 +97,8 @@
     import { meetingStatus } from '@/stores/meeting-status'
     import { meetingState } from '@/utils/types';
     import personTreeDialog from "@/components/person-tree-dialog.vue";
-    import { 
-      getUsableRoomData, getMeetingBanData, addRoomData, deleteRoomDate,
-       addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData 
-      } from '@/request/api/manage'
+    import ManageRoom from '@/views/manage/component/manage-room.vue';
+    import { getMeetingBanData, addRoomData, deleteRoomDate, addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData } from '@/request/api/manage'
       
 
     // let loading = ref(true) // 加载状态
@@ -129,8 +106,6 @@
     const useMeetingStatus = meetingStatus();
     
     // 会议室状态 0-暂停使用 1-空闲 2-使用中
-    let checkList = ref()  // 选中会议室 为禁用会议室
-    let addMeetingVisible = ref(false)  // 新增会议室弹窗
     // 新增会议室信息
     let addMeetingForm = ref<any>({
       roomName: '',
@@ -151,98 +126,18 @@
     // 添加群组人员弹窗数据
     let addGroupVisible = ref(false)
     let type = ref<number>(4); // 1 创建群组 2 修改群组
-    
+
+
+    const activeName = ref('first')
+    const handleClick = (event: Event) => {
+      
+    }
     onMounted(() => {
       userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}');  // 用户信息
-      getUsableRoom({ currentLevel: userInfo.value.level }) // 查询未被禁用的会议室
       getSelectAdmin()  // 查询所有管理员
       getDataOnScroll()  // 滚动加载
       useMeetingStatus.getCenterRoomName();  // 获取所有会议室及状态
     })
-
-/******************************************* 会议室 ***********************************/
-    /**
-     * @description 查询未被禁用的会议室
-     * @param {currentLevel} 当前用户等级
-     */
-    const getUsableRoom = (data: {currentLevel: number}) => {
-      getUsableRoomData(data)
-        .then((res) => {
-          checkList.value = res.data;
-          useMeetingStatus.centerRoomName.value.forEach((item: any) => {
-            // 选中时，将会议室状态改为0 (0-暂停使用  1-空闲)
-            if (checkList.value.includes(item.id)) {
-              item.status = 0;
-            } else {
-              item.status = 1;
-            }
-          })
-        })
-        .catch((err) => {})
-    }
-
-    /**
-     * @description 会议室禁用
-     * @param {id} 会议室id
-     * @param {status} 会议室状态
-     * @param {currentLevel} 当前用户等级
-     */
-
-    // 会议室禁用设置
-    const changeCheckAll = (item: any) => {
-      // 选中时，将会议室状态改为0 (0-暂停使用  1-空闲)
-      if (checkList.value.includes(item.id)) {
-        item.status = 0;
-      } else {
-        item.status = 1;
-      }
-      getMeetingBanData({ id: item.id, status: item.status, currentLevel: userInfo.value.level })  // 会议室禁用
-        .then(() => {
-          getUsableRoom({ currentLevel: userInfo.value.level });
-          useMeetingStatus.getCenterRoomName();
-        })
-        .catch((err) => {})
-    }
-
-    /**
-     * @description 添加会议室
-    */
-    const addMeetingRoom = () => {
-      addMeetingVisible.value = true
-      // 点进新增会议室就将表单数据清空
-      addMeetingForm.value = {
-        roomName: '',
-        location: '',
-        capacity: ''
-      }
-    }
-    const addMeetingInfo = () => {
-      addMeetingVisible.value = false
-      const { roomName, location, capacity } = addMeetingForm.value
-      addRoomData({ createdBy: userInfo.value.userId, roomName, location, capacity: Number(capacity) })
-      .then(() => {
-        ElMessage.success('新增会议室成功')
-        useMeetingStatus.getCenterRoomName()
-      })
-      .catch(() => {
-        ElMessage.warning('取消新增会议室')
-      })
-    }
-    /**
-     * @description 删除会议室
-     * @param {currentLevel} 用户等级 0超级管理员 1管理员 2员工
-     * @param {id} 会议室id
-    */ 
-    const onRightClick = (event: any) => {
-      // 在这里处理右键点击事件
-      deleteRoomDate({ currentLevel: userInfo.value.level, id: event.id })
-        .then(() => {
-          ElMessage.success('删除会议室成功')
-          useMeetingStatus.getCenterRoomName()
-        })
-        .catch((err) => {})
-      console.log('右键点击事件触发', event.id);
-    }
 
 /******************************************* 公告 ***********************************/
     /**
@@ -255,8 +150,8 @@
       if (item) {
         ElMessageBox.confirm('确定上传公告吗？')
         .then(() => {
-          ElMessage.success('上传公告成功')
           addNoticeData({ currentLevel: userInfo.value.level, currentUserId: userInfo.value.userId, substance: item }) // 上传公告
+          ElMessage.success('上传公告成功')
           input.value = ''  // 上传公告后清空输入框
         })
         .catch(() => {
@@ -450,215 +345,138 @@
     }
   }
   .manage {
-    padding: 0 26px;
-    .theme {
+    height: 46.9375rem;
+    padding: 0 45px;
+    // 全部按钮统一样式
+    .el-button {
+      border-radius: 0.6rem;
+    }
+    .manage-theme {
       display: flex;
-      height: 90px;
       margin-bottom: 10px;
-      // 左边两个长条的公共样式
       .theme-left {
-        height: 2.8rem;
-        .left-common {
-          display: flex;
-          align-items: center;
-          height: 100%;
-          .text-button {
-            color: #FFF;
-            background: #409EFF;
+        display: flex;
+        align-items: center;
+        flex: 1;  // 占满剩余宽度
+        :deep().el-input {
+          .el-input__wrapper {
             border-radius: .5rem;
-            padding: .35rem 1.5rem;
-            cursor: pointer;
-            &:hover {
-              background: #01509e;
-            }
+            box-shadow: none;
           }
         }
-        // 会议室设置单独样式
-        .meeting-set {
-          .no-room {
-            position: absolute;
-            // background: #FFF;
-            border-radius: .5rem;
-            // padding: 0 0.8rem;
-            // width: fit-content;
-            width: 60.8%;
-          }
-          .el-checkbox-group {
-            display: flex;
-            align-items: center;
-            justify-content: space-evenly;
-            background: #FFF;
-            border-radius: .5rem;
-            padding: 0 0.8rem;
-            
-            // 每个会议室的hover提示
-            .el-checkbox {
-              &::after {
-                content: attr(data-hover-text);
-                display: none;
-                position: absolute;
-                left: 20px;
-                top: -10px;
-                width: fit-content;
-                font-size: 0.75rem;
-                font-style: normal;
-                border: 1px solid #cecccc;
-                border-radius: .5rem;
-                color: #000;
-                background: #FFF;
-                padding: 10px;
-              }
-              &:hover::after {
-                display: block;
-              }
-            }
-
-            // 改变el-checkbox 点击样式
-            :deep().el-checkbox__input.is-checked .el-checkbox__inner {
-              background: #FFF;  // 勾选中的小框背景色
-              border-color: red;  // 勾选中的小框边框颜色
-              &::after {
-                border-color: red;  // 勾选中的小框内 ✔的颜色
-              }
-            }
-            :deep().el-checkbox__input.is-checked+.el-checkbox__label {
-              color: red;  // 勾选中的字体颜色
-            }
-          }
-        }
-        // 公告单独样式
-        .meeting-bulletin {
-          :deep().el-input {
-            .el-input__wrapper {
-              border-radius: .5rem;
-              box-shadow: none;
-            }
-          }
-        }
+      }
+      .theme-mid {
+        margin-left: 40px;
       }
       .theme-right {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        width: 16%;
-        height: 70%;
-        background: #FFF;
-        border-radius: .5rem;
-        margin-top: .8rem;
-        padding: 0 0.8rem;
-        .plus-icon {
-          width: 1.9rem;
-          height: 1.9rem;
-          // color: #3268DC;
-          // background: #ECF2FF;
-          color: #FFF;
-          background: #409EFF;
-          border-radius: 1.5rem;
-          cursor: pointer;
-        }
-        .operate-people {
-            color: #FFF;
-            background: #409EFF;
-            border-radius: 1.5rem;
-            padding: .5rem .8rem;
-          &:hover {
-            // color: #409EFF;
-            color: #000;
-            cursor: pointer;
-          }
-          .el-icon {
-            margin-left: 12px;
-          }
-        }
+        margin-left: 40px;
+        width: 13.5rem;  // 宽度
       }
     }
-    .manage-table {
-      height: 38.75rem;
-      border: .1875rem solid rgba(18, 115, 219, 0.8);
-      border-radius: 15px;
-      padding: 0.625rem 1.125rem;
+    .manage-tabs {
+      :deep().el-tabs__item {
+        font-size: 1rem;
+      }
+      // tab-会议列表样式
+      .tab-table {
+        height: 39.7rem;
+        border: .1875rem solid rgba(18, 115, 219, 0.8);
+        border-radius: 15px;
+        padding: 0.625rem 1.125rem;
 
-      .table-th, .table-tr { // 每行共同样式
-        display: flex;
-        text-align: center;
-        div {
-          width: 14rem;
-          padding: 0 1.1rem; // 只控制每行左右内边距
-          &:last-child {
-            width: 5rem;
-          }
-        }
-        // 参会人员 单独设置宽
-        .attend-cell {
-          flex: 1;
-        }
-      }
-      .table-th {
-        margin-left: 2.5rem;
-        margin-right: 30px;
-        .title {
-          padding: 10px 0; // 单独控制头部上下内边距
-        }
-      }
-      .table-container {
-        // position: relative;
-        max-height: 92%;
-        overflow-y: auto;
-        padding-right: 10px;
-        .table-left {
-          position: absolute;
-          top: .55rem;
+        .table-th, .table-tr { // 每行共同样式
+          display: flex;
           text-align: center;
-          p:first-child {
-            // font-size: 1.1rem;
-            font-weight: 600;
-            color: #676767;
-            margin-bottom: .625rem;
+          div {
+            width: 14rem;
+            padding: 0 1.1rem; // 只控制每行左右内边距
+            &:last-child {
+              width: 5rem;
+            }
           }
-          p:last-child {
-            font-size: 1.2rem;
-            font-weight: 600;
+          // 参会人员 单独设置宽
+          .attend-cell {
+            flex: 1;
+          }
+        }
+        .table-th {
+          margin-left: 2.5rem;
+          margin-right: 30px;
+          .title {
+            padding: 10px 0; // 单独控制头部上下内边距
+            font-size: 1.1rem;
+            font-weight: 400;
             color: #3A3A3A;
           }
         }
-        .table-main {
-          font-size: 1rem;
-          margin-left: 2.5rem;
-          .table-tr {
-            color: #666;
-            background: #FFF;
-            border-radius: 0.9375rem;
-            margin: 10px 0;
-            padding: 20px 0; // 单独控制单元行上下内边距
-            .tr-cell {
-              text-wrap: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
+        .table-container {
+          // position: relative;
+          max-height: 92%;
+          overflow-y: auto;
+          padding-right: 10px;
+          .table-left {
+            position: absolute;
+            top: .55rem;
+            text-align: center;
+            p:first-child {
+              // font-size: 1.1rem;
+              font-weight: 600;
+              color: #676767;
+              margin-bottom: .625rem;
+            }
+            p:last-child {
+              font-size: 1.2rem;
+              font-weight: 600;
+              color: #3A3A3A;
             }
           }
+          .table-main {
+            font-size: 1rem;
+            margin-left: 2.5rem;
+            .table-tr {
+              color: #666;
+              background: #FFF;
+              border-radius: 0.9375rem;
+              margin: 10px 0;
+              padding: 20px 0; // 单独控制单元行上下内边距
+              .tr-cell {
+                text-wrap: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+              }
+            }
+          }
+          // 滚动条样式
+          .loading {
+            color: #666666;
+            font-size: 1.25rem;
+            text-align: center;
+            font-weight: 300;
+          }
+          &::-webkit-scrollbar {
+            width: 1.1rem;
+            border-radius: .9375rem;
+          }
+          /* 自定义滚动条轨道 */
+          &::-webkit-scrollbar-track {
+            // background: #FFFFFF;
+            border-radius: .9375rem;
+          }
+          
+          /* 自定义滚动条的滑块（thumb） */
+          &::-webkit-scrollbar-thumb {
+            background: #EDEBEB;
+            border-radius: .9375rem;
+          }
         }
-        // 滚动条样式
-        .loading {
-          color: #666666;
-          font-size: 1.25rem;
-          text-align: center;
-          font-weight: 300;
-        }
-        &::-webkit-scrollbar {
-          width: 1.1rem;
-          border-radius: .9375rem;
-        }
-        /* 自定义滚动条轨道 */
-        &::-webkit-scrollbar-track {
-          // background: #FFFFFF;
-          border-radius: .9375rem;
-        }
-        
-        /* 自定义滚动条的滑块（thumb） */
-        &::-webkit-scrollbar-thumb {
-          background: #EDEBEB;
-          border-radius: .9375rem;
-        }
+      }
+
+      // tab-操作会议室
+      .second-tab {
+        display: flex;
+        justify-content: space-between;
       }
     }
   }

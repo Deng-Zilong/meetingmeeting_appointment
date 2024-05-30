@@ -349,7 +349,7 @@ const handleDeleteMeeting = async (id: string,) => {
 </script>
 <style scoped lang="scss">
 .group {
-
+    height: 46.9375rem;
     // background-color: #f5f5f5;
     .theme {
         width: 97.9375rem;
@@ -438,7 +438,7 @@ const handleDeleteMeeting = async (id: string,) => {
 
     .content {
         width: 97.9375rem;
-        height: 42.0625rem;
+        height: 41.93rem;
         border-radius: .9375rem;
         box-sizing: border-box;
         border: .1875rem solid rgba(18, 115, 219, 0.8);
