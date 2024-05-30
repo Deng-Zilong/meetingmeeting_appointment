@@ -13,7 +13,6 @@ import com.jfzt.meeting.entity.vo.SysUserVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingGroupMapper;
-import com.jfzt.meeting.mapper.UserGroupMapper;
 import com.jfzt.meeting.service.MeetingGroupService;
 import com.jfzt.meeting.service.SysUserService;
 import com.jfzt.meeting.service.UserGroupService;
@@ -24,7 +23,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.jfzt.meeting.constant.MessageConstant.*;
@@ -45,9 +43,6 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     @Resource
     private UserGroupService userGroupService;
 
-    @Resource
-    private UserGroupMapper userGroupMapper;
-
 
     /**
      * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingGroupVO>>
@@ -67,19 +62,19 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
                 .select(SysUser::getUserId, SysUser::getUserName)
                 .eq(StringUtils.isNotBlank(userId), SysUser::getUserId, userId)
                 .one();
-        BeanUtils.copyProperties(user,userVO);
+        BeanUtils.copyProperties(user, userVO);
 
         // 查询当前用户参与过哪些群组
         List<UserGroup> groups = userGroupService.lambdaQuery().eq(UserGroup::getUserId, userId).list();
         List<Long> idList = groups.stream().map(UserGroup::getGroupId).toList();
-        if (idList.isEmpty()){
+        if (idList.isEmpty()) {
             return Result.success();
         }
         // 查询当前用户参与的所有群组
         Page<MeetingGroup> meetingGroupPage = this.baseMapper
                 .selectPage(new Page<>(pageNum, pageSize), new LambdaQueryWrapper<MeetingGroup>()
-                .in(MeetingGroup::getId, idList)
-                .orderByDesc(MeetingGroup::getGmtCreate));
+                        .in(MeetingGroup::getId, idList)
+                        .orderByDesc(MeetingGroup::getGmtCreate));
         List<MeetingGroup> joinList = meetingGroupPage.getRecords();
 
         //遍历所参与的所有群组
@@ -194,12 +189,12 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         MeetingGroup meetingGroup = new MeetingGroup();
         // 将meetingGroupDTO中的属性复制到meetingGroup中
         BeanUtils.copyProperties(meetingGroupDTO, meetingGroup);
-//        MeetingGroup one = lambdaQuery().eq(MeetingGroup::getId, meetingGroupDTO.getId()).one();
-//        one.setGroupName(meetingGroupDTO.getGroupName());
-        if (meetingGroupDTO.getGroupName()!=null){
-        updateById(meetingGroup);
+        //        MeetingGroup one = lambdaQuery().eq(MeetingGroup::getId, meetingGroupDTO.getId()).one();
+        //        one.setGroupName(meetingGroupDTO.getGroupName());
+        if (meetingGroupDTO.getGroupName() != null) {
+            updateById(meetingGroup);
         }
-        if(!meetingGroupDTO.getUsers().isEmpty()){
+        if (!meetingGroupDTO.getUsers().isEmpty()) {
             List<UserGroup> userGroups = userGroupService.lambdaQuery()
                     .select(UserGroup::getId)
                     .eq(UserGroup::getGroupId, meetingGroupDTO.getId())
@@ -228,7 +223,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     public Result<Object> deleteMeetingGroup (Long id) {
         // 查询出MeetingGroup对象之前的UserGroup对象列表
         List<UserGroup> userGroupList = userGroupService.lambdaQuery()
-                .select(UserGroup::getUserId)
+                .select(UserGroup::getId)
                 .eq(UserGroup::getGroupId, id)
                 .list();
         if (userGroupList == null) {

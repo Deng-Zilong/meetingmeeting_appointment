@@ -7,14 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.jfzt.meeting.entity.vo.PeriodTimesVO;
 import com.jfzt.meeting.service.MeetingRecordService;
 import jakarta.annotation.Resource;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @Author: chenyu.di
@@ -39,7 +35,10 @@ public class StatisticsController {
     public Result<List<MeetingRoomOccupancyVO>> getMeetingRoomOccupancy () {
         return meetingRoomService.getAllMeetingRoomOccupancy();
     }
-
+    /**
+     * @Description 统计七日内各时间段预约频率
+     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.PeriodTimesVO>>
+     */
     @GetMapping("/time-period")
     public Result<List<PeriodTimesVO>> getTimePeriodTimes () {
         return meetingRecordService.getTimePeriodTimes();

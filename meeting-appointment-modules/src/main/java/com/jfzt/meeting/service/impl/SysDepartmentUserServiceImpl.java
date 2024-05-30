@@ -62,6 +62,9 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     @Resource
     private SysUserService sysUserService;
 
+    String s ="0";
+    String tes = "errcode";
+
 
 
     @Override
@@ -73,8 +76,6 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     @Override
     public WxCpUser findUserName(String accessToken, String code) throws WxErrorException {
         //获取用户user_ticket
-        String s ="0";
-        String tes = "errcode";
         HttpClientUtil httpClientUtil = new HttpClientUtil();
         HashMap<String, String> tokenCode = new HashMap<>(2);
         tokenCode.put("access_token", accessToken);
@@ -83,13 +84,14 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
         JSONObject responseAllList = JSONObject.fromObject(responseAll);
         if(!s.equals(responseAllList.getString(tes))){
             log.error("请求企业微信失败");
-            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_C00011);
+            throw new RRException(responseAllList.toString());
         }
         String userid = responseAllList.getString("userid");
         //获取用户详细信息
         WxCpUserServiceImpl wxCpUserService = new WxCpUserServiceImpl(wxCpService);
         return wxCpUserService.getById(userid);
     }
+
 
     @Override
     public Long findDepartment() throws WxErrorException {
