@@ -18,7 +18,7 @@ import java.util.List;
  */
 
 @RestController
-@RequestMapping("/meeting/meeting-group")
+@RequestMapping("/meeting")
 public class MeetingGroupController {
 
     @Resource

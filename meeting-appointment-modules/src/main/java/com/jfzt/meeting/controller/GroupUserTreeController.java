@@ -17,7 +17,7 @@ import java.util.List;
  */
 
 @RestController
-@RequestMapping("/meeting/group-user-tree")
+@RequestMapping("/meeting/tree")
 public class GroupUserTreeController {
 
     @Resource
