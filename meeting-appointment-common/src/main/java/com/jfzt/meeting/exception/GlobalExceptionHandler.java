@@ -83,7 +83,7 @@ public class GlobalExceptionHandler {
         log.error(ErrorCodeEnum.SERVICE_ERROR_C0200.getCode(), ErrorCodeEnum.SERVICE_ERROR_C0200.getDescription());
         Result<String> result = new Result<>();
         result.setCode(ErrorCodeEnum.SERVICE_ERROR_C0200.getCode());
-        result.setMsg(ErrorCodeEnum.SERVICE_ERROR_C0200.getDescription());
+        result.setMsg(e.getMessage());
         return result;
     }
 
