@@ -366,9 +366,9 @@ onMounted( async () => {
     const token = userInfo.value?.accessToken;
     // 扫码登录
     if(!token) {
-        // if (code === 'undefined') {
-        //     return router.replace('/login');
-        // }
+        if (code === 'undefined') {
+            return router.replace('/login');
+        }
         try {
             const res:any = await qwLogin({code});
             if (res.code !== '00000') {
