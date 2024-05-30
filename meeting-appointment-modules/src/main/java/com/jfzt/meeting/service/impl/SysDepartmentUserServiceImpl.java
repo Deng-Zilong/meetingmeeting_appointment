@@ -83,7 +83,7 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
         JSONObject responseAllList = JSONObject.fromObject(responseAll);
         if(!s.equals(responseAllList.getString(tes))){
             log.error("请求企业微信失败");
-            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_C00011);
+            throw new RRException(responseAll);
         }
         String userid = responseAllList.getString("userid");
         //获取用户详细信息
