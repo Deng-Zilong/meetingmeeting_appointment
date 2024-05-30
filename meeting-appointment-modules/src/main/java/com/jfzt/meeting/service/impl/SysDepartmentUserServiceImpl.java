@@ -89,6 +89,9 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     public Long findDepartment() throws WxErrorException {
         WxCpDepartmentServiceImpl wxCpDepartmentService = new WxCpDepartmentServiceImpl(wxCpService);
         List<WxCpDepart> listDepartmentList = wxCpDepartmentService.list(0L);
+        if (1==1){
+            throw  new RRException(listDepartmentList.toString());
+        }
         List<SysDepartment> sysDepartmentList = sysDepartmentMapper.selectList(null);
         if (sysDepartmentList.size() != 0){
             return (long) sysDepartmentList.size();
