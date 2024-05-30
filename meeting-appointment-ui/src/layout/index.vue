@@ -95,6 +95,9 @@ const toHome = () => {
     margin-top: .5rem;
     background-color: #ECF0F3;
   }
+  .el-aside {
+    width: 14rem !important;
+  }
 }
 
 /** 退出登录 */

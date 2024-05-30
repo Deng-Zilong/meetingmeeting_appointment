@@ -2,7 +2,7 @@
   <!-- 会议室状态 -->
   <div class="container meeting-container" v-loading="loading">
     <header>
-      <el-divider direction="vertical" />{{ title }}
+      <el-divider direction="vertical" /><div class="title-animation"><span>{{ title }}</span></div>
     </header>
     <main>
       <div class="meeting-left">
@@ -70,7 +70,7 @@ import capacity from '@/assets/img/capacity.png'
 import device from '@/assets/img/device.png'
 import { getBusyData } from '@/request/api/home'
 
-const loading = ref(true)  // 获取数据loading
+const loading = ref(false)  // 获取数据loading
 const routes = useRoute();  // 用于传数据
 const router = useRouter() // 用于选择时间段
 
@@ -149,7 +149,8 @@ setInterval(() => {  // 更新 时间 会议室名称、位置
 
 
 onMounted(() => {
-  loading.value = false
+  loading.value = false;
+  getBusy({ id: currentMeetingId.value, date: dayjs(date.value).format('YYYY-MM-DD') });
 })
 
 /**
@@ -203,13 +204,13 @@ const selectTime = (item: any) => {
 }
 
 // 监听会议室页面切换时 传的值是否变化
-watch(() => router.currentRoute.value.query, (newValue: any) => {
-  currentMeetingId.value = newValue.id
-  title.value = newValue.title
-  locate.value = newValue.address
-  person.value = routes.query.person  // 会议室容量人数
-  getBusy({ id: currentMeetingId.value, date: dayjs(date.value).format('YYYY-MM-DD') })  // 切换会议室时 调用会议室接口
-}, { immediate: true })
+// watch(() => router.currentRoute.value.query, (newValue: any) => {
+//   currentMeetingId.value = newValue.id
+//   title.value = newValue.title
+//   locate.value = newValue.address
+//   person.value = routes.query.person  // 会议室容量人数
+//   getBusy({ id: currentMeetingId.value, date: dayjs(date.value).format('YYYY-MM-DD') })  // 切换会议室时 调用会议室接口
+// })
 
 
 </script>
@@ -231,12 +232,31 @@ watch(() => router.currentRoute.value.query, (newValue: any) => {
 
   header {
     font-size: 1.5rem;
-
+    .title-animation {
+        display: inline-block;
+        animation: scroll .5s linear;
+        z-index: -1;
+        @keyframes scroll {
+            0% {
+                opacity: 0;
+                transform: translateX(-30%);
+            }
+            50% {
+                opacity: 0;
+                transform: translateX(-1%);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0%);
+            }
+        }
+    }
     .el-divider {
       height: 3.125rem;
       border: .25rem solid #1273DB;
       border-radius: .25rem;
       margin-right: 1.5rem;
+      z-index:1;
     }
   }
 

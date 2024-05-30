@@ -23,7 +23,7 @@
             <el-timeline class="list-container" ref="timelineRef">
                 <el-timeline-item class="timeline-item" v-for="(value, index) in dataList" :key="index">
                     <div class="timestamp">
-                        <p><span>{{ value.month }}</span>月</p>
+                        <p>{{ value.month }}月</p>
                         <p>{{ value.day }}</p>
                     </div>
                     <div class="card-item" v-for="(item, key) in value.list" :key="index">
@@ -446,9 +446,10 @@ const handleDeleteMeeting = async (id: string,) => {
 
         .title {
             height: 3rem;
-
             div {
-                font-size: 1.2rem;
+                font-size: 1.1rem;
+                font-weight: 400;
+                color: #3A3A3A;
                 line-height: 1.75rem;
             }
         }
@@ -511,7 +512,6 @@ const handleDeleteMeeting = async (id: string,) => {
                 div {
                     position: relative;
                     font-size: 1rem;
-                    font-weight: 350;
                     line-height: 1.25rem;
                     color: #666666;
 
