@@ -519,6 +519,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
             endTime = endTime.plusMinutes(30);
         }
+        list.sort((o1, o2) -> Math.toIntExact(o2.getCount() - o1.getCount()));
         return Result.success(list);
     }
 

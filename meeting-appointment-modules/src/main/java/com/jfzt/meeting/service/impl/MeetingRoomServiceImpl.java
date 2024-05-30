@@ -334,7 +334,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         //每段30分钟遍历时间，在当前时间之前的时间段状态为0已过期
         for (int i = 0; i < 30; i++) {
             //时间段开始在当前时间前
-            if (now.isAfter(endTime)) {
+            if (now.isAfter(startTime)) {
                 timeStatus.add(i, TIME_PERIOD_OVERDUE);
             } else {
                 //之后的时间，判断是否有会议的开始时间或结束时间包含在里面，有的话且包含所有的会议室则为1已预订

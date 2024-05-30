@@ -41,7 +41,7 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
      */
     @Override
     public List<MeetingMinutesVO> getMeetingMinutes (MeetingMinutes meetingMinutes) {
-        if (meetingMinutes.getMeetingRecordId() != null && meetingMinutes.getUserId() != null) {
+        if (meetingMinutes.getMeetingRecordId() == null && Strings.isBlank(meetingMinutes.getUserId())) {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
         }
         LambdaQueryWrapper<MeetingMinutes> wrapper = new LambdaQueryWrapper<>();
