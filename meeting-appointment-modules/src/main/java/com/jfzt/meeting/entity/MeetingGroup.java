@@ -1,6 +1,9 @@
 package com.jfzt.meeting.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,43 +27,32 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 public class MeetingGroup implements Serializable {
+    @Serial
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
     /**
      * 群组id
      */
     @TableId(type = IdType.AUTO)
     private Long id;
-
     /**
      * 群组名称
      */
     private String groupName;
-
     /**
      * 添加时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime gmtCreate;
-
     /**
      * 修改时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime gmtModified;
-
     /**
      * 创建人id
      */
     private String createdBy;
-
-    /**
-     * 逻辑删除（0未删除1删除）
-     */
-    @TableLogic
-    private Integer isDeleted;
-
-    @Serial
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
 
     @Override
     public boolean equals (Object that) {
@@ -78,8 +70,7 @@ public class MeetingGroup implements Serializable {
                 && (this.getGroupName() == null ? other.getGroupName() == null : this.getGroupName().equals(other.getGroupName()))
                 && (this.getGmtCreate() == null ? other.getGmtCreate() == null : this.getGmtCreate().equals(other.getGmtCreate()))
                 && (this.getGmtModified() == null ? other.getGmtModified() == null : this.getGmtModified().equals(other.getGmtModified()))
-                && (this.getCreatedBy() == null ? other.getCreatedBy() == null : this.getCreatedBy().equals(other.getCreatedBy()))
-                && (this.getIsDeleted() == null ? other.getIsDeleted() == null : this.getIsDeleted().equals(other.getIsDeleted()));
+                && (this.getCreatedBy() == null ? other.getCreatedBy() == null : this.getCreatedBy().equals(other.getCreatedBy()));
     }
 
     @Override
@@ -91,7 +82,6 @@ public class MeetingGroup implements Serializable {
         result = prime * result + ((getGmtCreate() == null) ? 0 : getGmtCreate().hashCode());
         result = prime * result + ((getGmtModified() == null) ? 0 : getGmtModified().hashCode());
         result = prime * result + ((getCreatedBy() == null) ? 0 : getCreatedBy().hashCode());
-        result = prime * result + ((getIsDeleted() == null) ? 0 : getIsDeleted().hashCode());
         return result;
     }
 
@@ -105,7 +95,6 @@ public class MeetingGroup implements Serializable {
                 ", gmtCreate=" + gmtCreate +
                 ", gmtModified=" + gmtModified +
                 ", createdBy=" + createdBy +
-                ", isDeleted=" + isDeleted +
                 ", serialVersionUID=" + serialVersionUID +
                 "]";
     }
