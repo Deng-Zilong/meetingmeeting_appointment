@@ -15,7 +15,7 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface SysUserMapper extends BaseMapper<SysUser> {
 
-    @Delete("delete from sys_user")
+    @Delete("delete from sys_user where user_id != 'admin'")
     int deleteAll();
 
     /**
