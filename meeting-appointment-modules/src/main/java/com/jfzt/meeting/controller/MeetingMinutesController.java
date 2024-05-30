@@ -30,7 +30,7 @@ public class MeetingMinutesController {
      */
     @PostMapping("/minutes")
     public Result<Object> saveOrUpdateMinutes (@RequestBody MeetingMinutes meetingMinutes) {
-        return Result.success(meetingMinutesService.saveOrUpdateMinutes(meetingMinutes));
+        return meetingMinutesService.saveOrUpdateMinutes(meetingMinutes);
     }
 
 }

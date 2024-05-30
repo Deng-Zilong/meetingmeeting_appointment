@@ -13,6 +13,7 @@ import com.jfzt.meeting.mapper.MeetingMinutesMapper;
 import com.jfzt.meeting.service.MeetingMinutesService;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.SysUserService;
+import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
     @Autowired
     MeetingRecordService meetingRecordService;
 
+
     /**
      * @param meetingMinutes 会议记录id或用户id
      * @return {@code List<MeetingMinutesVO>}
@@ -39,7 +41,7 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
      */
     @Override
     public List<MeetingMinutesVO> getMeetingMinutes (MeetingMinutes meetingMinutes) {
-        if (meetingMinutes.getMeetingRecordId() != null && meetingMinutes.getUserId() != null) {
+        if (meetingMinutes.getMeetingRecordId() == null && Strings.isBlank(meetingMinutes.getUserId())) {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
         }
         LambdaQueryWrapper<MeetingMinutes> wrapper = new LambdaQueryWrapper<>();
@@ -77,6 +79,15 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
         if (selfMinutes == null){
             save(meetingMinutes);
         }else {
+            SysUser user = sysUserService.lambdaQuery()
+                    .eq(SysUser::getUserId, meetingMinutes.getUserId())
+                    .one();
+            MeetingRecord meetingRecord = meetingRecordService.lambdaQuery()
+                    .eq(MeetingRecord::getId, meetingMinutes.getMeetingRecordId())
+                    .one();
+            if (user == null || meetingRecord == null){
+                throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
+            }
             meetingMinutes.setId(selfMinutes.getId());
             updateById(meetingMinutes);
         }

@@ -16,10 +16,7 @@ import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
 import com.jfzt.meeting.mapper.MeetingRecordMapper;
-import com.jfzt.meeting.service.MeetingAttendeesService;
-import com.jfzt.meeting.service.MeetingRecordService;
-import com.jfzt.meeting.service.MeetingRoomService;
-import com.jfzt.meeting.service.SysUserService;
+import com.jfzt.meeting.service.*;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -411,6 +408,23 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             // 判断meetingRecord的开始时间是否早于当前时间，如果是，则返回错误信息
             throw new RRException(START_TIME_LT_NOW);
         }
+        //根据时间段查看是否有会议占用
+        LambdaQueryWrapper<MeetingRecord> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.notIn(MeetingRecord::getStatus, MEETING_RECORD_STATUS_CANCEL)
+                .eq(MeetingRecord::getMeetingRoomId, meetingRecord.getMeetingRoomId());
+        //开始时间或结束时间在时间段内 或 开始时间与结束时间之间包含时间段
+        queryWrapper.and(recordQueryWrapper -> recordQueryWrapper
+                //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
+                .between(MeetingRecord::getStartTime, meetingRecord.getStartTime(), meetingRecord.getEndTime().minusSeconds(1))
+                //结束时间在时间段内 前不含后含  8-9属于8.5-9不属于9-9.5
+                .or().between(MeetingRecord::getEndTime, meetingRecord.getStartTime().plusSeconds(1), meetingRecord.getEndTime())
+                //时间段包含在开始时间(含)和结束时间(含)之间    8-9 属于8-8.5属于8.5-9
+                .or().lt(MeetingRecord::getStartTime, meetingRecord.getStartTime().plusSeconds(1))
+                .gt(MeetingRecord::getEndTime, meetingRecord.getEndTime().minusSeconds(1)));
+        List<MeetingRecord> meetingRecords = list(queryWrapper);
+        if (!meetingRecords.isEmpty()) {
+            throw new RRException(OCCUPIED, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+        }
         // 保存meetingRecord
         save(meetingRecord);
         // 创建一个MeetingAttendees的列表，并将meetingRecordDTO中的用户信息转换为MeetingAttendees对象
@@ -505,6 +519,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
             endTime = endTime.plusMinutes(30);
         }
+        list.sort((o1, o2) -> Math.toIntExact(o2.getCount() - o1.getCount()));
         return Result.success(list);
     }
 

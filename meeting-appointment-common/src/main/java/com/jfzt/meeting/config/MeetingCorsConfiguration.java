@@ -28,14 +28,22 @@ public class MeetingCorsConfiguration implements WebMvcConfigurer {
     @Autowired
     private TokenInterceptor tokenInterceptor;
 
-    @Override
-    public void addInterceptors (InterceptorRegistry registry) {
-        // 添加拦截器，并设置拦截的路径
-        registry.addInterceptor(tokenInterceptor)
-                // 拦截所有路径
-                .addPathPatterns("/**")
-                // 排除登录和错误处理路径
-                .excludePathPatterns("/meeting/user/info","/meeting/user/captcha.jpg","/meeting/user/login","/quartz/receiving-users","/quartz/test","/meeting/user/qr-code","/meeting/user/oauth2/authorize");
-    }
+//    @Override
+//    public void addInterceptors (InterceptorRegistry registry) {
+//        // 添加拦截器，并设置拦截的路径
+//        registry.addInterceptor(tokenInterceptor)
+//                // 拦截所有路径
+//                .addPathPatterns("/**")
+//                // 排除登录和错误处理路径
+//                .excludePathPatterns("/meeting/user/info",
+//                        "/meeting/user/captcha.jpg",
+//                        "/meeting/user/login",
+//                        "/quartz/receiving-users",
+//                        "/quartz/test",
+//                        "/meeting/user/qr-code",
+//                        "/meeting/user/oauth2/authorize",
+//                        "meeting/user/delete");
+//    }
+
 
 }

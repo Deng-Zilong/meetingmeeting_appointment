@@ -1,6 +1,5 @@
 package com.jfzt.meeting.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.SysDepartment;
@@ -79,9 +78,6 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
         tokenCode.put("access_token", accessToken);
         tokenCode.put("code", code);
         String responseAll = httpClientUtil.doGet("https://qyapi.weixin.qq.com/cgi-bin/auth/getuserinfo", tokenCode);
-        if (1==1){
-            throw new RRException(responseAll);
-        }
         JSONObject responseAllList = JSONObject.fromObject(responseAll);
         String userid = responseAllList.getString("userid");
         //获取用户详细信息
@@ -89,13 +85,11 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
         return wxCpUserService.getById(userid);
     }
 
+
     @Override
     public Long findDepartment() throws WxErrorException {
         WxCpDepartmentServiceImpl wxCpDepartmentService = new WxCpDepartmentServiceImpl(wxCpService);
         List<WxCpDepart> listDepartmentList = wxCpDepartmentService.list(0L);
-        if (1==1){
-            throw  new RRException(listDepartmentList.toString());
-        }
         List<SysDepartment> sysDepartmentList = sysDepartmentMapper.selectList(null);
         if (sysDepartmentList.size() != 0){
             return (long) sysDepartmentList.size();
@@ -119,9 +113,6 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
         List<WxCpUser> listDepartmentUserList = new ArrayList<>();
         for (int i = 1; i < departmentLength + 1; i++) {
             List<WxCpUser> wxCpUser = wxCpUserService.listSimpleByDepartment((long) i, true, 0);
-            if(1==1){
-                throw new RRException(wxCpUser.toString());
-            }
             listDepartmentUserList.addAll(wxCpUser);
         }
         List<WxCpUser> wxCpUserList = listDepartmentUserList.stream().distinct().toList();
@@ -175,26 +166,30 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
      * @Param SysDepartment root, List<SysDepartment> all,String userName
      * @return List<SysDepartment>
      */
-    private List<SysDepartment> getChildren(SysDepartment root, List<SysDepartment> all) {
+    private List<SysDepartment> getChildren (SysDepartment root, List<SysDepartment> all) {
         return all.stream()
                 // 过滤出父部门ID等于根部门ID的部门
                 .filter(sysDepartment -> Objects.equals(sysDepartment.getParentId(), root.getDepartmentId()))
                 // 对每个子部门进行操作
                 .peek(childrenNode -> {
                     // 创建一个用户列表
-                    ArrayList<SysUser> sysUsers = new ArrayList<>();
+                    ArrayList<SysUserVO> sysUsers = new ArrayList<>();
                     // 获取子部门的用户
                     childrenNode.setChildrenPart(getChildren(childrenNode, all));
                     // 获取部门用户
                     List<SysDepartmentUser> departmentUsers = sysDepartmentUserService.lambdaQuery()
-                            .eq(SysDepartmentUser::getDepartmentId , childrenNode.getDepartmentId())
+                            .eq(SysDepartmentUser::getDepartmentId, childrenNode.getDepartmentId())
                             .list();
                     // 对每个部门用户进行操作
                     departmentUsers.stream().peek(sysDepartmentUser -> {
                         // 根据用户ID获取用户
-                        List<SysUser> userList = sysUserService.lambdaQuery()
+                        List<SysUserVO> userList = sysUserService.lambdaQuery()
                                 .eq(SysUser::getUserId, sysDepartmentUser.getUserId())
-                                .list();
+                                .list().stream().map(sysUser -> {
+                                    SysUserVO sysUserVO = new SysUserVO();
+                                    BeanUtils.copyProperties(sysUser, sysUserVO);
+                                    return sysUserVO;
+                                }).toList();
                         // 将用户添加到用户列表中
                         sysUsers.addAll(userList);
                     }).toList();
