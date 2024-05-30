@@ -15,7 +15,7 @@
                 <el-timeline ref="timelineRef">
                     <el-timeline-item  placement="top" class="timeline-item" v-for="(value, index) in data" :key="index">
                         <div class="timestamp">
-                            <p><span>{{value.month}}</span>月</p>
+                            <p>{{value.month}}月</p>
                             <p>{{value.day}}</p>
                         </div>
                         <div v-for="(item, key) in value.list" :key="index" class="card-item">
@@ -300,10 +300,11 @@
             border: .1875rem solid rgba(18, 115, 219, 0.8);
             margin: 1.25rem auto;
             .title {
-                height: 3rem;;
+                height: 3rem;
                 div {
                     color: #3A3A3A;
-                    font-size: 1.2rem;
+                    font-size: 1.1rem;
+                    font-weight: 400;
                     line-height: 1.75rem;
                 }
             }
@@ -359,7 +360,6 @@
                     box-shadow: 0 .1875rem .125rem 0 rgba(0, 0, 0, 0.04);
                     div {
                         font-size: 1rem;
-                        font-weight: 350;
                         line-height: 1.25rem;
                         color: #666666;
                         &:nth-child(1) {
