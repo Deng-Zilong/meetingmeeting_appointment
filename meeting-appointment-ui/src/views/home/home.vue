@@ -362,6 +362,7 @@ const getNotice = async () => {
 onMounted( async () => {
     /* 判断扫码登录状态 */
     const code = decodeURIComponent(route.query.code as string);
+    const loginMethod: number = 0; // web扫码登录
     userInfo.value = JSON.parse(localStorage.getItem('userInfo') as string);
     const token = userInfo.value?.accessToken;
     // 扫码登录
@@ -370,7 +371,7 @@ onMounted( async () => {
             return router.replace('/login');
         }
         try {
-            const res:any = await qwLogin({code});
+            const res:any = await qwLogin({code, loginMethod});
             if (res.code !== '00000') {
                 throw new Error(res.msg);
             }

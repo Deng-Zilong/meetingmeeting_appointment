@@ -71,12 +71,15 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { Picture as IconPicture } from '@element-plus/icons-vue'
 import { v4 as uuidv4 } from 'uuid';
 import { useUserStore } from '@/stores/user'
-import { getCaptcha, getQrCode, qwLogins } from '@/request/api/login'
+import { getCaptcha, getQrCode, qwLogin } from '@/request/api/login'
 import { Md5 } from 'ts-md5';
 import router from '@/router';
+import { useRoute } from 'vue-router';
 
 // 用户信息
 const userStore = useUserStore();
+const route = useRoute();
+
 const ruleFormRef = ref<FormInstance>();
 let loginBtnLoading = ref<boolean>(false);
 
@@ -159,9 +162,17 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 }
 
 onMounted(() => {
-    // 展示扫码登录
-    // code();
-    qwLogins()
+    // 获取url参数
+    const urlParams = new URLSearchParams(window.location.search);
+    // 获取code
+    const code = urlParams?.get('code') as string;
+    const loginMethod: number = 1; // 测试登录
+    console.log(code, "code");
+    // // 若code不存在 跳转登录页
+    // if (!code) {
+    //     return router.replace('/login');
+    // }
+    qwLogin({code, loginMethod})
      .then(res => {
          setTimeout(() => {
              router.replace('/home');

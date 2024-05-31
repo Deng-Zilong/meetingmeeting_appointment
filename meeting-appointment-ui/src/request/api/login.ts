@@ -6,14 +6,14 @@ export const getQrCode = () => {
 }
 
 // 企业微信扫码登录
-export const qwLogin = (data: {code: string}) => {
+export const qwLogin = (data: {code: string, loginMethod: number}) => {
     return http.get("/meeting/user/info", data)
 }
 
 // 企业微信扫码登录
-export const qwLogins = () => {
-    return http.get("/meeting/user/infos")
-}
+// export const qwLogins = (data: {code: string}) => {
+//     return http.get("/meeting/user/infos", data)
+// }
 
 // 账号密码登录
 export const Login = (data: {name: string, password: string, uuid: string, code: string}) => {
