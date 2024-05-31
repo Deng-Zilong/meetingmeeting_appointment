@@ -46,7 +46,7 @@ variables:
   JAR_PORT: 8080
 
   #【请修改】后端Jar包存在地址(参考上述目录结构)
-  JAR_PATH: "./meeting-appointment-admin/target/ipr.jar"
+  JAR_PATH: "./meeting-appointment-admin/target/meeting-appointment-admin-0.0.1-SNAPSHOT.jar"
 
   #【请修改】前端项目打包方式 $BUILD_COMMAND run build:$ENVIRONMENT
   BUILD_COMMAND: "npm"
@@ -58,10 +58,10 @@ variables:
   # MEMORY_LIMITS: 定义了容器可以使用的最大内存资源。单位为Gi（吉比字节），1Gi=1024mi。
   # CPU_REQUESTS: 定义了容器运行所需的最小CPU资源。单位为毫核（m）。
   # MEMORY_REQUESTS: 定义了容器运行所需的最小内存资源。单位为Mi（兆比字节）。
-  CPU_LIMITS: '0.6'
-  MEMORY_LIMITS: 600Mi
+  CPU_LIMITS: '0.7'
+  MEMORY_LIMITS: 700Mi
   CPU_REQUESTS: 300m
-  MEMORY_REQUESTS: 300Mi
+  MEMORY_REQUESTS: 400Mi
 
   # 定义生产环境使用的Docker镜像标签
   # 使用CI_COMMIT_TAG环境变量，该变量在持续集成流程中由GitLab CI/CD自动设置，
