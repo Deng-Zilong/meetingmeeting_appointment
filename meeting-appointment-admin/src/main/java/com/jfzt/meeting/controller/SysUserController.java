@@ -69,8 +69,9 @@ public class SysUserController {
      */
     @GetMapping(value = "info")
     @Transactional
-    public Result<UserInfoVO> info(@RequestParam("code") String code) throws WxErrorException, NoSuchAlgorithmException {
-        if (StringUtils.isBlank(code)) {
+    public Result<UserInfoVO> info(@RequestParam("code") String code,@RequestParam("loginMethod") String loginMethod) throws WxErrorException, NoSuchAlgorithmException {
+        String Method = "0";
+        if (Method.equals(loginMethod)&&StringUtils.isBlank(code)) {
             log.error("用户扫码登录失败请重新扫码");
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A02011);
         }
