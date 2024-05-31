@@ -84,5 +84,5 @@ public interface SysUserService extends IService<SysUser> {
      */
     Map<String, String> userQrCode();
 
-    String getUrlCode();
+
 }
