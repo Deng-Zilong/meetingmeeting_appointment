@@ -40,7 +40,7 @@ variables:
   FRONT_PROJECT_NAME: "jf-meeting-appointment-pc-web"
 
   #【请修改】后端项目名称(要求同上)
-  BACK_PROJECT_NAME: "jfmeeting-appointment-backend"
+  BACK_PROJECT_NAME: "jf-meeting-appointment-backend"
 
   #【请修改】Jar包的端口号，建议各项目组设置后端服务用8080端口
   JAR_PORT: 8080
