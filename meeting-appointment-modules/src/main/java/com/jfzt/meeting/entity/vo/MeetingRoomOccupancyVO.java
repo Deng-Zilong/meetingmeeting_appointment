@@ -15,6 +15,9 @@ public class MeetingRoomOccupancyVO {
     //已占用数
     private Long occupied;
 
+    //占用率
+    private float occupancyRate;
+
     //会议室id
     private Long id;
 

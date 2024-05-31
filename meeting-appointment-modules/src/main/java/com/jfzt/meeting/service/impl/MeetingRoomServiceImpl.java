@@ -211,7 +211,8 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         //遍历会议室
         List<MeetingRoomOccupancyVO> meetingRoomOccupancyVOList = meetingRooms.stream().map(meetingRoom -> {
             //被占用的时间段总数
-            long count = 0;
+            long count = 0L;
+            long total = 0L;
             //统计前七天，九点开始，十八点结束，半小时为一段
             LocalDateTime startTime = LocalDateTime.now().toLocalDate().atStartOfDay().plusHours(9).minusDays(7);
             LocalDateTime endTime = startTime.plusMinutes(30);
@@ -222,6 +223,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                         || startTime.toLocalDate().getDayOfWeek() == DayOfWeek.SUNDAY) {
                     startTime = startTime.plusDays(1);
                     endTime = endTime.plusDays(1);
+                    continue;
                 }
                 log.info("第{}天,startTime:{}" + "endTime:{}", i + 1, startTime, endTime);
                 //每天18个时间段
@@ -249,10 +251,13 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 //下一天
                 startTime = startTime.plusHours(15);
                 endTime = startTime.plusMinutes(30);
+                total = total + 1;
             }
             MeetingRoomOccupancyVO meetingRoomOccupancyVO = new MeetingRoomOccupancyVO();
             meetingRoomOccupancyVO.setOccupied(count);
-            meetingRoomOccupancyVO.setTotal((long) (7 * 18));
+            meetingRoomOccupancyVO.setTotal((total * 18));
+            float occupancyRate = ((float) count / (total * 18));
+            meetingRoomOccupancyVO.setOccupancyRate(occupancyRate);
             meetingRoomOccupancyVO.setId(meetingRoom.getId());
             meetingRoomOccupancyVO.setName(meetingRoom.getRoomName());
             return meetingRoomOccupancyVO;
