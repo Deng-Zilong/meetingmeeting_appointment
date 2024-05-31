@@ -23,14 +23,27 @@ public class MeetingMinutesController {
     public Result<List<MeetingMinutesVO>> getMeetingMinutes (MeetingMinutes meetingMinutes) {
         return Result.success(meetingMinutesService.getMeetingMinutes(meetingMinutes));
     }
+
     /**
+     * @return com.jfzt.meeting.common.Result<java.lang.Object>
      * @Description 保存会议纪要
      * @Param [meetingMinutes]
-     * @return com.jfzt.meeting.common.Result<java.lang.Object>
      */
     @PostMapping("/minutes")
     public Result<Object> saveOrUpdateMinutes (@RequestBody MeetingMinutes meetingMinutes) {
         return meetingMinutesService.saveOrUpdateMinutes(meetingMinutes);
+    }
+
+    /**
+     * 根据会议纪要id和用户id删除会议纪要
+     *
+     * @param meetingMinutes 会议纪要
+     * @return {@code Result<String>}
+     */
+    @DeleteMapping("/minutes")
+    public Result<String> deleteMeetingMinutes (MeetingMinutes meetingMinutes) {
+        meetingMinutesService.deleteMeetingMinutes(meetingMinutes);
+        return Result.success();
     }
 
 }

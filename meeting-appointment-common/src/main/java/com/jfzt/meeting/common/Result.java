@@ -49,10 +49,6 @@ public class Result<T> implements Serializable {
         return new Result<>(ErrorCodeEnum.SYSTEM_ERROR_B0001.getCode(), msg, null);
     }
 
-    public static <T> Result<T> fail (String code, String msg) {
-        return new Result<>(code, msg, null);
-    }
-
     public Result (String code, String msg, T data) {
         this.code = code;
         this.msg = msg;

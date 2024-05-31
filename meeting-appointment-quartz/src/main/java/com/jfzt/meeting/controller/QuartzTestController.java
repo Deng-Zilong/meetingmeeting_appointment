@@ -56,7 +56,7 @@ public class QuartzTestController {
                            @RequestParam(name = "echostr") String sVerifyEchoStr) throws AesException {
         String sToken = wxCpDefaultConfiguration.getToken();
         String sCorpID = wxCpDefaultConfiguration.getCorpid();
-        String sEncodingAESKey = wxCpDefaultConfiguration.getEncodingAESKey();
+        String sEncodingAESKey = wxCpDefaultConfiguration.getEncodingAesKey();
         String sEchoStr; //需要返回的明文
         WXBizMsgCrypt wxcpt = new WXBizMsgCrypt(sToken, sEncodingAESKey, sCorpID);
         try {
@@ -81,7 +81,7 @@ public class QuartzTestController {
 
         String sToken = wxCpDefaultConfiguration.getToken();
         String sCorpID = wxCpDefaultConfiguration.getCorpid();
-        String sEncodingAESKey = wxCpDefaultConfiguration.getEncodingAESKey();
+        String sEncodingAESKey = wxCpDefaultConfiguration.getEncodingAesKey();
         WXBizMsgCrypt wxcpt = new WXBizMsgCrypt(sToken, sEncodingAESKey, sCorpID);
         try {
             String sMsg = wxcpt.DecryptMsg(msgSignature, timestamp, nonce, sReqData);

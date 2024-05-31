@@ -12,7 +12,7 @@ stages:
 # 该任务在test阶段执行，负责进行后端的单元测试
 test_to_develop_back:
   tags:
-    - jifu-dev # 用于指定执行该任务的 Runner 标签
+    - k8s-dev # 用于指定执行该任务的 Runner 标签
   image: registry.jifu.ytx.com/jifu_dev/base_image_jdk21_maven_node18:v3.0 # 指定任务运行时使用的 Docker 镜像
   stage: test # 指定该任务属于测试阶段
   # 这是一个执行脚本操作的配置段
@@ -37,7 +37,7 @@ test_to_develop_back:
 # 执行条件包括特定的分支、提交信息匹配以及触发源。
 build_and_push_develop_back:
   tags:
-    - jifu-dev  # 指定使用的机器标签
+    - k8s-dev  # 指定使用的机器标签
   image: registry.jifu.ytx.com/jifu_dev/base_image_jdk21_maven_node18:v3.0  # 指定任务运行时使用的Docker镜像
   stage: build  # 指定任务所在的阶段
   script:
@@ -71,7 +71,7 @@ deploy_to_develop_back:
   stage: deploy # 任务所属的阶段，此处为部署阶段
   script:
     # 执行部署脚本，传入环境、项目名、镜像标签和JAR服务端口
-    - sh /opt/deploy/scripts/deploy.sh develop ${BACK_PROJECT_NAME} ${DOCKER_TAG} ${JAR_PORT}
+    - sh /opt/deploy/scripts/deploy.sh develop ${BACK_PROJECT_NAME} ${DOCKER_TAG} ${JAR_PORT} ${CPU_LIMITS} ${MEMORY_LIMITS} ${CPU_REQUESTS} ${MEMORY_REQUESTS}
   needs: ["build_and_push_develop_back"] # 指定该任务依赖于前面的构建和推送镜像到开发环境的任务
   when: on_success # 仅在前一个任务成功时执行
   rules:

@@ -47,7 +47,6 @@ public class SysLoginController {
 
     @Autowired
     private SysUserService sysUserService;
-
     @Resource
     private RedisTemplate<String,Object> redisTemplate;
     @Autowired

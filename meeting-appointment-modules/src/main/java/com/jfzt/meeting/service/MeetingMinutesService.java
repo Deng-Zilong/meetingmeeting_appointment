@@ -23,10 +23,24 @@ public interface MeetingMinutesService extends IService<MeetingMinutes> {
      */
     List<MeetingMinutesVO> getMeetingMinutes (MeetingMinutes meetingMinutes);
 
+
     /**
+     * @param meetingMinutes userId id
+     * @description 根据用户id 纪要id删除指定纪要
+     */
+    void deleteMeetingMinutes (MeetingMinutes meetingMinutes);
+
+    /**
+     * @param meetingRecordId 会议id
+     * @description 根据会议id删除所有会议纪要
+     */
+    void deleteMeetingMinutes (Long meetingRecordId);
+
+    /**
+     * @return com.jfzt.meeting.common.Result<java.lang.Object>
+     * @return com.jfzt.meeting.common.Result<java.lang.Object>
      * @Description 保存会议纪要
      * @Param [meetingMinutes]
-     * @return com.jfzt.meeting.common.Result<java.lang.Object>
      */
-    Result<Object> saveOrUpdateMinutes(MeetingMinutes meetingMinutes);
+    Result<Object> saveOrUpdateMinutes (MeetingMinutes meetingMinutes);
 }
