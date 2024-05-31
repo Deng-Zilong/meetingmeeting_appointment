@@ -46,7 +46,7 @@ variables:
   JAR_PORT: 8080
 
   #【请修改】后端Jar包存在地址(参考上述目录结构)
-  JAR_PATH: "./meeting-appointment-admin/target/ipr.jar"
+  JAR_PATH: "target/ipr.jar"
 
   #【请修改】前端项目打包方式 $BUILD_COMMAND run build:$ENVIRONMENT
   BUILD_COMMAND: "npm"
