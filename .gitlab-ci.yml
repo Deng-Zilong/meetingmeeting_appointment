@@ -27,7 +27,7 @@ variables:
   FRONT_PATH: "meeting-appointment-ui"
 
   # 设置后端分支和前端分支的默认值
-  BACK_BRANCH: "feature"
+  BACK_BRANCH: "develop"
 
   #【请修改】后端Dockerfile存在路径(参考上述目录结构)
   DOCKERFILE_PATH: "meeting-appointment-admin/Dockerfile"
