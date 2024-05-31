@@ -21,10 +21,10 @@ include:
 
 variables:
   #【请修改】后端文件夹路径
-  BACK_PATH: "meeting-appointment-admin"
+  BACK_PATH: "meeting-appointment-backend"
 
   #【请修改】前端文件夹路径
-  FRONT_PATH: "meeting-appointment-ui"
+  FRONT_PATH: "meeting-appointment-pc-web"
 
   # 设置后端分支和前端分支的默认值
   BACK_BRANCH: "include"
@@ -51,7 +51,7 @@ variables:
 
   #【请修改】前端项目打包方式 $BUILD_COMMAND run build:$ENVIRONMENT
   BUILD_COMMAND: "npm"
-  ENVIRONMENT: "feature"
+  ENVIRONMENT: "runner-test"
 
   # 定义生产环境使用的Docker镜像标签
   # 使用CI_COMMIT_TAG环境变量，该变量在持续集成流程中由GitLab CI/CD自动设置，
