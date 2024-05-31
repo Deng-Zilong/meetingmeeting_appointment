@@ -8,7 +8,6 @@ import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.config.WxCpDefaultConfiguration;
 import com.jfzt.meeting.constant.MessageConstant;
 import com.jfzt.meeting.entity.SysUser;
-import com.jfzt.meeting.entity.vo.LoginVo;
 import com.jfzt.meeting.entity.vo.SysUserVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
@@ -16,8 +15,6 @@ import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.service.SysUserService;
 import jakarta.annotation.Resource;
 import me.chanjar.weixin.cp.api.impl.WxCpServiceImpl;
-import me.chanjar.weixin.cp.tp.service.impl.WxCpTpOAuth2ServiceImpl;
-import me.chanjar.weixin.cp.tp.service.impl.WxCpTpServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -50,9 +47,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     private WxCpServiceImpl wxCpService;
     @Autowired
     private WxCpDefaultConfiguration wxCpDefaultConfiguration;
-    @Autowired
-    private WxCpTpServiceImpl wxCpTpService;
-
 
     /**
      * 根据用户id拼接姓名字符串并返回用户信息集合
@@ -220,13 +214,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
                 .collect(Collectors.toList()));
     }
 
-    @Override
-    public Map<String, String> userQrCode() {
-        String url = wxCpService.buildQrConnectUrl(wxCpDefaultConfiguration.getUrl()+"/#/home",wxCpDefaultConfiguration.getState());
-        Map<String,String> map = new HashMap<>(1);
-        map.put("url",url);
-        return map;
-    }
+//    @Override
+//    public Map<String, String> userQrCode() {
+//        String url = wxCpService.buildQrConnectUrl("http://172.17.34.48:32375"+"/#/home",wxCpDefaultConfiguration.getState());
+//        Map<String,String> map = new HashMap<>(1);
+//        map.put("url",url);
+//        return map;
+//    }
 
 
 }

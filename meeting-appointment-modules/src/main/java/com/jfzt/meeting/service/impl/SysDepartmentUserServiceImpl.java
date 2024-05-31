@@ -12,7 +12,6 @@ import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.service.SysDepartmentService;
 import com.jfzt.meeting.service.SysDepartmentUserService;
 import com.jfzt.meeting.service.SysUserService;
-import com.jfzt.meeting.utils.EncryptUtils;
 import com.jfzt.meeting.utils.HttpClientUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -109,7 +108,6 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     public Boolean findDepartmentUser(Long departmentLength) throws WxErrorException, NoSuchAlgorithmException {
         log.info("删除企业部门表，用户表");
         sysDepartmentUserMapper.deleteAll();
-//        sysUserMapper.deleteAll();
         WxCpUserServiceImpl wxCpUserService = new WxCpUserServiceImpl(wxCpService);
         List<WxCpUser> listDepartmentUserList = new ArrayList<>();
         for (int i = 1; i < departmentLength + 1; i++) {
@@ -117,17 +115,10 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
             listDepartmentUserList.addAll(wxCpUser);
         }
         List<WxCpUser> wxCpUserList = listDepartmentUserList.stream().distinct().toList();
-//        log.info("拼接存储用户信息表");
-//        ArrayList<SysUser> users = new ArrayList<>();
         log.info("拼接存储部门关联表");
         List<SysDepartmentUser> sysDepartmentUserList = new ArrayList<>();
         for (WxCpUser wxCpUser : wxCpUserList) {
-//            SysUser sysUser = new SysUser();
-//            sysUser.setUserId(wxCpUser.getUserId());
-//            sysUser.setUserName(wxCpUser.getName());
-//            sysUser.setPassword(EncryptUtils.encrypt(EncryptUtils.md5encrypt("Aa111111")));
-//            sysUser.setLevel(wxCpUser.getEnable());
-//            users.add(sysUser);
+
             for (int s = 0; s < wxCpUser.getDepartIds().length; s++) {
                 SysDepartmentUser sysDepartmentUser = new SysDepartmentUser();
                 sysDepartmentUser.setUserId(wxCpUser.getUserId());
@@ -135,7 +126,6 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
                 sysDepartmentUserList.add(sysDepartmentUser);
             }
         }
-//        sysUserService.saveBatch(users);
         sysDepartmentUserMapper.insertAll(sysDepartmentUserList);
         return true;
     }
