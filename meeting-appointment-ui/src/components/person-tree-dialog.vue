@@ -41,8 +41,6 @@
                 show-checkbox
                 node-key="userId"
                 :props="defaultGroupProps"
-                :default-checked-keys="groupPersonIds"
-                :default-expanded-keys="groupPersonIds"
             />
         </el-scrollbar>
         <template #footer>
@@ -65,15 +63,23 @@
 
     // 获取父组件传值
     const props = defineProps<{
-        modelValue: boolean
-        type: number;
-        title: string;
-        peopleIds?: any[];
-        groupList?: any[];
-        groupPersonIds?: any[];
+        modelValue: boolean;     // 弹框显示
+        type: number;            // 弹框类型 1：创建群组 2：修改群组人员 3：添加参会人员 4：添加管理员
+        title: string;           // 弹框标题
+        peopleIds?: any[];       // 从通讯录选中人员id
+        groupList?: any[];       // 群组列表
+        groupPersonIds?: any[];  // 从群组选中的人员id
     }>();
     // 子组件向父组件传值
     const emit = defineEmits(['closeDialog', 'submitDialog']);
+
+    const visible = ref(false) // 弹框显示
+    watch(() => props.modelValue, (newValue) => {
+        active.value = 1; // 默认展示通讯录
+        visible.value = newValue; // 打开弹窗
+        addGroupForm.value.peopleIds = props.peopleIds; // 回显选中的人员
+        handleAddGroupReq(); // 获取通讯录数据
+    })
 
     // 搜索人员
     let search = ref<string>('');
@@ -85,23 +91,13 @@
         label: 'departmentName',
     }
 
-    const visible = ref(false) // 弹框显示
-    watch(() => props.modelValue, (newValue) => {
-        visible.value = newValue;
-        if (props.type == 2) {
-            console.log(props.peopleIds);
-            
-            addGroupForm.value.peopleIds = props.peopleIds;
-        }
-        handleAddGroupReq();
-    })
 
     // 添加群组人员弹窗数据
     let addGroupForm = ref({
-        list:<any> [],
-        peopleIds: <any> [],
-        groups: <any> [],
-        groupPeopleNames: <any> [],
+        list:<any> [],              // 通讯录列表数据
+        peopleIds: <any> [],        // 选中的人员id
+        groups: <any> [],           // 选中的人员信息
+        groupPeopleNames: <any> [], // 选中的人员名称
     })
     
     /**
@@ -112,15 +108,13 @@
           .then(res => {
                 addGroupForm.value.list = treeUserListToChildren(res.data);
             })
-            .catch(err => {
-                console.log(err, "err");
-            })
+            .catch(err => {})
             .finally(() => {})
     }
     /**
      * @description 处理群组成员数据结构
      */
-     const treeUserListToChildren = (data: any) => {
+    const treeUserListToChildren = (data: any) => {
         data.forEach((item: any) => {
             // 如果当前节点有 treeUsers，则创建一个代表 treeUsers 的虚拟节点
             if (item.treeUsers && item.treeUsers.length > 0) {
@@ -147,33 +141,33 @@
         });
         return data;
     }
-    // 添加群组人员弹窗 ref
+
+    // 从群组中选择人员弹窗 ref
     const treeRef = ref<InstanceType<typeof ElTree>>();
-    let active = ref<number>(1);
-    let groupPersonIds = ref<any>([]);
-    let groupUserNames = ref<any>([]);
-    let groupUserInfo = ref<any>([]);
+    let active = ref<number>(1); // 1.通讯录中选择 3.从群组中选择
+    let groupPersonIds = ref<any>([]); // 群组选中人员id
+    let groupUserNames = ref<any>([]); // 群组选中人员名称
+    let groupUserInfo = ref<any>([]);  // 群组选中人员信息
+
+    // tree 的默认配置
     const defaultGroupProps = {
         children: 'users',
         label: 'userName',
     }
+    /**
+     * @description 切换选择类别
+     */
     const handleChangeGroupType = (type: number) => {
+        // 从群组切换到通讯录
         if (type == 3 && treeGroupRef.value) {
             handleGroupTree();
         }
+        // 从通讯录切换到群组
         if (type == 1 && treeRef.value) {
             handleTree();
         }
         active.value = type;
     }
-
-    /**
-     * @description 获取选中人员信息
-     */
-     const handleChangeGroupPeople = (value: any) => {
-         // 将选中的userId添加到 groupPeopleIds 中
-         addGroupForm.value.peopleIds = Array.from(new Set([...addGroupForm.value.peopleIds, value]));
-        }
 
     let groupPeopleList = ref<any>([]); // 远程搜索群组成员列表
     /**
@@ -197,6 +191,13 @@
                 groupPeopleList.value = [];
             })
     }
+    /**
+     * @description 获取选中人员信息
+     */
+     const handleChangeGroupPeople = (value: any) => {
+        // 将选中的userId添加到 groupPeopleIds 中
+        addGroupForm.value.peopleIds = Array.from(new Set([...addGroupForm.value.peopleIds, value]));
+    }
 
     let allIds = ref<any>([]);
     let allName = ref<any>([]);
@@ -205,20 +206,34 @@
      * @description 提交数据
      */
     const submitDialog = () => {
+        // 会议室预约 添加参会人员
         if ( props.type == 3) {
+            // 从群组中选择
             if (active.value == 3 && treeRef.value) {
                 handleTree();
             }
+            // 从通讯录中选择
             if (active.value == 1 && treeGroupRef.value) {
                 handleGroupTree();
             }
+            // 选中的人员id去重
             allIds.value = Array.from(new Set([...groupPersonIds.value, ...addGroupForm.value.peopleIds, currentUserId.value ]));
+            // 选中人员名称去重
             allName.value = Array.from(new Set([...groupUserNames.value, ...addGroupForm.value.groupPeopleNames, currentUserName.value]));
-            allInfo.value = Array.from(new Set([...groupUserInfo.value, ...addGroupForm.value.groups, {userId: currentUserId.value, userName: currentUserName.value}]));
-            
+            // 选中人员信息去重
+            const infoArr = [...groupUserInfo.value, ...addGroupForm.value.groups, {userId: currentUserId.value, userName: currentUserName.value}];
+            allInfo.value = Array.from(
+                new Map(
+                    infoArr.map((item: any) => [item.userId, {
+                        userId: item.userId,
+                        userName: item.userName,
+                    }])
+                ).values()
+            );
             return emit ('submitDialog',props.type, active.value, allIds.value, allName.value, allInfo.value);
             
         }
+        // 群组管理 1 创建群组 2 修改群组
         if (props.type == 1 || props.type == 2) {
             handleGroupTree();
             emit(
@@ -228,6 +243,7 @@
                 addGroupForm.value,
             );
         }
+        // 后台管理 添加管理员
         if (props.type == 4) {
             handleGroupTree();
             emit(

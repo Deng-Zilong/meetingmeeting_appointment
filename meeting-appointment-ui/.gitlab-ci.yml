@@ -1,0 +1,64 @@
+# GitLab CI/CD配置文件
+# 用于定义项目的构建和部署流程
+
+
+# 定义流程的阶段
+stages:
+  - build # 构建阶段
+  - deploy # 部署阶段
+
+# 定义一个名为 `build_and_push_develop_front` 的任务，用于前端项目的构建和打包。
+# 该任务在 `develop` 环境下执行，包括执行一些脚本命令以及根据条件决定是否运行。
+build_and_push_develop_front:
+  tags: # 指定任务运行所需的 Runner 标签
+    - jifu-dev
+  image: # 指定任务运行时使用的 Docker 镜像
+    registry.jifu.ytx.com/jifu_dev/base_image_jdk21_maven_node18:v3.0
+  stage: # 将任务分配到构建阶段
+    build
+  script: # 在此部分定义任务运行时执行的脚本命令
+    - export PROJECT_TYPE="frontend" # 定义打包类型前端
+    - cd ${FRONT_PATH} # 进入前端项目路径
+    - ${BUILD_COMMAND} config set registry https://registry.npmjs.org  # 设置 打包 镜像源
+    - ${BUILD_COMMAND} install --no-frozen-lockfile # 安装项目依赖
+    - ${BUILD_COMMAND} run build:${ENVIRONMENT} # 根据环境变量进行项目构建
+    - bash /opt/deploy/scripts/build-image.sh develop ${FRONT_PROJECT_NAME} ${DOCKER_TAG} # 构建 Docker 镜像
+  rules: # 在此部分定义任务执行的条件规则
+    # 规则一：当提交的分支与 `BACK_BRANCH` 相等，并且提交信息包含 `build` 字符串时执行。
+    # 且仅当指定路径下的文件或 `.gitlab-ci.yml` 发生变化时触发。
+    - if: '$CI_COMMIT_BRANCH == $BACK_BRANCH && $CI_COMMIT_MESSAGE =~ /build/'
+      changes:
+        - $BACK_PATH/** # 指定触发构建的文件路径条件
+        - .gitlab-ci.yml
+      when: on_success # 当前任务成功执行时触发后续任务
+    # 规则二：如果提交的是标签，则不执行该任务。
+    - if: '$CI_COMMIT_TAG'
+      when: never
+    # 规则三：允许通过 Web 手动触发该任务。
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+
+
+# deploy_to_develop_front 规则定义了将前端项目部署到 develop 环境的任务
+# 该任务依赖于 build_and_push_develop_front 任务的成功完成，并在特定条件满足时触发。
+deploy_to_develop_front:
+  tags:
+    - jifu-dev  # 标识此任务属于 jifu-dev 标签
+  image: registry.jifu.ytx.com/library/kubectl:1.23.1  # 指定使用的 Docker 镜像
+  stage: deploy # 将此任务分配到部署阶段
+  script:
+    # 执行部署脚本，将前端项目部署到 develop 环境
+    - export PROJECT_TYPE="frontend"
+    - sh /opt/deploy/scripts/deploy.sh develop ${FRONT_PROJECT_NAME} ${DOCKER_TAG} 80
+  needs: ["build_and_push_develop_front"] # 指定此任务依赖于 build_and_push_develop_front 任务
+  when: on_success # 当前任务依赖的任务成功执行时触发
+  rules:
+    # 规则定义了任务执行的条件
+    - if: '$CI_COMMIT_BRANCH == $BACK_BRANCH && $CI_COMMIT_MESSAGE =~ /build/' # 当提交的分支和信息匹配指定条件时
+      changes:
+        - $BACK_PATH/** # 如果指定路径下的文件发生变化
+        - .gitlab-ci.yml # 或者 .gitlab-ci.yml 文件发生变化
+      when: on_success # 当前任务成功执行时触发后续任务
+    - if: '$CI_COMMIT_TAG' # 如果是标签提交，则不执行此任务
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "web"' # 允许通过 Web 手动触发此任务
+

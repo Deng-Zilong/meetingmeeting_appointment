@@ -20,4 +20,5 @@ public class UserInfoVO  implements Serializable {
     private String userId;
     private String name;
     private Integer level;
+    private String url;
 }

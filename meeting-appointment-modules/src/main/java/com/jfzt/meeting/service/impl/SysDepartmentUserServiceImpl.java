@@ -1,18 +1,17 @@
 package com.jfzt.meeting.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.SysDepartment;
 import com.jfzt.meeting.entity.SysDepartmentUser;
 import com.jfzt.meeting.entity.SysUser;
+import com.jfzt.meeting.entity.vo.SysUserVO;
 import com.jfzt.meeting.mapper.SysDepartmentMapper;
 import com.jfzt.meeting.mapper.SysDepartmentUserMapper;
 import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.service.SysDepartmentService;
 import com.jfzt.meeting.service.SysDepartmentUserService;
 import com.jfzt.meeting.service.SysUserService;
-import com.jfzt.meeting.utils.EncryptUtils;
 import com.jfzt.meeting.utils.HttpClientUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -23,12 +22,15 @@ import me.chanjar.weixin.cp.api.impl.WxCpUserServiceImpl;
 import me.chanjar.weixin.cp.bean.WxCpDepart;
 import me.chanjar.weixin.cp.bean.WxCpUser;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -69,7 +71,7 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
 
     @Override
     public WxCpUser findUserName(String accessToken, String code) throws WxErrorException {
-        //获取用户user_ticket
+        log.info("获取用户信息");
         HttpClientUtil httpClientUtil = new HttpClientUtil();
         HashMap<String, String> tokenCode = new HashMap<>(2);
         tokenCode.put("access_token", accessToken);
@@ -77,29 +79,36 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
         String responseAll = httpClientUtil.doGet("https://qyapi.weixin.qq.com/cgi-bin/auth/getuserinfo", tokenCode);
         JSONObject responseAllList = JSONObject.fromObject(responseAll);
         String userid = responseAllList.getString("userid");
-        //获取用户详细信息
+        log.info("获取用户详细信息");
         WxCpUserServiceImpl wxCpUserService = new WxCpUserServiceImpl(wxCpService);
         return wxCpUserService.getById(userid);
     }
 
+
     @Override
     public Long findDepartment() throws WxErrorException {
+        log.info("获取企业部门表");
         WxCpDepartmentServiceImpl wxCpDepartmentService = new WxCpDepartmentServiceImpl(wxCpService);
         List<WxCpDepart> listDepartmentList = wxCpDepartmentService.list(0L);
         sysDepartmentMapper.deleteAll();
         //存入信息
+        List<SysDepartment> sysDepartmentLists = new ArrayList<>();
         for (WxCpDepart listDepartment : listDepartmentList) {
             SysDepartment sysDepartment = new SysDepartment();
             sysDepartment.setDepartmentId(listDepartment.getId());
             sysDepartment.setDepartmentName(listDepartment.getName());
             sysDepartment.setParentId(listDepartment.getParentId());
-            sysDepartmentMapper.insert(sysDepartment);
+            sysDepartmentLists.add(sysDepartment);
         }
+        sysDepartmentMapper.insertAll(sysDepartmentLists);
         return (long) listDepartmentList.size();
     }
 
     @Override
-    public void findDepartmentUser(Long departmentLength) throws WxErrorException, NoSuchAlgorithmException {
+    public Boolean findDepartmentUser(Long departmentLength) throws WxErrorException, NoSuchAlgorithmException {
+        log.info("删除企业部门表，用户表");
+        sysDepartmentUserMapper.deleteAll();
+//        sysUserMapper.deleteAll();
         WxCpUserServiceImpl wxCpUserService = new WxCpUserServiceImpl(wxCpService);
         List<WxCpUser> listDepartmentUserList = new ArrayList<>();
         for (int i = 1; i < departmentLength + 1; i++) {
@@ -107,24 +116,27 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
             listDepartmentUserList.addAll(wxCpUser);
         }
         List<WxCpUser> wxCpUserList = listDepartmentUserList.stream().distinct().toList();
-        sysUserMapper.deleteAll();
+//        log.info("拼接存储用户信息表");
+//        ArrayList<SysUser> users = new ArrayList<>();
+        log.info("拼接存储部门关联表");
+        List<SysDepartmentUser> sysDepartmentUserList = new ArrayList<>();
         for (WxCpUser wxCpUser : wxCpUserList) {
-            SysUser sysUser = new SysUser();
-            sysUser.setUserId(wxCpUser.getUserId());
-            sysUser.setUserName(wxCpUser.getName());
-
-            sysUser.setPassword(EncryptUtils.encrypt(EncryptUtils.md5encrypt(wxCpUser.getUserId())));
-            sysUser.setLevel(wxCpUser.getEnable());
-            sysUserMapper.insert(sysUser);
-            sysDepartmentUserMapper.deleteAll();
+//            SysUser sysUser = new SysUser();
+//            sysUser.setUserId(wxCpUser.getUserId());
+//            sysUser.setUserName(wxCpUser.getName());
+//            sysUser.setPassword(EncryptUtils.encrypt(EncryptUtils.md5encrypt("Aa111111")));
+//            sysUser.setLevel(wxCpUser.getEnable());
+//            users.add(sysUser);
             for (int s = 0; s < wxCpUser.getDepartIds().length; s++) {
                 SysDepartmentUser sysDepartmentUser = new SysDepartmentUser();
                 sysDepartmentUser.setUserId(wxCpUser.getUserId());
                 sysDepartmentUser.setDepartmentId(wxCpUser.getDepartIds()[s]);
-                sysDepartmentUserMapper.insert(sysDepartmentUser);
+                sysDepartmentUserList.add(sysDepartmentUser);
             }
         }
-
+//        sysUserService.saveBatch(users);
+        sysDepartmentUserMapper.insertAll(sysDepartmentUserList);
+        return true;
     }
 
 
@@ -141,12 +153,14 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
         // 获取成员树
         List<SysDepartment> departments = departmentList.stream()
                 // 过滤顶级部门
-                .filter(sysDepartment -> sysDepartment.getParentId() == 0)
+                .filter(sysDepartment -> sysDepartment.getParentId() == 5201314)
                 // 排序
                 .sorted((node1, node2) -> Math.toIntExact(node1.getDepartmentId() - node2.getDepartmentId()))
                 // 递归设置子部门
-                .peek(topNode -> topNode.setChildrenPart(getChildren(topNode, departmentList)))
-                .collect(Collectors.toList());
+                .peek((topNode) -> topNode.setChildrenPart(getChildren(topNode, departmentList)))
+                .toList()
+                .getFirst()
+                .getChildrenPart();
         return Result.success(departments);
     }
 
@@ -162,20 +176,23 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
                 // 对每个子部门进行操作
                 .peek(childrenNode -> {
                     // 创建一个用户列表
-                    ArrayList<SysUser> sysUsers = new ArrayList<>();
+                    ArrayList<SysUserVO> sysUsers = new ArrayList<>();
                     // 获取子部门的用户
                     childrenNode.setChildrenPart(getChildren(childrenNode, all));
                     // 获取部门用户
                     List<SysDepartmentUser> departmentUsers = sysDepartmentUserService.lambdaQuery()
-                            .select(SysDepartmentUser::getUserId)
-                            .eq(SysDepartmentUser::getDepartmentId , childrenNode.getDepartmentId())
+                            .eq(SysDepartmentUser::getDepartmentId, childrenNode.getDepartmentId())
                             .list();
                     // 对每个部门用户进行操作
                     departmentUsers.stream().peek(sysDepartmentUser -> {
                         // 根据用户ID获取用户
-                        List<SysUser> userList = sysUserService.lambdaQuery()
+                        List<SysUserVO> userList = sysUserService.lambdaQuery()
                                 .eq(SysUser::getUserId, sysDepartmentUser.getUserId())
-                                .list();
+                                .list().stream().map(sysUser -> {
+                                    SysUserVO sysUserVO = new SysUserVO();
+                                    BeanUtils.copyProperties(sysUser, sysUserVO);
+                                    return sysUserVO;
+                                }).toList();
                         // 将用户添加到用户列表中
                         sysUsers.addAll(userList);
                     }).toList();

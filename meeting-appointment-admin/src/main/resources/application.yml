@@ -6,7 +6,7 @@ spring:
   application:
     name: meeting-appointment
   profiles:
-    active: dev
+    active: prod
     include: db,log,common,modules,quartz
   # application.yml
   jackson:
@@ -46,3 +46,27 @@ sky:
     user-ttl: 7200000000000
 
     user-token-name: authorization
+
+# 企业微信配置
+#qiyewx:
+#  corpid: ww942086e6c44abc4b
+#  corpsecret: Rnf3LVxbAdTfvGVTirgwVbgsaDoBv_MTXrmawAu9qHQ
+#  agentId: 1000002
+#  url: http://llzzxx.cn
+#  state: WWLogin
+#  #回调配置
+#  token: 9zTIV
+#  encodingAESKey: fha6hIaBwGCkU3R4IgV2SRHOCYd5EmVVVrKq71HqSQX
+#
+#  scope: snsapi_base
+# 企业微信配置
+qiyewx:
+  corpid: wwfa655ac032fa1cff
+  corpsecret: uZongcdBQh3eOrsos2x910dVA2gMtE4KFG7KP0ewfUc
+  agentId: 1000021
+  url: http://172.17.34.48:32375
+  #回调配置
+  token: 9zTIV
+  encodingAESKey: fha6hIaBwGCkU3R4IgV2SRHOCYd5EmVVVrKq71HqSQX
+  state: WWLogin
+  scope: snsapi_base

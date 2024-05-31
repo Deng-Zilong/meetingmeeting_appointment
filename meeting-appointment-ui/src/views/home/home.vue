@@ -5,8 +5,8 @@
       <div class="every-block screen">
         <div class="screen-title">中心会议室大屏</div>
         <div class="screen-main">
-          <div class="main-table">
-            <div class="main-items" :class="item.status === 1 ? 'pointer' : 'ban'" v-for="item in roomMeetingData" @click.stop="handleRoomClick(item)">
+          <div class="main-table my-main-scrollbar">
+            <div class="main-items" :class="item.status !== 0 ? 'pointer' : 'ban'" v-for="item in roomMeetingData" @click.stop="handleRoomClick(item)">
               <div class="name">{{ item.roomName }}</div>
               <div class="state">{{ roomStatus(item.status) }}</div>
             </div>
@@ -90,9 +90,9 @@
             <div class="title">人数</div>
             <div class="title">操作</div>
           </div>
-          <div class="table-main">
+          <div class="table-main my-main-scrollbar">
             <div class="table-tr" v-for="(item, index) in tableData">
-              <div class="tr-cell">
+              <div class="tr-cell tr-title">
                 <el-popover
                     placement="bottom"
                     :disabled="item.title?.length < 10"
@@ -120,9 +120,11 @@
               <div class="tr-cell">{{ time(item) }}</div>
               <div class="tr-cell">{{ statusName(item.status) }}</div>
               <div class="tr-cell">{{ item.meetingNumber }}</div>
-              <div class="tr-cell" :style="{ 'color': (operate(item) === '修改' ? '#3268DC' : '') }"
-              @click="operate(item) === '修改' ? modifyMeeting(item) : delMeeting(item,index) ">
-                {{ operate(item) }}
+              <div>
+                  <div class="tr-cell" :style="{ 'color': (operate(item) === '修改' ? '#3268DC' : '') }"
+                  @click="operate(item) === '修改' ? modifyMeeting(item) : delMeeting(item,index) ">
+                    {{ operate(item) }}
+                  </div>
               </div>
             </div>
           </div>
@@ -137,7 +139,7 @@ import { useRoute, useRouter } from 'vue-router';
 import {  getTodayMeetingRecordData, getDeleteMeetingRecordData, getCenterAllNumberData, getRoomStatusData, getTimeBusyData, getNoticeData } from '@/request/api/home'
 
 import Clock from '@/views/home/component/clock.vue'
-import GuageChart from '@/views/home/component/guageChart.vue'
+import GuageChart from '@/views/home/component/guage-chart.vue'
 import { ElMessage, ElMessageBox, dayjs } from 'element-plus';
 import { meetingState } from '@/utils/types';
 import { qwLogin } from '@/request/api/login';
@@ -180,8 +182,8 @@ let gaugeData = ref<any>([ // echarts数据展示 今日总预约数
 ])
 let roomMeetingData = ref<any>([]) // 会议室状态信息
 const timeArr = ref([  // 预约时间点及该时间点可预约状态
-  { time: '8:00', state: 3 }, { time: '8:30', state: 3 },
-  { time: '9:00', state: 3 }, { time: '9:30', state: 3 },
+  { time: '08:00', state: 3 }, { time: '08:30', state: 3 },
+  { time: '09:00', state: 3 }, { time: '09:30', state: 3 },
   { time: '10:00', state: 3 }, { time: '10:30', state: 3 },
   { time: '11:00', state: 3 }, { time: '11:30', state: 3 },
   { time: '12:00', state: 3 }, { time: '12:30', state: 3 },
@@ -211,9 +213,7 @@ const getCenterAllNumber = () => {
         name: '中心会议总次数'
       }]
     })
-    .catch((err) => {
-      console.log(err,'中心会议总次数err')
-    })
+    .catch((err) => {})
 }
 
 /**
@@ -235,19 +235,13 @@ const getRoomStatus = () => {
     .then((res) => {
       roomMeetingData.value = res.data
     })
-    .catch((err) => {
-      console.log(err,'会议室情况err')
-    })
+    .catch((err) => {})
 }
 
 const handleRoomClick = (item: any) => {
-    if(item.status === 1) {
-      router.push({
-      path: '/meeting-appoint',
-      query: {
-        meetingRoomId: item.id  // 首页 会议室 跳转到预约页面 传会议室id
-      }
-    })
+    if(item.status !== 0) {
+      sessionStorage.setItem('meetingInfo', JSON.stringify({meetingRoomId: String(item.id)}));
+      router.push('/meeting-appoint')
   }
 }
 
@@ -276,12 +270,8 @@ const selectTime = (item: any) => {
   if ([0, 1].includes(item.state)) {
     return;
   } else {
-    router.push({
-      path: '/meeting-appoint',
-      query: {
-        startTime: item.time  // 首页 时间点 跳转到预约页面 传时间点time
-      }
-    })
+    sessionStorage.setItem('meetingInfo', JSON.stringify({startTime: item.time}));
+    router.push('/meeting-appoint')
   }
 }
 
@@ -309,9 +299,12 @@ const operate = computed(() => (item: any) => {
   if (item.status === 0 && item.createdBy === userInfo.value.userId) {
     return '修改';
     // 暂定 状态为"已取消"时 且 登陆人员=创建者时(item.createdBy === userInfo.value.userId)  可删除
-  } else {
+  } else if (item.createdBy === userInfo.value.userId) {
     return '删除';
+  } else {
+    return '';
   }
+
 })
 
 /**
@@ -323,9 +316,7 @@ const getTodayRecord = (data: { userId: string }) => {
     .then((res) => {
       tableData.value = res.data
     })
-    .catch((err) => {
-      console.log(err, '查询今日会议情况err')
-    })
+    .catch((err) => {})
 }
 
 
@@ -333,23 +324,8 @@ const getTodayRecord = (data: { userId: string }) => {
 const modifyMeeting = (item: any) => {
   // 会议-未开始 且 登陆人员=创建者时(item.createdBy === userInfo.value.userId) 才可以修改
   if (item.status === 0 && item.createdBy === userInfo.value.userId) {
-    console.log(item,'修改')
-    router.push({
-      path: 'meeting-appoint',
-      query: {
-          id: item.id,
-          meetingRoomId: item.meetingRoomId,
-          title: item.title,
-          description: item.description,
-          startTime: item.startTime,
-          endTime: item.endTime,
-          meetingRoomName: item.meetingRoomName,
-          status: item.status,
-          createdBy: item.createdBy,
-          userName: item.adminUserName,
-          users: JSON.stringify(item.users),
-      }
-    })
+    sessionStorage.setItem('meetingInfo', JSON.stringify(item));
+    router.push('/meeting-appoint')
   }
 }
 
@@ -361,19 +337,17 @@ const modifyMeeting = (item: any) => {
 
 const delMeeting = (item: any, index: number) => {  
   ElMessageBox.confirm('是否确定删除会议？')
-  .then(() => {
-    getDeleteMeetingRecordData({ userId: item.createdBy, meetingId: item.id })  // 删除会议室接口
-      .then((res) => {
-        ElMessage.success('删除成功')
-        getTodayRecord({ userId: userInfo.value.userId })
+      .then(() => {
+        getDeleteMeetingRecordData({userId: userInfo.value.userId, meetingId: item.id})  // 删除会议室接口
+            .then((res) => {
+              ElMessage.success('删除成功')
+              getTodayRecord({userId: userInfo.value.userId})
+            })
+      .catch((err) => {})
       })
-      .catch((err) => {        
-        console.log(err,'删除会议记录err')
+      .catch(() => {
+        ElMessage.info('取消删除')
       })
-  })
-  .catch(() => {
-    ElMessage.info('取消删除')
-  })
 }
 
 /******************************************* 公告 ***********************************/
@@ -388,12 +362,16 @@ const getNotice = async () => {
 onMounted( async () => {
     /* 判断扫码登录状态 */
     const code = decodeURIComponent(route.query.code as string);
+    const loginMethod: number = 0; // web扫码登录
     userInfo.value = JSON.parse(localStorage.getItem('userInfo') as string);
     const token = userInfo.value?.accessToken;
     // 扫码登录
     if(!token) {
+        if (code === 'undefined') {
+            return router.replace('/login');
+        }
         try {
-            const res:any = await qwLogin({code});
+            const res:any = await qwLogin({code, loginMethod});
             if (res.code !== '00000') {
                 throw new Error(res.msg);
             }
@@ -460,6 +438,7 @@ onMounted( async () => {
           gap: 10px;
           width: 770px;
           height: 320px;
+          overflow-y: auto;
           .main-items {
             display: flex;
             flex-direction: column;  // 控制内部元素垂直排列
@@ -471,6 +450,11 @@ onMounted( async () => {
             box-sizing: border-box;
             border: 1px solid rgba(111, 167, 249, 0.8);
             box-shadow: inset 0px 0px 30px 0px rgba(16, 127, 255, 0.3);
+            height: 90px;
+            // 滚动条宽度
+            // &::-webkit-scrollbar {
+            //   width: 0.01rem;
+            // }
             .name {
               font-size: 1.1rem;
               color: #6A6A6A;
@@ -573,10 +557,6 @@ onMounted( async () => {
               }
             }
             .day-right {
-              // display: flex;
-              // flex-direction: column;
-              // align-items: center;
-              // justify-content: space-evenly;
               width: 4.3rem;
               color: #FFF;
               text-align: center;
@@ -692,22 +672,27 @@ onMounted( async () => {
         display: grid;
         grid-template-columns: repeat(6, 1fr); /* 创建6列，每列等宽 */
         grid-template-rows: repeat(5, auto); /* 创建5行，自动高度适应内容 */
-        gap: 4px; /* 设置单元格之间的间距 */
+        gap: 7px; /* 设置单元格之间的间距 */
         background: #F5F7FA;
         border-radius: 0 0 15px 15px;
-        padding: 5px;
+        padding: 7px;
         
         .choose-cell {
-          padding: 20px;
+          height: 57px;
+          line-height: 57px;
           text-align: center;
           overflow: hidden; /* 防止内容溢出 */
+          font-size: 0.8rem;
           background: #FFF;
           border-radius: 5px;
           box-shadow: 1px 1px 2px 1px #DBE9F7;
+          transition: transform 0.3s linear;
           &:hover {
             cursor: pointer;
+            font-size: 1rem;
+            color: #FFF;
             background-color: #1273DB;
-            transform: scale(1.06);
+            transform: translateY(-0.3125rem) scale(1.06);
           }
         }
       }
@@ -753,6 +738,9 @@ onMounted( async () => {
         .table-main {
           max-height: 18.6rem;
           overflow-y: auto;
+          &::-webkit-scrollbar {
+            display: none;
+          }
           .table-tr {
             display: flex;
             text-align: center;
@@ -770,6 +758,11 @@ onMounted( async () => {
               &:last-child {
                 cursor: pointer;
               }
+            }
+            // 会议主题单元格单独设置
+            .tr-title {
+                text-align: left;
+                padding-left: 15px;
             }
           }
         }

@@ -46,8 +46,8 @@ export const useUserStore = defineStore('user',()=>{
      * @param username 用户名
      * @param password 密码
      */
-    const getUserInfo= (data:{name: string, password: string, uuid: string, code: string})=>{
-        Login(data)
+    const getUserInfo= async (data:{name: string, password: string, uuid: string, code: string})=>{
+        await Login(data)
                 .then((res: any) => {
                     localStorage.setItem('userInfo', JSON.stringify(res.data));
                     userInfo = res.data;

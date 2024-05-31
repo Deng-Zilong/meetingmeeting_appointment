@@ -30,6 +30,7 @@ public enum ErrorCodeEnum {
     USER_ERROR_A0101("A0101", "用户未同意隐私协议"),
     SERVICE_ERROR_A0240("A0240", "用户验证码错误"),
     SERVICE_ERROR_A0201("A0201", "用户账户不存在"),
+    SERVICE_ERROR_A020111("A020111", "用户不允许多方登录"),
     SERVICE_ERROR_A02011("A02011", "用户扫码登录失败请重新扫码"),
     SERVICE_ERROR_A0210("A0210", "用户密码错误"),
     SERVICE_ERROR_A0230("A0230", "用户登录已过期"),
@@ -58,6 +59,7 @@ public enum ErrorCodeEnum {
      * 一级宏观错误码
      */
     SERVICE_ERROR_C0001("C0001", "调用第三方服务出错"),
+    SERVICE_ERROR_C00011("C00011", "调用第三方服务出错url网页访问失败"),
     /**
      * 二级宏观错误码
      */

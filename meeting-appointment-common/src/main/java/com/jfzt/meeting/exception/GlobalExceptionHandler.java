@@ -2,9 +2,11 @@ package com.jfzt.meeting.exception;
 
 
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.weixin.AesException;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.apache.ibatis.exceptions.TooManyResultsException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -80,9 +82,26 @@ public class GlobalExceptionHandler {
     public Result<String> handleRRException (WxErrorException e) {
         log.error(ErrorCodeEnum.SERVICE_ERROR_C0200.getCode(), ErrorCodeEnum.SERVICE_ERROR_C0200.getDescription());
         Result<String> result = new Result<>();
-        result.setCode(ErrorCodeEnum.SERVICE_ERROR_C0200.getCode());
-        result.setMsg(ErrorCodeEnum.SERVICE_ERROR_C0200.getDescription());
+        result.setCode(e.getLocalizedMessage());
+        result.setMsg(e.getMessage());
         return result;
+    }
+
+    /**
+     * @param e 异常
+     * @return {@code Result<String>}
+     * @description 参数缺失
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public Result<String> handleMissingServletRequestParameterException (
+            MissingServletRequestParameterException e) {
+        log.error("Exception occurred:", e);
+        StackTraceElement[] stackTrace = e.getStackTrace();
+        if (stackTrace.length > 0) {
+            String exceptionLocation = stackTrace[0].toString();
+            log.error("Exception occurred at: {}", exceptionLocation);
+        }
+        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0410);
     }
 
     /**
@@ -100,6 +119,16 @@ public class GlobalExceptionHandler {
         }
         return Result.fail(ErrorCodeEnum.SYSTEM_ERROR_B0001);
     }
-
+    /**
+     * 调用企业微信接口异常
+     */
+    @ExceptionHandler(AesException.class)
+    public Result<String> handleRRException (AesException e) {
+        log.error(ErrorCodeEnum.SERVICE_ERROR_C0200.getCode(), ErrorCodeEnum.SERVICE_ERROR_C0200.getDescription());
+        Result<String> result = new Result<>();
+        result.setCode(ErrorCodeEnum.SERVICE_ERROR_C0200.getCode());
+        result.setMsg(ErrorCodeEnum.SERVICE_ERROR_C0200.getDescription());
+        return result;
+    }
 
 }

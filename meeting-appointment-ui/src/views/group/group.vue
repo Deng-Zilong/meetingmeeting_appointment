@@ -2,7 +2,7 @@
     <div class="group">
         <div class="theme">
             <div class="left">
-                <el-input v-model="groupTitle" style="width: 240px" placeholder="请输入" />
+                <el-input v-model="groupTitle" style="width: 40rem" maxlength="15" placeholder="请输入" />
                 <div>群组名称</div>
             </div>
             <div class="center">
@@ -23,10 +23,10 @@
             <el-timeline class="list-container" ref="timelineRef">
                 <el-timeline-item class="timeline-item" v-for="(value, index) in dataList" :key="index">
                     <div class="timestamp">
-                        <p><span>{{ value.month }}</span>月</p>
+                        <p>{{ value.month }}月</p>
                         <p>{{ value.day }}</p>
                     </div>
-                    <div class="card-item" v-for="(item, index) in value.list" :key="index">
+                    <div class="card-item" v-for="(item, key) in value.list" :key="index">
                         <div>{{ item.userName }}</div>
                         <div>{{ item.editTime }}</div>
                         <div v-if="item.isEdit">
@@ -36,7 +36,7 @@
                             {{ item.groupName }}
                         </div>
                         <div v-else>
-                            <el-input v-model="item.groupName" @blur="handleEditGroupName(index, item)" />
+                            <el-input v-model="item.groupName" @blur="handleEditGroupName(index, key, item)" />
                         </div>
                         <div>
                             <el-icon @click="editAttendees(item)" v-show="item.createdBy == currentUserId">
@@ -156,15 +156,15 @@ const handleCreateGroup = () => {
             ElMessage.success('创建成功!');
             groupTitle.value = '';
             groupPeopleNames.value = '';
+            // 重置页码
+            page.value = 1;
+            // 获取数据
+            getDataOnScroll();
             groups.value = [];
+            
         })
         .catch(err => { })
-        .finally(() => {
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-
-        })
+        .finally(() => {})
 }
 /************************** 创建群组结束 **************************/
 
@@ -286,21 +286,22 @@ const updateGroupInfo = async (data: { id: string; groupName?: string; users?: [
         })
         .catch(err => { })
         .finally(() => {
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
+            // 重置页码
+            page.value = 1;
+            // 获取数据
+            getDataOnScroll();
         })
 }
 /**
  * @description 修改群组名称
  * @param index 下标
  */
-const handleEditGroupName = async (index: number, item: any) => {
+const handleEditGroupName = async (index: number, key: number, item: any) => {
     if (!item.groupName) {
         ElMessage.warning('群组名称不可为空！');
         return;
     }
-    dataList.value[index].isEdit = true;
+    dataList.value[index].list[key].isEdit = true;
     updateGroupInfo({ id: item.id, groupName: item.groupName });
 }
 /**
@@ -329,12 +330,12 @@ const handleDeleteMeeting = async (id: string,) => {
     })
         .then(() => {
             deleteMeetingGroup({ id })
-                .then(async res => {
+                .then(res => {
                     ElMessage.success('删除成功!');
                     // 重置页码
                     page.value = 1;
                     // 获取数据
-                    await getDataOnScroll();
+                    getDataOnScroll();
                 }).catch(err => { })
                 .finally(() => {
                     
@@ -348,7 +349,7 @@ const handleDeleteMeeting = async (id: string,) => {
 </script>
 <style scoped lang="scss">
 .group {
-
+    height: 46.9375rem;
     // background-color: #f5f5f5;
     .theme {
         width: 97.9375rem;
@@ -408,10 +409,12 @@ const handleDeleteMeeting = async (id: string,) => {
 
         .right {
             transition: transform 0.2s ease;
-            user-select: none;
-
+            cursor: pointer;
             &:active {
                 transform: scale(0.96);
+            }
+            &:hover {
+                background: rgba(90, 149, 238, 0.6);
             }
         }
 
@@ -429,13 +432,13 @@ const handleDeleteMeeting = async (id: string,) => {
             color: #FFFFFF;
             border-radius: .5rem;
             background: #409EFF;
-            cursor: pointer;
+            user-select: none;
         }
     }
 
     .content {
         width: 97.9375rem;
-        height: 42.0625rem;
+        height: 41.93rem;
         border-radius: .9375rem;
         box-sizing: border-box;
         border: .1875rem solid rgba(18, 115, 219, 0.8);
@@ -443,10 +446,10 @@ const handleDeleteMeeting = async (id: string,) => {
 
         .title {
             height: 3rem;
-            ;
-
             div {
-                font-size: 1.2rem;
+                font-size: 1.1rem;
+                font-weight: 400;
+                color: #3A3A3A;
                 line-height: 1.75rem;
             }
         }
@@ -509,7 +512,6 @@ const handleDeleteMeeting = async (id: string,) => {
                 div {
                     position: relative;
                     font-size: 1rem;
-                    font-weight: 350;
                     line-height: 1.25rem;
                     color: #666666;
 

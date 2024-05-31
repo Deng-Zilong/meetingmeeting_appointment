@@ -26,7 +26,7 @@
                 <div class="appoint-row">
                     <el-form-item label="开始时间" prop="startTime">
                         <el-time-select v-model="formData.startTime" :start="timeStart" :min-time="minStartTime" step="00:15" :end="timeEnd"
-                            placeholder="请选择" @change="minEndTime = formData.startTime"/>
+                            placeholder="请选择" @change="handleChangeStartTime"/>
                     </el-form-item>
                     <el-form-item label="结束时间" prop="endTime">
                         <el-time-select 
@@ -45,9 +45,9 @@
                         <el-date-picker v-model="formData.date" type="date" class="date" :disabled-date="disabledDate"
                             placeholder="选择日期" />
                     </el-form-item>
-                    <el-form-item label="当前可选地点" prop="meetingRoom">
-                        <el-select v-model="formData.meetingRoomId" placeholder="请选择">
-                            <el-option v-for="item in roomArr" :key="item.meetingRoomId" :label="item.roomName" :value="item.meetingRoomId" />
+                    <el-form-item label="当前可选地点" prop="meetingRoomId">
+                        <el-select v-model.string="formData.meetingRoomId" placeholder="请选择" @change="handleChangeRoom">
+                            <el-option v-for="item in roomArr" :key="item.id" :label="item.roomName" :value="String(item.id)" />
                         </el-select>
                     </el-form-item>
                 </div>
@@ -84,15 +84,15 @@
             :type="addPersonForm.type"
             :list="addPersonForm.list" 
             :groupList="addPersonForm.list" 
-            :peopleIds="addPersonForm.PeopleIds"
-            :groupPersonIds="addPersonForm.PeopleIds"
+            :peopleIds="addPersonForm.personIds"
+            :groupPersonIds="addPersonForm.personIds"
             @close-dialog="closeAddPersonDialog" 
             @submit-dialog="handleCheckedPerson" />
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { onMounted, reactive, ref, watch, onUnmounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import type { ComponentSize, FormInstance, FormRules } from 'element-plus'
 import { ElMessage, dayjs } from 'element-plus'
@@ -100,49 +100,56 @@ import { Plus } from '@element-plus/icons-vue'
 import personTreeDialog from '@/components/person-tree-dialog.vue'
 import { addMeetingGroup, getMeetingGroupList } from '@/request/api/group'
 import { addMeetingRecord, availableMeetingRooms, updateMeetingRecord } from '@/request/api/meeting-appoint'
+import { meetingStatus } from '@/stores/meeting-status'
 
 const routes = useRoute();
 const router = useRouter();
+const useMeetingStatus = meetingStatus();
 const userInfo = ref<any>(JSON.parse(localStorage.getItem('userInfo') as string) || '');
 const currentUserId = ref<string>(userInfo.value.userId);
 
 const isCreate = ref(true); // 是否是创建会议 true创建 false修改
 
 onMounted(() => {
-    if (routes.query?.id) {
+    // 获取会议相关参数
+    const meetingInfo = JSON.parse(sessionStorage.getItem('meetingInfo') as string);
+    // 历史记录修改
+    if (meetingInfo?.id) {
+        // 修改会议
         isCreate.value = false;
-        const { id, meetingRoomId, title, description, meetingRoomName, status, createdBy, adminUserName, startTime, endTime } = routes.query;
+        // 解构所需数据
+        const { id, meetingRoomId, title, description, meetingRoomName, status, createdBy, adminUserName, startTime, endTime, users } = meetingInfo;
     
-        const users:any = JSON.parse(routes.query.users as string);
-        const meetingPeople = Array.from(new Set(users?.map((el: any) => el.userName))).join(',');
-        const meetingUserIds = Array.from(new Set(users.map((el: any) => el.userId)));
+        const meetingPeople = Array.from(new Set(users?.map((el: any) => el.userName))).join(','); // 获取参会人名字并去重
+        addPersonForm.value.personIds = Array.from(new Set(users.map((el: any) => el.userId))); // 获取参会人id并去重 用于成员树回显
         // 重组 form 表单数据
         formData.value = {
-            id: id,
-            meetingRoomId: Number(meetingRoomId),
-            title,
-            description,
-            startTime: dayjs(startTime as string).format('HH:mm'),
-            endTime: dayjs(endTime as string).format('HH:mm'),
-            meetingRoomName,
-            meetingPeople,
-            meetingUserIds,
-            status,
-            createdBy,
-            adminUserName,
-            users,
-            date: dayjs(new Date()).format('YYYY-MM-DD'),
-            groupName: '',
+            id: id,             // 会议id
+            meetingRoomId: String(meetingRoomId),      // 会议室id
+            title,              // 会议名称
+            description,        // 会议描述
+            startTime: dayjs(startTime as string).format('HH:mm'), // 会议开始时间
+            endTime: dayjs(endTime as string).format('HH:mm'),     // 会议结束时间
+            meetingRoomName,     // 会议室名称
+            meetingPeople,       // 参会人名字
+            status,              // 会议状态
+            createdBy,           // 创建人id
+            adminUserName,       // 创建人名字
+            users,               // 参会人列表
+            date: dayjs(new Date()).format('YYYY-MM-DD'),  // 会议日期
+            groupName: '',       // 群组名称
         }
     }
 
-    // 会议室 处理传参数据
-    if ((routes.query?.meetingRoomId || routes.query?.startTime) && !routes.query?.id) {
-        formData.value.meetingRoomId = routes.query?.meetingRoomId ? Number(routes.query.meetingRoomId) : '';
-        formData.value.startTime = routes.query?.startTime ? routes.query?.startTime : '';
+    // 预约会议室 处理传参数据
+    if ((meetingInfo?.meetingRoomId || meetingInfo?.startTime) && !meetingInfo?.id) {
+        const { meetingRoomId, startTime } = meetingInfo;
+        formData.value.meetingRoomId = meetingRoomId ? meetingRoomId : '';
+        formData.value.startTime = startTime ? startTime : '';
     }
     // 获取当前可选时间
-    minEndTime.value = minStartTime.value = formData.value.startTime ? formData.value.startTime : dayjs(new Date()).format('HH:m');
+    minStartTime.value = dayjs(new Date()).format('HH:m');
+    minEndTime.value = formData.value.startTime ? formData.value.startTime : dayjs(new Date()).format('HH:m');
 
     // 获取群组列表
     getGroupList();
@@ -174,33 +181,7 @@ let minEndTime = ref('8:00'); // 结束最小可选时间
 const seconds = ('00'); // 获取当前时间的秒
 
 // 会议室数组
-const roomArr = ref<any>([
-    {
-        meetingRoomId: 1,
-        roomName: '广政通宝',
-        address: '西南裙一 3 F 一 广政通宝'
-    },
-    {
-        meetingRoomId: 2,
-        roomName: 'EN-2F-02 恰谈室',
-        address: '西南裙一 3 F 一 EN-2F-02 恰谈室'
-    },
-    {
-        meetingRoomId: 3,
-        roomName: 'EN-2F-03 恰谈室',
-        address: '西南裙一 3 F 一 EN-2F-03 恰谈室'
-    },
-    {
-        meetingRoomId: 4,
-        roomName: 'EN-3F-02 恰谈室',
-        address: '西南裙一 3 F 一 EN-3F-02 恰谈室'
-    },
-    {
-        meetingRoomId: 5,
-        roomName: 'EN-3F-03 恰谈室',
-        address: '西南裙一 3 F 一 EN-3F-03 恰谈室'
-    }
-])
+const roomArr = ref<any>(useMeetingStatus.centerRoomName);
 
 // 添加参会人员弹窗表单数据
 let addPersonForm = ref<any>({
@@ -216,13 +197,13 @@ let addPersonForm = ref<any>({
  */
 const getGroupList = () => {
     getMeetingGroupList({userId: userInfo.value.userId, pageNum: 1, pageSize: 1000})
-            .then(res => {
-                addPersonForm.value.list = res.data.map((item: any) => {
-                    item.userName = item.groupName;
-                    return item
-                });
-            })
-            .catch((err) => {})
+        .then(res => {
+            addPersonForm.value.list = res.data.map((item: any) => {
+                item.userName = item.groupName;
+                return item
+            });
+        })
+        .catch((err) => {})
 }
 
 /**
@@ -232,11 +213,12 @@ const getGroupList = () => {
 const handleCheckedPerson = (type: number, tab: number, userIds: any, userNames: any, userInfo: any) => {
     // 用逗号拼接选中人员的名字
     formData.value.meetingPeople = userNames.join(',');
-    // 用逗号拼接选中人员的id
-    addPersonForm.value.personIds = userIds.join(',');
+    // 选中人员的id
+    addPersonForm.value.personIds = userIds;
     formData.value.users = userInfo;
     closeAddPersonDialog();
 }
+
 /**
  * @description 关闭添加人员弹窗
  */
@@ -245,18 +227,50 @@ const closeAddPersonDialog = () => {
 }
 
 /**
+ * @description 根据开始时间获取可用会议室
+ * @param value 选中的开始时间
+ */
+const handleChangeStartTime = (value: any) => {
+    minEndTime.value = value;
+    if (!formData.value.endTime || !value) return;
+    const startTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${value}:${seconds}`;
+    const endTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${formData.value.endTime}:${seconds}`;
+    handleAvailableMeetingRooms(startTime, endTime);
+}
+
+/**
  * @description 根据结束时间获取可用会议室
  * @param value 选中的结束时间
  */
 const handleChangeEndTime = (value: any) => {
+    if (!formData.value.startTime || !value) return;
+    const startTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${formData.value.startTime}:${seconds}`;
+    const endTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${value}:${seconds}`;
+    handleAvailableMeetingRooms(startTime, endTime);
+}
+
+/**
+ * @description 根据开始时间和结束时间获取可用会议室
+ * @param startTime 开始时间
+ * @param endTime 结束时间
+ */
+const handleAvailableMeetingRooms = (startTime: string, endTime: string) => {
     availableMeetingRooms({
-        startTime: dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${formData.value.startTime}:${seconds}`,
-        endTime: dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${value}:${seconds}`,
+        startTime,
+        endTime,
     })
     .then(res => {
         roomArr.value = res.data;
     })
     .catch(err => {})
+}
+
+/**
+ * @description 获取选中会议室的id
+ * @param value 会议室id
+ */
+const handleChangeRoom = (value: any) => {
+    formData.value.meetingRoomId = value;
 }
 
 // 表单验证
@@ -318,7 +332,7 @@ const rules = reactive<FormRules<typeof formData>>({
         { required: true, type: 'date', message: '请选择日期', trigger: 'change' }
     ],
     meetingRoomId: [
-        { required: true, message: '请选择会议室', trigger: 'blur' }
+        { required: true, message: '请选择会议室', trigger: 'change' }
     ],
     groupName: [
         {trigger: 'blur', validator: validateGroupName }
@@ -350,6 +364,10 @@ const submitForm = (formEl: FormInstance | undefined) => {
             users,
             groupName,
         })
+        // 判断开时间是否大于结束时间
+        if (startTime > endTime) {
+            return ElMessage.error("开始时间不能大于或等于结束时间！")
+        }
         // 是否添加为群组
         if (checked) {
             addMeetingGroup({
@@ -367,7 +385,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
         if (isCreate.value) {
             addMeetingRecord(params.value)
                 .then((res) => {
-                   ElMessage.success('创建成功！');
+                   ElMessage.success('会议创建成功！');
                    setTimeout(() => {
                         router.push('/home');
                     }, 1000)
@@ -377,7 +395,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
             params.value.id = formData.value.id;
             updateMeetingRecord(params.value)
                 .then((res) => {
-                   ElMessage.success('创建成功！');
+                   ElMessage.success('会议修改成功！');
                    setTimeout(() => {
                         router.push('/home');
                     }, 1000)
@@ -386,6 +404,10 @@ const submitForm = (formEl: FormInstance | undefined) => {
     })
 }
 
+onBeforeUnmount(() => {
+    // 清除sessionStorage
+    sessionStorage.clear();
+})
 </script>
 
 <style lang="scss" scoped>
@@ -413,6 +435,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
             align-items: center;
             font-size: 1.1rem;
             font-weight: 100;
+            cursor: pointer;
 
             .el-icon {
                 color: #3268DC;

@@ -41,7 +41,7 @@ public class MeetingRoomController {
      */
     @GetMapping("/index/time-period-status")
     public Result<List<TimePeriodStatusVO>> getTimePeriodStatusByIdAndDate (@RequestParam Long id, @RequestParam LocalDate date) {
-        return meetingRoomService.isBusyByIdAndDate(id, date);
+        return meetingRoomService.getTimePeriodStatusByIdAndDate(id, date);
     }
 
     /**
@@ -50,8 +50,8 @@ public class MeetingRoomController {
      * @return {@code Result<List<Integer>>}
      */
     @GetMapping("/index/today-time-period-status")
-    public Result<List<Integer>> isBusy () {
-        List<Integer> result = meetingRoomService.isBusy();
+    public Result<List<Integer>> getTodayTimePeriodStatus () {
+        List<Integer> result = meetingRoomService.getTodayTimePeriodStatus();
         return Result.success(result);
     }
 
@@ -78,22 +78,26 @@ public class MeetingRoomController {
     }
 
     /**
+     * 新增会议室
+     *
      * @param meetingRoom 会议室
      * @return {@code Result<String>}
      */
     @PostMapping("/add-meeting-room")
-    public Result<String> addMeetingRoom (@RequestBody MeetingRoom meetingRoom) {
+    public Result<Integer> addMeetingRoom (@RequestBody MeetingRoom meetingRoom) {
         return meetingRoomService.addMeetingRoom(meetingRoom);
-
     }
 
+
     /**
-     * @param meetingRoomId 会议室
+     * 删除会议室
+     *
+     * @param id 会议室id
      * @return {@code Result<String>}
      */
-    @DeleteMapping("/meeting-room")
-    public Result<String> deleteMeetingRoom (@RequestParam Long meetingRoomId) {
-        return meetingRoomService.deleteMeetingRoom(meetingRoomId);
+    @DeleteMapping("/delete-meeting-room")
+    public Result<Integer> deleteMeetingRoom (@RequestParam Long id, @RequestParam("currentLevel") Integer currentLevel) {
+        return meetingRoomService.deleteMeetingRoom(id, currentLevel);
 
     }
 

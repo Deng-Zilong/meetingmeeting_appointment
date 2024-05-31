@@ -4,7 +4,11 @@
         <div class="right-login">
             <!-- 账号登录 -->
             <div class="login-number" v-if="isShow">
-                <div class="logo"></div>
+                <div class="logo-box">
+                    <div class="logo"></div>
+                    <!-- 切换二维码登录 -->
+                    <div class="right-icon" @click="changeLogin"></div>
+                </div>
                 <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules">
                     <!-- 域名 -->
                     <el-form-item prop="name">
@@ -27,7 +31,7 @@
                     </el-form-item>
                     <!-- 登录 -->
                     <el-form-item>
-                        <el-button type="primary" @click="submitForm(ruleFormRef)" v-loading="loginBtnLoading">
+                        <el-button type="primary" @click="submitForm(ruleFormRef)" :loading="loginBtnLoading">
                             登录
                         </el-button>
                     </el-form-item>
@@ -35,11 +39,27 @@
             </div>
 
             <!-- 扫码登录 -->
-            <div id="login-scan" v-else>
+            <div id="login-scan" class="login-qrcode" v-else>
+                <!-- <img src="@/assets/img/switch-arrow.png" alt="" > -->
+                <!-- <div class="switch-arrow" @click="changeLogin"></div> -->
+                <iframe :src="iframeSrc" frameborder="0" width="100%" height="100%" :element-loading-text="iframeLoading"></iframe>
+
+                <!-- <iframe :src="iframeSrc" frameborder="0" width="100%" height="100%" :element-loading-text="iframeLoading" v-if="isIframeSrc"></iframe> -->
+                <!-- <el-skeleton style="width: 260px" v-else >
+                    <template #template>
+                        <el-skeleton-item variant="p" style="width: 10%; margin-right: .625rem" />
+                        <el-skeleton-item variant="p" style="width: 65%" />
+                        <el-skeleton-item variant="image" style="width: 260px; height: 260px" />
+                        <div style="padding: 10px">
+                            <el-skeleton-item variant="text" style="width: 85%" />
+                            <el-skeleton-item variant="text" style="width: 55%" />
+                        </div>
+                    </template>
+                </el-skeleton> -->
             </div>
 
-            <el-button type="primary" @click="changeLogin">
-                点击{{ isShow == false ? '账号' : '扫码' }}登录
+            <el-button type="primary" @click="changeLogin" :loading="loginBtnLoading" v-show="!isShow">
+                点击账号登录
             </el-button>
         </div>
     </div>
@@ -48,15 +68,21 @@
 <script setup lang="ts">
 import { nextTick, onMounted, reactive, ref, h } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
+import { Picture as IconPicture } from '@element-plus/icons-vue'
 import { v4 as uuidv4 } from 'uuid';
 import { useUserStore } from '@/stores/user'
-import { getCaptcha } from '@/request/api/login'
+import { getCaptcha, getQrCode } from '@/request/api/login'
 import { Md5 } from 'ts-md5';
 
 // 用户信息
 const userStore = useUserStore();
 const ruleFormRef = ref<FormInstance>();
 let loginBtnLoading = ref<boolean>(false);
+
+let iframeSrc = ref(''); // 二维码地址
+let iframeLoading = ref(true); // 二维码loading
+let isIframeSrc = ref(true); // 是否获取到二维码
+
 // 登录验证
 const ruleForm = reactive({
     name: '',
@@ -98,8 +124,10 @@ const changeCaptcha = async() => {
     }
 }
 
-// 账号切换
-const isShow = ref(false)
+const isShow = ref(false); // 登录方式切换 false扫码 true账号
+/**
+ * @description 切换登录方式
+ */
 const changeLogin = () => {
     isShow.value = !isShow.value;
     if (!isShow.value) {
@@ -112,34 +140,53 @@ const changeLogin = () => {
 // 账号登录 
 const submitForm = async (formEl: FormInstance | undefined) => {
     if (!formEl) return
-    formEl.validate((valid) => {
-        if (!valid) return; 
+    formEl.validate(async(valid) => {
+        if (!valid) return;
+        // 打开loading
+        loginBtnLoading.value = true;
+        // 解构数据
         const { name, captcha } = ruleForm;
-        const md5:any = new Md5();
         // md5 加密密码
+        const md5:any = new Md5();
         md5.appendAsciiStr(ruleForm.password);
         const password = md5.end();
-        
-        userStore.getUserInfo({ name, password, code: captcha, uuid: uuid.value });
-        loginBtnLoading.value;
+        // 登录请求
+        await userStore.getUserInfo({ name, password, code: captcha, uuid: uuid.value });
+        // 关闭 button loading
+        loginBtnLoading.value = false;
     })
 }
 
 onMounted(() => {
+    // 展示扫码登录
     code();
 });
 
 const code = () => {
+    // 前端生成二维码
     //@ts-ignore
-    new WwLogin({
-        "id": "login-scan",
-        appid: 'ww942086e6c44abc4b',
-        agentid: '1000002',
-        login_type: 'CorpApp',
-        redirect_uri:  'http%3A%2F%2F172.17.34.48%3A32375%2F%23%2Fhome',
-        state: 'WWLogin',
-        "lang": "zh",
-    });
+    // new WwLogin({
+    //     "id": "login-scan",
+    //     appid: 'ww942086e6c44abc4b',
+    //     agentid: '1000002',
+    //     login_type: 'CorpApp',
+    //     redirect_uri:  'http%3A%2F%2F172.17.34.48%3A32375%2F%23%2Fhome',
+    //     state: 'WWLogin',
+    //     "lang": "zh",
+    // });
+
+    // 后端返回二维码
+    getQrCode()
+        .then(res => {
+            iframeSrc.value = res.data.url;
+        })
+        .catch(err => {
+            isIframeSrc.value = false;
+        })
+        .finally(() => {
+            iframeLoading.value = false;
+        });
+    
 }
 </script>
 
@@ -152,6 +199,7 @@ const code = () => {
     .left-background {
         width: 70vw;
         height: 100%;
+        display: inline-block;
         background: url(@/assets/img/login.png) no-repeat;
         background-size: 100% 100%;
     }
@@ -166,17 +214,32 @@ const code = () => {
 
         // 账号登录
         .login-number {
-            .logo {
-                width: 14.3125rem;
-                height: 4.6875rem;
-                margin-right: -4.5rem;
-                background: url(@/assets/img/logo.png) no-repeat;
+            .logo-box {
+                display: flex;
+                justify-content: space-between;
+                // align-items:first baseline;
+                .logo {
+                    width: 14.3125rem;
+                    height: 4.6875rem;
+                    margin-right: -4.5rem;
+                    background: url(@/assets/img/logo.png) no-repeat;
+                }
+                .right-icon {
+                    width: 1.875rem;
+                    height: 1.875rem;
+                    background: url(@/assets/img/qrcode.png) no-repeat;
+                    cursor: pointer;
+                    &:hover {
+                        background: url(@/assets/img/qr-code1.png) no-repeat;
+                    }
+                }
             }
 
             .captcha {
                 .el-image {
                     width: 100%;
                     height: 2.125rem;
+                    cursor: pointer;
                 }
             }
 
@@ -186,5 +249,28 @@ const code = () => {
         }
 
     }
+    .login-qrcode {
+          width: 400px;
+          height: 400px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: relative;
+          .el-skeleton {
+            text-align: center;
+          }
+        //   .switch-arrow {
+        //     width: 1.25rem;
+        //     height: 20px;
+        //     position: absolute;
+        //     top: -0.6875rem;
+        //     right: 4.2rem;
+        //     cursor: pointer;
+        //     background: url(@/assets/img/switch-arrow.png) no-repeat;
+        //     &:hover {
+        //         background: url(@/assets/img/switch-arrow1.png) no-repeat;
+        //     }
+        //   }
+      }
 }
 </style>

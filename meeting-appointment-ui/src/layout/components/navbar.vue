@@ -1,23 +1,14 @@
 <template>
   <div class="nav-box">
      <div class="left">
-          <!-- <el-dropdown> -->
-              <el-button type="primary" @click="handleToHome">
-                  中心会议室<el-icon class="el-icon--right"><arrow-down /></el-icon>
-              </el-button>
-              <!-- <template #dropdown>
-                  <el-dropdown-menu>
-                  <el-dropdown-item>Action 1</el-dropdown-item>
-                  <el-dropdown-item>Action 2</el-dropdown-item>
-                  <el-dropdown-item>Action 3</el-dropdown-item>
-                  <el-dropdown-item>Action 4</el-dropdown-item>
-                  <el-dropdown-item>Action 5</el-dropdown-item>
-                  </el-dropdown-menu>
-              </template> -->
-          <!-- </el-dropdown> -->
-          <el-divider direction="vertical" />
-          <div v-for="(item, index) in centerRoomName">
-              <el-button class="btn-margin" :class="active == item.id ? 'active' : ''" @click="handleMenu(item)" >{{item.title}}</el-button>
+          <div class="left-menu">
+            <el-button type="primary" @click="handleToHome">中心会议室目录</el-button>
+            <el-divider direction="vertical" />
+          </div>
+          <div class="my-main-scrollbar">
+            <div class="left-items" v-for="(item, index) in useMeetingStatus.centerRoomName">
+                <el-button class="btn-margin"  :class="active == item.id ? 'active' : ''" :disabled="item.status == 0" @click="handleMenu(item)" >{{item.roomName}}</el-button>
+            </div>
           </div>
       </div>
      <div class="right">
@@ -27,37 +18,13 @@
   </div>
 </template>
 <script setup lang="ts">
-  import { computed, ref, watch } from "vue";
+  import { computed, onMounted, ref, watch } from "vue";
   import { useRouter } from "vue-router";
-  import { ArrowDown } from '@element-plus/icons-vue';
+  import { meetingStatus } from '@/stores/meeting-status'
   const router = useRouter();
-  const centerRoomName = [
-    { 
-      id: 1,
-      title: '广政通宝会议室',
-      address: '西南裙一 3 F 一 广政通宝会议室'
-    },
-    { 
-      id: 2,
-      title: 'EN-2F-02 恰谈室会议室',
-      address: '西南裙一 3 F 一 EN-2F-02 恰谈室会议室'
-    },
-    { 
-      id: 3,
-      title: 'EN-2F-03 恰谈室会议室',
-      address: '西南裙一 3 F 一 EN-2F-03 恰谈室会议室'
-    },
-    { 
-      id: 4,
-      title: 'EN-3F-02 恰谈室会议室',
-      address: '西南裙一 3 F 一 EN-3F-02 恰谈室会议室'
-    },
-    { 
-      id: 5,
-      title: 'EN-3F-03 恰谈室会议室',
-      address: '西南裙一 3 F 一 EN-3F-03 恰谈室会议室'
-    }
- ];
+  const useMeetingStatus = meetingStatus();
+  
+
   let active = ref(-1); // 活动页面id
 
   const handleToHome = () => {
@@ -74,8 +41,9 @@
       path: '/meeting-state',
       query: {
         id: item.id,
-        title: item.title,
-        address: item.address,
+        title: item.roomName,
+        address: item.location,
+        person: item.capacity  // 暂无
       }
     });
   }
@@ -90,6 +58,9 @@
   // 取消预约按钮禁用状态
   const cancelDisable = computed(() => {
       return router.currentRoute.value.name == 'history';
+  })
+  onMounted(() => {
+    useMeetingStatus.getCenterRoomName();
   })
   
 
@@ -107,17 +78,46 @@
       border-bottom: 1px solid var(--el-border-color);
       .left {
           display: flex;
-          justify-content: flex-start;
           align-items: center;
-          .btn-margin {
-              margin-right: .625rem;
+          width: calc(100% - 720px);
+          overflow-x: auto;
+          position: relative;
+          .left-menu {
+            display: flex;
+            align-items: center;
           }
-          .active {
-              background-color:#409EFF;
+          .my-main-scrollbar{
+            display: flex;
+            align-items: center;
+            &::before {
+              z-index: 1;
+              width: 8.125rem;
+              height: 100%;
+              content: '';
+              background: linear-gradient(to left,rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.95) 10.5%, rgba(255, 255, 255, 0.8) 30.5%, rgba(254, 254, 254, 0.3) 86.8%, rgba(254, 254, 254, 0.3) 100%);
+              position: absolute;
+              top: 1;
+              right: 0;
+            }
+            .left-items {
+              &:last-child {
+                margin-right: 8.125rem;
+              }
+              .btn-margin {
+                  margin-right: .625rem;
+              }
+              .active {
+                  background-color:#409EFF;
+              }
+            }
           }
       }
-      .right a {
+      .right {
+        display: flex;
+        width: 200px;
+        a {
           margin-left: .625rem;
+        }
       }
       .left, .right {
           margin: 0;
