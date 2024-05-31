@@ -24,7 +24,7 @@ public interface SysDepartmentUserService extends IService<SysDepartmentUser> {
 
     Long findDepartment () throws WxErrorException;
 
-    Boolean findDepartmentUser (Long departmentLength) throws WxErrorException, NoSuchAlgorithmException;
+    void findDepartmentUser (Long departmentLength) throws WxErrorException, NoSuchAlgorithmException;
 
 
     Result<List<SysDepartment>> gainUsers();

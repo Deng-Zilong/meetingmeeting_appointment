@@ -84,8 +84,7 @@ public class SysUserController {
         Long departmentLength = sysDepartmentUserService.findDepartment();
         log.info("获取部门信息成功");
         //获取部门人员
-        Boolean flg = sysDepartmentUserService.findDepartmentUser(departmentLength);
-        log.info("获取部门人员成功"+flg);
+        sysDepartmentUserService.findDepartmentUser(departmentLength);
 
         //登录成功后，生成jwt令牌
         Map<String, Object> claims = new HashMap<>();
