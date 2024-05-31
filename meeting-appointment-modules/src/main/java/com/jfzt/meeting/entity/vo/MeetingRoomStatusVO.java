@@ -36,6 +36,11 @@ public class MeetingRoomStatusVO {
      * 容量
      */
     private Integer capacity;
+
+    /**
+     * 会议室设备
+     */
+    private String equipment;
     /**
      * 会议主题
      */
