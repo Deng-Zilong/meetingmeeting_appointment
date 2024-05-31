@@ -11,7 +11,7 @@ stages:
 # 该任务在 `develop` 环境下执行，包括执行一些脚本命令以及根据条件决定是否运行。
 build_and_push_develop_front:
   tags: # 指定任务运行所需的 Runner 标签
-    - jifu-dev
+    - k8s-dev
   image: # 指定任务运行时使用的 Docker 镜像
     registry.jifu.ytx.com/jifu_dev/base_image_jdk21_maven_node18:v3.0
   stage: # 将任务分配到构建阶段
