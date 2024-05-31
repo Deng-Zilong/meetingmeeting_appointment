@@ -27,7 +27,7 @@ variables:
   FRONT_PATH: "meeting-appointment-admin"
 
   # 设置后端分支和前端分支的默认值
-  BACK_BRANCH: "develop"
+  BACK_BRANCH: "release"
 
   #【请修改】后端Dockerfile存在路径(参考上述目录结构)
   DOCKERFILE_PATH: "Dockerfile"
@@ -50,7 +50,7 @@ variables:
 
   #【请修改】前端项目打包方式 $BUILD_COMMAND run build:$ENVIRONMENT
   BUILD_COMMAND: "npm"
-  ENVIRONMENT: "dev"
+  ENVIRONMENT: "pro"
 
   # 容器资源限制与请求配置
   # 以下配置项用于定义应用运行所需的最小资源和可使用的最大资源。
