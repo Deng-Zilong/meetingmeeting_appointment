@@ -12,7 +12,6 @@ import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.service.SysDepartmentService;
 import com.jfzt.meeting.service.SysDepartmentUserService;
 import com.jfzt.meeting.service.SysUserService;
-import com.jfzt.meeting.utils.EncryptUtils;
 import com.jfzt.meeting.utils.HttpClientUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
