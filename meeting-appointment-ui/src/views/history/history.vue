@@ -30,7 +30,7 @@
                                     :content="item.title"
                                 >
                                 <template #reference>
-                                        <p class="ellipsis">{{ item.title }}</p>
+                                        <p class="ellipsis" @click="handleMeetingSummary(item.id)">{{ item.title }}</p>
                                     </template>
                                 </el-popover>
                             </div>
@@ -274,6 +274,12 @@
             message.value = "复制失败！";
         })
     }
+    /**
+     * @description 获取会议纪要
+     */
+    const handleMeetingSummary = (id: string) => {
+        
+    }
 
 </script>
 
@@ -405,6 +411,7 @@
                         width: 11.5rem;
                         flex: 1.2;
                         padding: 0 .375rem 0 3.625rem;
+                        cursor: pointer;
                     }
                     &:nth-child(2) {
                         width: 11.5rem;
