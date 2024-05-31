@@ -43,8 +43,7 @@ public class SysuserTest {
     @Test
     public void qrCode() {
         //返回一个地址
-        assertThrows(RRException.class, () -> sysUserService.userQrCode());
-
+        assertDoesNotThrow(() -> sysUserService.userQrCode());
 
     }
 

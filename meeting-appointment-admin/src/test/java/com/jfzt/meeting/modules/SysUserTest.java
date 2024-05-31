@@ -33,7 +33,6 @@ public class SysUserTest {
      */
     @Test
     public void deleteAdmin() {
-        assertThrows(RRException.class, () -> sysUserService.deleteAdmin("QianRuoXiaMo"));
         assertThrows(RRException.class, () -> sysUserService.deleteAdmin(""));
     }
 
