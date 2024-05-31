@@ -103,7 +103,7 @@ public class SysLoginController {
                     .userId(jsonObject.get("userId").toString())
                     .name(jsonObject.get("name").toString())
                     .level((Integer) jsonObject.get("level"))
-                    .url("http://172.17.34.48:32375")
+                    .url(wxCpDefaultConfiguration.getUrl())
                     .build();
             return Result.success(userInfo);
         }
@@ -120,7 +120,7 @@ public class SysLoginController {
                 .userId(sysUser.getUserId())
                 .name(sysUser.getUserName())
                 .level(sysUser.getLevel())
-                .url("http://172.17.34.48:32375")
+                .url(wxCpDefaultConfiguration.getUrl())
                 .build();
         //存入到redis中
         redisTemplate.opsForValue().set("userInfo:"+userInfo.getUserId(), JSONObject.toJSONString(userInfo), Duration.ofHours(24));
