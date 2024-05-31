@@ -70,6 +70,7 @@ create table meeting_room
     gmt_create   datetime   default CURRENT_TIMESTAMP not null comment '添加时间',
     gmt_modified datetime   default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '修改时间',
     created_by   varchar(50)                          not null comment '创建人企微id',
+    equipment    varchar(50)                          not null comment '会议室设备',
     is_deleted   tinyint(1) default 0                 not null comment '0未删除 1删除'
 )
     comment '会议室表' collate = utf8mb4_bin

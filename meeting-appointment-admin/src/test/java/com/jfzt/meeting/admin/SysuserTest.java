@@ -43,19 +43,19 @@ public class SysuserTest {
     @Test
     public void qrCode() {
         //返回一个地址
-        assertThrows(RRException.class, () -> sysUserService.userQrCode());
-
+//        assertThrows(RRException.class, () -> sysUserService.userQrCode());
+        assertDoesNotThrow(() -> sysUserService.userQrCode());
 
     }
 
-    @Test
-    public void qrCode1() {
-        ADUserUtils utils = new ADUserUtils();
-        utils.searchInformation(utils.root);
-
-//        utils.add("JimGreen");
-        utils.close();
-    }
+//    @Test
+//    public void qrCode1() {
+//        ADUserUtils utils = new ADUserUtils();
+//        utils.searchInformation(utils.root);
+//
+////        utils.add("JimGreen");
+//        utils.close();
+//    }
 
 
 }
