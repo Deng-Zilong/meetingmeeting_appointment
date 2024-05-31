@@ -30,6 +30,10 @@ variables:
   BACK_BRANCH: "include"
   FRONT_BRANCH: "include"
 
+  # 设置后端分支和前端分支的默认值
+  BACK_BRANCH: "include"
+  FRONT_BRANCH: "include"
+
   #【请修改】后端Dockerfile存在路径(参考上述目录结构)
   DOCKERFILE_PATH: "./src/main/resources/Dockerfile"
 
