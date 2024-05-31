@@ -1,7 +1,6 @@
 # GitLab CI/CD配置文件
 # 用于定义项目的构建和部署流程
 
-
 # 定义流程的阶段
 stages:
   - build # 构建阶段
@@ -19,7 +18,7 @@ build_and_push_develop_front:
   script: # 在此部分定义任务运行时执行的脚本命令
     - export PROJECT_TYPE="frontend" # 定义打包类型前端
     - cd ${FRONT_PATH} # 进入前端项目路径
-    - ${BUILD_COMMAND} config set registry https://registry.npmjs.org  # 设置 打包 镜像源
+    - ${BUILD_COMMAND} config set registry https://registry.npmmirror.com # 设置 打包 镜像源
     - ${BUILD_COMMAND} install --no-frozen-lockfile # 安装项目依赖
     - ${BUILD_COMMAND} run build:${ENVIRONMENT} # 根据环境变量进行项目构建
     - bash /opt/deploy/scripts/build-image.sh develop ${FRONT_PROJECT_NAME} ${DOCKER_TAG} # 构建 Docker 镜像
@@ -28,9 +27,8 @@ build_and_push_develop_front:
     # 且仅当指定路径下的文件或 `.gitlab-ci.yml` 发生变化时触发。
     - if: '$CI_COMMIT_BRANCH == $BACK_BRANCH && $CI_COMMIT_MESSAGE =~ /build/'
       changes:
-        - $BACK_PATH/** # 指定触发构建的文件路径条件
+        - $BACK_PATH/**/* # 如果指定路径下的文件发生变化
         - .gitlab-ci.yml
-      when: on_success # 当前任务成功执行时触发后续任务
     # 规则二：如果提交的是标签，则不执行该任务。
     - if: '$CI_COMMIT_TAG'
       when: never
@@ -47,18 +45,16 @@ deploy_to_develop_front:
   stage: deploy # 将此任务分配到部署阶段
   script:
     # 执行部署脚本，将前端项目部署到 develop 环境
-    - export PROJECT_TYPE="frontend"
-    - sh /opt/deploy/scripts/deploy.sh develop ${FRONT_PROJECT_NAME} ${DOCKER_TAG} 80
+    - export PROJECT_TYPE="frontend" # 定义打包类型前端
+    - sh /opt/deploy/scripts/deploy.sh develop ${FRONT_PROJECT_NAME} ${DOCKER_TAG} 80 ${CPU_LIMITS} ${MEMORY_LIMITS} ${CPU_REQUESTS} ${MEMORY_REQUESTS}
   needs: ["build_and_push_develop_front"] # 指定此任务依赖于 build_and_push_develop_front 任务
   when: on_success # 当前任务依赖的任务成功执行时触发
   rules:
     # 规则定义了任务执行的条件
     - if: '$CI_COMMIT_BRANCH == $BACK_BRANCH && $CI_COMMIT_MESSAGE =~ /build/' # 当提交的分支和信息匹配指定条件时
       changes:
-        - $BACK_PATH/** # 如果指定路径下的文件发生变化
+        - $BACK_PATH/**/* # 如果指定路径下的文件发生变化
         - .gitlab-ci.yml # 或者 .gitlab-ci.yml 文件发生变化
-      when: on_success # 当前任务成功执行时触发后续任务
     - if: '$CI_COMMIT_TAG' # 如果是标签提交，则不执行此任务
       when: never
     - if: '$CI_PIPELINE_SOURCE == "web"' # 允许通过 Web 手动触发此任务
-
