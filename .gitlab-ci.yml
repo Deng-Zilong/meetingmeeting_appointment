@@ -37,10 +37,10 @@ variables:
   #反例：前端jf___training-web 后端jf___training
   #反例：前端jf-training 后端jf-training
   #反例：前端JF-TRAINING 后端JF-TRAINING  不能使用大写
-  FRONT_PROJECT_NAME: "meeting-appointment-pc-web"
+  FRONT_PROJECT_NAME: "jf-meeting-appointment-pc-web"
 
   #【请修改】后端项目名称(要求同上)
-  BACK_PROJECT_NAME: "meeting-appointment-backend"
+  BACK_PROJECT_NAME: "jfmeeting-appointment-backend"
 
   #【请修改】Jar包的端口号，建议各项目组设置后端服务用8080端口
   JAR_PORT: 8080
