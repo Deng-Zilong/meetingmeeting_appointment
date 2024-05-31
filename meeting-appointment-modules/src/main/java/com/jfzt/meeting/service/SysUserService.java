@@ -59,15 +59,12 @@ public interface SysUserService extends IService<SysUser> {
     /**
      * uuid+生成验证码存储
      *
-     * @param uuid
      */
     BufferedImage getCaptcha (String uuid);
 
     /**
      * 查询用户信息
      *
-     * @param userId
-     * @return
      */
     SysUser findUser (String userId);
 
@@ -80,7 +77,6 @@ public interface SysUserService extends IService<SysUser> {
 
     /**
      * QR code 返回前端二维码
-     * @return
      */
     Map<String, String> userQrCode();
 
