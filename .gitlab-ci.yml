@@ -21,10 +21,10 @@ include:
 
 variables:
   #【请修改】后端文件夹路径
-  BACK_PATH: "meeting-appointment-backend"
+  BACK_PATH: "meeting-appointment-admin"
 
   #【请修改】前端文件夹路径
-  FRONT_PATH: "meeting-appointment-pc-web"
+  FRONT_PATH: "meeting-appointment-ui"
 
   # 设置后端分支和前端分支的默认值
   BACK_BRANCH: "include"
