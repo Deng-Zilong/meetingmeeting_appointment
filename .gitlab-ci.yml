@@ -17,41 +17,51 @@
 include:
   # 分别包含前端和后端项目的CI配置文件。
   - local: "meeting-appointment-ui/.gitlab-ci.yml"  # 包含H5项目的CI配置
-  - local: "meeting-appointment-admin/.gitlab-ci.yml"  # 包含服务端项目的CI配置
+  - local: "meeting-appointment-admin/.gitlab-ci.yml"  # 包含H5项目的CI配置
 
 variables:
   #【请修改】后端文件夹路径
-  BACK_PATH: "meeting-appointment-admin"
+  BACK_PATH: "./"
 
   #【请修改】前端文件夹路径
   FRONT_PATH: "meeting-appointment-ui"
 
   # 设置后端分支和前端分支的默认值
-  BACK_BRANCH: "include"
-  FRONT_BRANCH: "include"
+  BACK_BRANCH: "feature"
 
   #【请修改】后端Dockerfile存在路径(参考上述目录结构)
-  DOCKERFILE_PATH: "./src/main/resources/Dockerfile"
+  DOCKERFILE_PATH: "./Dockerfile"
 
   #【请修改】1 项目名称 不能使用_用-代替,2【前端】项目用web或app结尾，前、后端 "PROJECT_NAME" 不一样； 3【后端】采用-backend结尾
   #正例：前端jf-training-web 后端jf-training-backend
   #反例：前端jf___training-web 后端jf___training
   #反例：前端jf-training 后端jf-training
   #反例：前端JF-TRAINING 后端JF-TRAINING  不能使用大写
-  FRONT_PROJECT_NAME: "jf-meeting-appointment-pc-web"
+  FRONT_PROJECT_NAME: "meeting-appointment-pc-web"
 
   #【请修改】后端项目名称(要求同上)
-  BACK_PROJECT_NAME: "jf-meeting-appointment-backend"
+  BACK_PROJECT_NAME: "meeting-appointment-backend"
 
   #【请修改】Jar包的端口号，建议各项目组设置后端服务用8080端口
   JAR_PORT: 8080
 
   #【请修改】后端Jar包存在地址(参考上述目录结构)
-  JAR_PATH: "./target/*.jar"
+  JAR_PATH: "target/ipr.jar"
 
   #【请修改】前端项目打包方式 $BUILD_COMMAND run build:$ENVIRONMENT
   BUILD_COMMAND: "npm"
-  ENVIRONMENT: "feature"
+  ENVIRONMENT: "pro"
+
+  # 容器资源限制与请求配置
+  # 以下配置项用于定义应用运行所需的最小资源和可使用的最大资源。
+  # CPU_LIMITS: 定义了容器可以使用的最大CPU资源。单位为CPU核心数‘1’，1核=1000m。
+  # MEMORY_LIMITS: 定义了容器可以使用的最大内存资源。单位为Gi（吉比字节），1Gi=1024mi。
+  # CPU_REQUESTS: 定义了容器运行所需的最小CPU资源。单位为毫核（m）。
+  # MEMORY_REQUESTS: 定义了容器运行所需的最小内存资源。单位为Mi（兆比字节）。
+  CPU_LIMITS: '0.6'
+  MEMORY_LIMITS: 600Mi
+  CPU_REQUESTS: 300m
+  MEMORY_REQUESTS: 300Mi
 
   # 定义生产环境使用的Docker镜像标签
   # 使用CI_COMMIT_TAG环境变量，该变量在持续集成流程中由GitLab CI/CD自动设置，
