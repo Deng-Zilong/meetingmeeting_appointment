@@ -38,14 +38,14 @@ variables:
   #反例：前端jf___training-web 后端jf___training
   #反例：前端jf-training 后端jf-training
   #反例：前端JF-TRAINING 后端JF-TRAINING  不能使用大写
-  FRONT_PROJECT_NAME: "meeting-appointment-ui"
+  FRONT_PROJECT_NAME: "meeting-appointment-pc-web"
 
   #【请修改】后端项目名称(要求同上)
   BACK_PROJECT_NAME: "meeting-appointment-backend"
 
   #【请修改】前端项目打包方式 npm run build:$ENVIRONMENT
   BUILD_COMMAND: "npm"
-  ENVIRONMENT: "release"
+  ENVIRONMENT: "pro"
 
   #【请修改】Jar包的端口号，建议各项目组设置后端服务用8080端口
   JAR_PORT: 8080
@@ -53,9 +53,6 @@ variables:
   #【请修改】后端Jar包存在地址(参考上述目录结构)
   JAR_PATH: "./target/*.jar"
 
-  #【请修改】前端项目打包方式 $BUILD_COMMAND run build:$ENVIRONMENT
-  BUILD_COMMAND: "npm"
-  ENVIRONMENT: "runner-test"
 
   # 定义生产环境使用的Docker镜像标签
   # 使用CI_COMMIT_TAG环境变量，该变量在持续集成流程中由GitLab CI/CD自动设置，
