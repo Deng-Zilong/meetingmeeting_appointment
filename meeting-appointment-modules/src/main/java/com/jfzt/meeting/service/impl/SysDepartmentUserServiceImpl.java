@@ -105,7 +105,7 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     }
 
     @Override
-    public Boolean findDepartmentUser(Long departmentLength) throws WxErrorException, NoSuchAlgorithmException {
+    public Boolean findDepartmentUser(Long departmentLength) throws WxErrorException {
         log.info("删除企业部门表，用户表");
         sysDepartmentUserMapper.deleteAll();
 //        sysUserMapper.deleteAll();

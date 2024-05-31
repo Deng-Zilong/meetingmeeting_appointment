@@ -1,6 +1,7 @@
 # 配置文件定义了项目的构建和部署流程
 # 包括变量定义、阶段设置以及各个阶段的任务配置
 
+
 # 定义了整个构建流程所包含的阶段
 stages:
   - test # 测试阶段
@@ -11,21 +12,22 @@ stages:
 # 该任务在test阶段执行，负责进行后端的单元测试
 test_to_develop_back:
   tags:
-    - jifu-dev # 用于指定执行该任务的 Runner 标签
+    - k8s-dev # 用于指定执行该任务的 Runner 标签
   image: registry.jifu.ytx.com/jifu_dev/base_image_jdk21_maven_node18:v3.0 # 指定任务运行时使用的 Docker 镜像
   stage: test # 指定该任务属于测试阶段
   # 这是一个执行脚本操作的配置段
   script:
-      # 切换到指定的后端路径
-      - cd ${BACK_PATH}
-      # 执行mvn verify命令后,Maven 将会自动执行项目中定义的测试和检查过程,包括单元测试、集成测试、代码风格检查、代码覆盖率检查等
-      - mvn verify
+    # 切换到指定的后端路径
+    - cd ${BACK_PATH}
+    # 执行mvn verify命令后,Maven 将会自动执行项目中定义的测试和检查过程,包括单元测试、集成测试、代码风格检查、代码覆盖率检查等
+    - mvn verify
   rules:
     # 规则定义任务的执行条件
     - if: '$CI_COMMIT_BRANCH == $BACK_BRANCH && $CI_COMMIT_MESSAGE =~ /build/' # 分支和提交信息匹配条件
       changes:
-        - $BACK_PATH/**/* # 如果指定路径下的文件发生变化
+        - $BACK_PATH/** # 指定触发构建的文件路径条件
         - .gitlab-ci.yml # 指定触发构建的文件路径条件
+      when: on_success # 当前任务成功执行时触发后续任务
     - if: '$CI_COMMIT_TAG' # 排除标签提交的情况
       when: never
     - if: '$CI_PIPELINE_SOURCE == "web"' # 允许手动触发
@@ -35,7 +37,7 @@ test_to_develop_back:
 # 执行条件包括特定的分支、提交信息匹配以及触发源。
 build_and_push_develop_back:
   tags:
-    - jifu-dev  # 指定使用的机器标签
+    - k8s-dev  # 指定使用的机器标签
   image: registry.jifu.ytx.com/jifu_dev/base_image_jdk21_maven_node18:v3.0  # 指定任务运行时使用的Docker镜像
   stage: build  # 指定任务所在的阶段
   script:
@@ -51,8 +53,9 @@ build_and_push_develop_back:
     # 定义任务执行的条件
     - if: '$CI_COMMIT_BRANCH == $BACK_BRANCH && $CI_COMMIT_MESSAGE =~ /build/' # 分支和提交信息匹配条件
       changes:
-        - $BACK_PATH/**/* # 如果指定路径下的文件发生变化
+        - $BACK_PATH/** # 指定触发构建的文件路径条件
         - .gitlab-ci.yml # 指定触发构建的文件路径条件
+      when: on_success # 当前任务成功执行时触发后续任务
     - if: '$CI_COMMIT_TAG' # 排除标签提交的情况
       when: never
     - if: '$CI_PIPELINE_SOURCE == "web"' # 允许手动触发
@@ -80,4 +83,3 @@ deploy_to_develop_back:
     - if: '$CI_COMMIT_TAG' # 排除标签提交的情况，不执行该任务
       when: never
     - if: '$CI_PIPELINE_SOURCE == "web"' # 允许通过网页手动触发该任务
-
