@@ -48,14 +48,7 @@ public class SysuserTest {
 
     }
 
-    @Test
-    public void qrCode1() {
-        ADUserUtils utils = new ADUserUtils();
-        utils.searchInformation(utils.root);
 
-//        utils.add("JimGreen");
-        utils.close();
-    }
 
 
 }
