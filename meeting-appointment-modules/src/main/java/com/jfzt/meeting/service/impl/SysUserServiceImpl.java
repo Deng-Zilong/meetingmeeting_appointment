@@ -214,13 +214,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
                 .collect(Collectors.toList()));
     }
 
-//    @Override
-//    public Map<String, String> userQrCode() {
-//        String url = wxCpService.buildQrConnectUrl("http://172.17.34.48:32375"+"/#/home",wxCpDefaultConfiguration.getState());
-//        Map<String,String> map = new HashMap<>(1);
-//        map.put("url",url);
-//        return map;
-//    }
+    @Override
+    public Map<String, String> userQrCode() {
+        String url = wxCpService.buildQrConnectUrl(wxCpDefaultConfiguration.getUrl()+"/#/home",wxCpDefaultConfiguration.getState());
+        Map<String,String> map = new HashMap<>(1);
+        map.put("url",url);
+        return map;
+    }
 
 
 }

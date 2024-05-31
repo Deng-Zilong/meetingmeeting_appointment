@@ -52,17 +52,17 @@ public class SysUserController {
 
 
 
-//    /**
-//     * QR code 返回前端二维码
-//     * @return Result<Map<String, String>>
-//     */
-//    @GetMapping(value = "qr-code")
-//    public Result<Map<String, String>> qrCode(){
-//        //返回一个地址
-//        Map<String,String> map = sysUserService.userQrCode();
-//
-//        return Result.success(map);
-//    }
+    /**
+     * QR code 返回前端二维码
+     * @return Result<Map<String, String>>
+     */
+    @GetMapping(value = "qr-code")
+    public Result<Map<String, String>> qrCode(){
+        //返回一个地址
+        Map<String,String> map = sysUserService.userQrCode();
+
+        return Result.success(map);
+    }
     /**
      *
      * 获取token，部门，部门人员
@@ -100,7 +100,7 @@ public class SysUserController {
                 .userId(wxUser.getUserId())
                 .name(wxUser.getName())
                 .level(userId)
-                .url("http://172.17.34.48:32375")
+                .url(wxCpDefaultConfiguration.getUrl())
                 .build();
         redisTemplate.opsForValue().set("userInfo:" + userInfo.getUserId(), JSONObject.toJSONString(userInfo), Duration.ofHours(24));
         return Result.success(userInfo);

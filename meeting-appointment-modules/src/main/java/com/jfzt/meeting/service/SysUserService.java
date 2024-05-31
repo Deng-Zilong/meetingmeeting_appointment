@@ -82,7 +82,7 @@ public interface SysUserService extends IService<SysUser> {
      * QR code 返回前端二维码
      * @return
      */
-//    Map<String, String> userQrCode();
+    Map<String, String> userQrCode();
 
 
 }
