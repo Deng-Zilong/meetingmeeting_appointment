@@ -67,7 +67,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             if (user != null) {
                 //拼接参会人姓名
                 if (sysUserVOList != null) {
-                    sysUserVOList.add(new SysUserVO(user.getUserId(), user.getUserName()));
+                    sysUserVOList.add(new SysUserVO(user.getUserId(), user.getUserName(),null));
                 }
                 if (attendees != null) {
                     attendees.append(user.getUserName());
@@ -81,7 +81,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
     /**
      * 获取所有不是管理员的企业微信用户的姓名
-     *
      * @param sysUser      用户信息
      * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.util.List < java.lang.String>>

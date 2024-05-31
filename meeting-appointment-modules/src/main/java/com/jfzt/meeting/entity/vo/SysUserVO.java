@@ -21,5 +21,9 @@ public class SysUserVO  {
      * 用户名
      */
     private String userName;
+    /**
+     * 权限
+     */
+    private String level;
 
 }
