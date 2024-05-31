@@ -15,7 +15,7 @@
                 <el-timeline ref="timelineRef">
                     <el-timeline-item  placement="top" class="timeline-item" v-for="(value, index) in data" :key="index">
                         <div class="timestamp">
-                            <p><span>{{value.month}}</span>月</p>
+                            <p>{{value.month}}月</p>
                             <p>{{value.day}}</p>
                         </div>
                         <div v-for="(item, key) in value.list" :key="index" class="card-item">
@@ -106,10 +106,9 @@
     import { cancelMeetingRecord, getHistoryList } from '@/request/api/history'
     import { meetingState } from '@/utils/types'
     
-    const userInfo = ref<any>(JSON.parse(localStorage.getItem('userInfo') as string));
     const router = useRouter();
     
-
+    const userInfo = ref<any>(JSON.parse(localStorage.getItem('userInfo') as string));
     const currentUserId = userInfo.value?.userId; // 当前登录人id
 
     const timelineRef = ref(null); // 获取dom节点
@@ -231,22 +230,8 @@
     );
 
     const handleEditMeeting = (item: any) => {
-        router.push({
-            path: 'meeting-appoint',
-            query: {
-                id: item.id,
-                meetingRoomId: item.meetingRoomId,
-                title: item.title,
-                description: item.description,
-                startTime: item.startTime,
-                endTime: item.endTime,
-                meetingRoomName: item.meetingRoomName,
-                status: item.status,
-                createdBy: item.createdBy,
-                userName: item.adminUserName,
-                users: JSON.stringify(item.users),
-            }
-        })
+        sessionStorage.setItem('meetingInfo', JSON.stringify(item))
+        router.push('/meeting-appoint')
     }
 
     /**
@@ -272,8 +257,6 @@
                 })
         })
         .catch(() => {})
-        // const {data: list, total} = await getData({userId: userInfo.value?.userId, page: 1, limit: limit.value});
-        // data.value = list;
     }
 
     let isTransmitMeeting = ref<boolean>(false);
@@ -284,7 +267,7 @@
      */
     const transmitMeeting = (item: any) => {
         address.value = 
-        `会议主题: ${item.title}\n发起人: ${item.adminUserName}\n会议日期: ${item.date}\n会议时间: ${item.time}\n会议地点: ${item.meetingRoomName}\nURL: http://172.17.34.48:32375/#/login`;
+        `会议主题: ${item.title}\n发起人: ${item.adminUserName}\n会议日期: ${item.date}\n会议时间: ${item.time}\n会议地点: ${item.meetingRoomName}\nURL:${userInfo.value.url}/#/login`;
         isTransmitMeeting.value = true;
         navigator.clipboard.writeText(address.value).then(() => {})
         .catch(() => {
@@ -317,10 +300,11 @@
             border: .1875rem solid rgba(18, 115, 219, 0.8);
             margin: 1.25rem auto;
             .title {
-                height: 3rem;;
+                height: 3rem;
                 div {
                     color: #3A3A3A;
-                    font-size: 1.2rem;
+                    font-size: 1.1rem;
+                    font-weight: 400;
                     line-height: 1.75rem;
                 }
             }
@@ -376,7 +360,6 @@
                     box-shadow: 0 .1875rem .125rem 0 rgba(0, 0, 0, 0.04);
                     div {
                         font-size: 1rem;
-                        font-weight: 350;
                         line-height: 1.25rem;
                         color: #666666;
                         &:nth-child(1) {

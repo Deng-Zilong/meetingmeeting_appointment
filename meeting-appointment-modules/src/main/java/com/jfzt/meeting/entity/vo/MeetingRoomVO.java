@@ -13,7 +13,7 @@ public class MeetingRoomVO {
     /**
      * 会议室id
      */
-    private Long meetingRoomId;
+    private Long id;
 
     /**
      * 会议室名字

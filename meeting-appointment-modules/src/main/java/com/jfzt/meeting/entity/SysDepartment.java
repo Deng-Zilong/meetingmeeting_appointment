@@ -1,6 +1,7 @@
 package com.jfzt.meeting.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.jfzt.meeting.entity.vo.SysUserVO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -49,7 +50,7 @@ public class SysDepartment implements Serializable {
     private List<SysDepartment> childrenPart;
 
     @TableField(exist = false)
-    private List<SysUser> treeUsers;
+    private List<SysUserVO> treeUsers;
 
     /**
      * 0未删除 1删除

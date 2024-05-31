@@ -4,7 +4,18 @@ const routes = [
   {
     path: "/login",
     name: "login",
+    meta: {
+        title: '登录',
+    },
     component: () => import("@/views/login/login.vue"),
+  },
+  {
+    path: "/loginTest",
+    name: "loginTest",
+    meta: {
+        title: '登录测试',
+    },
+    component: () => import("@/views/login/loginTest.vue"),
   },
   {
     // 匹配不到路由时跳转登录页面
@@ -21,18 +32,27 @@ const routes = [
         // 首页
         path: "/home",
         name: "home",
+        meta: {
+            title: '首页',
+        },
         component: () => import("@/views/home/home.vue")
       },
       {
         // 历史记录
         path: "/history",
         name: "history",
+        meta: {
+            title: '历史记录',
+        },
         component: () => import("@/views/history/history.vue")
       },
       {
         // 群组管理
         path: "/group",
         name: "group",
+        meta: {
+            title: '群组管理',
+        },
         component: () => import("@/views/group/group.vue")
       },
       {
@@ -40,6 +60,7 @@ const routes = [
         path: "/manage",
         name: "manage",
         meta: {
+            title: '后台管理',
             requiresAuth: true,
             roles: [0, 1], // 只有超级管理员有权限  用户等级 0超级管理员 1管理员 2普通用户
         },
@@ -49,13 +70,18 @@ const routes = [
         // 会议室状态
         path: "/meeting-state",
         name: "meeting-state",
+        meta: {
+            title: '会议预约',
+        },
         component: () => import("@/views/meeting-state/meeting-state.vue")
       },
       {
         // 会议室预约
         path: "/meeting-appoint",
         name: "meeting-appoint",
-        props: true,
+        meta: {
+            title: '会议创建',
+        },
         component: () => import("@/views/meeting-appoint/meeting-appoint.vue")
       },
     ]
@@ -71,6 +97,12 @@ router.beforeEach((to, from, next) => {
     const token = userInfo?.accessToken; // token
     const level = userInfo?.level; // 用户等级
     const roles = to.meta?.roles as any[]; // 模块权限数组
+    
+    if (to.meta.title) {
+        document.title = to.meta.title + '-中心会议预约';
+      } else {
+        document.title = '中心会议预约';
+      }
 
     // 若目标路由为主页时（可能为扫码登录） 暂不判断token
     if(to.path == '/home') {

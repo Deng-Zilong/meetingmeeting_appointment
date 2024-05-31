@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.dto.MeetingRoomDTO;
+import com.jfzt.meeting.entity.vo.MeetingRoomOccupancyVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomVO;
 import com.jfzt.meeting.entity.vo.TimePeriodStatusVO;
@@ -20,68 +21,67 @@ import java.util.List;
 public interface MeetingRoomService extends IService<MeetingRoom> {
 
     /**
-     * 新增会议室
-     *
      * @param meetingRoom 会议室
      * @return {@code Result<Integer>}
+     * @description 新增会议室
      */
-    Result<Integer> addMeetingRoom (MeetingRoom meetingRoom, String userId);
+    Result<Integer> addMeetingRoom (MeetingRoom meetingRoom);
 
 
     /**
-     * 查询会议室状态
-     *
      * @return {@code Result<List<MeetingRoomStatusVO>>}
+     * @description 查询会议室状态
      */
     List<MeetingRoomStatusVO> getMeetingRoomStatus ();
 
     /**
-     * 删除会议室
-     *
      * @param id 会议室id
      * @return {@code Result<Integer>}
+     * @description 删除会议室
      */
     Result<Integer> deleteMeetingRoom (Long id, Integer currentLevel);
 
     /**
-     * 查询当天各个时间段会议室占用情况
-     *
      * @return {@code List<Integer>}
+     * @description 查询当天各个时间段会议室占用情况
      */
 
     List<Integer> getTodayTimePeriodStatus ();
 
     /**
-     * 查询指定会议室当天各个时间段占用情况
-     *
      * @param id   会议室id
      * @param date 日期
      * @return {@code Result<List<TimePeriodStatusVO>>}
+     * @description 查询指定会议室当天各个时间段占用情况
      */
     Result<List<TimePeriodStatusVO>> getTimePeriodStatusByIdAndDate (Long id, LocalDate date);
 
     /**
-     * 根据时间段获取可用的会议室
-     *
      * @param startTime 开始时间
      * @param endTime   结束时间
      * @return {@code Result<List<MeetingRoomVO>>}
+     * @description 根据时间段获取可用的会议室
      */
     Result<List<MeetingRoomVO>> getAvailableMeetingRooms (LocalDateTime startTime, LocalDateTime endTime);
 
     /**
-     * 更新会议室状态
-     *
      * @param meetingRoomDTO 会议室DTO对象
      * @return @return com.jfzt.meeting.common.Result<java.lang.Integer>
+     * @description 更新会议室状态
      */
     Result<Integer> updateStatus (MeetingRoomDTO meetingRoomDTO);
 
     /**
-     * 查询被禁用的会议室的id
-     *
      * @param currentLevel 当前登录用户的权限等级
      * @return com.jfzt.meeting.common.Result<java.util.List < < java.lang.Integer>>
+     * @description 查询被禁用的会议室的id
      */
     Result<List<Long>> selectUsableRoom (Integer currentLevel);
+
+
+    /**
+     * @return {@code Result<List<MeetingRoomOccupancyVO>>}
+     * @description 查询最近七天会议室占用率
+     */
+    Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomOccupancy ();
 }

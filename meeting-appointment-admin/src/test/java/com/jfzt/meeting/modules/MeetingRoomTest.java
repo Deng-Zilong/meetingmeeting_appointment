@@ -5,6 +5,7 @@ import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.service.MeetingRoomService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,12 @@ public class MeetingRoomTest {
     @AfterEach
     public void tearDown () {
         // 清理测试数据
+    }
+
+    @Test
+    public void getMeetingRoomOccupancyTest () {
+        Assertions.assertNotNull(meetingRoomService.getAllMeetingRoomOccupancy());
+        Assertions.assertDoesNotThrow(() -> meetingRoomService.getAllMeetingRoomOccupancy());
     }
 
     @Test

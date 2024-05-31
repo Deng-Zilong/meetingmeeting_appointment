@@ -82,8 +82,8 @@ public class GlobalExceptionHandler {
     public Result<String> handleRRException (WxErrorException e) {
         log.error(ErrorCodeEnum.SERVICE_ERROR_C0200.getCode(), ErrorCodeEnum.SERVICE_ERROR_C0200.getDescription());
         Result<String> result = new Result<>();
-        result.setCode(ErrorCodeEnum.SERVICE_ERROR_C0200.getCode());
-        result.setMsg(ErrorCodeEnum.SERVICE_ERROR_C0200.getDescription());
+        result.setCode(e.getLocalizedMessage());
+        result.setMsg(e.getMessage());
         return result;
     }
 

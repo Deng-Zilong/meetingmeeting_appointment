@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 public class MeetingRecordTest {
     @Autowired
-    MeetingRecordService meetingRecordService;
+    private MeetingRecordService meetingRecordService;
 
     @BeforeEach
     public void setUp () {
@@ -48,19 +48,10 @@ public class MeetingRecordTest {
 
     @Test
     public void recordNumberTest () {
-        //        MeetingRecordDTO meetingRecordDTO = new MeetingRecordDTO();
-        //        meetingRecordDTO.setTitle("测试会议");
-        //        meetingRecordDTO.setMeetingRoomId(1L);
-        //        meetingRecordDTO.setCreatedBy("admin");
-        //        meetingRecordDTO.setStartTime(LocalDateTime.now().plusHours(2));
-        //        meetingRecordDTO.setEndTime(LocalDateTime.now().plusHours(3));
-        //        meetingRecordService.addMeeting(meetingRecordDTO);
         assertNotNull(meetingRecordService.getRecordNumber());
         assertDoesNotThrow(() -> meetingRecordService.getRecordNumber());
-        // 配置Mock对象的行为
-        //        when(meetingRecordService.getRecordNumber()).thenReturn(1);
-        //        assertEquals(1, meetingRecordService.getRecordNumber());
     }
+
     @Test
     public void getAllRecordVoListPageTest () {
         assertThrows(RRException.class, () -> meetingRecordService.getAllRecordVoListPage(null, 1L, 10L));

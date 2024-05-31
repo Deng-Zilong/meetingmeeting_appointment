@@ -5,6 +5,7 @@ import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
+import com.jfzt.meeting.entity.vo.PeriodTimesVO;
 
 import java.util.List;
 import java.util.Objects;
@@ -18,17 +19,15 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
 
 
     /**
-     * 获取当天用户参与的所有会议
-     *
      * @param userId 用户id
      * @return {@code List<MeetingRecordVO>}
+     * @description 获取当天用户参与的所有会议
      */
     List<MeetingRecordVO> getTodayMeetingRecord (String userId);
 
     /**
-     * 查询今日中心会议总次数
-     *
      * @return {@code Integer}
+     * @description 查询今日中心会议总次数
      */
     Integer getRecordNumber ();
 
@@ -40,45 +39,41 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
     MeetingRecord updateRecordStatus (MeetingRecord meetingRecord);
 
     /**
-     * 更新今日会议记录状态
+     * @description 更新今日会议记录状态
      */
     void updateTodayRecordStatus ();
 
     /**
-     * 分页获取用户参与的所有会议
-     *
      * @param userId 用户id
      * @return {@code List<MeetingRecordVO>}
+     * @description 分页获取用户参与的所有会议
      */
     List<MeetingRecordVO> getAllRecordVoListPage (String userId, Long pageNum, Long pageSize);
 
 
     /**
-     * 分页获取所有会议记录
-     *
      * @param pageNum      页码
      * @param pageSize     每页条数
      * @param currentLevel 当前登录用户的权限等级
      * @return @return {@code List<MeetingRecordVO>}
+     * @description 分页获取所有会议记录
      */
     List<MeetingRecordVO> getAllMeetingRecordVoListPage (Long pageNum, Long pageSize, Integer currentLevel);
 
 
     /**
-     * 根据会议记录id删除会议（首页不展示，历史记录展示）
-     *
      * @param userId    用户id
      * @param meetingId 会议id
      * @return {@code Boolean}
+     * @description 根据会议记录id删除会议（首页不展示，历史记录展示）
      */
     Result<String> deleteMeetingRecord (String userId, Long meetingId);
 
     /**
-     * 根据会议记录id取消会议
-     *
      * @param userId    用户id
      * @param meetingId 会议id
      * @return {@code Boolean}
+     * @description 根据会议记录id取消会议
      */
     Result<String> cancelMeetingRecord (String userId, Long meetingId);
 
@@ -94,4 +89,9 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      * @Param [meetingRecordDTO]
      */
     Result<List<MeetingRecordVO>> updateMeeting (MeetingRecordDTO meetingRecordDTO);
+    /**
+     * @Description 统计七日内各时间段预约频率
+     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.PeriodTimesVO>>
+     */
+    Result<List<PeriodTimesVO>> getTimePeriodTimes();
 }

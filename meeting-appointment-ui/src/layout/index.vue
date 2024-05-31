@@ -37,16 +37,25 @@ import { useRouter } from 'vue-router'
 import Navbar from "@/layout/components/navbar.vue";
 import Sidebar from "@/layout/components/sidebar.vue";
 import { useUserStore } from '@/stores/user'
+import { deleteInfo } from '@/request/api/login';
 // 用户信息
 const userStore = useUserStore();
 const router = useRouter();
+const userInfo = JSON.parse(localStorage.getItem('userInfo') as string); // 用户信息
+
 /**
  * @description 退出登录
  */
-const exitLogin = async () => {
-  // 重置用户信息
-  await userStore.resetUserInfo();
-  router.push('/login');
+const exitLogin = () => {
+  const userId = JSON.parse(localStorage.getItem('userInfo') as string).userId; // 用户id
+  deleteInfo({userId})
+    .then(res=> {
+        // 重置用户信息
+        userStore.resetUserInfo();
+        router.push('/login');
+    })
+    .catch(err => {})
+    .finally(() => {})
 };
 
 /**
@@ -85,6 +94,9 @@ const toHome = () => {
   .main {
     margin-top: .5rem;
     background-color: #ECF0F3;
+  }
+  .el-aside {
+    width: 14rem !important;
   }
 }
 

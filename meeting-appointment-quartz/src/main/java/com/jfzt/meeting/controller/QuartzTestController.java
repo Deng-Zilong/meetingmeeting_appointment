@@ -13,9 +13,15 @@ import com.jfzt.meeting.utils.xml.CallBackParam;
 import com.jfzt.meeting.weixin.AesException;
 import com.jfzt.meeting.weixin.WXBizMsgCrypt;
 import lombok.extern.slf4j.Slf4j;
+import me.chanjar.weixin.common.error.WxErrorException;
+import me.chanjar.weixin.cp.api.WxCpService;
+import me.chanjar.weixin.cp.api.impl.WxCpServiceImpl;
+import me.chanjar.weixin.cp.api.impl.WxCpUserServiceImpl;
+import me.chanjar.weixin.cp.bean.WxCpUser;
+import me.chanjar.weixin.cp.bean.message.WxCpMessage;
+import me.chanjar.weixin.cp.bean.message.WxCpMessageSendResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 
 
 /** 监听企业微信人员变动，和获取企业用户变动信息
@@ -34,12 +40,16 @@ public class QuartzTestController {
     private SysUserMapper sysUserMapper;
     @Autowired
     private SysDepartmentUserMapper sysDepartmentUserMapper;
+    @Autowired
+    private WxCpServiceImpl wxCpService;
+    @Autowired
+    protected WxCpService wxService;
 
     /**
      * 设置接收事件服务器
      * @author zhenxing.lu
      */
-    @GetMapping("/Department")
+    @GetMapping("/receiving-users")
     public String validApi(@RequestParam(name = "msg_signature") String msgSignature,
                            @RequestParam(name = "timestamp") String timestamp,
                            @RequestParam(name = "nonce") String nonce,
@@ -61,7 +71,7 @@ public class QuartzTestController {
         }
         return "error";
     }
-    @PostMapping("/Department")
+    @PostMapping("/receiving-users")
     public void receive(@RequestParam(name = "msg_signature") String msgSignature,
                         @RequestParam(name = "timestamp") String timestamp,
                         @RequestParam(name = "nonce") String nonce,
@@ -81,10 +91,13 @@ public class QuartzTestController {
             switch (changeType){
                 case "create_user":
                     log.info("新增用户");
+                    WxCpUserServiceImpl wxCpUserService = new WxCpUserServiceImpl(wxCpService);
+                    WxCpUser wxCpUser = wxCpUserService.getById(callBackParam.getAllFieldsMap().get("UserID").toString());
                     SysUser sysUser = new SysUser();
                     sysUser.setUserId(callBackParam.getAllFieldsMap().get("UserID").toString());
+                    sysUser.setUserName(wxCpUser.getName());
                     sysUser.setLevel(3);
-                    sysUser.setPassword(EncryptUtils.encrypt(callBackParam.getAllFieldsMap().get("UserID").toString()));
+                    sysUser.setPassword(EncryptUtils.encrypt(EncryptUtils.md5encrypt("Aa111111")));
                     sysUserMapper.insert(sysUser);
                     SysDepartmentUser sysDepartmentUser = new SysDepartmentUser();
                     sysDepartmentUser.setUserId(callBackParam.getAllFieldsMap().get("UserID").toString());
@@ -96,6 +109,9 @@ public class QuartzTestController {
                     LambdaQueryWrapper<SysUser> sysUserLambdaQueryWrapper1 = new LambdaQueryWrapper<>();
                     sysUserLambdaQueryWrapper1.eq(SysUser::getUserId,callBackParam.getAllFieldsMap().get("UserID").toString());
                     sysUserMapper.delete(sysUserLambdaQueryWrapper1);
+                    LambdaQueryWrapper<SysDepartmentUser> sysDepartmentUserLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                    sysDepartmentUserLambdaQueryWrapper.eq(SysDepartmentUser::getUserId,callBackParam.getAllFieldsMap().get("UserID").toString());
+                    sysDepartmentUserMapper.delete(sysDepartmentUserLambdaQueryWrapper);
                     break;
                 default:
                     log.info("其他用户操作");
@@ -107,6 +123,31 @@ public class QuartzTestController {
             // 解密失败，失败原因请查看异常
             log.error("Exception", e);
         }
+    }
+    @GetMapping("/test")
+    public Boolean test() throws WxErrorException {
+
+        WxCpMessage message = WxCpMessage
+                .MARKDOWN()
+                .toUser("ZhaiChenYu|GuLi|d|QianRuoXiaMo|XingChen|")
+                .content("您的会议室已经预定，稍后会同步到`邮箱` \n" +
+                        "                >**事项详情** \n" +
+                        "                >事　项：开会\n" +
+                        "                >组织者：@miglioguan \n" +
+                        "                >参与者：@miglioguan、@kunliu、@jamdeezhou、@kanexiong、@kisonwang \n" +
+                        "                > \n" +
+                        "                >会议室：广州TIT 1楼 301\n" +
+                        "                >日　期：2018年5月18日\n" +
+                        "                >时　间：上午9:00-11:00\n" +
+                        "                > \n" +
+                        "                >请准时参加会议。 \n" +
+                        "                > \n" +
+                        "                >如需修改会议信息，请点击：[修改会议信息](https://work.weixin.qq.com)")
+                .build();
+
+        WxCpMessageSendResult messageSendResult = this.wxService.getMessageService().send(message);
+
+        return true;
     }
 
 }

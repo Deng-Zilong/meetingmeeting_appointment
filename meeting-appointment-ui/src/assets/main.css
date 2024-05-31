@@ -2,6 +2,28 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-weight: 350;
+  font-style: normal;
+  font-family: Noto Sans SC, serif;
+}
+
+/* 滚动条样式 不占位置 */
+.my-main-scrollbar {
+  /* 实际滚动条透明 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+  &::-webkit-scrollbar { /* WebKit */
+    width: 0;
+    height: 0;
+  }
+
+  overflow: scroll; /* 使内容可滚动 */
+  
+  /* 假滚动条样式  目前不起作用 */
+  &::-webkit-scrollbar-thumb { /* WebKit 滚动条拇指样式 */
+    background-color: rgba(0,0,0,1); /* 颜色自定义 */
+    border-radius: 6px;
+  }
 }
 
 /* 中心*/

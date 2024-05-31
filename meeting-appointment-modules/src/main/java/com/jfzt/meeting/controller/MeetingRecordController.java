@@ -65,9 +65,8 @@ public class MeetingRecordController {
     }
 
     /**
-     * 取消会议
-     *
      * @return {@code Result<String>}
+     * @description 取消会议
      */
     @PutMapping("/index/cancel-meeting-record")
     public Result<String> cancelMeetingRecord (@RequestBody UpdateMeetingDTO updateMeetingDTO) {
@@ -76,9 +75,8 @@ public class MeetingRecordController {
 
 
     /**
-     * 删除会议,首页今日会议不展示，历史记录不做删除，非取消会议
-     *
      * @return {@code Result<String>}
+     * @description 删除会议, 首页今日会议不展示，历史记录不做删除，非取消会议
      */
     @DeleteMapping("/index/meeting-record")
     public Result<String> deleteMeetingRecord (@RequestParam String userId, @RequestParam Long meetingId) {
@@ -90,7 +88,7 @@ public class MeetingRecordController {
      * @return com.jfzt.meeting.common.Result<java.util.Objects>
      * @Description 新增会议
      */
-    @PostMapping("/index/add-meeting-record")
+    @PostMapping("/index/meeting-record")
     public Result<Objects> addMeetingRecord (@RequestBody MeetingRecordDTO meetingRecordDTO) {
         return meetingRecordService.addMeeting(meetingRecordDTO);
     }
@@ -100,7 +98,7 @@ public class MeetingRecordController {
      * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingRecordVO>>
      * @Description 更新会议
      */
-    @PutMapping("/index/update-meeting-record")
+    @PutMapping("/index/meeting-record")
     public Result<List<MeetingRecordVO>> updateMeetingRecord (@RequestBody MeetingRecordDTO meetingRecordDTO) {
         return meetingRecordService.updateMeeting(meetingRecordDTO);
     }

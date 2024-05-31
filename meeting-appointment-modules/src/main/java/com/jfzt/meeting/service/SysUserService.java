@@ -3,12 +3,12 @@ package com.jfzt.meeting.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.SysUser;
-import com.jfzt.meeting.entity.vo.LoginVo;
 import com.jfzt.meeting.entity.vo.SysUserVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author zilong.deng
@@ -66,10 +66,10 @@ public interface SysUserService extends IService<SysUser> {
     /**
      * 查询用户信息
      *
-     * @param loginVo
+     * @param userId
      * @return
      */
-    SysUser findUser (LoginVo loginVo);
+    SysUser findUser (String userId);
 
     /**
      * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.SysUserVO>>
@@ -77,4 +77,12 @@ public interface SysUserService extends IService<SysUser> {
      * @Param [name]
      */
     Result<List<SysUserVO>> findByName (String name);
+
+    /**
+     * QR code 返回前端二维码
+     * @return
+     */
+    Map<String, String> userQrCode();
+
+    String getUrlCode();
 }

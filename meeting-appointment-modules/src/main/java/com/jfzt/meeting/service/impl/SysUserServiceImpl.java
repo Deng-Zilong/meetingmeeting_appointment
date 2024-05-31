@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.code.kaptcha.Producer;
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.config.WxCpDefaultConfiguration;
 import com.jfzt.meeting.constant.MessageConstant;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.vo.LoginVo;
@@ -14,16 +15,17 @@ import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.service.SysUserService;
 import jakarta.annotation.Resource;
+import me.chanjar.weixin.cp.api.impl.WxCpServiceImpl;
+import me.chanjar.weixin.cp.tp.service.impl.WxCpTpOAuth2ServiceImpl;
+import me.chanjar.weixin.cp.tp.service.impl.WxCpTpServiceImpl;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.awt.image.BufferedImage;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -44,6 +46,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     private RedisTemplate<String, Object> redisTemplate;
     @Resource
     private Producer producer;
+    @Autowired
+    private WxCpServiceImpl wxCpService;
+    @Autowired
+    private WxCpDefaultConfiguration wxCpDefaultConfiguration;
+    @Autowired
+    private WxCpTpServiceImpl wxCpTpService;
 
 
     /**
@@ -132,14 +140,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             if (MessageConstant.ADMIN_LEVEL.equals(sysUser.getLevel())) {
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
             }
-            row = sysUserMapper.addAdmin(userId);
+            row += sysUserMapper.addAdmin(userId);
         }
         if (row > 0) {
-            return Result.success(ErrorCodeEnum.SUCCESS);
+            return Result.success(row);
+        } else {
+            log.error("修改用户权限等级失败！");
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
         }
-        log.error("修改用户权限等级失败！");
-        throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
     }
+
 
     /**
      * 删除管理员
@@ -158,7 +168,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         }
         int row = sysUserMapper.deleteAdmin(userId);
         if (row > 0) {
-            return Result.success(ErrorCodeEnum.SUCCESS);
+            return Result.success(row);
         }
         log.error("修改用户权限等级失败！");
         throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
@@ -172,15 +182,15 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     @Override
     public BufferedImage getCaptcha (String uuid) {
         String code = producer.createText();
-        redisTemplate.opsForValue().set(uuid, code, Duration.ofSeconds(60));
+        redisTemplate.opsForValue().set("uuid:"+uuid, code, Duration.ofSeconds(60));
         return producer.createImage(code);
     }
 
     @Override
-    public SysUser findUser (LoginVo loginVo) {
+    public SysUser findUser (String userId) {
 
         LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(SysUser::getUserId, loginVo.getName());
+        lambdaQueryWrapper.eq(SysUser::getUserId, userId);
         return sysUserMapper.selectOne(lambdaQueryWrapper);
     }
 
@@ -209,6 +219,21 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
                         .build())
                 // 将SysUserVO对象collect到列表中
                 .collect(Collectors.toList()));
+    }
+
+    @Override
+    public Map<String, String> userQrCode() {
+        String url = wxCpService.buildQrConnectUrl(wxCpDefaultConfiguration.getUrl()+"/#/home",wxCpDefaultConfiguration.getState());
+        Map<String,String> map = new HashMap<>(1);
+        map.put("url",url);
+        return map;
+    }
+
+    @Override
+    public String getUrlCode() {
+        WxCpTpOAuth2ServiceImpl wxCpTpOAuth2Service = new WxCpTpOAuth2ServiceImpl(wxCpTpService);
+        String url = wxCpTpOAuth2Service.buildAuthorizeUrl(wxCpDefaultConfiguration.getUrl(),wxCpDefaultConfiguration.getState(),wxCpDefaultConfiguration.getScope());
+        return url;
     }
 }
 

@@ -3,6 +3,8 @@ package com.jfzt.meeting.config;
 import lombok.Data;
 import me.chanjar.weixin.cp.api.impl.WxCpServiceImpl;
 import me.chanjar.weixin.cp.config.impl.WxCpDefaultConfigImpl;
+import me.chanjar.weixin.cp.config.impl.WxCpTpDefaultConfigImpl;
+import me.chanjar.weixin.cp.tp.service.impl.WxCpTpServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,21 +49,44 @@ public class WxCpDefaultConfiguration {
      */
     @Value("${qiyewx.encodingAESKey}")
     private String encodingAESKey;
+    /**
+     * 开发者设置的url
+     */
+    @Value("${qiyewx.url}")
+    private String url;
+    /**
+     * 重定向后会带上state参数
+     */
+    @Value("${qiyewx.state}")
+    private String state;
 
+    @Value("${qiyewx.scope}")
+    private String scope;
     @Bean
     public WxCpServiceImpl wxCp() {
         WxCpDefaultConfigImpl config = new WxCpDefaultConfigImpl();
         // 设置微信企业号的appid
-        config.setCorpId("ww942086e6c44abc4b");
+        config.setCorpId(corpid);
         // 设置微信企业号的app corpSecret
-        config.setCorpSecret("Rnf3LVxbAdTfvGVTirgwVbgsaDoBv_MTXrmawAu9qHQ");
-        // 设置微信企业号应用ID
-        config.setAgentId(1000002);
+        config.setCorpSecret(corpsecret);
+        config.setAgentId(agentId);
         WxCpServiceImpl wxCpService = new WxCpServiceImpl();
         wxCpService.setWxCpConfigStorage(config);
         return wxCpService;
     }
 
+    @Bean
+    public WxCpTpServiceImpl wxCps() {
+      // 创建配置存储对象
+        WxCpTpDefaultConfigImpl configStorage = new WxCpTpDefaultConfigImpl();
+        configStorage.setCorpId(corpid);
+        configStorage.setCorpSecret(corpsecret);
+
+        // 创建服务对象
+        WxCpTpServiceImpl wxCpTpService = new WxCpTpServiceImpl();
+        wxCpTpService.setWxCpTpConfigStorage(configStorage);
+        return wxCpTpService;
+    }
 
 
 }

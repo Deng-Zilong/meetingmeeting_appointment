@@ -21,6 +21,7 @@ public class MessageConstant {
     public static final String UPDATE_SUCCESS = "修改成功！";
     public static final String NO_USER = "成员不能为空！";
     public static final String CREATE_SUCCESS = "创建成功！";
+    public static final String OCCUPIED = "当前会议室已被占用！";
 
     /**
      * 权限处理提示信息
