@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,6 +55,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     private MeetingAttendeesMapper attendeesMapper;
     @Resource
     private MeetingRoomMapper meetingRoomMapper;
+    @Autowired
+    private MeetingReminderScheduler meetingReminderScheduler;
+    @Autowired
+    private MeetingMinutesService meetingMinutesService;
+
 
     /**
      * @param userId 用户id
@@ -388,6 +394,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         this.baseMapper.updateById(meetingRecord);
         attendeesMapper.delete(new LambdaQueryWrapper<MeetingAttendees>()
                 .eq(MeetingAttendees::getMeetingRecordId, meetingId));
+        //清除会议纪要
+        meetingMinutesService.deleteMeetingMinutes(meetingId);
         return Result.success();
     }
 

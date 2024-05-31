@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author zilong.deng
@@ -93,6 +94,35 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
             updateById(meetingMinutes);
         }
         return Result.success();
+    }
+
+    /**
+     * @param meetingRecordId 会议id
+     * @description 根据会议id删除所有会议纪要
+     */
+    @Override
+    public void deleteMeetingMinutes (Long meetingRecordId) {
+        if (meetingRecordId == null) {
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
+        }
+        remove(new LambdaQueryWrapper<MeetingMinutes>()
+                .eq(MeetingMinutes::getMeetingRecordId, meetingRecordId));
+    }
+
+    /**
+     * @param meetingMinutes userId id
+     * @description 根据用户id 纪要删除指定
+     */
+    @Override
+    public void deleteMeetingMinutes (MeetingMinutes meetingMinutes) {
+        if (meetingMinutes == null) {
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
+        }
+        MeetingMinutes minutes = getById(meetingMinutes.getId());
+        if (!Objects.equals(minutes.getUserId(), meetingMinutes.getUserId())) {
+            throw new RRException("用户没有删除权限！", ErrorCodeEnum.SERVICE_ERROR_A0312.getCode());
+        }
+        removeById(meetingMinutes.getId());
     }
 
 }
