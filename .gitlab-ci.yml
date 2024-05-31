@@ -21,10 +21,10 @@ include:
 
 variables:
   #【请修改】后端文件夹路径
-  BACK_PATH: "meeting-appointment-backend"
+  BACK_PATH: "meeting-appointment-admin"
 
   #【请修改】前端文件夹路径
-  FRONT_PATH: "meeting-appointment-pc-web"
+  FRONT_PATH: "meeting-appointment-ui"
 
   # 设置后端分支和前端分支的默认值
   BACK_BRANCH: "include"
@@ -38,7 +38,7 @@ variables:
   #反例：前端jf___training-web 后端jf___training
   #反例：前端jf-training 后端jf-training
   #反例：前端JF-TRAINING 后端JF-TRAINING  不能使用大写
-  FRONT_PROJECT_NAME: "jf-meeting-appointment-web"
+  FRONT_PROJECT_NAME: "jf-meeting-appointment-pc-web"
 
   #【请修改】后端项目名称(要求同上)
   BACK_PROJECT_NAME: "jf-meeting-appointment-backend"
