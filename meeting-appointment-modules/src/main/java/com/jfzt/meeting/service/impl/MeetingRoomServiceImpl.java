@@ -325,6 +325,17 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     @Override
     public List<Integer> getTodayTimePeriodStatus () {
         List<Integer> timeStatus = new LinkedList<>();
+        //获取可使用的会议室总数
+        long count = this.count(new LambdaQueryWrapper<MeetingRoom>()
+                .eq(MeetingRoom::getStatus, MEETINGROOM_STATUS_AVAILABLE));
+        if (count == 0) {
+            //无可用会议室
+            for (int i = 0; i < 30; i++) {
+                //全为已过期
+                timeStatus.add(i, TIME_PERIOD_OVERDUE);
+            }
+            return timeStatus;
+        }
         LocalDateTime now = LocalDateTime.now();
         //更新今日所有会议记录状态
         meetingRecordService.updateTodayRecordStatus();
@@ -362,13 +373,8 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 long size = meetingRecords.stream()
                         .collect(Collectors.groupingBy(MeetingRecord::getMeetingRoomId))
                         .size();
-                //获取可使用的会议室总数
-                long count = this.count(new LambdaQueryWrapper<MeetingRoom>()
-                        .eq(MeetingRoom::getIsDeleted, NOT_DELETED)
-                        .eq(MeetingRoom::getStatus, MEETINGROOM_STATUS_AVAILABLE));
+                //判断是否全部被占用
                 if (size >= count) {
-                    System.out.println(timeStatus);
-                    //相同表示时间段全被占用
                     timeStatus.add(i, TIME_PERIOD_BUSY);
                 } else {
                     //没全部占用
