@@ -6,7 +6,7 @@
         <div class="screen-title">中心会议室大屏</div>
         <div class="screen-main">
           <div class="main-table my-main-scrollbar">
-            <div class="main-items" :class="item.status === 1 ? 'pointer' : 'ban'" v-for="item in roomMeetingData" @click.stop="handleRoomClick(item)">
+            <div class="main-items" :class="item.status !== 0 ? 'pointer' : 'ban'" v-for="item in roomMeetingData" @click.stop="handleRoomClick(item)">
               <div class="name">{{ item.roomName }}</div>
               <div class="state">{{ roomStatus(item.status) }}</div>
             </div>
@@ -139,7 +139,7 @@ import { useRoute, useRouter } from 'vue-router';
 import {  getTodayMeetingRecordData, getDeleteMeetingRecordData, getCenterAllNumberData, getRoomStatusData, getTimeBusyData, getNoticeData } from '@/request/api/home'
 
 import Clock from '@/views/home/component/clock.vue'
-import GuageChart from '@/views/home/component/guageChart.vue'
+import GuageChart from '@/views/home/component/guage-chart.vue'
 import { ElMessage, ElMessageBox, dayjs } from 'element-plus';
 import { meetingState } from '@/utils/types';
 import { qwLogin } from '@/request/api/login';
@@ -239,7 +239,7 @@ const getRoomStatus = () => {
 }
 
 const handleRoomClick = (item: any) => {
-    if(item.status === 1) {
+    if(item.status !== 0) {
       sessionStorage.setItem('meetingInfo', JSON.stringify({meetingRoomId: String(item.id)}));
       router.push('/meeting-appoint')
   }
@@ -366,9 +366,9 @@ onMounted( async () => {
     const token = userInfo.value?.accessToken;
     // 扫码登录
     if(!token) {
-        // if (code === 'undefined') {
-        //     return router.replace('/login');
-        // }
+        if (code === 'undefined') {
+            return router.replace('/login');
+        }
         try {
             const res:any = await qwLogin({code});
             if (res.code !== '00000') {
@@ -556,10 +556,6 @@ onMounted( async () => {
               }
             }
             .day-right {
-              // display: flex;
-              // flex-direction: column;
-              // align-items: center;
-              // justify-content: space-evenly;
               width: 4.3rem;
               color: #FFF;
               text-align: center;
@@ -689,12 +685,13 @@ onMounted( async () => {
           background: #FFF;
           border-radius: 5px;
           box-shadow: 1px 1px 2px 1px #DBE9F7;
+          transition: transform 0.3s linear;
           &:hover {
             cursor: pointer;
             font-size: 1rem;
             color: #FFF;
             background-color: #1273DB;
-            transform: scale(1.06);
+            transform: translateY(-0.3125rem) scale(1.06);
           }
         }
       }

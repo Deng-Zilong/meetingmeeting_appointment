@@ -320,13 +320,14 @@ const selectTime = (item: any) => {
             border-radius: 5px;
             box-shadow: inset 0px 1px 8px 0px #DBE9F7;
             cursor: pointer;
-            transition: transform 0.2s ease;
+            transition: transform 0.2s ease;  // 标题会议室 展示动画效果
+            transition: transform 0.3s linear;  // 每个时间点的动画效果
 
             &:hover {
               font-size: 1.3rem;
               color: #FFF;
               background-color: #1273DB;
-              transform: scale(1.06);
+              transform: translateY(-0.3125rem) scale(1.06);  // 鼠标移入时，放大并上移
             }
           }
         }
