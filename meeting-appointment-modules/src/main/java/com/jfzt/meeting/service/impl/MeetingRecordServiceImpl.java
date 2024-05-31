@@ -16,6 +16,7 @@ import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
 import com.jfzt.meeting.mapper.MeetingRecordMapper;
+import com.jfzt.meeting.mapper.MeetingRoomMapper;
 import com.jfzt.meeting.service.*;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +52,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     private SysUserService userService;
     @Resource
     private MeetingAttendeesMapper attendeesMapper;
+    @Resource
+    private MeetingRoomMapper meetingRoomMapper;
 
     /**
      * @param userId 用户id
@@ -290,8 +293,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 // 设置会议信息
                 BeanUtils.copyProperties(record, recordVO);
                 // 设置会议室信息
-                //不使用逻辑删除
+                // 不使用逻辑删除
                 MeetingRoom meetingRoom = meetingRoomMapper.getByRoomId(record.getMeetingRoomId());
+                if (meetingRoom != null){
+                    recordVO.setMeetingRoomName(meetingRoom.getRoomName());
+                }
                 // 设置创建人信息
                 SysUser adminUser = userService.getById(record.getCreatedBy());
                 if (adminUser != null) {
