@@ -14,12 +14,13 @@
         <result property="gmtModified" column="gmt_modified" jdbcType="TIMESTAMP"/>
         <result property="createdBy" column="created_by" jdbcType="VARCHAR"/>
         <result property="isDeleted" column="is_deleted" jdbcType="TINYINT"/>
+        <result property="equipment" column="equipment" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,room_name,location,
         capacity,status,gmt_create,
-        gmt_modified,created_by,is_deleted
+        gmt_modified,created_by,is_deleted,equipment
     </sql>
 
     <update id="updateStatus" parameterType="map">
