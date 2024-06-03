@@ -19,8 +19,10 @@ import com.jfzt.meeting.mapper.MeetingRecordMapper;
 import com.jfzt.meeting.mapper.MeetingRoomMapper;
 import com.jfzt.meeting.service.*;
 import com.jfzt.meeting.task.MeetingReminderScheduler;
+import com.jfzt.meeting.utils.WxUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import me.chanjar.weixin.common.error.WxErrorException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -46,6 +49,8 @@ import static com.jfzt.meeting.constant.MessageConstant.*;
 public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, MeetingRecord>
         implements MeetingRecordService {
 
+    @Autowired
+    private WxUtil wxUtil;
     @Resource
     private MeetingAttendeesService meetingAttendeesService;
     @Resource
@@ -392,11 +397,30 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             throw new RRException("当前用户没有修改权限！", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
         }
         meetingRecord.setStatus(MEETING_RECORD_STATUS_CANCEL);
+        List<String> userIds = attendeesMapper.selectList(new LambdaQueryWrapper<MeetingAttendees>()
+                        .eq(MeetingAttendees::getMeetingRecordId, meetingId))
+                .stream().map(MeetingAttendees::getUserId).toList();
         this.baseMapper.updateById(meetingRecord);
         attendeesMapper.delete(new LambdaQueryWrapper<MeetingAttendees>()
                 .eq(MeetingAttendees::getMeetingRecordId, meetingId));
+        meetingReminderScheduler.cancelMeetingReminder(meetingId);
         //清除会议纪要
         meetingMinutesService.deleteMeetingMinutes(meetingId);
+        String reminder =
+                "**会议提醒**\n" +
+                        "会议 : " + meetingRecord.getTitle() + "\n" +
+                        "日期 :" + meetingRecord.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "\n" +
+                        "时间 : " + meetingRecord.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+                        + " ~ "
+                        + meetingRecord.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")) + "\n" +
+                        "会议已取消！";
+        try {
+            //发送取消会议提醒
+            wxUtil.sendsWxReminders(userIds, reminder);
+        } catch (WxErrorException e) {
+            log.error("发送取消会议提醒失败！", e);
+            //            throw new RRException("发送取消会议提醒失败！", ErrorCodeEnum.SERVICE_ERROR_C0001.getCode());
+        }
         return Result.success();
     }
 
@@ -450,8 +474,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .collect(Collectors.toList());
         // 保存MeetingAttendees列表
         meetingAttendeesService.saveBatch(attendeesList);
-
-
+        meetingRecordDTO.setId(meetingRecord.getId());
+        //定时发送提醒
+        meetingReminderScheduler.scheduleMeetingReminder(meetingRecordDTO);
         return Result.success(CREATE_SUCCESS);
     }
 
@@ -492,6 +517,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .collect(Collectors.toList());
         // 更新MeetingAttendees列表
         meetingAttendeesService.saveBatch(attendeesList);
+        //重新发送定时任务提醒
+        meetingReminderScheduler.cancelMeetingReminder(meetingRecordDTO.getId());
+        meetingReminderScheduler.scheduleMeetingReminder(meetingRecordDTO);
         return Result.success(UPDATE_SUCCESS);
     }
 
