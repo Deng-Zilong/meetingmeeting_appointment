@@ -413,8 +413,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         // 将meetingRecordDTO中的属性复制到meetingRecord中
         BeanUtils.copyProperties(meetingRecordDTO, meetingRecord);
         // 判断meetingRecord的结束时间是否早于开始时间，如果是，则返回错误信息
-        if (meetingRecord.getEndTime().isBefore(meetingRecord.getStartTime())) {
-            throw new RRException(START_TIME_GT_END_TiME);
+        if (meetingRecord.getEndTime().isBefore(meetingRecord.getStartTime())
+                || meetingRecord.getStartTime().equals(meetingRecord.getEndTime())) {
+            throw new RRException(START_TIME_GT_END_TIME);
         } else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())) {
             // 判断meetingRecord的开始时间是否早于当前时间，如果是，则返回错误信息
             throw new RRException(START_TIME_LT_NOW);
@@ -469,7 +470,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         BeanUtils.copyProperties(meetingRecordDTO, meetingRecord);
         // 判断meetingRecord的结束时间是否早于开始时间，如果是，则返回错误信息
         if (meetingRecord.getEndTime().isBefore(meetingRecord.getStartTime())) {
-            return Result.fail(START_TIME_GT_END_TiME);
+            return Result.fail(START_TIME_GT_END_TIME);
         } else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())) {
             // 判断meetingRecord的开始时间是否早于当前时间，如果是，则返回错误信息
             return Result.fail(START_TIME_LT_NOW);
