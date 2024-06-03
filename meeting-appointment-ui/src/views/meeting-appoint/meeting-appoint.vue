@@ -43,7 +43,7 @@
                 <div class="appoint-row">
                     <el-form-item label="日期" prop="date" class="row-date">
                         <el-date-picker v-model="formData.date" type="date" class="date" :disabled-date="disabledDate"
-                            placeholder="选择日期" />
+                            placeholder="选择日期"/>
                     </el-form-item>
                     <el-form-item label="当前可选地点" prop="meetingRoomId">
                         <el-select v-model.string="formData.meetingRoomId" placeholder="请选择" @change="handleChangeRoom">
@@ -101,6 +101,7 @@ import personTreeDialog from '@/components/person-tree-dialog.vue'
 import { addMeetingGroup, getMeetingGroupList } from '@/request/api/group'
 import { addMeetingRecord, availableMeetingRooms, updateMeetingRecord } from '@/request/api/meeting-appoint'
 import { meetingStatus } from '@/stores/meeting-status'
+import { useThrottle } from '@/utils/method'
 
 const routes = useRoute();
 const router = useRouter();
@@ -157,6 +158,7 @@ onMounted(() => {
 
     // 获取群组列表
     getGroupList();
+    handleAvailableMeetingRooms(formData.value.startTime, formData.value.endTime); // 获取可用会议室
 })
 
 /**
@@ -185,7 +187,7 @@ let minEndTime = ref('8:00'); // 结束最小可选时间
 const seconds = ('00'); // 获取当前时间的秒
 
 // 会议室数组
-const roomArr = ref<any>(useMeetingStatus.centerRoomName);
+const roomArr = ref<any>([]);
 
 // 添加参会人员弹窗表单数据
 let addPersonForm = ref<any>({
@@ -236,10 +238,7 @@ const closeAddPersonDialog = () => {
  */
 const handleChangeStartTime = (value: any) => {
     minEndTime.value = value;
-    if (!formData.value.endTime || !value) return;
-    const startTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${value}:${seconds}`;
-    const endTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${formData.value.endTime}:${seconds}`;
-    handleAvailableMeetingRooms(startTime, endTime);
+    handleAvailableMeetingRooms(value, formData.value.endTime);
 }
 
 /**
@@ -255,10 +254,7 @@ const handleChangeEndTime = (value: any) => {
     //     formData.value.endTime = '';
     //     return ElMessage.warning('结束时间不能小于或等于开始时间');
     // }
-    if (!formData.value.startTime || !value) return;
-    const startTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${formData.value.startTime}:${seconds}`;
-    const endTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${value}:${seconds}`;
-    handleAvailableMeetingRooms(startTime, endTime);
+    handleAvailableMeetingRooms(formData.value.startTime, value);
 }
 
 /**
@@ -266,7 +262,11 @@ const handleChangeEndTime = (value: any) => {
  * @param startTime 开始时间
  * @param endTime 结束时间
  */
-const handleAvailableMeetingRooms = (startTime: string, endTime: string) => {
+const handleAvailableMeetingRooms = useThrottle((start: string, end: string) => {
+    if (!start || !end) return;
+    const date = dayjs(formData.value.date).format('YYYY-MM-DD');
+    const startTime:string = date + ` ${start}:${seconds}`;
+    const endTime:string = date + ` ${end}:${seconds}`;
     availableMeetingRooms({
         startTime,
         endTime,
@@ -275,7 +275,7 @@ const handleAvailableMeetingRooms = (startTime: string, endTime: string) => {
         roomArr.value = res.data;
     })
     .catch(err => {})
-}
+}, 500)
 
 /**
  * @description 获取选中会议室的id
@@ -306,6 +306,7 @@ const formData = ref<any>({
 })
 watch(()=>formData.value.date, (newValue)=> {
     // 如果选中的日期大于今天的日期 则默认最小可选时间为8:00
+    handleAvailableMeetingRooms(formData.value.startTime, formData.value.endTime);
     if (new Date(newValue).getTime() > new Date().getTime()) {
         return minStartTime.value = '7:59';
     }

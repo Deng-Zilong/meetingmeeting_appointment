@@ -99,11 +99,13 @@
             </el-dialog>
         </div>
         <!-- 会议纪要 -->
-        <el-dialog v-model="meetingSummaryVisible" :title="meetingSummaryTitle" :before-close="handleCancelMeetingSummary" width="35%" :close-on-click-modal="false">
+        <el-dialog  class="meeting-summary" v-model="meetingSummaryVisible" :title="meetingSummaryTitle" :before-close="handleCancelMeetingSummary" width="35%" :close-on-click-modal="false">
             <el-scrollbar max-height="388px">
                 <el-input
                     v-model="meetingSummary"
                     :autosize="{ minRows: 18}"
+                    maxlength="10000"
+                    :show-word-limit="true"
                     type="textarea"
                     placeholder="请输入会议纪要"
                 />
@@ -520,6 +522,14 @@
                         flex: 1.5;
                     }
                 }
+            }
+        }
+        :deep().meeting-summary {
+            border-radius: 0.9375rem;
+            padding: 1.25rem;
+            .el-dialog__title {
+                font-size: 1rem;
+                font-weight: 500;
             }
         }
        
