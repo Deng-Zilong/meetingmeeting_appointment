@@ -31,7 +31,7 @@
                     <el-form-item label="结束时间" prop="endTime">
                         <el-time-select 
                             v-model="formData.endTime" 
-                            :min-time="minEndTime" 
+                            :min-time="minEndTime || dayjs(new Date()).format('HH:m')" 
                             :start="timeStart"
                             step="00:15" 
                             :end="timeEnd" 
@@ -243,6 +243,14 @@ const handleChangeStartTime = (value: any) => {
  * @param value 选中的结束时间
  */
 const handleChangeEndTime = (value: any) => {
+    // if (!formData.value.startTime) {
+    //     formData.value.endTime = '';
+    //     return ElMessage.warning('请先选择开始时间');
+    // }
+    // if (formData.value.startTime >= value) {
+    //     formData.value.endTime = '';
+    //     return ElMessage.warning('结束时间不能小于或等于开始时间');
+    // }
     if (!formData.value.startTime || !value) return;
     const startTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${formData.value.startTime}:${seconds}`;
     const endTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${value}:${seconds}`;
@@ -365,7 +373,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
             groupName,
         })
         // 判断开时间是否大于结束时间
-        if (startTime > endTime) {
+        if (startTime >= endTime) {
             return ElMessage.error("开始时间不能大于或等于结束时间！")
         }
         // 是否添加为群组

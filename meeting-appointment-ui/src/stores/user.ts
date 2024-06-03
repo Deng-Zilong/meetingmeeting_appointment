@@ -28,8 +28,11 @@ export const useUserStore = defineStore('user',()=>{
      * @description 企业微信扫码登录
      * @param code 企业微信返回code
      */
-    const getQWUserInfo = (code: string)=>{
-        qwLogin({code})
+    const getQWUserInfo = (code: string, loginMethod: number)=>{
+        qwLogin({
+            code,
+            loginMethod
+        })
                 .then((res: any) => {
                     localStorage.setItem('userInfo', JSON.stringify(res.data));
                     userInfo = res.data;
@@ -46,7 +49,7 @@ export const useUserStore = defineStore('user',()=>{
      * @param username 用户名
      * @param password 密码
      */
-    const getUserInfo= async (data:{name: string, password: string, uuid: string, code: string})=>{
+    const getUserInfo = async (data:{name: string, password: string, uuid: string, code: string})=>{
         await Login(data)
                 .then((res: any) => {
                     localStorage.setItem('userInfo', JSON.stringify(res.data));

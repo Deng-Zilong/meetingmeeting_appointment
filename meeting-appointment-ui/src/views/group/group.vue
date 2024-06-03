@@ -516,7 +516,7 @@ const handleDeleteMeeting = async (id: string,) => {
                     color: #666666;
 
                     &:last-child {
-                        color: #409EFF;
+                        color: #F56C6C;
                         cursor: pointer;
                     }
 
