@@ -42,8 +42,8 @@
             <div class="title">会议状态</div>
             <div class="title">其他</div>
           </div>
-          <div class="table-container">
-            <el-timeline ref="timelineRef">
+          <div class="table-container" ref="timelineRef">
+            <el-timeline>
               <el-timeline-item  placement="top" v-for="(value, index) in manageData">
                 <div class="table-left">
                   <p>{{ value.month }}月</p>
@@ -79,12 +79,13 @@
       </el-tab-pane>
 
       <el-tab-pane label="操作会议室" name="second" class="second-tab">
-        <ManageRoom />
-        <!-- 新增会议室 -->
-        
+        <ManageRoom />        
       </el-tab-pane>
       
-      <el-tab-pane label="柱状图统计" name="third">Role</el-tab-pane>
+      <el-tab-pane label="柱状图统计" name="third" class="third-tab">
+        <TimeChart />
+        <RoomChart />
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
@@ -98,7 +99,10 @@
     import { meetingState } from '@/utils/types';
     import personTreeDialog from "@/components/person-tree-dialog.vue";
     import ManageRoom from '@/views/manage/component/manage-room.vue';
-    import { getMeetingBanData, addRoomData, deleteRoomDate, addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData } from '@/request/api/manage'
+    import TimeChart from '@/views/manage/component/time-chart.vue';
+    import RoomChart from '@/views/manage/component/room-chart.vue';
+    
+    import { addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData } from '@/request/api/manage'
       
 
     // let loading = ref(true) // 加载状态
@@ -106,12 +110,6 @@
     const useMeetingStatus = meetingStatus();
     
     // 会议室状态 0-暂停使用 1-空闲 2-使用中
-    // 新增会议室信息
-    let addMeetingForm = ref<any>({
-      roomName: '',
-      location: '',
-      capacity: ''
-    })
 
     let input = ref<any>('');   // 公告信息框
     let manageList = ref<any>([])  // 所有管理员列表
@@ -477,6 +475,11 @@
       .second-tab {
         display: flex;
         justify-content: space-between;
+      }
+
+      .third-tab {
+        display: flex;
+        justify-content: space-around;
       }
     }
   }
