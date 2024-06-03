@@ -6,12 +6,16 @@ import com.jfzt.meeting.weixin.AesException;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.apache.ibatis.exceptions.TooManyResultsException;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.jfzt.meeting.constant.MessageConstant.EXCEPTION_TYPE;
 import static com.jfzt.meeting.exception.ErrorCodeEnum.SERVICE_ERROR_A0400;
@@ -123,12 +127,25 @@ public class GlobalExceptionHandler {
      * 调用企业微信接口异常
      */
     @ExceptionHandler(AesException.class)
-    public Result<String> handleRRException() {
+    public Result<String> handleRRException(AesException e) {
         log.error(ErrorCodeEnum.SERVICE_ERROR_C0200.getCode(), ErrorCodeEnum.SERVICE_ERROR_C0200.getDescription());
         Result<String> result = new Result<>();
         result.setCode(ErrorCodeEnum.SERVICE_ERROR_C0200.getCode());
         result.setMsg(ErrorCodeEnum.SERVICE_ERROR_C0200.getDescription());
+
         return result;
+    }
+
+    @ExceptionHandler(value= MethodArgumentNotValidException.class)
+    public Result<Map<String,String>> handleVaildException(MethodArgumentNotValidException e){
+        log.error("数据校验出现问题{}，异常类型：{}",e.getMessage(),e.getClass());
+        BindingResult bindingResult = e.getBindingResult();
+
+        Map<String,String> errorMap = new HashMap<>();
+        bindingResult.getFieldErrors().forEach((fieldError)->{
+            errorMap.put(fieldError.getField(),fieldError.getDefaultMessage());
+        });
+        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A02011111,errorMap);
     }
 
 }

@@ -451,11 +451,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         //开始时间或结束时间在时间段内 或 开始时间与结束时间之间包含时间段
         queryWrapper.and(recordQueryWrapper -> recordQueryWrapper
                 //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
-                .between(MeetingRecord::getStartTime, meetingRecord.getStartTime(),
-                        meetingRecord.getEndTime().minusSeconds(1))
+                .between(MeetingRecord::getStartTime, meetingRecord.getStartTime(), meetingRecord.getEndTime().minusSeconds(1))
                 //结束时间在时间段内 前不含后含  8-9属于8.5-9不属于9-9.5
-                .or().between(MeetingRecord::getEndTime, meetingRecord.getStartTime().plusSeconds(1),
-                        meetingRecord.getEndTime())
+                .or().between(MeetingRecord::getEndTime, meetingRecord.getStartTime().plusSeconds(1), meetingRecord.getEndTime())
                 //时间段包含在开始时间(含)和结束时间(含)之间    8-9 属于8-8.5属于8.5-9
                 .or().lt(MeetingRecord::getStartTime, meetingRecord.getStartTime().plusSeconds(1))
                 .gt(MeetingRecord::getEndTime, meetingRecord.getEndTime().minusSeconds(1)));
@@ -543,12 +541,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
                 LocalTime startTimes = record.getStartTime().toLocalTime();
                 LocalTime endTimes = record.getEndTime().toLocalTime();
-                if (finalStartTime.plusMinutes(1).toLocalTime().isAfter(startTimes)
-                        && finalStartTime.toLocalTime().isBefore(endTimes) ||
-                        finalEndTime.plusMinutes(1).toLocalTime().isAfter(startTimes)
-                                && finalEndTime.toLocalTime().isBefore(endTimes) ||
-                        finalStartTime.plusMinutes(1).toLocalTime().isAfter(startTimes)
-                                && finalEndTime.minusMinutes(1).toLocalTime().isBefore(endTimes)
+                if (finalStartTime.plusMinutes(1).toLocalTime().isAfter(startTimes) && finalStartTime.toLocalTime().isBefore(endTimes) ||
+                        finalEndTime.plusMinutes(1).toLocalTime().isAfter(startTimes) && finalEndTime.toLocalTime().isBefore(endTimes) ||
+                        finalStartTime.plusMinutes(1).toLocalTime().isAfter(startTimes) && finalEndTime.minusMinutes(1).toLocalTime().isBefore(endTimes)
                 ) {
                     return record;
                 }

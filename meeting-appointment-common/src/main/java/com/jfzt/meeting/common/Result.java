@@ -32,6 +32,9 @@ public class Result<T> implements Serializable {
     public static <T> Result<T> fail (ErrorCodeEnum fails) {
         return new Result<>(fails.getCode(), fails.getDescription(), null);
     }
+    public static <T> Result<T> fail (ErrorCodeEnum fails,T data) {
+        return new Result<>(fails.getCode(), fails.getDescription(), data);
+    }
 
     public static <T> Result<T> success () {
         return new Result<>(ErrorCodeEnum.SUCCESS.getCode(), ErrorCodeEnum.SUCCESS.getDescription(), null);

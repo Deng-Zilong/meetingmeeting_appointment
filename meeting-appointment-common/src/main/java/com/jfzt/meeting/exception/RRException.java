@@ -20,6 +20,7 @@ public class RRException extends RuntimeException {
     @Setter
     private String code;
 
+
     public RRException (String msg) {
         super(msg);
         this.msg = msg;
