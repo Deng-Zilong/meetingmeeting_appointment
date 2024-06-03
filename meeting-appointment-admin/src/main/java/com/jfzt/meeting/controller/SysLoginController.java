@@ -17,6 +17,7 @@ import com.jfzt.meeting.utils.EncryptUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,15 +78,13 @@ public class SysLoginController {
      * @return 登录结果
      */
     @PostMapping(value = "login")
-    public Result<UserInfoVO> login (@RequestBody LoginVo loginVo) {
+    public Result<UserInfoVO> login (@Valid @RequestBody LoginVo loginVo) {
         //判断验证码是否正确,需要获取redis中的验证码
         String codeUuids = (String) redisTemplate.opsForValue().get("uuid:"+loginVo.getUuid());
         if (StringUtils.isBlank(codeUuids) || !loginVo.getCode().equalsIgnoreCase(codeUuids)) {
             log.error("用户未请求验证码或者用户验证码输入错误");
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0240);
         }
-
-
         SysUser sysUser = sysUserService.findUser(loginVo.getName());
         if (sysUser == null) {
             log.error("用户账户不存在");
@@ -122,7 +121,8 @@ public class SysLoginController {
                 .url(wxCpDefaultConfiguration.getUrl())
                 .build();
         //存入到redis中
-        redisTemplate.opsForValue().set("userInfo:"+userInfo.getUserId(), JSONObject.toJSONString(userInfo), Duration.ofHours(24));
+        redisTemplate.opsForValue().set("userInfo:"+userInfo.getUserId(),
+                JSONObject.toJSONString(userInfo), Duration.ofHours(24));
         //存入当前登录用户到ThreadLocal中
         BaseContext.setCurrentUserId(sysUser.getUserId());
         BaseContext.setCurrentLevel(sysUser.getLevel());
@@ -145,7 +145,9 @@ public class SysLoginController {
      * @return Result<String>
      */
     @PutMapping("updateSysAdminPassword")
-    public Result<String> addAdmin (@RequestParam String userId, @RequestParam String password) throws NoSuchAlgorithmException {
+    public Result<String> addAdmin (@RequestParam String userId,
+                                    @RequestParam String password)
+            throws NoSuchAlgorithmException {
         SysUser one = sysUserService.getOne(new QueryWrapper<SysUser>().eq("user_id", userId));
         if (one == null) {
             SysUser sysUser = new SysUser();

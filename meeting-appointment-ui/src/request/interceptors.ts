@@ -1,6 +1,7 @@
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { ElMessage } from "element-plus";
 import router from "@/router";
+import { useUserStore } from "@/stores/user";
 // 请求拦截
 export function ReqResolve(req: InternalAxiosRequestConfig) {
   if (
@@ -44,9 +45,10 @@ export function ResResolve(res: any) {
   }
 }
 // 响应拦截错误处理
-export function ResReject(error: AxiosError) {    
+export function ResReject(error: AxiosError) {   
+    const userStore = useUserStore(); 
   if (error.response?.status == 402) {
-    delete localStorage.userInfo;
+    userStore.resetUserInfo();
     router.replace("/login");
     ElMessage.warning("登录已过期，请重新登录！");
     return Promise.reject(error);

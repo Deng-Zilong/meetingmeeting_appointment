@@ -87,7 +87,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             List<SysUser> sysUsers = sysUserMapper.selectList(new QueryWrapper<>());
             return Result.success(sysUsers.stream()
                     // 过滤掉管理员和超级管理员
-                    .filter(user -> !MessageConstant.ADMIN_LEVEL.equals(user.getLevel()) && !MessageConstant.SUPER_ADMIN_LEVEL.equals(user.getLevel()))
+                    .filter(user -> !MessageConstant.ADMIN_LEVEL.equals(user.getLevel()) &&
+                            !MessageConstant.SUPER_ADMIN_LEVEL.equals(user.getLevel()))
                     // 获取管理员和超级管理员的名字
                     .map(SysUser::getUserName)
                     .collect(Collectors.toList()));
@@ -216,7 +217,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
     @Override
     public Map<String, String> userQrCode() {
-        String url = wxCpService.buildQrConnectUrl(wxCpDefaultConfiguration.getUrl()+"/#/home",wxCpDefaultConfiguration.getState());
+        String url = wxCpService.buildQrConnectUrl(wxCpDefaultConfiguration.getUrl()+"/#/home",
+                wxCpDefaultConfiguration.getState());
         Map<String,String> map = new HashMap<>(1);
         map.put("url",url);
         return map;

@@ -38,7 +38,6 @@ public interface MeetingMinutesService extends IService<MeetingMinutes> {
 
     /**
      * @return com.jfzt.meeting.common.Result<java.lang.Object>
-     * @return com.jfzt.meeting.common.Result<java.lang.Object>
      * @Description 保存会议纪要
      * @Param [meetingMinutes]
      */

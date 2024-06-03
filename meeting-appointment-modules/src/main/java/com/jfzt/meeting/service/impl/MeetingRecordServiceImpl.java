@@ -9,6 +9,7 @@ import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
+import com.jfzt.meeting.entity.vo.MeetingPromptVO;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
 import com.jfzt.meeting.entity.vo.PeriodTimesVO;
 import com.jfzt.meeting.entity.vo.SysUserVO;
@@ -18,9 +19,13 @@ import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
 import com.jfzt.meeting.mapper.MeetingRecordMapper;
 import com.jfzt.meeting.mapper.MeetingRoomMapper;
 import com.jfzt.meeting.service.*;
+import com.jfzt.meeting.task.MeetingReminderScheduler;
+import com.jfzt.meeting.utils.WxUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import me.chanjar.weixin.common.error.WxErrorException;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +50,8 @@ import static com.jfzt.meeting.constant.MessageConstant.*;
 public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, MeetingRecord>
         implements MeetingRecordService {
 
+    @Autowired
+    private WxUtil wxUtil;
     @Resource
     private MeetingAttendeesService meetingAttendeesService;
     @Resource
@@ -391,11 +398,30 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             throw new RRException("当前用户没有修改权限！", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
         }
         meetingRecord.setStatus(MEETING_RECORD_STATUS_CANCEL);
+        List<String> userIds = attendeesMapper.selectList(new LambdaQueryWrapper<MeetingAttendees>()
+                        .eq(MeetingAttendees::getMeetingRecordId, meetingId))
+                .stream().map(MeetingAttendees::getUserId).toList();
         this.baseMapper.updateById(meetingRecord);
         attendeesMapper.delete(new LambdaQueryWrapper<MeetingAttendees>()
                 .eq(MeetingAttendees::getMeetingRecordId, meetingId));
+        meetingReminderScheduler.cancelMeetingReminder(meetingId);
         //清除会议纪要
         meetingMinutesService.deleteMeetingMinutes(meetingId);
+        String reminder =
+                "**会议提醒**\n" +
+                        "会议 : " + meetingRecord.getTitle() + "\n" +
+                        "日期 :" + meetingRecord.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "\n" +
+                        "时间 : " + meetingRecord.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+                        + " ~ "
+                        + meetingRecord.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")) + "\n" +
+                        "会议已取消！";
+        try {
+            //发送取消会议提醒
+            wxUtil.sendsWxReminders(userIds, reminder);
+        } catch (WxErrorException e) {
+            log.error("发送取消会议提醒失败！", e);
+            //            throw new RRException("发送取消会议提醒失败！", ErrorCodeEnum.SERVICE_ERROR_C0001.getCode());
+        }
         return Result.success();
     }
 
@@ -412,8 +438,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         // 将meetingRecordDTO中的属性复制到meetingRecord中
         BeanUtils.copyProperties(meetingRecordDTO, meetingRecord);
         // 判断meetingRecord的结束时间是否早于开始时间，如果是，则返回错误信息
-        if (meetingRecord.getEndTime().isBefore(meetingRecord.getStartTime())) {
-            throw new RRException(START_TIME_GT_END_TiME);
+        if (meetingRecord.getEndTime().isBefore(meetingRecord.getStartTime())
+                || meetingRecord.getStartTime().equals(meetingRecord.getEndTime())) {
+            throw new RRException(START_TIME_GT_END_TIME);
         } else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())) {
             // 判断meetingRecord的开始时间是否早于当前时间，如果是，则返回错误信息
             throw new RRException(START_TIME_LT_NOW);
@@ -446,8 +473,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .collect(Collectors.toList());
         // 保存MeetingAttendees列表
         meetingAttendeesService.saveBatch(attendeesList);
-
-
+        meetingRecordDTO.setId(meetingRecord.getId());
+        //定时发送提醒
+        meetingReminderScheduler.scheduleMeetingReminder(meetingRecordDTO);
         return Result.success(CREATE_SUCCESS);
     }
 
@@ -466,7 +494,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         BeanUtils.copyProperties(meetingRecordDTO, meetingRecord);
         // 判断meetingRecord的结束时间是否早于开始时间，如果是，则返回错误信息
         if (meetingRecord.getEndTime().isBefore(meetingRecord.getStartTime())) {
-            return Result.fail(START_TIME_GT_END_TiME);
+            return Result.fail(START_TIME_GT_END_TIME);
         } else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())) {
             // 判断meetingRecord的开始时间是否早于当前时间，如果是，则返回错误信息
             return Result.fail(START_TIME_LT_NOW);
@@ -488,6 +516,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .collect(Collectors.toList());
         // 更新MeetingAttendees列表
         meetingAttendeesService.saveBatch(attendeesList);
+        //重新发送定时任务提醒
+        meetingReminderScheduler.cancelMeetingReminder(meetingRecordDTO.getId());
+        meetingReminderScheduler.scheduleMeetingReminder(meetingRecordDTO);
         return Result.success(UPDATE_SUCCESS);
     }
 
@@ -531,6 +562,44 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         }
         list.sort((o1, o2) -> Math.toIntExact(o2.getCount() - o1.getCount()));
         return Result.success(list);
+    }
+
+    /**
+     * @Description 会议创建自动提示
+     * @Param userId
+     * @return MeetingPromptVO
+     */
+    @Override
+    public Result<MeetingPromptVO> prompt(String userId) {
+        //查询最后一次创建的会议
+        MeetingRecord lastMeeting = lambdaQuery().select(MeetingRecord::getId, MeetingRecord::getMeetingRoomId)
+                .eq(MeetingRecord::getCreatedBy, userId)
+                .orderByDesc(MeetingRecord::getGmtCreate)
+                .list()
+                .getFirst();
+        if (lastMeeting == null) {
+           return Result.success();
+        }
+        //查询对应会议室及参会人
+        MeetingRoom meetingRoom = meetingRoomService.getById(lastMeeting.getMeetingRoomId());
+        List<String> userIds = meetingAttendeesService.lambdaQuery()
+                .eq(MeetingAttendees::getMeetingRecordId, lastMeeting.getId())
+                .list()
+                .stream()
+                .map(MeetingAttendees::getUserId)
+                .toList();
+        List<SysUser> userList = userService.lambdaQuery()
+                .in(SysUser::getUserId, userIds)
+                .list()
+                .stream()
+                .peek(sysUser -> sysUser.setPassword(null))
+                .toList();
+        MeetingPromptVO promptVO = MeetingPromptVO.builder()
+                .meetingRoomId(lastMeeting.getMeetingRoomId())
+                .meetingRoomName(meetingRoom.getRoomName())
+                .users(userList)
+                .build();
+        return Result.success(promptVO);
     }
 
 

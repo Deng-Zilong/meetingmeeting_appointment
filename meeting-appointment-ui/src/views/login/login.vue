@@ -76,7 +76,7 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { Picture as IconPicture } from '@element-plus/icons-vue'
 import { v4 as uuidv4 } from 'uuid';
 import { useUserStore } from '@/stores/user'
-import { getCaptcha, getQrCode, qwLogin } from '@/request/api/login'
+import { Login, getCaptcha, getQrCode, qwLogin } from '@/request/api/login'
 import { Md5 } from 'ts-md5';
 import { useRouter, useRoute  } from 'vue-router';
 
@@ -146,6 +146,7 @@ const changeLogin = () => {
     }
     changeCaptcha();
 }
+
 // 账号登录 
 const submitForm = async (formEl: FormInstance | undefined) => {
     if (!formEl) return
@@ -160,11 +161,24 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         md5.appendAsciiStr(ruleForm.password);
         const password = md5.end();
         // 登录请求
-        await userStore.getUserInfo({ name, password, code: captcha, uuid: uuid.value });
-        // 关闭 button loading
-        loginBtnLoading.value = false;
+        await Login({ name, password, code: captcha, uuid: uuid.value })
+                .then((res: any) => {
+                    localStorage.setItem('userInfo', JSON.stringify(res.data));
+                    ElMessage.success('登陆成功!'); 
+                    router.push('/home');
+                })
+                .catch((err: any) => {
+                    changeCaptcha();
+                })
+                .finally(() => {
+                    // 关闭 button loading
+                    loginBtnLoading.value = false;
+                })
+        
     })
 }
+
+
 let allLoading = ref<boolean>(false);
 onMounted(() => {
     // 展示扫码登录
@@ -187,7 +201,7 @@ onMounted(() => {
     .then(res => {
         localStorage.setItem('userInfo', JSON.stringify(res.data));
         setTimeout(() => {
-            router.replace('/home');
+            location.href = `/#/home`
         }, 1000);
     })
     .catch(error => {})

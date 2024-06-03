@@ -20,8 +20,9 @@ public class MeetingMinutesController {
     MeetingMinutesService meetingMinutesService;
 
     @GetMapping("/minutes")
-    public Result<List<MeetingMinutesVO>> getMeetingMinutes (MeetingMinutes meetingMinutes) {
-        return Result.success(meetingMinutesService.getMeetingMinutes(meetingMinutes));
+    public Result<MeetingMinutesVO> getMeetingMinutes (MeetingMinutes meetingMinutes) {
+        List<MeetingMinutesVO> minutesVOList = meetingMinutesService.getMeetingMinutes(meetingMinutes);
+        return Result.success(!minutesVOList.isEmpty() ? minutesVOList.getFirst() : null);
     }
 
     /**
