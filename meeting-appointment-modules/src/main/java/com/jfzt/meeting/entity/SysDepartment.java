@@ -50,7 +50,7 @@ public class SysDepartment implements Serializable {
     private List<SysDepartment> childrenPart;
 
     @TableField(exist = false)
-    private List<SysUserVO> treeUsers;
+    private List<SysUser> treeUsers;
 
     /**
      * 0未删除 1删除

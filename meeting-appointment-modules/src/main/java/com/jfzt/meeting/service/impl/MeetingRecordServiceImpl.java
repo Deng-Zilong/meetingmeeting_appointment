@@ -9,6 +9,7 @@ import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
+import com.jfzt.meeting.entity.vo.MeetingPromptVO;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
 import com.jfzt.meeting.entity.vo.PeriodTimesVO;
 import com.jfzt.meeting.entity.vo.SysUserVO;
@@ -561,6 +562,44 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         }
         list.sort((o1, o2) -> Math.toIntExact(o2.getCount() - o1.getCount()));
         return Result.success(list);
+    }
+
+    /**
+     * @Description 会议创建自动提示
+     * @Param userId
+     * @return MeetingPromptVO
+     */
+    @Override
+    public Result<MeetingPromptVO> prompt(String userId) {
+        //查询最后一次创建的会议
+        MeetingRecord lastMeeting = lambdaQuery().select(MeetingRecord::getId, MeetingRecord::getMeetingRoomId)
+                .eq(MeetingRecord::getCreatedBy, userId)
+                .orderByDesc(MeetingRecord::getGmtCreate)
+                .list()
+                .getFirst();
+        if (lastMeeting == null) {
+           return Result.success();
+        }
+        //查询对应会议室及参会人
+        MeetingRoom meetingRoom = meetingRoomService.getById(lastMeeting.getMeetingRoomId());
+        List<String> userIds = meetingAttendeesService.lambdaQuery()
+                .eq(MeetingAttendees::getMeetingRecordId, lastMeeting.getId())
+                .list()
+                .stream()
+                .map(MeetingAttendees::getUserId)
+                .toList();
+        List<SysUser> userList = userService.lambdaQuery()
+                .in(SysUser::getUserId, userIds)
+                .list()
+                .stream()
+                .peek(sysUser -> sysUser.setPassword(null))
+                .toList();
+        MeetingPromptVO promptVO = MeetingPromptVO.builder()
+                .meetingRoomId(lastMeeting.getMeetingRoomId())
+                .meetingRoomName(meetingRoom.getRoomName())
+                .users(userList)
+                .build();
+        return Result.success(promptVO);
     }
 
 

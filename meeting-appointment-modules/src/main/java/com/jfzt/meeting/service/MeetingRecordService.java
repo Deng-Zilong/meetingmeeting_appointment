@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
+import com.jfzt.meeting.entity.vo.MeetingPromptVO;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
 import com.jfzt.meeting.entity.vo.PeriodTimesVO;
 
@@ -94,4 +95,10 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.PeriodTimesVO>>
      */
     Result<List<PeriodTimesVO>> getTimePeriodTimes();
+    /**
+     * @Description 会议创建自动提示
+     * @Param userId
+     * @return MeetingPromptVO
+     */
+    Result<MeetingPromptVO> prompt(String userId);
 }

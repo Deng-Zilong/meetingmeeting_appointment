@@ -166,7 +166,7 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
                 // 对每个子部门进行操作
                 .peek(childrenNode -> {
                     // 创建一个用户列表
-                    ArrayList<SysUserVO> sysUsers = new ArrayList<>();
+                    ArrayList<SysUser> sysUsers = new ArrayList<>();
                     // 获取子部门的用户
                     childrenNode.setChildrenPart(getChildren(childrenNode, all));
                     // 获取部门用户
@@ -176,12 +176,10 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
                     // 对每个部门用户进行操作
                     departmentUsers.stream().peek(sysDepartmentUser -> {
                         // 根据用户ID获取用户
-                        List<SysUserVO> userList = sysUserService.lambdaQuery()
+                        List<SysUser> userList = sysUserService.lambdaQuery()
                                 .eq(SysUser::getUserId, sysDepartmentUser.getUserId())
-                                .list().stream().map(sysUser -> {
-                                    SysUserVO sysUserVO = new SysUserVO();
-                                    BeanUtils.copyProperties(sysUser, sysUserVO);
-                                    return sysUserVO;
+                                .list().stream().peek(sysUser -> {
+                                    sysUser.setPassword(null);
                                 }).toList();
                         // 将用户添加到用户列表中
                         sysUsers.addAll(userList);

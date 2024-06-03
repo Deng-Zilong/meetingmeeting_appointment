@@ -3,6 +3,7 @@ package com.jfzt.meeting.controller;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
 import com.jfzt.meeting.entity.dto.UpdateMeetingDTO;
+import com.jfzt.meeting.entity.vo.MeetingPromptVO;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
 import com.jfzt.meeting.service.MeetingRecordService;
 import lombok.extern.slf4j.Slf4j;
@@ -117,5 +118,14 @@ public class MeetingRecordController {
                 meetingRecordService.getAllMeetingRecordVoListPage(pageNum, pageSize, currentLevel);
         return Result.success(allMeetingRecordVoListPage);
 
+    }
+    /**
+     * @Description 会议创建自动提示
+     * @Param userId
+     * @return MeetingPromptVO
+     */
+    @GetMapping("/index/meeting-record-prompt")
+    public Result<MeetingPromptVO> prompt(@RequestParam String userId) {
+        return meetingRecordService.prompt(userId);
     }
 }
