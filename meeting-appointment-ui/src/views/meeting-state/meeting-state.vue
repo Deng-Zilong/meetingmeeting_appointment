@@ -195,6 +195,7 @@ const selectTime = (item: any) => {
     return;
   } else {
     const meetingInfo = {
+        date: date.value, // 会议日期
         meetingRoomId: currentMeetingId.value,  // 将会议室id传到 预约页面
         startTime: item.time  // 将点击的时间点传到 预约页面
     }

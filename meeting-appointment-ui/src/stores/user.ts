@@ -65,6 +65,7 @@ export const useUserStore = defineStore('user',()=>{
     // 重置用户信息
     const resetUserInfo = () => {
         Object.assign(userInfo, initUserInfo);
+        sessionStorage.clear();
         delete localStorage.userInfo;
     }
     // 以对象的格式把state和action return 出去

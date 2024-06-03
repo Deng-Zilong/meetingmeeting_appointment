@@ -118,7 +118,7 @@ onMounted(() => {
         // 修改会议
         isCreate.value = false;
         // 解构所需数据
-        const { id, meetingRoomId, title, description, meetingRoomName, status, createdBy, adminUserName, startTime, endTime, users } = meetingInfo;
+        const { id, meetingRoomId, title, description, meetingRoomName, status, createdBy, adminUserName, startTime, endTime, users, date } = meetingInfo;
     
         const meetingPeople = Array.from(new Set(users?.map((el: any) => el.userName))).join(','); // 获取参会人名字并去重
         addPersonForm.value.personIds = Array.from(new Set(users.map((el: any) => el.userId))); // 获取参会人id并去重 用于成员树回显
@@ -136,16 +136,20 @@ onMounted(() => {
             createdBy,           // 创建人id
             adminUserName,       // 创建人名字
             users,               // 参会人列表
-            date: dayjs(new Date()).format('YYYY-MM-DD'),  // 会议日期
+            date,   // 会议日期
             groupName: '',       // 群组名称
         }
+        
     }
 
     // 预约会议室 处理传参数据
     if ((meetingInfo?.meetingRoomId || meetingInfo?.startTime) && !meetingInfo?.id) {
-        const { meetingRoomId, startTime } = meetingInfo;
+        const {date, meetingRoomId, startTime } = meetingInfo;
+        console.log(startTime);
+        
         formData.value.meetingRoomId = meetingRoomId ? meetingRoomId : '';
-        formData.value.startTime = startTime ? startTime : '';
+        formData.value.startTime = startTime ? startTime as string : '';
+        formData.value.date = date ? date : dayjs(new Date()).format('YYYY-MM-DD');
     }
     // 获取当前可选时间
     minStartTime.value = dayjs(new Date()).format('HH:m');
@@ -302,7 +306,7 @@ const formData = ref<any>({
 })
 watch(()=>formData.value.date, (newValue)=> {
     // 如果选中的日期大于今天的日期 则默认最小可选时间为8:00
-    if (newValue.getTime() > new Date().getTime()) {
+    if (new Date(newValue).getTime() > new Date().getTime()) {
         return minStartTime.value = '7:59';
     }
     // 清空开始和结束时间
