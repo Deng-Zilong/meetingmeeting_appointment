@@ -186,9 +186,6 @@ let minStartTime = ref('8:00'); // 开始最小可选时间
 let minEndTime = ref('8:00'); // 结束最小可选时间
 const seconds = ('00'); // 获取当前时间的秒
 
-// 会议室数组
-const roomArr = ref<any>([]);
-
 // 添加参会人员弹窗表单数据
 let addPersonForm = ref<any>({
     visible: false,        // 弹窗开关
@@ -257,6 +254,7 @@ const handleChangeEndTime = (value: any) => {
     handleAvailableMeetingRooms(formData.value.startTime, value);
 }
 
+const roomArr = ref<any>(useMeetingStatus.centerRoomName); // 会议室数组
 /**
  * @description 根据开始时间和结束时间获取可用会议室
  * @param startTime 开始时间
