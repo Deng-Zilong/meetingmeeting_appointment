@@ -83,19 +83,19 @@
         <div class="situation-title">今日会议室预约情况</div>
         <div class="situation-table">
           <div class="table-th">
-            <div class="title">会议主题</div>
-            <div class="title">会议室名称</div>
-            <div class="title">预约时间</div>
-            <div class="title">会议状态</div>
-            <div class="title">人数</div>
-            <div class="title">操作</div>
+            <div class="title t-title">会议主题</div>
+            <div class="title t-room">会议室名称</div>
+            <div class="title t-time">预约时间</div>
+            <div class="title t-status">会议状态</div>
+            <div class="title t-people">人数</div>
+            <div class="title t-operate">操作</div>
           </div>
           <div class="table-main my-main-scrollbar">
             <div class="table-tr" v-for="(item, index) in tableData">
-              <div class="tr-cell tr-title">
+              <div class="tr-cell t-title">
                 <el-popover
                     placement="bottom"
-                    :disabled="item.title?.length < 10"
+                    :disabled="item.title?.length < 11"
                     :width="100"
                     trigger="hover"
                     :content="item.title"
@@ -104,10 +104,10 @@
                         {{ item.title }}
                     </template>
                 </el-popover></div>
-              <div class="tr-cell">
+              <div class="tr-cell t-room">
                 <el-popover
                     placement="bottom"
-                    :disabled="item.meetingRoomName?.length < 5"
+                    :disabled="item.meetingRoomName?.length < 16"
                     :width="100"
                     trigger="hover"
                     :content="item.meetingRoomName"
@@ -117,11 +117,11 @@
                     </template>
                 </el-popover>
               </div>
-              <div class="tr-cell">{{ time(item) }}</div>
-              <div class="tr-cell">{{ statusName(item.status) }}</div>
-              <div class="tr-cell">{{ item.meetingNumber }}</div>
+              <div class="tr-cell t-time">{{ time(item) }}</div>
+              <div class="tr-cell t-status">{{ statusName(item.status) }}</div>
+              <div class="tr-cell t-people">{{ item.meetingNumber }}人</div>
               <div>
-                  <div class="tr-cell" :style="{ 'color': (operate(item) === '修改' ? '#3268DC' : '') }"
+                  <div class="tr-cell t-operate" :style="{ 'color': (operate(item) === '修改' ? '#3268DC' : '#F56C6C') }"
                   @click="operate(item) === '修改' ? modifyMeeting(item) : delMeeting(item,index) ">
                     {{ operate(item) }}
                   </div>
@@ -420,6 +420,7 @@ onMounted( async () => {
       .screen-title {
         font-size: 1.13rem;
         color: #3E78F4;
+        margin-left: 17px;
       }
       .screen-main {
         position: relative;
@@ -448,13 +449,17 @@ onMounted( async () => {
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.1);
             box-sizing: border-box;
-            border: 1px solid rgba(111, 167, 249, 0.8);
-            box-shadow: inset 0px 0px 30px 0px rgba(16, 127, 255, 0.3);
-            height: 90px;
-            // 滚动条宽度
-            // &::-webkit-scrollbar {
-            //   width: 0.01rem;
-            // }
+            // border: 1px solid rgba(111, 167, 249, 0.8);
+            // box-shadow: inset 0px 0px 60px -10px rgba(16, 127, 255, 0.4);
+            -webkit-backdrop-filter: blur(.3125rem);
+            backdrop-filter: blur(.3125rem);
+            border: .0625rem solid rgba(0, 102, 255, .5);
+            box-shadow: inset 0 0 1.875rem #1b7ef24d;
+            height: 5.625rem;
+            &:hover {
+              backdrop-filter: blur(.1rem);
+              filter: opacity(0.8); /* 鼠标悬停时模糊效果 */
+            }
             .name {
               font-size: 1.1rem;
               color: #6A6A6A;
@@ -727,13 +732,31 @@ onMounted( async () => {
         border: 2px solid #69A5E4;
         border-radius: 15px;
         padding: 10px 18px;
+
+        // 每个单元格共同样式
+        .table-th, .table-tr {
+          .title, .tr-cell {
+            width: 12.32rem;
+            padding: 0 0.9rem;
+          }
+        }
+        .t-time {
+          width: 8rem !important;
+        }
+        .t-status {
+          width: 6rem !important;
+        }
+        .t-people {
+          width: 4rem !important;
+        }
+        .t-operate {
+          width: 5rem !important;
+        }
+
         .table-th {
           display: flex;
           text-align: center;
           padding-bottom: 0.375rem;
-          .title {
-            width: 11.25rem;
-          }
         }
         .table-main {
           max-height: 18.6rem;
@@ -750,19 +773,12 @@ onMounted( async () => {
             margin: 10px 0;
             padding: 11px 0;
             .tr-cell {
-              width: 130px;
               text-wrap: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
-              padding: 0 10px;
               &:last-child {
                 cursor: pointer;
               }
-            }
-            // 会议主题单元格单独设置
-            .tr-title {
-                text-align: left;
-                padding-left: 15px;
             }
           }
         }

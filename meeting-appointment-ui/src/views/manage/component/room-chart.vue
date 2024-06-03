@@ -23,7 +23,7 @@ const setChart = () => {
       text: '统计七日内各会议室占用率（不包括周末9：00-18：00）'
     },
     legend: {
-      data: ["已占用数", "时间段总数"],
+      data: ["已占用数", "可预约总次数"],
       top: "10%"
     },
     grid: {
@@ -46,7 +46,7 @@ const setChart = () => {
         interval: 0, // 坐标轴刻度标签的显示间隔，在类目轴中有效；默认会采用标签不重叠的策略间隔显示标签；可以设置成0强制显示所有标签；
         rotate: -20, // 刻度标签旋转的角度，在类目轴的类目标签显示不下的时候可以通过旋转防止标签之间重叠；旋转的角度从-90度到90度
         inside: false, // 刻度标签是否朝内，默认朝外
-        margin: 6, // 刻度标签与轴线之间的距离
+        margin: 11, // 刻度标签与轴线之间的距离
         // formatter: '{value}' , // 刻度标签的内容格式器
       }, 
     },
@@ -56,8 +56,9 @@ const setChart = () => {
         type: 'bar',
         name: '已占用数',
         // barWidth: 20,
-        barGap:'0%',/*多个并排柱子设置柱子之间的间距*/
+        // barGap:'0%',/*多个并排柱子设置柱子之间的间距*/
         // barCategoryGap:'50%',/*多个并排柱子设置柱子之间的间距*/
+        color: '#59AFF4',
         data: [],
         label: {
           show: true,
@@ -65,8 +66,11 @@ const setChart = () => {
       },
       {
         type: 'bar',
-        name: '时间段总数',
+        name: '可预约总次数',
         // barWidth: 20,
+        barGap: '-100%',
+        z: '-1',
+        color: '#D6ECFF',
         data: [],
         label: {
           show: true,
@@ -92,7 +96,6 @@ onMounted(() => {
     .then((res) => {
       res.data.map((item: any) => {
         roomX.value.push(item.name)
-        // total.value.push((item.occupied/item.total).toFixed(2))
         occupied.value.push(item.occupied)
         total.value.push(item.total)
       })
@@ -100,7 +103,7 @@ onMounted(() => {
     .catch((err) => {})
 })
 
-// 当roomX或occupied改变时，更新图表
+// 当roomX或occupied或total改变时，更新图表
 watch([roomX, occupied, total], () => setChart(), { deep: true });
 
 </script>

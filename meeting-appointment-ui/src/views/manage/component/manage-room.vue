@@ -14,7 +14,7 @@
       <el-form-item label="会议室容量：">
         <el-input type="number" min="1" v-model.number="addMeetingForm.capacity" @input="handleInputInt" />
       </el-form-item>
-      <el-form-item label="会议室设施：">
+      <el-form-item label="会议室设备：">
         <el-input v-model="addMeetingForm.equipment" />
       </el-form-item>
       <el-form-item label="会议室状态：">
@@ -38,16 +38,16 @@
   </el-card>
   <div class="room-table">
     <div class="room-table-th">
-      <div class="th-title">会议室名</div>
-      <div class="th-title">位置</div>
-      <div class="th-title">容量</div>
-      <!-- <div class="th-title">id</div> -->
-      <div class="th-title">当前会议室状况</div>
-      <div class="th-title">操作</div>
+      <div class="th-title t-name">会议室名</div>
+      <div class="th-title t-location">位置</div>
+      <div class="th-title t-people">容量</div>
+      <div class="th-title t-equip">设备</div>
+      <div class="th-title t-status">当前状态</div>
+      <div class="th-title t-operate">操作</div>
     </div>
     <div class="room-table-main my-main-scrollbar">
       <div class="room-table-tr" v-for="item in useMeetingStatus.centerRoomName">
-        <div class="room-tr-cell">
+        <div class="room-tr-cell t-name">
           <el-popover
               placement="bottom"
               :disabled="item.roomName.length < 20"
@@ -60,7 +60,7 @@
               </template>
           </el-popover>
         </div>
-        <div class="room-tr-cell">
+        <div class="room-tr-cell t-location">
           <el-popover
               placement="bottom"
               :disabled="item.location?.length < 27"
@@ -73,11 +73,11 @@
               </template>
           </el-popover>
         </div>
-        <div class="room-tr-cell">{{ item.capacity }}人</div>
-        <!-- <div class="room-tr-cell">{{ item.id }}</div> -->
-        <div class="room-tr-cell">{{ item.roomStatusLabel }}</div>
+        <div class="room-tr-cell t-people">{{ item.capacity }}人</div>
+        <div class="room-tr-cell t-equip">{{ item.equipment }}</div>
+        <div class="room-tr-cell t-status">{{ item.roomStatusLabel }}</div>
         <div>
-          <div class="room-tr-cell">
+          <div class="room-tr-cell t-operate">
             <el-button plain :type="item.status == 0 ? 'primary' : 'warning'" @click="handleBanRoom(item)">{{ editRoomStatus(item.status) }}</el-button>
             <el-button type="danger" @click="handleDeleteRoom(item)">删除</el-button>
           </div>
@@ -106,15 +106,6 @@
       status: '', // 0-暂停使用(禁用) 1-可使用/空闲(空闲)
       equipment: '',  // 会议室设备
     })
-
-    // const meetingStates = ref<any>([{  // 会议室状态选择
-    //   type: 0,
-    //   label: '禁用'
-    // }, {
-    //   type: 1,
-    //   label: '空闲'
-    // }])
-
 
     onMounted(() => {
       userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}');  // 用户信息
@@ -246,24 +237,25 @@
     border-radius: 15px;
     padding: 10px 18px;
     // 表内每个单元格共同样式
-    .th-title, .room-tr-cell {
-      &:nth-child(1) {
-        width: 15rem;
-      }
-      &:nth-child(2) {
-        width: 20rem;
-      }
-      &:nth-child(3) {
-        width: 10rem;
-      }
-      &:nth-child(4) {
-        width: 8rem;
-      }
-      &:nth-child(5) {
-        // width: 10rem;
-        flex: 1;
-      }
+    .t-name {
+      width: 15rem !important;
     }
+    .t-location {
+      width: 18rem !important;
+    }
+    .t-people {
+      width: 7rem !important;
+    }
+    .t-equip {
+      width: 7rem !important;
+    }
+    .t-status {
+      width: 8rem !important;
+    }
+    .t-operate {
+      width: 10rem !important;
+    }
+
     .room-table-th {
       display: flex;
       text-align: center;

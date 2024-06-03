@@ -44,7 +44,8 @@
         id: item.id,
         title: item.roomName,
         address: item.location,
-        person: item.capacity  // 暂无
+        person: item.capacity,
+        equipment: item.equipment
       }
     });
   }

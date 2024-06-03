@@ -79,6 +79,7 @@ const currentMeetingId = ref<any>(routes.query.id);  // 会议室id
 const title = ref(routes.query.title);  // 会议室名称
 const locate = ref(routes.query.address);  // 会议室位置
 const person = ref(routes.query.person);  // 会议室容量人数
+const equipment = ref(routes.query.equipment);  // 会议室容量人数
 const time = ref(new Date().toLocaleTimeString().substring(0, 5))  // 显示当前时间点
 const hoveredItem = ref<any>(null)  // 鼠标悬浮内容
 
@@ -103,7 +104,7 @@ const infoArr = reactive([
   {
     src: device,
     title: '设备',
-    info: '投屏器'
+    info: equipment
   }
 ])
 
@@ -136,11 +137,13 @@ const deleteDate = () => {
   if (dayjs(date.value).subtract(1, 'day').format('YYYY-MM-DD') < dayjs(new Date()).format('YYYY-MM-DD'))
     return;
   date.value = dayjs(date.value).subtract(1, 'day').format('YYYY-MM-DD')
+  getBusy({ id: currentMeetingId.value, date: date.value });  
 }
 
 // 后一天
 const addDate = () => {
   date.value = dayjs(date.value).add(1, 'day').format('YYYY-MM-DD')
+  getBusy({ id: currentMeetingId.value, date: date.value });
 }
 
 setInterval(() => {  // 更新 时间 会议室名称、位置

@@ -5,7 +5,6 @@
           <el-input v-model="input" placeholder="请输入公告" />
           <el-button type="primary" @click="uploadBulletin(input)">上传新公告</el-button>
       </div>
-      <el-button class="theme-mid" type="primary">更新人员</el-button>
       <div class="theme-right" v-if="userInfo.level === 0">
         <el-tooltip content="新增管理员" placement="top" effect="light">
           <el-button type="primary" @click="handleAddManage">增加管理员</el-button>
@@ -362,9 +361,6 @@
             box-shadow: none;
           }
         }
-      }
-      .theme-mid {
-        margin-left: 40px;
       }
       .theme-right {
         display: flex;
