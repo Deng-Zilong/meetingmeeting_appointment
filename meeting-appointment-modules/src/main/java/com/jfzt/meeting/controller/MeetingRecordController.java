@@ -111,8 +111,10 @@ public class MeetingRecordController {
      * @description 查询所有会议记录
      */
     @GetMapping("meeting-record/select-all-meeting-record")
-    public Result<List<MeetingRecordVO>> getRecordPage (@RequestParam Long pageNum, @RequestParam Long pageSize, @RequestParam("currentLevel") Integer currentLevel) {
-        List<MeetingRecordVO> allMeetingRecordVoListPage = meetingRecordService.getAllMeetingRecordVoListPage(pageNum, pageSize, currentLevel);
+    public Result<List<MeetingRecordVO>> getRecordPage (@RequestParam Long pageNum, @RequestParam Long pageSize,
+                                                        @RequestParam("currentLevel") Integer currentLevel) {
+        List<MeetingRecordVO> allMeetingRecordVoListPage =
+                meetingRecordService.getAllMeetingRecordVoListPage(pageNum, pageSize, currentLevel);
         return Result.success(allMeetingRecordVoListPage);
 
     }

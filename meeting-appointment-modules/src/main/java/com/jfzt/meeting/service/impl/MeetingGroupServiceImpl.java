@@ -134,7 +134,8 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         BeanUtils.copyProperties(meetingGroupDTO, meetingGroup);
         // 使用lambdaQuery查询 MeetingGroup 表中 GroupName 字段等于 meetingGroupDTO 中 getGroupName() 字段的数量
         Long sameName = lambdaQuery()
-                .eq(meetingGroupDTO.getGroupName() != null, MeetingGroup::getGroupName, meetingGroupDTO.getGroupName())
+                .eq(meetingGroupDTO.getGroupName() != null,
+                        MeetingGroup::getGroupName, meetingGroupDTO.getGroupName())
                 .count();
         if (sameName <= 0) {
             // 保存meetingGroup
@@ -145,7 +146,8 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         }
         // 根据meetingGroupDTO中的groupName查询MeetingGroup表，获取groupId
         Long groupId = lambdaQuery()
-                .eq(StringUtils.isNotBlank(meetingGroupDTO.getGroupName()), MeetingGroup::getGroupName, meetingGroupDTO.getGroupName())
+                .eq(StringUtils.isNotBlank(meetingGroupDTO.getGroupName()),
+                        MeetingGroup::getGroupName, meetingGroupDTO.getGroupName())
                 .one()
                 .getId();
         // 获取meetingGroupDTO中的用户列表

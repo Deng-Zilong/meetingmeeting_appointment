@@ -13,7 +13,6 @@ import com.jfzt.meeting.mapper.MeetingMinutesMapper;
 import com.jfzt.meeting.service.MeetingMinutesService;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.SysUserService;
-import jakarta.annotation.Resource;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,11 +56,13 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
         return minutesList.stream().map(minutes -> {
             MeetingMinutesVO meetingMinutesVO = new MeetingMinutesVO();
             BeanUtils.copyProperties(minutes, meetingMinutesVO);
-            List<SysUser> userList = sysUserService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, minutes.getUserId()));
+            List<SysUser> userList = sysUserService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId,
+                    minutes.getUserId()));
             if (!userList.isEmpty()) {
                 meetingMinutesVO.setUserName(userList.getFirst().getUserName());
             }
-            List<MeetingRecord> meetingRecords = meetingRecordService.list(new LambdaQueryWrapper<MeetingRecord>().eq(MeetingRecord::getId, minutes.getMeetingRecordId()));
+            List<MeetingRecord> meetingRecords = meetingRecordService.list(
+                    new LambdaQueryWrapper<MeetingRecord>().eq(MeetingRecord::getId, minutes.getMeetingRecordId()));
             if (!meetingRecords.isEmpty()) {
                 meetingMinutesVO.setMeetingRecordTitle(meetingRecords.getFirst().getTitle());
             }
@@ -75,7 +76,8 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
      */
     @Override
     public Result<Object> saveOrUpdateMinutes(MeetingMinutes meetingMinutes) {
-        MeetingMinutes selfMinutes = lambdaQuery().eq(MeetingMinutes::getMeetingRecordId, meetingMinutes.getMeetingRecordId())
+        MeetingMinutes selfMinutes =
+                lambdaQuery().eq(MeetingMinutes::getMeetingRecordId, meetingMinutes.getMeetingRecordId())
                 .eq(MeetingMinutes::getUserId, meetingMinutes.getUserId())
                 .one();
         if (selfMinutes == null){
