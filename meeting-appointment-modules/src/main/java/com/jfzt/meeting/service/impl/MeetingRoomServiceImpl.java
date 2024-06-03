@@ -200,14 +200,13 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     public Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomOccupancy () {
         List<MeetingRoom> meetingRooms = this.list(new LambdaQueryWrapper<MeetingRoom>()
                 .eq(MeetingRoom::getStatus, MEETINGROOM_STATUS_AVAILABLE));
-
         //查出七日内所有会议
         List<MeetingRecord> meetingRecordList = meetingRecordService.list(new LambdaQueryWrapper<MeetingRecord>()
-                .lt(MeetingRecord::getStartTime, LocalDateTime.now().toLocalDate().atStartOfDay().minusDays(7))
-                .gt(MeetingRecord::getEndTime, LocalDateTime.now().toLocalDate().atStartOfDay())
-                .eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
-                .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING)
-                .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_END));
+                .gt(MeetingRecord::getStartTime, LocalDateTime.now().toLocalDate().atStartOfDay().minusDays(7))
+                .lt(MeetingRecord::getEndTime, LocalDateTime.now().toLocalDate().atStartOfDay())
+                .and(wrapper -> wrapper.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
+                        .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING)
+                        .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_END)));
         //遍历会议室
         List<MeetingRoomOccupancyVO> meetingRoomOccupancyVOList = meetingRooms.stream().map(meetingRoom -> {
             //被占用的时间段总数
@@ -263,6 +262,44 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             return meetingRoomOccupancyVO;
         }).sorted((o1, o2) -> Math.toIntExact(o2.getOccupied() - o1.getOccupied())).collect(Collectors.toList());
         return Result.success(meetingRoomOccupancyVOList);
+    }
+
+    /**
+     * @return {@code Result<List<MeetingRoomOccupancyVO>>}
+     * @description 查询最近五个工作日内各会议室占用比例
+     */
+    @Override
+    public Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomProportion () {
+        //查询所有会议室
+        List<MeetingRoom> meetingRoomList = list(new LambdaQueryWrapper<MeetingRoom>()
+                .eq(MeetingRoom::getStatus, MEETINGROOM_STATUS_AVAILABLE));
+        //查出七日内所有会议
+        List<MeetingRecord> meetingRecordList = meetingRecordService.list(new LambdaQueryWrapper<MeetingRecord>()
+                .in(MeetingRecord::getMeetingRoomId, meetingRoomList.stream()
+                        .map(MeetingRoom::getId).collect(Collectors.toList()))
+                .gt(MeetingRecord::getStartTime, LocalDateTime.now().toLocalDate().atStartOfDay().minusDays(7))
+                .lt(MeetingRecord::getEndTime, LocalDateTime.now().toLocalDate().atStartOfDay())
+                .and(wrapper -> wrapper.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
+                        .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING)
+                        .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_END))
+        );
+        long total = meetingRecordList.size();
+        List<MeetingRoomOccupancyVO> occupancyVOList = meetingRoomList.stream().map(meetingRoom -> {
+            MeetingRoomOccupancyVO roomOccupancyVO = new MeetingRoomOccupancyVO();
+            long occupied = meetingRecordList.stream().filter(meetingRecord ->
+                    Objects.equals(meetingRecord.getMeetingRoomId(), meetingRoom.getId())).count();
+            if (total == 0) {
+                roomOccupancyVO.setOccupied(0L);
+            }
+            long occupancyRate = occupied / total;
+            roomOccupancyVO.setName(meetingRoom.getRoomName());
+            roomOccupancyVO.setId(meetingRoom.getId());
+            roomOccupancyVO.setTotal(total);
+            roomOccupancyVO.setOccupied(occupied);
+            roomOccupancyVO.setOccupancyRate(occupancyRate);
+            return roomOccupancyVO;
+        }).sorted((o1, o2) -> Math.toIntExact(o2.getOccupied() - o1.getOccupied())).toList();
+        return Result.success(occupancyVOList);
     }
 
 
