@@ -23,6 +23,11 @@ public interface MeetingRoomMapper extends BaseMapper<MeetingRoom> {
      */
     Integer updateStatus (@Param("id") Long id, @Param("status") Integer status);
 
+    /**
+     * 查询会议室信息，包括被逻辑删除的会议室
+     * @param roomId 会议室id
+     * @return 会议室
+     **/
     @Select("select * from meeting_room where id = #{roomId}")
     MeetingRoom getByRoomId (Long roomId);
 
