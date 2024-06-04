@@ -1,8 +1,9 @@
 package com.jfzt.meeting.constant;
 
 /**
+ * 时间段状态常量类
  * @author zilong.deng
- * @date 2024/05/09
+ * @date 2024-05-08 14:06:14
  */
 public class TimePeriodStatusConstant {
     /**

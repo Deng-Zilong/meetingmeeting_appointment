@@ -5,8 +5,9 @@ import java.util.Arrays;
 
 /**
  * SHA1 class
- *
- * 计算消息签名接口.
+ * 计算消息签名接口
+ * @author zhenxing.lu
+ * @since 2024-04-20 16:12:4
  */
 class SHA1 {
 

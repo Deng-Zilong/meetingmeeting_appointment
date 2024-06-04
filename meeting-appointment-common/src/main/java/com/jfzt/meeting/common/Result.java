@@ -8,9 +8,8 @@ import java.io.Serializable;
 
 /**
  * 返回状态定义
- *
  * @author zhenxing.lu
- * @since 2024-04-30 10.13:51
+ * @since 2024-04-30 10:13:51
  */
 @Data
 public class Result<T> implements Serializable {

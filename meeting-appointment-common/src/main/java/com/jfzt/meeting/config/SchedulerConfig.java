@@ -4,10 +4,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
+
 /**
+ * 线程池任务调度器
  * @author zilong.deng
- * @date 2024/05/29
- * @description 线程池任务调度器
+ * @since 2024-04-30 10:13:51
  */
 @Configuration
 public class SchedulerConfig {

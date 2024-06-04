@@ -22,6 +22,11 @@ import static com.jfzt.meeting.exception.ErrorCodeEnum.SERVICE_ERROR_A0400;
 import static com.jfzt.meeting.exception.ErrorCodeEnum.SYSTEM_ERROR_B0001;
 
 
+/**
+ * 全局异常类
+ * @author zhenxing.lu
+ * @since 2024-05-12 10:13:51
+ */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {

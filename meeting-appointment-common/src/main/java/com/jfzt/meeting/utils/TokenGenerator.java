@@ -17,7 +17,7 @@ import java.util.UUID;
 /**
  * 生成token请求
  * @author zhenxing.lu
- * @date 2024/05/09
+ * @since 2024-05-09 16:12:14
  */
 public class TokenGenerator {
 
@@ -45,6 +45,5 @@ public class TokenGenerator {
             algorithm.update(param.getBytes());
             byte[] messageDigest = algorithm.digest();
             return toHexString(messageDigest);
-
     }
 }

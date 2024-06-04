@@ -1,10 +1,9 @@
 package com.jfzt.meeting.constant;
 
 /**
- * 信息提示类
- *
- * @Author: chenyu.di
- * @since: 2024-05-08 18:06
+ * 信息提示常量类
+ * @author chenyu.di
+ * @since 2024-05-08 18:06:14
  */
 public class MessageConstant {
     public static final String EXCEPTION_TYPE = "======错误原因为：{}";

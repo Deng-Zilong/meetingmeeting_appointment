@@ -9,15 +9,19 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
 
+/**
+ * jwt工具类
+ * @author zhenxing.lu
+ * @since 2024-05-09 14:12:13
+ */
 public class JwtUtil {
     /**
      * 生成jwt
      * 使用Hs256算法, 私匙使用固定秘钥
-     *
      * @param secretKey jwt秘钥
      * @param ttlMillis jwt过期时间(毫秒)
      * @param claims    设置的信息
-     * @return String
+     * @return 返回jwt
      */
     public static String createJWT(String secretKey, long ttlMillis, Map<String, Object> claims) {
         // 指定签名的时候使用的签名算法，也就是header那部分
@@ -41,10 +45,9 @@ public class JwtUtil {
 
     /**
      * Token解密
-     *
      * @param secretKey jwt秘钥 此秘钥一定要保留好在服务端, 不能暴露出去, 否则sign就可以被伪造, 如果对接多个客户端建议改造成多个
-     * @param token     加密后的token
-     * @return
+     * @param token 加密后的token
+     * @return Claims
      */
     public static Claims parseJWT(String secretKey, String token) {
         // 得到DefaultJwtParser
