@@ -12,93 +12,94 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * 针对表【meeting_record(会议记录表)】的数据库操作Service
  * @author zilong.deng
- * @description 针对表【meeting_record(会议记录表)】的数据库操作Service
  * @since 2024-04-28 11:47:39
  */
 public interface MeetingRecordService extends IService<MeetingRecord> {
 
 
     /**
+     * 获取当天用户参与的所有会议
      * @param userId 用户id
-     * @return {@code List<MeetingRecordVO>}
-     * @description 获取当天用户参与的所有会议
+     * @return 会议记录VO
      */
     List<MeetingRecordVO> getTodayMeetingRecord (String userId);
 
     /**
-     * @return {@code Integer}
-     * @description 查询今日中心会议总次数
+     * 查询今日中心会议总次数
+     * @return 会议总次数
      */
     Integer getRecordNumber ();
 
     /**
+     * 更新会议状态
      * @param meetingRecord 会议记录
-     * @return {@code MeetingRecord}
-     * @description 更新会议记录
+     * @return 会议记录
      */
     MeetingRecord updateRecordStatus (MeetingRecord meetingRecord);
 
     /**
-     * @description 更新今日会议记录状态
+     * 更新今日所有会议状态
      */
     void updateTodayRecordStatus ();
 
     /**
+     * 分页获取用户参与的所有会议
      * @param userId 用户id
-     * @return {@code List<MeetingRecordVO>}
-     * @description 分页获取用户参与的所有会议
+     * @return 会议记录列表
      */
     List<MeetingRecordVO> getAllRecordVoListPage (String userId, Long pageNum, Long pageSize);
 
 
     /**
+     * 查询所有会议记录
      * @param pageNum      页码
-     * @param pageSize     每页条数
+     * @param pageSize     每页显示条数
      * @param currentLevel 当前登录用户的权限等级
-     * @return @return {@code List<MeetingRecordVO>}
-     * @description 分页获取所有会议记录
+     * @return MeetingRecordVO列表
      */
     List<MeetingRecordVO> getAllMeetingRecordVoListPage (Long pageNum, Long pageSize, Integer currentLevel);
 
 
     /**
+     * 根据会议记录id删除会议(首页不展示非删除)
      * @param userId    用户id
      * @param meetingId 会议id
-     * @return {@code Boolean}
-     * @description 根据会议记录id删除会议（首页不展示，历史记录展示）
+     * @return 删除结果
      */
     Result<String> deleteMeetingRecord (String userId, Long meetingId);
 
     /**
+     * 根据会议记录id取消会议
      * @param userId    用户id
      * @param meetingId 会议id
-     * @return {@code Boolean}
-     * @description 根据会议记录id取消会议
+     * @return 取消结果
      */
     Result<String> cancelMeetingRecord (String userId, Long meetingId);
 
     /**
-     * @return com.jfzt.meeting.common.Result<java.util.Objects>
-     * @Description 新增会议
+     * 新增会议
+     * @param meetingRecordDTO 会议记录DTO
+     * @return 新增会议结果
      */
     Result<Objects> addMeeting (MeetingRecordDTO meetingRecordDTO);
 
     /**
-     * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingRecordVO>>
-     * @Description 更新会议
-     * @Param [meetingRecordDTO]
+     * 更新会议
+     * @param meetingRecordDTO 会议记录DTO
+     * @return 会议记录VO
      */
     Result<List<MeetingRecordVO>> updateMeeting (MeetingRecordDTO meetingRecordDTO);
     /**
-     * @Description 统计七日内各时间段预约频率
-     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.PeriodTimesVO>>
+     * 统计七日内各时间段预约频率
+     * @return 预约频率
      */
     Result<List<PeriodTimesVO>> getTimePeriodTimes();
     /**
-     * @Description 会议创建自动提示
-     * @Param userId
-     * @return MeetingPromptVO
+     * 会议创建自动提示
+     * @param userId 用户id
+     * @return 最近会议信息
      */
     Result<List<MeetingPromptVO>> prompt(String userId);
 }

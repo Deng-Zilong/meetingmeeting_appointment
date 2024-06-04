@@ -44,7 +44,6 @@ import static com.jfzt.meeting.constant.TimePeriodStatusConstant.*;
 
 /**
  * 针对表【meeting_room(会议室表)】的数据库操作Service实现
- *
  * @author zilong.deng
  * @since 2024-06-04 11:33:16
  */
@@ -57,7 +56,6 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     private MeetingRecordService meetingRecordService;
     private SysUserService userService;
     private MeetingAttendeesMapper attendeesMapper;
-
     /**
      * setter注入
      */
@@ -65,22 +63,18 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     public void setSysUserMapper (SysUserMapper sysUserMapper) {
         this.sysUserMapper = sysUserMapper;
     }
-
     @Autowired
     public void setMeetingRoomMapper (MeetingRoomMapper meetingRoomMapper) {
         this.meetingRoomMapper = meetingRoomMapper;
     }
-
     @Autowired
     public void setMeetingRecordService (MeetingRecordService meetingRecordService) {
         this.meetingRecordService = meetingRecordService;
     }
-
     @Autowired
     public void setUserService (SysUserService userService) {
         this.userService = userService;
     }
-
     @Autowired
     public void setAttendeesMapper (MeetingAttendeesMapper attendeesMapper) {
         this.attendeesMapper = attendeesMapper;
@@ -89,7 +83,6 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
     /**
      * 新增会议室
-     *
      * @param meetingRoom 会议室对象
      * @return 结果
      */
@@ -122,7 +115,6 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
     /**
      * 删除会议室
-     *
      * @param id 会议室id
      * @return 删除结果
      */
@@ -149,7 +141,6 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
     /**
      * 修改会议室状态
-     *
      * @param meetingRoomDTO 会议室DTO对象
      * @return 修改结果
      */
@@ -179,13 +170,13 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
     /**
      * 查询被禁用的会议室的id
-     *
      * @param currentLevel 当前登录用户的权限等级
      * @return 权限等级
      */
     @Override
     public Result<List<Long>> selectUsableRoom (Integer currentLevel) {
-        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel) || MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)
+                || MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
             List<MeetingRoom> roomList = meetingRoomMapper.selectList(new QueryWrapper<>());
             List<Long> collect = roomList
                     .stream()
@@ -200,7 +191,6 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
     /**
      * 查询近七天会议室占用率（9：00-18：00）不包括周末
-     *
      * @return 会议室占用率VO
      */
     @Override
@@ -273,7 +263,6 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
     /**
      * 查询最近五个工作日内各会议室占用比例
-     *
      * @return 会议室占用比例VO
      */
     @Override
@@ -312,7 +301,6 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
     /**
      * 查询会议室状态
-     *
      * @return 会议室状态VO
      */
     @Override
@@ -370,7 +358,6 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
     /**
      * 查询当天各个时间段会议室占用情况
-     *
      * @return 时间段占用状态
      */
     @Override
@@ -440,7 +427,6 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
     /**
      * 查询指定会议室当天各个时间段占用情况
-     *
      * @param id   会议室id
      * @param date 日期
      * @return 时间段状态
@@ -505,7 +491,6 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
     /**
      * 根据时间段获取可用的会议室
-     *
      * @param startTime 开始时间
      * @param endTime   结束时间
      * @return 会议室VO

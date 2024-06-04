@@ -41,8 +41,8 @@ import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
 import static com.jfzt.meeting.constant.MessageConstant.*;
 
 /**
+ * 针对表【meeting_record(会议记录表)】的数据库操作Service实现
  * @author zilong.deng
- * @description 针对表【meeting_record(会议记录表)】的数据库操作Service实现
  * @since 2024-04-28 11:47:39
  */
 @Slf4j
@@ -69,9 +69,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
 
     /**
+     * 获取当天用户参与的所有会议
      * @param userId 用户id
-     * @return {@code List<MeetingRecordVO>}
-     * @description 获取当天用户参与的所有会议
+     * @return 会议记录VO
      */
     @Override
     public List<MeetingRecordVO> getTodayMeetingRecord (String userId) {
@@ -154,8 +154,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
-     * @return {@code Integer}
-     * @description 查询今日中心会议总次数
+     * 查询今日中心会议总次数
+     * @return 会议总次数
      */
     @Override
     public Integer getRecordNumber () {
@@ -166,9 +166,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
+     * 更新会议状态
      * @param meetingRecord 会议记录
-     * @return {@code MeetingRecord}
-     * @description 更新会议状态
+     * @return 会议记录
      */
     @Override
     public MeetingRecord updateRecordStatus (MeetingRecord meetingRecord) {
@@ -189,7 +189,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
-     * @description 更新今日所有会议状态
+     * 更新今日所有会议状态
      */
     @Override
     public void updateTodayRecordStatus () {
@@ -219,9 +219,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
+     * 分页获取用户参与的所有会议
      * @param userId 用户id
-     * @return {@code List<MeetingRecordVO>}
-     * @description 分页获取用户参与的所有会议
+     * @return 会议记录列表
      */
     @Override
     public List<MeetingRecordVO> getAllRecordVoListPage (String userId, Long pageNum, Long pageSize) {
@@ -280,11 +280,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
+     * 查询所有会议记录
      * @param pageNum      页码
      * @param pageSize     每页显示条数
      * @param currentLevel 当前登录用户的权限等级
-     * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingRecordVO>>
-     * @description 查询所有会议记录
+     * @return MeetingRecordVO列表
      */
     @Override
     public List<MeetingRecordVO> getAllMeetingRecordVoListPage (Long pageNum, Long pageSize, Integer currentLevel) {
@@ -301,44 +301,45 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                             .orderByDesc(MeetingRecord::getStartTime));
             // 构建MeetingRecordVO列表
             return meetingRecordPage.getRecords().stream().map(record -> {
-                MeetingRecordVO recordVO = new MeetingRecordVO();
-                record = updateRecordStatus(record);
-                // 设置会议信息
-                BeanUtils.copyProperties(record, recordVO);
-                // 设置会议室信息
-                // 不使用逻辑删除
-                MeetingRoom meetingRoom = meetingRoomMapper.getByRoomId(record.getMeetingRoomId());
-                if (meetingRoom != null){
-                    recordVO.setMeetingRoomName(meetingRoom.getRoomName());
-                }
-                // 设置创建人信息
-                SysUser adminUser = userService.getById(record.getCreatedBy());
-                if (adminUser != null) {
-                    recordVO.setAdminUserName(adminUser.getUserName());
-                }
-                // 设置参会人信息
-                List<String> userIds = attendeesMapper.selectList(
-                                new LambdaQueryWrapper<MeetingAttendees>()
-                                        .eq(MeetingAttendees::getMeetingRecordId, record.getId()))
-                        .stream().map(MeetingAttendees::getUserId).collect(Collectors.toList());
-                StringBuffer attendees = new StringBuffer();
-                ArrayList<SysUserVO> users = new ArrayList<>();
-                userService.getUserInfo(userIds, attendees, users);
-                // 设置参会人员详情
-                recordVO.setAttendees(attendees.toString());
-                recordVO.setUsers(users);
-                recordVO.setMeetingNumber(users.size());
-                return recordVO;
-            }).sorted(Comparator.comparing(MeetingRecordVO::getStartTime).reversed()).collect(Collectors.toList());
+                        MeetingRecordVO recordVO = new MeetingRecordVO();
+                        record = updateRecordStatus(record);
+                        // 设置会议信息
+                        BeanUtils.copyProperties(record, recordVO);
+                        // 设置会议室信息
+                        // 不使用逻辑删除
+                        MeetingRoom meetingRoom = meetingRoomMapper.getByRoomId(record.getMeetingRoomId());
+                        if (meetingRoom != null) {
+                            recordVO.setMeetingRoomName(meetingRoom.getRoomName());
+                        }
+                        // 设置创建人信息
+                        SysUser adminUser = userService.getById(record.getCreatedBy());
+                        if (adminUser != null) {
+                            recordVO.setAdminUserName(adminUser.getUserName());
+                        }
+                        // 设置参会人信息
+                        List<String> userIds = attendeesMapper.selectList(
+                                        new LambdaQueryWrapper<MeetingAttendees>()
+                                                .eq(MeetingAttendees::getMeetingRecordId, record.getId()))
+                                .stream().map(MeetingAttendees::getUserId).collect(Collectors.toList());
+                        StringBuffer attendees = new StringBuffer();
+                        ArrayList<SysUserVO> users = new ArrayList<>();
+                        userService.getUserInfo(userIds, attendees, users);
+                        // 设置参会人员详情
+                        recordVO.setAttendees(attendees.toString());
+                        recordVO.setUsers(users);
+                        recordVO.setMeetingNumber(users.size());
+                        return recordVO;
+                    }).sorted(Comparator.comparing(MeetingRecordVO::getStartTime).reversed())
+                    .collect(Collectors.toList());
         }
         throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0301);
     }
 
     /**
+     * 根据会议记录id删除会议(首页不展示非删除)
      * @param userId    用户id
      * @param meetingId 会议id
-     * @return {@code Result<String>}
-     * @description 根据会议记录id删除会议(首页不展示非删除)
+     * @return 删除结果
      */
     @Override
     public Result<String> deleteMeetingRecord (String userId, Long meetingId) {
@@ -371,10 +372,10 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
+     * 根据会议记录id取消会议
      * @param userId    用户id
      * @param meetingId 会议id
-     * @return {@code Boolean}
-     * @description 根据会议记录id取消会议
+     * @return 取消结果
      */
     @Transactional
     @Override
@@ -410,10 +411,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         String reminder =
                 "**会议提醒**\n" +
                         "会议 : " + meetingRecord.getTitle() + "\n" +
-                        "日期 :" + meetingRecord.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "\n" +
-                        "时间 : " + meetingRecord.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
-                        + " ~ "
-                        + meetingRecord.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")) + "\n" +
+                        "日期 :" + meetingRecord.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "\n"
+                        + "时间 : " + meetingRecord.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+                        + " ~ " + meetingRecord.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")) + "\n" +
                         "会议已取消！";
         try {
             //发送取消会议提醒
@@ -426,9 +426,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
+     * 新增会议
      * @param meetingRecordDTO 会议记录DTO
-     * @return com.jfzt.meeting.common.Result<java.util.Objects>
-     * @Description 新增会议
+     * @return 新增会议结果
      */
     @Override
     @Transactional
@@ -481,9 +481,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
 
     /**
-     * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingRecordVO>>
-     * @Description 更新会议
-     * @Param [meetingRecordDTO]
+     * 更新会议
+     * @param meetingRecordDTO 会议记录DTO
+     * @return 会议记录VO
      */
     @Override
     @Transactional
@@ -523,8 +523,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
-     * @Description 统计七日内各时间段预约频率
-     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.PeriodTimesVO>>
+     * 统计七日内各时间段预约频率
+     * @return 预约频率
      */
     @Override
     public Result<List<PeriodTimesVO>> getTimePeriodTimes () {
@@ -565,9 +565,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
-     * @Description 会议创建自动提示
-     * @Param userId
-     * @return MeetingPromptVO
+     * 会议创建自动提示
+     * @param userId 用户id
+     * @return 最近会议信息
      */
     @Override
     public Result<List<MeetingPromptVO>> prompt(String userId) {

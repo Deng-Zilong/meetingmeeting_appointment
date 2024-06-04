@@ -9,9 +9,9 @@ import org.springframework.stereotype.Service;
 
 
 /**
+ * 针对表【sys_department】的数据库操作Service实现
  * @author zilong.deng
- * @description 针对表【sys_department】的数据库操作Service实现
- * @createDate 2024-04-28 16:04:11
+ * @since  2024-04-28 16:04:11
  */
 @Service
 public class SysDepartmentServiceImpl extends ServiceImpl<SysDepartmentMapper, SysDepartment>

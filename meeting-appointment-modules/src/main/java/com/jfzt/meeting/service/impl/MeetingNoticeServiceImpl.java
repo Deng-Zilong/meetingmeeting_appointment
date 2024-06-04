@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * 针对表【meeting_notice(会议公告表)】的数据库操作Service实现
  * @author xuchang.yang
- * @description 针对表【meeting_notice(会议公告表)】的数据库操作Service实现
  * @since 2024-04-28 11:45:33
  */
 @Service
@@ -33,7 +33,7 @@ public class MeetingNoticeServiceImpl extends ServiceImpl<MeetingNoticeMapper, M
     /**
      * 上传公告
      * @param meetingNoticeVO 公告信息VO对象
-     * @return com.jfzt.meeting.common.Result<java.lang.Integer>
+     * @return Result<Integer> 返回结果
      */
     @Override
     public Result<Integer> addNotice(MeetingNoticeVO meetingNoticeVO) {
@@ -58,12 +58,9 @@ public class MeetingNoticeServiceImpl extends ServiceImpl<MeetingNoticeMapper, M
         }
     }
 
-
-
-
     /**
      * 查询所有通告信息
-     * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
+     * @return 通告信息
      */
     @Override
     public Result<List<String>> selectAll() {

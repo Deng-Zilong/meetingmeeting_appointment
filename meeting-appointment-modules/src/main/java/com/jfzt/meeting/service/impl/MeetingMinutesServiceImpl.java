@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * 针对表【meeting_minutes(会议纪要)】的数据库操作Service实现
  * @author zilong.deng
- * @description 针对表【meeting_minutes(会议纪要)】的数据库操作Service实现
- * @createDate 2024-05-29 17:59:44
+ * @since 2024-06-04 14:09:31
  */
 @Service
 public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper, MeetingMinutes>
@@ -36,9 +36,9 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
 
 
     /**
+     * 根据会议记录id或用户id查询会议纪要
      * @param meetingMinutes 会议记录id或用户id
-     * @return {@code List<MeetingMinutesVO>}
-     * @description 根据会议记录id或用户id查询会议纪要
+     * @return 会议纪要VO
      */
     @Override
     public List<MeetingMinutesVO> getMeetingMinutes (MeetingMinutes meetingMinutes) {
@@ -73,9 +73,9 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
     }
 
     /**
-     * @return com.jfzt.meeting.common.Result<java.lang.Object>
-     * @Description 保存会议纪要
-     * @Param [meetingMinutes]
+     * 保存会议纪要
+     * @param meetingMinutes 会议纪要
+     * @return 保存结果
      */
     @Override
     public Result<Object> saveOrUpdateMinutes (MeetingMinutes meetingMinutes) {
@@ -102,8 +102,8 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
     }
 
     /**
+     * 根据会议id删除所有会议纪要
      * @param meetingRecordId 会议id
-     * @description 根据会议id删除所有会议纪要
      */
     @Override
     public void deleteMeetingMinutes (Long meetingRecordId) {
@@ -115,8 +115,8 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
     }
 
     /**
+     * 根据用户id 纪要id删除指定纪要
      * @param meetingMinutes userId id
-     * @description 根据用户id 纪要删除指定
      */
     @Override
     public void deleteMeetingMinutes (MeetingMinutes meetingMinutes) {
