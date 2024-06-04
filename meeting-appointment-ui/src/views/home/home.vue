@@ -15,10 +15,6 @@
             <GuageChart :gaugeData="gaugeData" :width="300" :height="270"  />
           </div>
         </div>
-        <!-- <div class="screen-footer">
-          <p>今日中心会议总次数</p>
-          <div class="num">次</div>
-        </div> -->
       </div>
       <!-- 预约信息 -->
       <div class="every-block info">
@@ -50,18 +46,19 @@
           </div>
           <div class="rules">
             <div class="rule-block">
-              <div class="rule-title">预约规则</div>
+              <div class="rule-title">近期热门时间段</div>
               <div class="rule-main">
                 <div class="rule-scroll">
-                  <div class="scroll-item" v-for="item in appointRule">{{ item }}</div>
+                  <div class="scroll-item" v-for="item in timesData.slice(0, 10)">{{ item }}</div>
+                  <div class="scroll-item">请注意及时预约</div>
                 </div>
               </div>
             </div>
             <div class="rule-block">
-              <div class="rule-title">取消规则</div>
+              <div class="rule-title">规则</div>
               <div class="rule-main">
                 <div class="rule-scroll">
-                  <div class="scroll-item" v-for="item in cancelRule">{{ item }}</div>
+                  <div class="scroll-item" v-for="item in rulesData">{{ item }}</div>
                 </div>
               </div>
             </div>
@@ -137,6 +134,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {  getTodayMeetingRecordData, getDeleteMeetingRecordData, getCenterAllNumberData, getRoomStatusData, getTimeBusyData, getNoticeData } from '@/request/api/home'
+import { getTimePeriodDate } from '@/request/api/manage'
 
 import Clock from '@/views/home/component/clock.vue'
 import GuageChart from '@/views/home/component/guage-chart.vue'
@@ -149,24 +147,15 @@ const route = useRoute();
 const router = useRouter();
 const userInfo = ref();  // 获取用户信息 传后端数据
 
-const appointRule = ref<any>([
+let timesData = ref<any>([])  // 排名前十的时间段
+const rulesData = ref<any>([  // 规则
+  // 预约
   "点击首页“会议室预约”按钮",
   "点击自已想预约的会议室名称",
   "紧急预约可直接点击“空闲中”会议室",
   "点击自己想预约会议的时间",
   "长期预约会议室可使用“企微”预约",
-  "点击首页“会议室预约”按钮",
-  "点击自已想预约的会议室名称",
-  "紧急预约可直接点击“空闲中”会议室",
-  "点击自己想预约会议的时间",
-  "长期预约会议室可使用“企微”预约",
-])
-const cancelRule = ref<any>([
-  "点击首页“取消预约”按钮",
-  "点击“历史记录”-“取消会议”",
-  "取消后若该会议室空闲可重新预约",
-  "“修改会议”≠“取消会议”",
-  "取消会议后“历史记录”该记录消失",
+  // 取消
   "点击首页“取消预约”按钮",
   "点击“历史记录”-“取消会议”",
   "取消后若该会议室空闲可重新预约",
@@ -174,6 +163,7 @@ const cancelRule = ref<any>([
   "取消会议后“历史记录”该记录消失",
 ])
 let notice = ref<any>('暂无公告信息'); // 公告信息
+
 let gaugeData = ref<any>([ // echarts数据展示 今日总预约数
   {
     value: 0,
@@ -359,6 +349,17 @@ const getNotice = async () => {
   notice.value = res.data  
 }
 
+/**
+ * @description 获取前十时间段数据
+ */
+getTimePeriodDate()  
+  .then((res) => {
+    res.data.map((item: any) => {
+      timesData.value.push(`${dayjs(item.startTime).format('HH:mm')}-${dayjs(item.endTime).format('HH:mm')} : 使用${item.count}次`)
+    })    
+  })
+  .catch((err) => {})
+
 onMounted( async () => {
     /* 判断扫码登录状态 */
     const code = decodeURIComponent(route.query.code as string);
@@ -390,6 +391,7 @@ onMounted( async () => {
         getRoomStatus(),  // 查询会议室状态
         getTimeBusy(),  // 查询当日时间段占用情况
         getNotice(), // 查询公告
+        getTimePeriodDate()  // 获取时间段数据
     ])
     loading.value = false
 });

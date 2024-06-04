@@ -99,7 +99,7 @@ import { ElMessage, dayjs } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import personTreeDialog from '@/components/person-tree-dialog.vue'
 import { addMeetingGroup, getMeetingGroupList } from '@/request/api/group'
-import { addMeetingRecord, availableMeetingRooms, updateMeetingRecord } from '@/request/api/meeting-appoint'
+import { addMeetingRecord, availableMeetingRooms, meetingRecordPrompt, updateMeetingRecord } from '@/request/api/meeting-appoint'
 import { meetingStatus } from '@/stores/meeting-status'
 import { useThrottle } from '@/utils/method'
 import { meetingAppointTime } from '@/utils/types'
@@ -161,6 +161,7 @@ onMounted(() => {
 
     // 获取群组列表
     getGroupList();
+    handleMeetingRecordPrompt(); // 获取最近三次创建人创建会议的信息
     handleAvailableMeetingRooms(formData.value.startTime, formData.value.endTime); // 获取可用会议室
 })
 
@@ -420,6 +421,22 @@ const submitForm = (formEl: FormInstance | undefined) => {
                 }).catch((err) => {})
         }
     })
+}
+/**
+ * @description 提示最近三次创建人创建会议的信息
+ */
+const handleMeetingRecordPrompt = () => {
+    // meetingRecordPrompt({userId: userInfo.value.userId})
+    // .then((res: any) => {
+    //     const {meetingRoomId, meetingRoomName, title, users} = res.data[0];
+    //     formData.value.meetingRoomId = String(meetingRoomId);
+    //     formData.value.meetingRoomName = meetingRoomName;
+    //     // formData.value.meetingPeople = 
+    //     formData.value.title = title;
+    //     formData.value.users = users;
+    //     addPersonForm.value.personIds = Array.from(new Set(users.map((el: any) => el.userId))); // 获取参会人id并去重 用于成员树回显
+    // })
+    // .catch((err: any) => {})
 }
 // 离开页面
 onBeforeUnmount(() => {
