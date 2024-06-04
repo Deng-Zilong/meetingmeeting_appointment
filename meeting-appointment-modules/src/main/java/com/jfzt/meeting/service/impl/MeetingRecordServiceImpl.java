@@ -25,7 +25,6 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,7 +49,7 @@ import static com.jfzt.meeting.constant.MessageConstant.*;
 public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, MeetingRecord>
         implements MeetingRecordService {
 
-    @Autowired
+    @Resource
     private WxUtil wxUtil;
     @Resource
     private MeetingAttendeesService meetingAttendeesService;
@@ -62,9 +61,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     private MeetingAttendeesMapper attendeesMapper;
     @Resource
     private MeetingRoomMapper meetingRoomMapper;
-    @Autowired
+    @Resource
     private MeetingReminderScheduler meetingReminderScheduler;
-    @Autowired
+    @Resource
     private MeetingMinutesService meetingMinutesService;
 
 
@@ -126,12 +125,9 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                         meetingRecord = this.getById(meetingRecord.getId());
                         //插入会议信息
                         BeanUtils.copyProperties(meetingRecord, meetingRecordVO);
-                        //插入会议室信息
-                        List<MeetingRoom> meetingRoomList = meetingRoomService
-                                .list(new LambdaQueryWrapper<MeetingRoom>()
-                                        .eq(MeetingRoom::getId, meetingRecord.getMeetingRoomId()));
-                        if (!meetingRoomList.isEmpty()) {
-                            MeetingRoom meetingRoom = meetingRoomList.getFirst();
+                        //插入会议室信息,包括被删除的会议室
+                        MeetingRoom meetingRoom = meetingRoomMapper.getByRoomId(meetingRecord.getMeetingRoomId());
+                        if (meetingRoom != null) {
                             meetingRecordVO.setMeetingRoomName(meetingRoom.getRoomName());
                             meetingRecordVO.setLocation(meetingRoom.getLocation());
                         }
