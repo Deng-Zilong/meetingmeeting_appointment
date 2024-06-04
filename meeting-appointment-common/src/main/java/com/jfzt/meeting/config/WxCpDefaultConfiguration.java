@@ -10,9 +10,8 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * 企业微信配置连接
- *
  * @author zhenxing.lu
- * @since 2024-04-30 10.13:51
+ * @since 2024-04-30 10:13:51
  */
 @Data
 @Configuration

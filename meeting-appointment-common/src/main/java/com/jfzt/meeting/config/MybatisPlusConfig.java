@@ -10,9 +10,8 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * mybatis-plus分页设置
- *
  * @author zilong.deng
- * @since 2024-04-30 10.13:51
+ * @since 2024-04-30 10:13:51
  */
 
 @Configuration

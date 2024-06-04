@@ -2,6 +2,11 @@ package com.jfzt.meeting.weixin;
 
 import java.util.ArrayList;
 
+
+/**
+ * @author zhenxing.lu
+ * @since 2024-04-20 16:12:4
+ */
 class ByteGroup {
     ArrayList<Byte> byteContainer = new ArrayList<Byte>();
 

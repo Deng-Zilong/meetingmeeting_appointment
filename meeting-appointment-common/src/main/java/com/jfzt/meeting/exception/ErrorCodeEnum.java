@@ -10,8 +10,8 @@ import lombok.Getter;
  * 4. C代表第三方服务异常
  * 4. 若无法确定具体错误，选择宏观错误
  * 6. 大的错误类间的步长间距预留100
- *
- * @date 2024/05/12
+ * @author zhenxing.lu
+ * @since 2024-05-12 10:13:51
  */
 @Getter
 public enum ErrorCodeEnum {

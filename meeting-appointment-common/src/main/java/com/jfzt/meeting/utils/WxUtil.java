@@ -11,8 +11,9 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
+ * 企业微信信息提示工具类
  * @author zilong.deng
- * @date 2024/05/29
+ * @since 2024-5-29 10:12:12
  */
 @Slf4j
 @Component
@@ -23,7 +24,6 @@ public class WxUtil {
 
     /**
      * 通过企微发送提醒
-     *
      * @param reminders 提醒
      * @param userIds   用户id
      */

@@ -8,9 +8,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 /**
+ * MD5加盐加密工具类
  * @author zilong.deng
- * @date 2024/05/17
- * @description MD5加盐加密工具类
+ * @since  2024-05-17 14:43:45
  */
 @Slf4j
 public class EncryptUtils {

@@ -13,8 +13,9 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
+ * 自定义异常类
  * @author zhenxing.lu
- * @date 2024/04/25
+ * @since 2024-4-25 10:13:51
  */
 @XStreamAlias("xml")
 @Data

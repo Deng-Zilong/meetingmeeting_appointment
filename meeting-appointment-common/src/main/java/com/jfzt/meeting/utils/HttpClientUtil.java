@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * http请求工具类
  * @author zhenxing.lu
- * @date 2024/05/09
+ * @since 2024-05-09 14:12:13
  */
 @Component
 public class HttpClientUtil {
