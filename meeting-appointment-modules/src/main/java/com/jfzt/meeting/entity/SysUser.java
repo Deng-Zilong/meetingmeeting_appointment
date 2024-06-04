@@ -39,11 +39,7 @@ public class SysUser implements Serializable {
      */
     private Integer level;
 
-    /**
-     * 逻辑删除0否1是
-     */
-    @TableLogic
-    private Integer isDeleted;
+
 
     @Serial
     @TableField(exist = false)
@@ -65,8 +61,7 @@ public class SysUser implements Serializable {
                 && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
                 && (this.getUserName() == null ? other.getUserName() == null : this.getUserName().equals(other.getUserName()))
                 && (this.getPassword() == null ? other.getPassword() == null : this.getPassword().equals(other.getPassword()))
-                && (this.getLevel() == null ? other.getLevel() == null : this.getLevel().equals(other.getLevel()))
-                && (this.getIsDeleted() == null ? other.getIsDeleted() == null : this.getIsDeleted().equals(other.getIsDeleted()));
+                && (this.getLevel() == null ? other.getLevel() == null : this.getLevel().equals(other.getLevel()));
     }
 
     @Override
@@ -78,7 +73,6 @@ public class SysUser implements Serializable {
         result = prime * result + ((getUserName() == null) ? 0 : getUserName().hashCode());
         result = prime * result + ((getPassword() == null) ? 0 : getPassword().hashCode());
         result = prime * result + ((getLevel() == null) ? 0 : getLevel().hashCode());
-        result = prime * result + ((getIsDeleted() == null) ? 0 : getIsDeleted().hashCode());
         return result;
     }
 
@@ -92,7 +86,7 @@ public class SysUser implements Serializable {
                 ", userName=" + userName +
                 ", password=" + password +
                 ", level=" + level +
-                ", isDeleted=" + isDeleted +
+
                 ", serialVersionUID=" + serialVersionUID +
                 "]";
     }
