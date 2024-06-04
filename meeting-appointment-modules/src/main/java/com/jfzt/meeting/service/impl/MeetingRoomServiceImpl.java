@@ -195,8 +195,10 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      */
     @Override
     public Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomOccupancy () {
-        List<MeetingRoom> meetingRooms = this.list(new LambdaQueryWrapper<MeetingRoom>()
-                .eq(MeetingRoom::getStatus, MEETINGROOM_STATUS_AVAILABLE));
+        List<MeetingRoom> meetingRooms = this.list();
+        if (meetingRooms.isEmpty()){
+            return Result.success(new ArrayList<>());
+        }
         //查出七日内所有会议
         List<MeetingRecord> meetingRecordList = meetingRecordService.list(new LambdaQueryWrapper<MeetingRecord>()
                 .gt(MeetingRecord::getStartTime, LocalDateTime.now().toLocalDate().atStartOfDay().minusDays(7))
