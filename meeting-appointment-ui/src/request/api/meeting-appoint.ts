@@ -13,3 +13,8 @@ export const updateMeetingRecord = (data: {id: string, createdBy: string, meetin
 export const availableMeetingRooms = (data: {startTime: string, endTime: string}) => {
     return http.get("/meeting/create-meeting/available-meeting-rooms", data)
 }
+
+// 提示最近三次创建人创建会议的信息
+export const meetingRecordPrompt = (data: {userId: string}) => {
+    return http.get("/meeting/index/meeting-record-prompt", data)
+}

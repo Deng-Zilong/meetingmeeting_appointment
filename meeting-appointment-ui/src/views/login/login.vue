@@ -200,9 +200,7 @@ onMounted(() => {
     qwLogin({code, loginMethod})
     .then(res => {
         localStorage.setItem('userInfo', JSON.stringify(res.data));
-        setTimeout(() => {
-            location.href = `/#/home`
-        }, 1000);
+        location.href = `/#/home`;
     })
     .catch(error => {})
     .finally(() => {
