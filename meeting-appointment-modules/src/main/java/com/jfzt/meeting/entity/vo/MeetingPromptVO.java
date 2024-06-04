@@ -17,7 +17,10 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class MeetingPromptVO {
-
+    /**
+     * 会议主题
+     */
+    private String title;
     /**
      * 会议室id
      */

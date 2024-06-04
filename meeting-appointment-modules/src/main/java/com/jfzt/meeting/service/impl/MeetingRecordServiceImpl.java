@@ -570,17 +570,41 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      * @return MeetingPromptVO
      */
     @Override
-    public Result<MeetingPromptVO> prompt(String userId) {
+    public Result<List<MeetingPromptVO>> prompt(String userId) {
         //查询最后一次创建的会议
-        MeetingRecord lastMeeting = lambdaQuery().select(MeetingRecord::getId, MeetingRecord::getMeetingRoomId)
+        List<MeetingRecord> records = lambdaQuery()
+                .select(MeetingRecord::getTitle,MeetingRecord::getId, MeetingRecord::getMeetingRoomId)
                 .eq(MeetingRecord::getCreatedBy, userId)
                 .orderByDesc(MeetingRecord::getGmtCreate)
-                .list()
-                .getFirst();
-        if (lastMeeting == null) {
-           return Result.success();
+                .list();
+        if (records.size() > 3) {
+            List<MeetingPromptVO> list = records
+                    .subList(0, 8)
+                    .stream()
+                    .map(lastMeeting -> {
+                        try{
+                        getMeetingPromptVO(lastMeeting);
+                        }catch (Exception e){
+                            return null;
+                        }
+                        return getMeetingPromptVO(lastMeeting);
+                    })
+                    .filter(Objects::nonNull)
+                    .toList()
+                    .subList(0, 3);
+            return Result.success(list);
+        }else if (!records.isEmpty()){
+            return Result.success(records.stream().map(this::getMeetingPromptVO).toList());
+        }else {
+            return Result.success();
         }
-        //查询对应会议室及参会人
+    }
+    /**
+     * 查询对应会议室及参会人
+     * @Param lastMeeting
+     * @return MeetingPromptVO
+     */
+    private MeetingPromptVO getMeetingPromptVO(MeetingRecord lastMeeting) {
         MeetingRoom meetingRoom = meetingRoomService.getById(lastMeeting.getMeetingRoomId());
         List<String> userIds = meetingAttendeesService.lambdaQuery()
                 .eq(MeetingAttendees::getMeetingRecordId, lastMeeting.getId())
@@ -594,12 +618,12 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .stream()
                 .peek(sysUser -> sysUser.setPassword(null))
                 .toList();
-        MeetingPromptVO promptVO = MeetingPromptVO.builder()
+        return MeetingPromptVO.builder()
+                .title(lastMeeting.getTitle())
                 .meetingRoomId(lastMeeting.getMeetingRoomId())
                 .meetingRoomName(meetingRoom.getRoomName())
                 .users(userList)
                 .build();
-        return Result.success(promptVO);
     }
 
 

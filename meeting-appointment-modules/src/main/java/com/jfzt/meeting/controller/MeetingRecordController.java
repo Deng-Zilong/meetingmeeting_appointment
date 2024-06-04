@@ -125,7 +125,7 @@ public class MeetingRecordController {
      * @return MeetingPromptVO
      */
     @GetMapping("/index/meeting-record-prompt")
-    public Result<MeetingPromptVO> prompt(@RequestParam String userId) {
+    public Result<List<MeetingPromptVO>> prompt(@RequestParam String userId) {
         return meetingRecordService.prompt(userId);
     }
 }

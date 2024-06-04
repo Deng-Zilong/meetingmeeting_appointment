@@ -178,9 +178,10 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
                         // 根据用户ID获取用户
                         List<SysUser> userList = sysUserService.lambdaQuery()
                                 .eq(SysUser::getUserId, sysDepartmentUser.getUserId())
-                                .list().stream().peek(sysUser -> {
-                                    sysUser.setPassword(null);
-                                }).toList();
+                                .list()
+                                .stream()
+                                .peek(sysUser -> sysUser.setPassword(null))
+                                .toList();
                         // 将用户添加到用户列表中
                         sysUsers.addAll(userList);
                     }).toList();
