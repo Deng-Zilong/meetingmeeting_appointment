@@ -20,7 +20,7 @@
       <el-form-item label="会议室状态：">
         <el-radio-group v-model="addMeetingForm.status">
           <el-radio :value="0" size="large">禁用</el-radio>
-          <el-radio :value="1" size="large">启用</el-radio>
+          <el-radio :value="1" size="large">空闲</el-radio>
         </el-radio-group>
         <!-- <el-select v-model="addMeetingForm.status" placeholder="请选择会议室初始状态">
           <el-option v-for="item in meetingStates" :key="item.type" :label="item.label" :value="item.type"/>
@@ -29,7 +29,7 @@
     </el-form>
     <template #footer>
       <div class="card-footer">
-        <el-button @click="clearAddInfo()">取消</el-button>
+        <el-button @click="clearAddInfo()">重置</el-button>
         <el-button type="primary" @click="addMeetingInfo()">
           确认
         </el-button>

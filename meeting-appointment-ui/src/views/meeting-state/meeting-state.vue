@@ -11,7 +11,7 @@
             <el-icon @click="deleteDate"><ArrowUpBold /></el-icon>
             <el-icon @click="addDate"><ArrowDownBold /></el-icon>
           </div>
-          <el-date-picker v-model="date" type="date" class="left-date" :disabled-date="disabledDate"
+          <el-date-picker v-model="date" type="date" class="left-date" :clearable="false" :disabled-date="disabledDate"
             placeholder="选择日期" @change="changeDate" />
         </div>
         <div class="left-table">
