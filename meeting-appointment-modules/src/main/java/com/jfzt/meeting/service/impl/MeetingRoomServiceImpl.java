@@ -23,7 +23,6 @@ import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MeetingRoomService;
 import com.jfzt.meeting.service.SysUserService;
-import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,26 +43,28 @@ import static com.jfzt.meeting.constant.MessageConstant.UPDATE_FAIL;
 import static com.jfzt.meeting.constant.TimePeriodStatusConstant.*;
 
 /**
+ * 针对表【meeting_room(会议室表)】的数据库操作Service实现
+ *
  * @author zilong.deng
- * @description 针对表【meeting_room(会议室表)】的数据库操作Service实现
- * @createDate 2024-04-28 11:50:45
+ * @since 2024-06-04 11:33:16
  */
 @Slf4j
 @Service
 public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, MeetingRoom> implements MeetingRoomService {
 
-    @Resource
     private SysUserMapper sysUserMapper;
-
-
     private MeetingRoomMapper meetingRoomMapper;
-
     private MeetingRecordService meetingRecordService;
-
     private SysUserService userService;
-
-
     private MeetingAttendeesMapper attendeesMapper;
+
+    /**
+     * setter注入
+     */
+    @Autowired
+    public void setSysUserMapper (SysUserMapper sysUserMapper) {
+        this.sysUserMapper = sysUserMapper;
+    }
 
     @Autowired
     public void setMeetingRoomMapper (MeetingRoomMapper meetingRoomMapper) {
@@ -85,10 +86,12 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         this.attendeesMapper = attendeesMapper;
     }
 
+
     /**
+     * 新增会议室
+     *
      * @param meetingRoom 会议室对象
-     * @return {@code Integer}
-     * @description 新增会议室
+     * @return 结果
      */
     @Override
     public Result<Integer> addMeetingRoom (MeetingRoom meetingRoom) {
@@ -118,9 +121,10 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     }
 
     /**
+     * 删除会议室
+     *
      * @param id 会议室id
-     * @return {@code Integer}
-     * @description 删除会议室
+     * @return 删除结果
      */
     @Override
     public Result<Integer> deleteMeetingRoom (Long id, Integer currentLevel) {
@@ -144,9 +148,10 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
 
     /**
+     * 修改会议室状态
+     *
      * @param meetingRoomDTO 会议室DTO对象
-     * @return com.jfzt.meeting.common.Result<java.lang.Integer>
-     * @description 修改会议室状态
+     * @return 修改结果
      */
     @Override
     public Result<Integer> updateStatus (MeetingRoomDTO meetingRoomDTO) {
@@ -173,9 +178,10 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     }
 
     /**
+     * 查询被禁用的会议室的id
+     *
      * @param currentLevel 当前登录用户的权限等级
-     * @return com.jfzt.meeting.common.Result<java.util.List < < java.lang.Integer>>
-     * @description 查询被禁用的会议室的id
+     * @return 权限等级
      */
     @Override
     public Result<List<Long>> selectUsableRoom (Integer currentLevel) {
@@ -193,8 +199,9 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
 
     /**
-     * @return {@code Result<List<MeetingRoomOccupancyVO>>}
-     * @description 查询近七天会议室占用率（9：00-18：00）不包括周末
+     * 查询近七天会议室占用率（9：00-18：00）不包括周末
+     *
+     * @return 会议室占用率VO
      */
     @Override
     public Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomOccupancy () {
@@ -265,8 +272,9 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     }
 
     /**
-     * @return {@code Result<List<MeetingRoomOccupancyVO>>}
-     * @description 查询最近五个工作日内各会议室占用比例
+     * 查询最近五个工作日内各会议室占用比例
+     *
+     * @return 会议室占用比例VO
      */
     @Override
     public Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomProportion () {
@@ -302,10 +310,10 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         return Result.success(occupancyVOList);
     }
 
-
     /**
-     * @return {@code Result<List<MeetingRoomStatusVO>>}
-     * @description 查询会议室状态
+     * 查询会议室状态
+     *
+     * @return 会议室状态VO
      */
     @Override
     public List<MeetingRoomStatusVO> getMeetingRoomStatus () {
@@ -361,8 +369,9 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     }
 
     /**
-     * @return {@code List<Integer>}
-     * @description 查询当天各个时间段会议室占用情况
+     * 查询当天各个时间段会议室占用情况
+     *
+     * @return 时间段占用状态
      */
     @Override
     public List<Integer> getTodayTimePeriodStatus () {
@@ -430,10 +439,11 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     }
 
     /**
+     * 查询指定会议室当天各个时间段占用情况
+     *
      * @param id   会议室id
      * @param date 日期
-     * @return {@code Result<List<TimePeriodStatusVO>>}
-     * @description 查询指定会议室当天各个时间段占用情况
+     * @return 时间段状态
      */
     @Override
     public Result<List<TimePeriodStatusVO>> getTimePeriodStatusByIdAndDate (Long id, LocalDate date) {
@@ -447,7 +457,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         for (int i = 0; i < 30; i++) {
             TimePeriodStatusVO timePeriodStatusVO = new TimePeriodStatusVO();
             //判断是否过期
-            if (now.isAfter(endTime)) {
+            if (now.isAfter(startTime)) {
                 timePeriodStatusVO.setStartTime(startTime);
                 timePeriodStatusVO.setEndTime(endTime);
                 timePeriodStatusVO.setStatus(TIME_PERIOD_OVERDUE);
@@ -494,10 +504,11 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     }
 
     /**
+     * 根据时间段获取可用的会议室
+     *
      * @param startTime 开始时间
      * @param endTime   结束时间
-     * @return {@code Result<List<MeetingRoomVO>>}
-     * @description 根据时间段获取可用的会议室
+     * @return 会议室VO
      */
     @Override
     public Result<List<MeetingRoomVO>> getAvailableMeetingRooms (LocalDateTime startTime, LocalDateTime endTime) {
