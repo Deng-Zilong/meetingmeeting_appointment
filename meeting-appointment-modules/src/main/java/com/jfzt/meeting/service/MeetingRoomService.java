@@ -81,7 +81,14 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
 
     /**
      * @return {@code Result<List<MeetingRoomOccupancyVO>>}
-     * @description 查询最近七天会议室占用率
+     * @description 查询最近五个工作日内会议室占用率
      */
     Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomOccupancy ();
+
+    /**
+     * @return {@code Result<List<MeetingRoomOccupancyVO>>}
+     * @description 查询最近五个工作日内各会议室占用比例
+     */
+    Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomProportion ();
+
 }

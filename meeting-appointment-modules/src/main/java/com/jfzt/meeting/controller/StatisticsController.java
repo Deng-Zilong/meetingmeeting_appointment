@@ -2,14 +2,15 @@ package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.vo.MeetingRoomOccupancyVO;
-import com.jfzt.meeting.service.MeetingRoomService;
-import org.springframework.beans.factory.annotation.Autowired;
 import com.jfzt.meeting.entity.vo.PeriodTimesVO;
 import com.jfzt.meeting.service.MeetingRecordService;
+import com.jfzt.meeting.service.MeetingRoomService;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.util.List;
 
 /**
@@ -27,6 +28,17 @@ public class StatisticsController {
     @Autowired
     MeetingRoomService meetingRoomService;
 
+
+    /**
+     * @return {@code Result<List<MeetingRoomOccupancyVO>>}
+     * @description 查询最近五个工作日内各会议室占用比例
+     */
+    @GetMapping("/meeting-room-proportion")
+    public Result<List<MeetingRoomOccupancyVO>> getMeetingRoomProportion () {
+        return meetingRoomService.getAllMeetingRoomProportion();
+    }
+
+
     /**
      * @return {@code Result<List<MeetingRoomOccupancyVO>>}
      * @description 统计七日内各会议室占用率
@@ -35,9 +47,10 @@ public class StatisticsController {
     public Result<List<MeetingRoomOccupancyVO>> getMeetingRoomOccupancy () {
         return meetingRoomService.getAllMeetingRoomOccupancy();
     }
+
     /**
+     * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.PeriodTimesVO>>
      * @Description 统计七日内各时间段预约频率
-     * @return com.jfzt.meeting.common.Result<java.util.List<com.jfzt.meeting.entity.vo.PeriodTimesVO>>
      */
     @GetMapping("/time-period")
     public Result<List<PeriodTimesVO>> getTimePeriodTimes () {
