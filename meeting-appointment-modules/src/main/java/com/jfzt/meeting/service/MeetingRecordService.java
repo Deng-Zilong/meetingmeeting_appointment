@@ -101,5 +101,5 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      * @param userId 用户id
      * @return 最近会议信息
      */
-    Result<List<MeetingPromptVO>> prompt(String userId);
+    Result<MeetingPromptVO> prompt(String userId);
 }

@@ -120,12 +120,12 @@ public class MeetingRecordController {
 
     }
     /**
-     * @Description 会议创建自动提示
-     * @Param userId
-     * @return MeetingPromptVO
+     * 会议创建自动提示最近一次
+     * @param userId 用户ID
+     * @return 自动提示结果
      */
     @GetMapping("/index/meeting-record-prompt")
-    public Result<List<MeetingPromptVO>> prompt(@RequestParam String userId) {
+    public Result<MeetingPromptVO> prompt(@RequestParam String userId) {
         return meetingRecordService.prompt(userId);
     }
 }
