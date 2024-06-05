@@ -3,7 +3,7 @@ package com.jfzt.meeting.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingMinutes;
-import com.jfzt.meeting.entity.MeetingMinutesVO;
+import com.jfzt.meeting.entity.vo.MeetingMinutesVO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

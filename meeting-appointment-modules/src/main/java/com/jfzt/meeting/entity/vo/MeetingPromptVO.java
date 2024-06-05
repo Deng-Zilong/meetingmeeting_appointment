@@ -9,8 +9,9 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * @Author: chenyu.di
- * @since: 2024-06-03 13:52
+ * 会议提醒VO
+ * @author chenyu.di
+ * @since 2024-06-03 13:52
  */
 @Data
 @AllArgsConstructor

@@ -1,21 +1,24 @@
 package com.jfzt.meeting.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
 
 /**
+ * 用户表(SysUser)表实体类
  * @author zilong.deng
- * @TableName sys_user
- * @date 2024/05/06
+ * @since 2024-06-05 09:41:56
  */
 @TableName(value = "sys_user")
 @Data
 public class SysUser implements Serializable {
     /**
-     *
+     *id
      */
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -86,7 +89,6 @@ public class SysUser implements Serializable {
                 ", userName=" + userName +
                 ", password=" + password +
                 ", level=" + level +
-
                 ", serialVersionUID=" + serialVersionUID +
                 "]";
     }

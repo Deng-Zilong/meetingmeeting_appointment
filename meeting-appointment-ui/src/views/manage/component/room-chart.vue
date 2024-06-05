@@ -3,10 +3,9 @@
 </template>
 
 <script setup lang="ts">
-import * as echarts from 'echarts';// 5.4区别4引入方式
-
-import { onMounted, ref, watch } from 'vue'
-import { getRoomOccupancyDate } from '@/request/api/manage'
+import * as echarts from 'echarts'; // 5.4区别4引入方式
+import {onMounted, ref, watch} from 'vue'
+import {getRoomOccupancyDate} from '@/request/api/manage'
 
 const chart = ref()
 const chartInstance = ref()
@@ -20,10 +19,10 @@ const setChart = () => {
 // 指定图表的配置项和数据
   const option = {
     title: {
-      text: '统计七日内各会议室占用率（不包括周末9：00-18：00）'
+      text: '会议室占用率  (前五个工作日 9:00 ~ 18:00 )'
     },
     legend: {
-      data: ["已占用数", "可预约总次数"],
+      data: ["已占用时间段个数", "时间段总数"],
       top: "10%"
     },
     grid: {
@@ -54,7 +53,7 @@ const setChart = () => {
     series: [
       {
         type: 'bar',
-        name: '已占用数',
+        name: '已占用时间段个数',
         // barWidth: 20,
         // barGap:'0%',/*多个并排柱子设置柱子之间的间距*/
         // barCategoryGap:'50%',/*多个并排柱子设置柱子之间的间距*/
@@ -66,7 +65,7 @@ const setChart = () => {
       },
       {
         type: 'bar',
-        name: '可预约总次数',
+        name: '时间段总数',
         // barWidth: 20,
         barGap: '-100%',
         z: '-1',

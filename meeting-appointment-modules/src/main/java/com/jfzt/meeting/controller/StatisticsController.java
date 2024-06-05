@@ -14,8 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * @Author: chenyu.di
- * @since: 2024-05-27 16:41
+ * 统计分析(Statistics)控制层
+ * @author zilong.deng
+ * @since 2024-06-04 10:59:43
  */
 @RestController
 @RequestMapping("/meeting/statistics")
@@ -24,14 +25,13 @@ public class StatisticsController {
     @Resource
     private MeetingRecordService meetingRecordService;
 
-
     @Autowired
     MeetingRoomService meetingRoomService;
 
 
     /**
-     * @return {@code Result<List<MeetingRoomOccupancyVO>>}
-     * @description 查询最近五个工作日内各会议室占用比例
+     *  查询最近五个工作日内各会议室占用次数比例
+     * @return 占用次数比例
      */
     @GetMapping("/meeting-room-proportion")
     public Result<List<MeetingRoomOccupancyVO>> getMeetingRoomProportion () {
@@ -40,8 +40,8 @@ public class StatisticsController {
 
 
     /**
-     * @return {@code Result<List<MeetingRoomOccupancyVO>>}
-     * @description 统计七日内各会议室占用率
+     *  统计七日内各会议室占用率
+     * @return 占用率
      */
     @GetMapping("/meeting-room-occupancy")
     public Result<List<MeetingRoomOccupancyVO>> getMeetingRoomOccupancy () {
@@ -49,8 +49,8 @@ public class StatisticsController {
     }
 
     /**
-     * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.PeriodTimesVO>>
-     * @Description 统计七日内各时间段预约频率
+     * 统计七日内各时间段预约频率
+     * @return 预约频率
      */
     @GetMapping("/time-period")
     public Result<List<PeriodTimesVO>> getTimePeriodTimes () {

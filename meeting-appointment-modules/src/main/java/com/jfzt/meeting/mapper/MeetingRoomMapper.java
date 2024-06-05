@@ -7,10 +7,9 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 /**
+ *  针对表【meeting_room(会议室表)】的数据库操作Mapper
  * @author zilong.deng
- * @description 针对表【meeting_room(会议室表)】的数据库操作Mapper
- * @createDate 2024-04-28 11:50:45
- * @Entity com.jfzt.meeting.entity.MeetingRoom
+ * @since  2024-04-28 11:50:45
  */
 @Mapper
 public interface MeetingRoomMapper extends BaseMapper<MeetingRoom> {
@@ -19,7 +18,7 @@ public interface MeetingRoomMapper extends BaseMapper<MeetingRoom> {
      * 更改会议室状态
      * @param id 会议室id
      * @param status 会议室状态（0暂停使用,1可使用/空闲 2为使用中不保存至数据库，实时获取）
-     * @return java.lang.Integer
+     * @return 更新结果
      */
     Integer updateStatus (@Param("id") Long id, @Param("status") Integer status);
 

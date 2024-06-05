@@ -8,16 +8,21 @@ import java.time.LocalDateTime;
 
 /**
  * 时间段DTO
- *
  * @author zilong.deng
- * @date 2024/05/09
+ * @since 2024-06-05 10:04:54
  */
 @Data
 public class TimePeriodDTO {
 
+    /**
+     * 开始时间
+     */
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime startTime;
+    /**
+     * 结束时间
+     */
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime endTime;

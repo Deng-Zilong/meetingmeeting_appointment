@@ -12,8 +12,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
+ * 会议记录VO
  * @author zilong.deng
- * @date 2024/04/29
+ * @since 2024-06-05 09:59:41
  */
 @Data
 public class MeetingRecordVO implements Serializable {

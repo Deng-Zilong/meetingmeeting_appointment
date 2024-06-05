@@ -1,7 +1,6 @@
 package com.jfzt.meeting.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,11 +12,9 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 会议公告表
- *
+ * 会议公告表(MeetingNotice)表实体类
  * @author zilong.deng
- * @TableName meeting_notice
- * @date 2024/04/29
+ * @since 2024-06-05 09:43:59
  */
 @TableName(value = "meeting_notice")
 @Data

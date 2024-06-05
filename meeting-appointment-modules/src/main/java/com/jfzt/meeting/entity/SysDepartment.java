@@ -1,7 +1,6 @@
 package com.jfzt.meeting.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.jfzt.meeting.entity.vo.SysUserVO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,9 +11,9 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
+ * 部门表(SysDepartment)实体类
  * @author zilong.deng
- * @TableName sys_department
- * @date 2024/04/28
+ * @since 2024-06-05 09:43:09
  */
 @TableName(value = "sys_department")
 @Data
@@ -23,7 +22,7 @@ import java.util.List;
 @NoArgsConstructor
 public class SysDepartment implements Serializable {
     /**
-     *
+     *id
      */
     @TableId(type = IdType.AUTO)
     private Long id;
