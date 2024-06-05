@@ -199,7 +199,7 @@
           ElMessage.warning('取消删除会议室')
         })
       } else {
-        ElMessage.warning('会议室可以使用时，不可以删除')
+        ElMessage.warning('仅禁用状态可删除')
       }
     }
     

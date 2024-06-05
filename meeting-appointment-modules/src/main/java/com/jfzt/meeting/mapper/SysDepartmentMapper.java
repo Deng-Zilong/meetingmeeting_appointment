@@ -4,13 +4,13 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.jfzt.meeting.entity.SysDepartment;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
+
 import java.util.List;
 
 /**
+ *  针对表【sys_department】的数据库操作Mapper
  * @author zhenxing.lu
- * @description 针对表【sys_department】的数据库操作Mapper
- * @createDate 2024-04-28 16:04:11
- * @Entity com.jfzt.meeting.entity.SysDepartment
+ * @since  2024-04-28 16:04:11
  */
 @Mapper
 public interface SysDepartmentMapper extends BaseMapper<SysDepartment> {
@@ -18,7 +18,7 @@ public interface SysDepartmentMapper extends BaseMapper<SysDepartment> {
 
     /**
      * 一次性插入部门信息
-     * @param sysDepartmentLists
+     * @param sysDepartmentLists 部门信息
      */
     void insertAll(List<SysDepartment> sysDepartmentLists);
 

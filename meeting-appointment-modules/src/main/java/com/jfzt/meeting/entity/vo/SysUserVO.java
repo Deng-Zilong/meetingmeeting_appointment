@@ -1,11 +1,14 @@
 package com.jfzt.meeting.entity.vo;
 
-import com.jfzt.meeting.entity.SysUser;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
- * @Author: chenyu.di
- * @since: 2024-05-08 17:10
+ * 用户VO
+ * @author chenyu.di
+ * @since 2024-05-08 17:10
  */
 
 @Data

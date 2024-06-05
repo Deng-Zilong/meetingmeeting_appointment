@@ -7,17 +7,15 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * 企微部门成员关联表
- *
+ * (SysDepartmentUser)用户部门关联表实体类
  * @author zilong.deng
- * @TableName sys_department_user
- * @date 2024/05/07
+ * @since 2024-06-05 09:42:33
  */
 @TableName(value = "sys_department_user")
 @Data
 public class SysDepartmentUser implements Serializable {
     /**
-     *
+     *id
      */
     @TableId(type = IdType.AUTO)
     private Long id;

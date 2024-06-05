@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
+ * 会议室表(MeetingRoom)表服务接口
  * @author zilong.deng
  * @since 2024-06-04 13:57:38
  */

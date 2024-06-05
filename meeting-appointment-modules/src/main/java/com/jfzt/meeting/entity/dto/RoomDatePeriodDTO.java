@@ -6,8 +6,9 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
+ * 会议室日期段DTO
  * @author zilong.deng
- * @date 2024/05/24
+ * @since 2024-06-05 10:05:14
  */
 @Data
 public class RoomDatePeriodDTO {

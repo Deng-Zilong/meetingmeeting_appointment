@@ -3,15 +3,15 @@ package com.jfzt.meeting.entity.dto;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.jfzt.meeting.entity.SysUser;
-import com.jfzt.meeting.entity.UserGroup;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @Author: chenyu.di
- * @since: 2024-04-29 16:56
+ * 会议群组DTO
+ * @author chenyu.di
+ * @since 2024-04-29 16:56
  */
 @Data
 public class MeetingGroupDTO {

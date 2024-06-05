@@ -49,7 +49,7 @@ public class SysLoginController {
     @Autowired
     private SysUserService sysUserService;
     @Resource
-    private RedisTemplate<String,Object> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     private WxCpDefaultConfiguration wxCpDefaultConfiguration;
     @Autowired
@@ -57,6 +57,7 @@ public class SysLoginController {
 
     /**
      * 验证码
+     *
      * @param uuid 唯一id
      * @throws IOException io异常
      */
@@ -74,13 +75,14 @@ public class SysLoginController {
 
     /**
      * 用户登录
+     *
      * @param loginVo 登录信息
      * @return 登录结果
      */
     @PostMapping(value = "login")
     public Result<UserInfoVO> login (@Valid @RequestBody LoginVo loginVo) {
         //判断验证码是否正确,需要获取redis中的验证码
-        String codeUuids = (String) redisTemplate.opsForValue().get("uuid:"+loginVo.getUuid());
+        String codeUuids = (String) redisTemplate.opsForValue().get("uuid:" + loginVo.getUuid());
         if (StringUtils.isBlank(codeUuids) || !loginVo.getCode().equalsIgnoreCase(codeUuids)) {
             log.error("用户未请求验证码或者用户验证码输入错误");
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0240);
@@ -124,7 +126,7 @@ public class SysLoginController {
                 .url(wxCpDefaultConfiguration.getUrl())
                 .build();
         //存入到redis中
-        redisTemplate.opsForValue().set("userInfo:"+userInfo.getUserId(),
+        redisTemplate.opsForValue().set("userInfo:" + userInfo.getUserId(),
                 JSONObject.toJSONString(userInfo), Duration.ofHours(24));
         //存入当前登录用户到ThreadLocal中
         BaseContext.setCurrentUserId(sysUser.getUserId());
@@ -134,6 +136,7 @@ public class SysLoginController {
 
     /**
      * 退出登录
+     *
      * @return Result
      */
     @GetMapping("delete")
@@ -144,7 +147,6 @@ public class SysLoginController {
 
 
     /**
-     *
      * @return Result<String>
      */
     @PutMapping("updateSysAdminPassword")

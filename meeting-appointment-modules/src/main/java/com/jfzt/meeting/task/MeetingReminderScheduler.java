@@ -24,24 +24,44 @@ import java.util.concurrent.ScheduledFuture;
 
 /**
  * 会议提醒定时任务
- *
  * @author zilong.deng
- * @date 2024/05/29
+ * @since 2024-06-04 15:26:28
  */
 @Slf4j
 @Component
 public class MeetingReminderScheduler {
 
-    private final Map<String, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
-    @Autowired
     MeetingRoomService meetingRoomService;
-    @Autowired
     SysUserService userService;
-    @Autowired
     WxUtil wxUtil;
-    @Autowired
     private TaskScheduler taskScheduler;
 
+    /**
+     * setter注入
+     */
+    @Autowired
+    public void setMeetingRoomService (MeetingRoomService meetingRoomService) {
+        this.meetingRoomService = meetingRoomService;
+    }
+    @Autowired
+    public void setUserService (SysUserService userService) {
+        this.userService = userService;
+    }
+    @Autowired
+    public void setWxUtil (WxUtil wxUtil) {
+        this.wxUtil = wxUtil;
+    }
+    @Autowired
+    public void setTaskScheduler (TaskScheduler taskScheduler) {
+        this.taskScheduler = taskScheduler;
+    }
+
+    private final Map<String, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
+
+    /**
+     * 创建定时任务发送会议提醒
+     * @param meeting 会议信息
+     **/
     public void scheduleMeetingReminder (MeetingRecordDTO meeting) {
         LocalDateTime reminderTime = meeting.getStartTime().minusMinutes(10);
         //        LocalDateTime reminderTime = LocalDateTime.now().plusSeconds(30);
@@ -64,8 +84,8 @@ public class MeetingReminderScheduler {
 
 
     /**
+     *  取消会议提醒定时任务
      * @param meetingId 会议id
-     * @description 取消会议提醒定时任务
      */
     public void cancelMeetingReminder (Long meetingId) {
         ScheduledFuture<?> scheduledTask = scheduledTasks.get("MeetingReminder_" + meetingId);
@@ -77,8 +97,8 @@ public class MeetingReminderScheduler {
     }
 
     /**
+     *  发送会议提醒
      * @param meetingRecordDTO 会议信息
-     * @description 发送会议提醒
      */
     private void sendReminder (MeetingRecordDTO meetingRecordDTO) throws WxErrorException {
         List<String> usrIds = meetingRecordDTO.getUsers().stream().map(SysUser::getUserId).toList();

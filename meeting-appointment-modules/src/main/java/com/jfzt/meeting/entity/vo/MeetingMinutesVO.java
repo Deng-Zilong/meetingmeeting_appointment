@@ -1,8 +1,9 @@
-package com.jfzt.meeting.entity;
+package com.jfzt.meeting.entity.vo;
 
 import lombok.Data;
 
 /**
+ * 会议纪要VO
  * @author zilong.deng
  * @date 2024/05/30
  */
