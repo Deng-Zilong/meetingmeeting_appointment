@@ -1,5 +1,5 @@
 <template>
-  <div ref="chart" style="width: 700px; height:600px;"></div>
+  <div ref="chart" style="width: 770px; height:637px;"></div>
 </template>
 
 <script setup lang="ts">
@@ -19,23 +19,20 @@ const setChart = () => {
 // 指定图表的配置项和数据
   const option = {
     title: {
-      text: '会议室占用率  (前五个工作日 9:00 ~ 18:00 )'
+      text: '统计七日内各会议室占用率（不包括周末9：00-18：00）',
+      top: "5%",
+      left: 'center',
     },
     legend: {
       data: ["已占用时间段个数", "时间段总数"],
       top: "10%"
     },
     grid: {
-      // top: '18%',
-      // left: '3%',  // grid布局设置适当调整避免X轴文字只能部分显示
-      // right: '6%', // grid布局设置适当调整避免X轴文字只能部分显示
-      // bottom: '10%',
-      top: '100px',
-      left: '34px',  // grid布局设置适当调整避免X轴文字只能部分显示
-      right: '100px', // grid布局设置适当调整避免X轴文字只能部分显示
-      bottom: '70px',
-    },
-    tooltip: { // 提示框浮层设置
+      top: '17%'
+      // top: '100px',
+      // left: '50px',  // grid布局设置适当调整避免X轴文字只能部分显示
+      // right: '100px', // grid布局设置适当调整避免X轴文字只能部分显示
+      // bottom: '70px',
     },
     // color: ['#719BE8'],  // 柱状图颜色
     xAxis: {
@@ -47,6 +44,11 @@ const setChart = () => {
         inside: false, // 刻度标签是否朝内，默认朝外
         margin: 11, // 刻度标签与轴线之间的距离
         // formatter: '{value}' , // 刻度标签的内容格式器
+        // formatter: (value: any) => {
+        //   //x轴的文字超出 显示为...
+        //   var str = value.split("");
+        //   return str.slice(0, 15).join("") +  (str.length > 15 ? '...' : '');
+        // },
       }, 
     },
     yAxis: {},
@@ -103,6 +105,6 @@ onMounted(() => {
 })
 
 // 当roomX或occupied或total改变时，更新图表
-watch([roomX, occupied, total], () => setChart(), { deep: true });
+watch(() => [roomX, occupied, total], () => setChart(), { deep: true });
 
 </script>
