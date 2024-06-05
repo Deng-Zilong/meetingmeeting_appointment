@@ -38,8 +38,7 @@ import java.util.stream.Collectors;
 import static com.jfzt.meeting.constant.IsDeletedConstant.NOT_DELETED;
 import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
 import static com.jfzt.meeting.constant.MeetingRoomStatusConstant.*;
-import static com.jfzt.meeting.constant.MessageConstant.EXCEPTION_TYPE;
-import static com.jfzt.meeting.constant.MessageConstant.UPDATE_FAIL;
+import static com.jfzt.meeting.constant.MessageConstant.*;
 import static com.jfzt.meeting.constant.TimePeriodStatusConstant.*;
 
 /**
@@ -88,6 +87,10 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      */
     @Override
     public Result<Integer> addMeetingRoom (MeetingRoom meetingRoom) {
+        // 会议室名称长度限制为15个字符
+        if (meetingRoom.getRoomName().length() > MAX_NAME_LENGTH){
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
+        }
         // 根据创建人Id查询用户信息
         SysUser sysUser = sysUserMapper.selectByUserId(meetingRoom.getCreatedBy());
         // 查询会议室名称,判断是否有重复的会议室名称
