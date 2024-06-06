@@ -1,5 +1,5 @@
 <template>
-  <div ref="chart" style="width: 700px;height:600px;"></div>
+  <div ref="chart" style="width: 770px;height:637px;"></div>
 </template>
 
 <script setup lang="ts">
@@ -20,19 +20,20 @@ const setChart = () => {
 // 指定图表的配置项和数据
   const option = {
     title: {
-      text: '统计过去七天使用前十的时间段'
-    },
-    tooltip: { // 提示框浮层设置
+      text: '统计过去七天使用前十的时间段',
+      top: "5%",
+      left: 'center',
     },
     legend: {
       data: ["时间段使用总次数"],
       top: "10%"
     },
     grid: {
-      top: '100px',
-      left: '25px',  // grid布局设置适当调整避免X轴文字只能部分显示
-      right: '100px', // grid布局设置适当调整避免X轴文字只能部分显示
-      bottom: '70px',
+      top: '17%'
+      // top: '100px',
+      // left: '50px',  // grid布局设置适当调整避免X轴文字只能部分显示
+      // right: '100px', // grid布局设置适当调整避免X轴文字只能部分显示
+      // bottom: '70px',
     },
     // color: ['#719BE8'],  // 柱状图颜色
     xAxis: {

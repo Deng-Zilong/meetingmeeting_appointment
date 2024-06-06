@@ -286,7 +286,7 @@ const selectTime = (item: any) => {
           flex-direction: column;
           justify-content: space-around;
           margin-right: 10px;
-          color: #a8abb2;
+          color: #A8ABB2;
           cursor: pointer;
         }
       }

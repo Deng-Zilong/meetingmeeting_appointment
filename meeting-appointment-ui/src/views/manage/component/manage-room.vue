@@ -6,7 +6,7 @@
     </template>
     <el-form :model="addMeetingForm">
       <el-form-item label="会议室名称：">
-        <el-input v-model="addMeetingForm.roomName" />
+        <el-input v-model="addMeetingForm.roomName" :maxlength="15"/>
       </el-form-item>
       <el-form-item label="会议室位置：">
         <el-input v-model="addMeetingForm.location" />
@@ -210,6 +210,8 @@
     width: 29rem;
     margin-right: 20px;
     padding: 0 20px;
+    border-radius: .9375rem;
+    box-shadow: none;
     .card-header {
       font-size: 1.1rem;
       font-weight: 400;
@@ -219,10 +221,8 @@
       .el-form-item {
         height: 70px;
         flex-direction: column;
-        // align-items: center;
         :deep().el-form-item__label {
           justify-content: flex-start;
-          // margin-bottom: 5px;
         }
       }
     }
@@ -234,7 +234,7 @@
     height: 637px;
     // flex: 1;
     border: 2px solid rgba(18, 115, 219, 0.8);
-    border-radius: 15px;
+    border-radius: .9375rem;
     padding: 10px 18px;
     // 表内每个单元格共同样式
     .t-name {
