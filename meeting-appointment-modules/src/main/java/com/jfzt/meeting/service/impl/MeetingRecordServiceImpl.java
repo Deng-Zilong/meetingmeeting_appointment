@@ -561,19 +561,18 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
     /**
-     * 会议创建自动提示
-     * @param userId 用户id
-     * @return 最近会议信息
+     * 会议创建自动提示最近三次
+     * @param userId 用户ID
+     * @return 自动提示结果
      */
-    @Override
-    public Result<List<MeetingPromptVO>> prompt(String userId) {
+    public Result<List<MeetingPromptVO>> prompts(String userId) {
         //查询最后一次创建的会议
         List<MeetingRecord> records = lambdaQuery()
                 .select(MeetingRecord::getTitle,MeetingRecord::getId, MeetingRecord::getMeetingRoomId)
                 .eq(MeetingRecord::getCreatedBy, userId)
                 .orderByDesc(MeetingRecord::getGmtCreate)
                 .list();
-        if (records.size() > 3) {
+        if (records.size() > 8) {
             List<MeetingPromptVO> list = records
                     .subList(0, 8)
                     .stream()
@@ -590,15 +589,41 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                     .subList(0, 3);
             return Result.success(list);
         }else if (!records.isEmpty()){
+            if (records.size() >= 3){
+                return Result.success(records.stream().map(this::getMeetingPromptVO).toList().subList(0, 3));
+            }
             return Result.success(records.stream().map(this::getMeetingPromptVO).toList());
         }else {
             return Result.success();
         }
     }
+
+    /**
+     * 会议创建自动提示最近一次
+     * @param userId 用户ID
+     * @return 自动提示结果
+     */
+    @Override
+    public Result<MeetingPromptVO> prompt(String userId) {
+
+        MeetingRecord lastMeeting = lambdaQuery()
+                .select(MeetingRecord::getId, MeetingRecord::getMeetingRoomId)
+                .eq(MeetingRecord::getCreatedBy, userId)
+                .orderByDesc(MeetingRecord::getGmtCreate)
+                .list()
+                .getFirst();
+        try {
+            getMeetingPromptVO(lastMeeting);
+            return Result.success(getMeetingPromptVO(lastMeeting));
+        } catch (Exception e) {
+            return Result.success();
+        }
+    }
+
     /**
      * 查询对应会议室及参会人
-     * @Param lastMeeting
-     * @return MeetingPromptVO
+     * @param lastMeeting 最近会议记录
+     * @return 自动提示结果
      */
     private MeetingPromptVO getMeetingPromptVO(MeetingRecord lastMeeting) {
         MeetingRoom meetingRoom = meetingRoomService.getById(lastMeeting.getMeetingRoomId());
@@ -615,7 +640,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .peek(sysUser -> sysUser.setPassword(null))
                 .toList();
         return MeetingPromptVO.builder()
-                .title(lastMeeting.getTitle())
                 .meetingRoomId(lastMeeting.getMeetingRoomId())
                 .meetingRoomName(meetingRoom.getRoomName())
                 .users(userList)
