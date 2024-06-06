@@ -149,10 +149,11 @@ onMounted(() => {
 
     // 预约会议室 处理传参数据
     if ((meetingInfo?.meetingRoomId || meetingInfo?.startTime) && !meetingInfo?.id) {
-        const {date, meetingRoomId, startTime } = meetingInfo;
+        const {date, meetingRoomId, startTime, endTime } = meetingInfo;
         
         formData.value.meetingRoomId = meetingRoomId ? meetingRoomId : ''; // 会议室id
         formData.value.startTime = startTime ? startTime as string : '';   // 开始时间
+        formData.value.endTime = endTime ? endTime as string : '';   // 结束时间
         formData.value.date = date ? date : currentDate;  // 日期
     }
     // 获取当前开始时间和结束时间的可选时间段
