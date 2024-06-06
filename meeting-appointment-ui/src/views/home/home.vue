@@ -262,8 +262,13 @@ const selectTime = (item: any) => {
   } else {
     router.push('/meeting-appoint')
     // 如果存在多选时间点
-    if (sortTimeArr?.length == 2) {
-        return sessionStorage.setItem('meetingInfo', JSON.stringify({startTime: sortTimeArr[1], endTime: sortTimeArr[0]}));
+    if (sortTimeArr) {
+        const startTime = sortTimeArr[1] ?? sortTimeArr[0];
+        // 结束时间加半个小时
+        const index = timeArr.value.findIndex((el: any) => el.time == sortTimeArr[0]);
+        const endTime = [...timeArr.value].splice(index+1, 1)[0].time;
+
+        return sessionStorage.setItem('meetingInfo', JSON.stringify({startTime, endTime}));
     }
     sessionStorage.setItem('meetingInfo', JSON.stringify({startTime: item.time}));
   }
@@ -296,11 +301,6 @@ const onRightClick = (time: any) => {
     // 添加时间点
     selectTimeArr.value.push(time);
 
-    // 添加选中状态
-    if (selectTimeArr.value.length == 1) {
-        return classListTimeRefs[time].add('active');
-    }
-
     // 将时间点按照降序排列（跳转预约页面需要区分开始和结束时间）
     sortTimeArr = [...selectTimeArr.value].sort((a: string, b: string) => {
         // 将字符串时间转换为分钟数以便比较
@@ -310,6 +310,11 @@ const onRightClick = (time: any) => {
         // 返回值决定排序顺序，此处返回负数使得a排在b前面，即降序排列
         return timeB - timeA;
     })
+
+    // 添加选中状态
+    if (selectTimeArr.value.length == 1) {
+        return classListTimeRefs[time].add('active');
+    }
 
     // 将选中的时间区间内的时间点变成选中状态
     for (const key in classListTimeRefs) {
