@@ -369,6 +369,7 @@ const getTodayRecord = (data: { userId: string }) => {
 // 点击修改会议
 const modifyMeeting = (item: any) => {
   // 会议-未开始 且 登陆人员=创建者时(item.createdBy === userInfo.value.userId) 才可以修改
+  item.date = dayjs(item.startTime).format('YYYY-MM-DD');  // 获取日期
   if (item.status === 0 && item.createdBy === userInfo.value.userId) {
     sessionStorage.setItem('meetingInfo', JSON.stringify(item));
     router.push('/meeting-appoint')
