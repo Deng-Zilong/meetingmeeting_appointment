@@ -19,8 +19,15 @@
                         <el-input v-model="formData.title" placeholder="请输入" />
                     </el-form-item>
                     <el-form-item label="参会人" prop="meetingPeople">
-                        <el-input class="meeting-people" v-model="formData.meetingPeople" readonly :prefix-icon="Plus"
+                        <el-popover placement="bottom" trigger="hover" width="270">
+                            <template #reference>
+                                <el-input class="meeting-people" v-model="formData.meetingPeople" readonly :prefix-icon="Plus"
                             placeholder="添加参会人" @click="handleAddPerson" />
+                            </template>
+                            <div>
+                                <p class="prompt" @click="handlePromptPerson" >{{ popoverObj.meetingPeople }}</p>
+                            </div>
+                        </el-popover>
                     </el-form-item>
                 </div>
                 <div class="appoint-row">
@@ -426,6 +433,10 @@ const submitForm = (formEl: FormInstance | undefined) => {
         }
     })
 }
+const popoverObj = ref<any>({
+    users: [],
+    meetingPeople: '',
+})
 /**
  * @description 提示最近1次创建人创建会议的信息
  */
@@ -433,11 +444,16 @@ const handleMeetingRecordPrompt = () => {
     meetingRecordPrompt({userId: userInfo.value.userId})
     .then((res: any) => {
         const { users} = res.data;
-        formData.value.users = users;
-        formData.value.meetingPeople = Array.from(new Set(users.map((el: any) => el.userName)));
-        addPersonForm.value.personIds = Array.from(new Set(users.map((el: any) => el.userId))); // 获取参会人id并去重 用于成员树回显
+        popoverObj.value.users = users;
+        popoverObj.value.meetingPeople = Array.from(new Set(users.map((el: any) => el.userName))).join(",");
     })
     .catch((err: any) => {})
+}
+const handlePromptPerson = () => {
+    const {users, meetingPeople} = popoverObj.value;
+    formData.value.users = users;
+    formData.value.meetingPeople = meetingPeople;
+    addPersonForm.value.personIds = Array.from(new Set(users.map((el: any) => el.userId))); // 获取参会人id并去重 用于成员树回显
 }
 // 离开页面
 onBeforeUnmount(() => {
@@ -572,6 +588,10 @@ onBeforeUnmount(() => {
             }
         }
     }
-
+    // 历史参会人提示信息
+    
+}
+.prompt {
+    cursor: pointer;
 }
 </style>
