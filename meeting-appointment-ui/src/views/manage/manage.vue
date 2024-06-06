@@ -82,15 +82,15 @@
       </el-tab-pane>
       
       <el-tab-pane label="柱状图统计" name="third" class="third-tab">
-        <TimeChart />
-        <RoomChart />
+        <TimeChart class="tab-echart" v-if="activeName == 'third'" />
+        <RoomChart class="tab-echart" v-if="activeName == 'third'" />
       </el-tab-pane>
     </el-tabs>
   </div>
 </template>
 <script lang="ts" setup>
     import { ref, onMounted, computed } from 'vue'
-    import { ElMessage, ElMessageBox, dayjs } from 'element-plus';
+    import { ElMessage, ElMessageBox, dayjs, type TabsPaneContext } from 'element-plus';
     import { useInfiniteScroll } from '@vueuse/core'
     import { Close } from '@element-plus/icons-vue'
 
@@ -126,8 +126,8 @@
 
 
     const activeName = ref('first')
-    const handleClick = (event: Event) => {
-      
+    const handleClick = (tab: TabsPaneContext, event: Event) => {
+      console.log(tab.props, event)
     }
     onMounted(() => {
       userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}');  // 用户信息
@@ -475,7 +475,11 @@
 
       .third-tab {
         display: flex;
-        justify-content: space-around;
+        justify-content: space-between;
+        .tab-echart {
+          background: #FFF;
+          border-radius: .9375rem;
+        }
       }
     }
   }
