@@ -14,6 +14,7 @@ import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.service.SysUserService;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.cp.api.impl.WxCpServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
  * @description 针对表【sys_user】的数据库操作Service实现
  * @createDate 2024-05-06 16:47:54
  */
+@Slf4j
 @Service
 public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         implements SysUserService {
@@ -135,6 +137,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
             }
             row += sysUserMapper.addAdmin(userId);
+            log.info(userId);
+            redisTemplate.opsForValue().getAndDelete("userInfo:" + userId);
         }
         if (row > 0) {
             return Result.success(row);
@@ -160,6 +164,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
         }
         int row = sysUserMapper.deleteAdmin(userId);
+        redisTemplate.opsForValue().getAndDelete("userInfo:" + userId);
+
         if (row > 0) {
             return Result.success(row);
         }

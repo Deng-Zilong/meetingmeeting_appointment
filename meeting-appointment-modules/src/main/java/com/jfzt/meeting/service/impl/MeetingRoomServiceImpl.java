@@ -38,8 +38,7 @@ import java.util.stream.Collectors;
 import static com.jfzt.meeting.constant.IsDeletedConstant.NOT_DELETED;
 import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
 import static com.jfzt.meeting.constant.MeetingRoomStatusConstant.*;
-import static com.jfzt.meeting.constant.MessageConstant.EXCEPTION_TYPE;
-import static com.jfzt.meeting.constant.MessageConstant.UPDATE_FAIL;
+import static com.jfzt.meeting.constant.MessageConstant.*;
 import static com.jfzt.meeting.constant.TimePeriodStatusConstant.*;
 
 /**
@@ -97,7 +96,8 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         List<MeetingRoom> roomList = meetingRoomMapper.selectList(new QueryWrapper<>());
         List<String> roomName = roomList.stream().map(MeetingRoom::getRoomName).toList();
         for (String room : roomName) {
-            if (meetingRoom.getRoomName().equals(room)) {
+            // 会议室名称长度限制为15个字符
+            if (meetingRoom.getRoomName().equals(room) || meetingRoom.getRoomName().length() > MAX_NAME_LENGTH) {
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
             }
         }
