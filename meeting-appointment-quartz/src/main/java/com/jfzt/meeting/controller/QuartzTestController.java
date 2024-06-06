@@ -19,7 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 
-/** 监听企业微信人员变动，和获取企业用户变动信息
+/**
+ * 监听企业微信人员变动，和获取企业用户变动信息
  * @author zhenxing.lu
  * @date 2024/04/25
  */
@@ -30,7 +31,6 @@ public class QuartzTestController {
 
     @Autowired
     private WxCpDefaultConfiguration wxCpDefaultConfiguration;
-
     @Autowired
     private SysUserMapper sysUserMapper;
     @Autowired
@@ -63,13 +63,13 @@ public class QuartzTestController {
                            @RequestParam(name = "echostr") String sVerifyEchoStr) throws AesException {
         String sToken = wxCpDefaultConfiguration.getToken();
         String sCorpID = wxCpDefaultConfiguration.getCorpid();
-        String sEncodingAESKey = wxCpDefaultConfiguration.getEncodingAesKey();
+        String sEncodingAesKey = wxCpDefaultConfiguration.getEncodingAesKey();
         String sEchoStr; //需要返回的明文
-        WXBizMsgCrypt wxcpt = new WXBizMsgCrypt(sToken, sEncodingAESKey, sCorpID);
+        WXBizMsgCrypt wxcpt = new WXBizMsgCrypt(sToken, sEncodingAesKey, sCorpID);
         try {
             sEchoStr = wxcpt.VerifyURL(msgSignature, String.valueOf(timestamp),
                     nonce, sVerifyEchoStr);
-            log.info("verifyurlechostr: " + sEchoStr);
+            log.info("verifyurlechostr: {}", sEchoStr);
             // 验证URL成功，将sEchoStr返回
             return sEchoStr;
         } catch (Exception e) {
@@ -88,12 +88,12 @@ public class QuartzTestController {
         log.info("msg_signature = {} \n timestamp = {} \n nonce = {} \n sReqData = {}", msgSignature, timestamp, nonce, sReqData);
 
         String sToken = wxCpDefaultConfiguration.getToken();
-        String sCorpID = wxCpDefaultConfiguration.getCorpid();
-        String sEncodingAESKey = wxCpDefaultConfiguration.getEncodingAesKey();
-        WXBizMsgCrypt wxcpt = new WXBizMsgCrypt(sToken, sEncodingAESKey, sCorpID);
+        String sCorpId = wxCpDefaultConfiguration.getCorpid();
+        String sEncodingAesKey = wxCpDefaultConfiguration.getEncodingAesKey();
+        WXBizMsgCrypt wxcpt = new WXBizMsgCrypt(sToken, sEncodingAesKey, sCorpId);
         try {
             String sMsg = wxcpt.DecryptMsg(msgSignature, timestamp, nonce, sReqData);
-            log.info("after decrypt msg: " + sMsg);
+            log.info("after decrypt msg: {}", sMsg);
             CallBackParam callBackParam = CallBackParam.fromXml(sMsg);
             String changeType = callBackParam.getAllFieldsMap().get("ChangeType").toString();
             switch (changeType) {
@@ -135,7 +135,6 @@ public class QuartzTestController {
             }
             log.info("CallBackParam json \n{}", JSON.toJSONString(callBackParam, SerializerFeature.PrettyFormat));
         } catch (Exception e) {
-            // TODO
             // 解密失败，失败原因请查看异常
             log.error("Exception", e);
         }

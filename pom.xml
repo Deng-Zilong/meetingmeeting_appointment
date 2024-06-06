@@ -19,7 +19,6 @@
     <description>中心会议室预约管理项目</description>
 
     <packaging>pom</packaging>
-
     <!--    子模块-->
     <modules>
         <module>meeting-appointment-common</module>

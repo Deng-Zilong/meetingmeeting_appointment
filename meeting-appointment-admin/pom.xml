@@ -17,7 +17,6 @@
 
     <dependencies>
         <!--        启动类所在模块，引入其他模块-->
-
         <dependency>
             <groupId>com.jfzt</groupId>
             <artifactId>meeting-appointment-common</artifactId>
@@ -39,6 +38,12 @@
             <groupId>com.jfzt</groupId>
             <artifactId>meeting-appointment-modules</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.jfzt</groupId>
+                    <artifactId>meeting-appointment-common</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

@@ -18,7 +18,6 @@ import java.util.List;
  * @author chenyu.di
  * @since 2024-05-07 15:02
  */
-
 @RestController
 @RequestMapping("/meeting/tree")
 public class GroupUserTreeController {
