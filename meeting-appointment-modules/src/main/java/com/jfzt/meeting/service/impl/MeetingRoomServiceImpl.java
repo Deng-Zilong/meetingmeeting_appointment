@@ -87,17 +87,14 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      */
     @Override
     public Result<Integer> addMeetingRoom (MeetingRoom meetingRoom) {
-        // 会议室名称长度限制为15个字符
-        if (meetingRoom.getRoomName().length() > MAX_NAME_LENGTH){
-            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
-        }
         // 根据创建人Id查询用户信息
         SysUser sysUser = sysUserMapper.selectByUserId(meetingRoom.getCreatedBy());
         // 查询会议室名称,判断是否有重复的会议室名称
         List<MeetingRoom> roomList = meetingRoomMapper.selectList(new QueryWrapper<>());
         List<String> roomName = roomList.stream().map(MeetingRoom::getRoomName).toList();
         for (String room : roomName) {
-            if (meetingRoom.getRoomName().equals(room)) {
+            // 会议室名称长度限制为15个字符
+            if (meetingRoom.getRoomName().equals(room) || meetingRoom.getRoomName().length() > MAX_NAME_LENGTH) {
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
             }
         }

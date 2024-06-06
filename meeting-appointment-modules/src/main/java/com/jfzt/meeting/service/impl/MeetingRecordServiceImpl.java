@@ -310,11 +310,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                         if (meetingRoom != null) {
                             recordVO.setMeetingRoomName(meetingRoom.getRoomName());
                         }
-                        // 设置创建人信息
-                        SysUser adminUser = userService.getById(record.getCreatedBy());
-                        if (adminUser != null) {
-                            recordVO.setAdminUserName(adminUser.getUserName());
-                        }
                         // 设置参会人信息
                         List<String> userIds = attendeesMapper.selectList(
                                         new LambdaQueryWrapper<MeetingAttendees>()
