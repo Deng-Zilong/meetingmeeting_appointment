@@ -7,7 +7,6 @@ import lombok.Data;
  * @author zilong.deng
  * @since 2024-06-05 10:01:45
  */
-
 @Data
 public class MeetingRoomVO {
 

@@ -10,8 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * 会议纪要controller
  * @author zilong.deng
- * @date 2024/05/30
+ * @since 2024-06-05 11:03:29
  */
 @RestController
 @RequestMapping("/meeting")

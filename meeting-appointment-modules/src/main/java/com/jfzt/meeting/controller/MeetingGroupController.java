@@ -12,11 +12,9 @@ import java.util.List;
 
 /**
  * 会议群组控制类
- *
  * @author zilong.deng
  * @since 2024-06-04 11:03:18
  */
-
 @RestController
 @RequestMapping("/meeting")
 public class MeetingGroupController {

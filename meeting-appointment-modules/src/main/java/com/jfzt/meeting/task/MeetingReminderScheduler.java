@@ -8,7 +8,6 @@ import com.jfzt.meeting.service.MeetingRoomService;
 import com.jfzt.meeting.service.SysUserService;
 import com.jfzt.meeting.utils.WxUtil;
 import lombok.extern.slf4j.Slf4j;
-import me.chanjar.weixin.common.error.WxErrorException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
@@ -69,13 +68,7 @@ public class MeetingReminderScheduler {
         long delay = Duration.between(LocalDateTime.now(), reminderTime).toMillis();
         if (delay > 0) {
             ScheduledFuture<?> scheduledTask = taskScheduler.schedule(
-                    () -> {
-                        try {
-                            sendReminder(meeting);
-                        } catch (WxErrorException e) {
-                            throw new RuntimeException(e);
-                        }
-                    },
+                    () -> sendReminder(meeting),
                     new Date(System.currentTimeMillis() + delay)
             );
             scheduledTasks.put("MeetingReminder_" + meeting.getId(), scheduledTask);
@@ -100,7 +93,7 @@ public class MeetingReminderScheduler {
      *  发送会议提醒
      * @param meetingRecordDTO 会议信息
      */
-    private void sendReminder (MeetingRecordDTO meetingRecordDTO) throws WxErrorException {
+    private void sendReminder (MeetingRecordDTO meetingRecordDTO){
         List<String> usrIds = meetingRecordDTO.getUsers().stream().map(SysUser::getUserId).toList();
         MeetingRoom meetingRoom = meetingRoomService.getById(meetingRecordDTO.getMeetingRoomId());
         List<SysUser> userList = userService.list(new LambdaQueryWrapper<SysUser>()
@@ -111,22 +104,18 @@ public class MeetingReminderScheduler {
             log.info("发送会议提醒给用户： {}", creatorUserName);
         }
         String notices =
-                "**会议提醒**\n" +
-                        "会议 : " + meetingRecordDTO.getTitle() + "\n" +
-                        "发起人 : " + creatorUserName + "\n" +
-                        "日期 : " + meetingRecordDTO.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                "##### 会议提醒\n" +
+                        "**会议主题 :** " + meetingRecordDTO.getTitle() + "\n" +
+                        "**发起人 :** " + creatorUserName + "\n" +
+                        "**日期 :** " + meetingRecordDTO.getStartTime().format(DateTimeFormatter.ofPattern("yyyy 年MM 月dd 日"))
                         + "\n" +
-                        "时间 : " + meetingRecordDTO.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
-                        + "  ~  "
-                        + meetingRecordDTO.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")) + "\n" +
-                        "会议室 : " + meetingRoom.getRoomName() + "\n" +
-                        "地点 : " + meetingRoom.getLocation() + "\n" +
-                        "会议还有十分钟就开始了，请注意及时参会!";
-        try {
+                        "**时间 :** " + meetingRecordDTO.getStartTime().format(DateTimeFormatter.ofPattern("HH : mm"))
+                        + " ~ "
+                        + meetingRecordDTO.getEndTime().format(DateTimeFormatter.ofPattern("HH : mm")) + "\n" +
+                        "**会议室 :** " + meetingRoom.getRoomName() + "\n" +
+                        "**地点 :** " + meetingRoom.getLocation() + "\n" +
+                        "<font color=\"warning\">**会议还有十分钟就开始了，请注意及时参会!** </font>";
             wxUtil.sendsWxReminders(usrIds, notices);
-        } catch (Exception e) {
-            log.error("发送会议提醒失败", e);
-        }
     }
 
 }

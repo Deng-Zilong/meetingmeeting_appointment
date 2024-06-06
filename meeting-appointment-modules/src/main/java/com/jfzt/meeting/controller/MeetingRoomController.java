@@ -18,9 +18,8 @@ import java.util.List;
 /**
  * 会议室管理
  * @author zilong.deng
- * @date 2024/04/28
+ * @since 2024-06-05 11:03:58
  */
-
 @Slf4j
 @RestController
 @RequestMapping("/meeting")
