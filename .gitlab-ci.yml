@@ -50,7 +50,7 @@ variables:
 
   #【请修改】前端项目打包方式 $BUILD_COMMAND run build:$ENVIRONMENT
   BUILD_COMMAND: "npm"
-  ENVIRONMENT: "pro"
+  ENVIRONMENT: "production"
 
   # 容器资源限制与请求配置
   # 以下配置项用于定义应用运行所需的最小资源和可使用的最大资源。
