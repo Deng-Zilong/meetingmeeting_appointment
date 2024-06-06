@@ -64,7 +64,7 @@ qiyewx:
   corpid: wwfa655ac032fa1cff
   corpsecret: uZongcdBQh3eOrsos2x910dVA2gMtE4KFG7KP0ewfUc
   agentId: 1000021
-  url: http://192.168.212.41:31505
+  url: http://192.168.212.41:31506
   #回调配置
   token: 9zTIV
   encodingAESKey: fha6hIaBwGCkU3R4IgV2SRHOCYd5EmVVVrKq71HqSQX
