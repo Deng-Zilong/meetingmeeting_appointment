@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import static com.jfzt.meeting.constant.IsDeletedConstant.IS_DELETED;
 import static com.jfzt.meeting.constant.IsDeletedConstant.NOT_DELETED;
 import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
+import static com.jfzt.meeting.constant.MeetingRoomStatusConstant.MEETINGROOM_STATUS_PAUSE;
 import static com.jfzt.meeting.constant.MessageConstant.*;
 
 /**
@@ -161,7 +162,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         return Math.toIntExact(this.baseMapper.selectCount(
                 new LambdaQueryWrapper<MeetingRecord>()
                         .between(MeetingRecord::getStartTime, LocalDateTime.now().toLocalDate().atStartOfDay()
-                                , LocalDateTime.now().toLocalDate().atTime(23, 59, 59))));
+                                , LocalDateTime.now().toLocalDate().atTime(23, 59, 59))
+                        .ne(MeetingRecord::getStatus, MEETING_RECORD_STATUS_CANCEL)));
     }
 
     /**
@@ -267,7 +269,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             List<String> userIds = attendeesMapper.selectList(
                             new LambdaQueryWrapper<MeetingAttendees>()
                                     .eq(MeetingAttendees::getMeetingRecordId, record.getId()))
-                    .stream().map(MeetingAttendees::getUserId).collect(Collectors.toList());
+                    .stream().map(MeetingAttendees::getUserId).distinct().collect(Collectors.toList());
             StringBuffer attendees = new StringBuffer();
             ArrayList<SysUserVO> users = new ArrayList<>();
             userService.getUserInfo(userIds, attendees, users);
@@ -448,6 +450,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             // 判断meetingRecord的开始时间是否早于当前时间，如果是，则返回错误信息
             throw new RRException(START_TIME_LT_NOW);
         }
+        //会议室是否被禁用
+        MeetingRoom meetingRoom = meetingRoomService.getById(meetingRecord.getMeetingRoomId());
+        if (Objects.equals(meetingRoom.getStatus(), MEETINGROOM_STATUS_PAUSE))  {
+            throw new RRException("会议室不可用", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+        }
         //根据时间段查看是否有会议占用
         LambdaQueryWrapper<MeetingRecord> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.notIn(MeetingRecord::getStatus, MEETING_RECORD_STATUS_CANCEL)
@@ -479,8 +486,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         meetingRecordDTO.setId(meetingRecord.getId());
         SysUser sysUser = userService
                 .getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, meetingRecordDTO.getCreatedBy()));
-        MeetingRoom meetingRoom = meetingRoomService
-                .getOne(new LambdaQueryWrapper<MeetingRoom>().eq(MeetingRoom::getId, meetingRecordDTO.getMeetingRoomId()));
         String reminder =
                 "#### 会议提醒\n" +
                         "**会议主题 :** " + meetingRecordDTO.getTitle() + "\n" +
@@ -514,10 +519,32 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         BeanUtils.copyProperties(meetingRecordDTO, meetingRecord);
         // 判断meetingRecord的结束时间是否早于开始时间，如果是，则返回错误信息
         if (meetingRecord.getEndTime().isBefore(meetingRecord.getStartTime())) {
-            return Result.fail(START_TIME_GT_END_TIME);
+            throw new RRException(START_TIME_GT_END_TIME, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
         } else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())) {
             // 判断meetingRecord的开始时间是否早于当前时间，如果是，则返回错误信息
-            return Result.fail(START_TIME_LT_NOW);
+            throw new RRException(START_TIME_LT_NOW, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+        }
+        //会议室是否被禁用
+        MeetingRoom meetingRoom = meetingRoomService.getById(meetingRecord.getMeetingRoomId());
+        if (Objects.equals(meetingRoom.getStatus(), MEETINGROOM_STATUS_PAUSE))  {
+            throw new RRException("会议室不可用", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+        }
+        //根据时间段查看是否有会议占用会议室
+        LambdaQueryWrapper<MeetingRecord> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.notIn(MeetingRecord::getStatus, MEETING_RECORD_STATUS_CANCEL)
+                .eq(MeetingRecord::getMeetingRoomId, meetingRecord.getMeetingRoomId());
+        //开始时间或结束时间在时间段内 或 开始时间与结束时间之间包含时间段
+        queryWrapper.and(recordQueryWrapper -> recordQueryWrapper
+                //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
+                .between(MeetingRecord::getStartTime, meetingRecord.getStartTime(), meetingRecord.getEndTime().minusSeconds(1))
+                //结束时间在时间段内 前不含后含  8-9属于8.5-9不属于9-9.5
+                .or().between(MeetingRecord::getEndTime, meetingRecord.getStartTime().plusSeconds(1), meetingRecord.getEndTime())
+                //时间段包含在开始时间(含)和结束时间(含)之间    8-9 属于8-8.5属于8.5-9
+                .or().lt(MeetingRecord::getStartTime, meetingRecord.getStartTime().plusSeconds(1))
+                .gt(MeetingRecord::getEndTime, meetingRecord.getEndTime().minusSeconds(1)));
+        List<MeetingRecord> meetingRecords = list(queryWrapper);
+        if (!meetingRecords.isEmpty()) {
+            throw new RRException(OCCUPIED, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
         }
         // 使用meetingRecord中的数据更新数据库中的数据
         updateById(meetingRecord);
@@ -538,8 +565,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         meetingAttendeesService.saveBatch(attendeesList);
         SysUser sysUser = userService
                 .getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, meetingRecordDTO.getCreatedBy()));
-        MeetingRoom meetingRoom = meetingRoomService
-                .getOne(new LambdaQueryWrapper<MeetingRoom>().eq(MeetingRoom::getId, meetingRecordDTO.getMeetingRoomId()));
+
         String reminder =
                 "#### 会议提醒\n" +
                         "**会议主题 :** " + meetingRecordDTO.getTitle() + "\n" +

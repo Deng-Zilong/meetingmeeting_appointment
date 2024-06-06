@@ -88,6 +88,9 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      */
     @Override
     public Result<Integer> addMeetingRoom (MeetingRoom meetingRoom) {
+        if (meetingRoom.getCapacity()<=0){
+            throw new RRException("会议室容量不正确",ErrorCodeEnum.SERVICE_ERROR_A0421.getCode());
+        }
         // 根据创建人Id查询用户信息
         SysUser sysUser = sysUserMapper.selectByUserId(meetingRoom.getCreatedBy());
         // 查询会议室名称,判断是否有重复的会议室名称
@@ -366,8 +369,11 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     public List<Integer> getTodayTimePeriodStatus () {
         List<Integer> timeStatus = new LinkedList<>();
         //获取可使用的会议室总数
-        long count = this.count(new LambdaQueryWrapper<MeetingRoom>()
-                .eq(MeetingRoom::getStatus, MEETINGROOM_STATUS_AVAILABLE));
+        List<Long> roomIds = this.list(new LambdaQueryWrapper<MeetingRoom>()
+                        .eq(MeetingRoom::getStatus, MEETINGROOM_STATUS_AVAILABLE))
+                .stream().map(MeetingRoom::getId)
+                .distinct().toList();
+        long count = roomIds.size();
         if (count == 0) {
             //无可用会议室
             for (int i = 0; i < 30; i++) {
@@ -390,24 +396,19 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             } else {
                 //之后的时间，判断是否有会议的开始时间或结束时间包含在里面，有的话且包含所有的会议室则为1已预订
                 LambdaQueryWrapper<MeetingRecord> recordQueryWrapper = new LambdaQueryWrapper<>();
-                //开始时间或结束时间包含在时间段内
-                LocalDateTime finalStartTime1 = startTime;
-                LocalDateTime finalStartTime2 = startTime.plusSeconds(1);
-                LocalDateTime finalEndTime1 = endTime;
-                LocalDateTime finalEndTime2 = endTime.minusSeconds(1);
+                recordQueryWrapper.in(MeetingRecord::getMeetingRoomId, roomIds);
+                recordQueryWrapper.and(wrapper -> wrapper.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
+                        .or().eq(MeetingRecord::getStatus, MeetingRecordStatusConstant.MEETING_RECORD_STATUS_PROCESSING));
+                LocalDateTime finalStartTime = startTime;
+                LocalDateTime finalEndTime = endTime;
                 recordQueryWrapper.and(wrapper -> wrapper
                         //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
-                        .between(MeetingRecord::getStartTime, finalStartTime1, finalEndTime2)
+                        .between(MeetingRecord::getStartTime, finalStartTime, finalEndTime.minusSeconds(1))
                         //结束时间在时间段内 前不含后含  8-9属于8.5-9不属于9-9.5
-                        .or().between(MeetingRecord::getEndTime, finalStartTime2, finalEndTime1)
+                        .or().between(MeetingRecord::getEndTime, finalStartTime.plusSeconds(1), finalEndTime)
                         //时间段包含在开始时间(含)和结束时间(含)之间    8-9 属于8-8.5属于8.5-9
-                        .or().lt(MeetingRecord::getStartTime, finalStartTime2)
-                        .gt(MeetingRecord::getEndTime, finalEndTime2));
-
-                //没有逻辑删除
-                recordQueryWrapper.and(recordQueryWrapper1 -> recordQueryWrapper1
-                        .eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
-                        .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING));
+                        .or().lt(MeetingRecord::getStartTime, finalStartTime.plusSeconds(1))
+                        .gt(MeetingRecord::getEndTime, finalEndTime.minusSeconds(1)));
                 List<MeetingRecord> meetingRecords = meetingRecordService.list(recordQueryWrapper);
                 //根据会议室id收集获得占用不同会议室的数量
                 long size = meetingRecords.stream()
