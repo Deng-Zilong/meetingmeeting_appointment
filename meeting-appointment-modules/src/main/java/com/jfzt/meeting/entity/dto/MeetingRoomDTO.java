@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 /**
  * 修改会议室状态DTO
  * @author xuchang.yang
- * @since: 2024-05-15 10:50
+ * @since 2024-05-15 10:50
  */
 @Data
 @AllArgsConstructor

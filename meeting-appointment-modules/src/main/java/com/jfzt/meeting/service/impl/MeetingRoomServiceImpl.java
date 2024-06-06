@@ -23,7 +23,6 @@ import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MeetingRoomService;
 import com.jfzt.meeting.service.SysUserService;
-import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,51 +43,48 @@ import static com.jfzt.meeting.constant.MessageConstant.UPDATE_FAIL;
 import static com.jfzt.meeting.constant.TimePeriodStatusConstant.*;
 
 /**
+ * 针对表【meeting_room(会议室表)】的数据库操作Service实现
  * @author zilong.deng
- * @description 针对表【meeting_room(会议室表)】的数据库操作Service实现
- * @createDate 2024-04-28 11:50:45
+ * @since 2024-06-04 11:33:16
  */
 @Slf4j
 @Service
 public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, MeetingRoom> implements MeetingRoomService {
 
-    @Resource
     private SysUserMapper sysUserMapper;
-
-
     private MeetingRoomMapper meetingRoomMapper;
-
     private MeetingRecordService meetingRecordService;
-
     private SysUserService userService;
-
-
     private MeetingAttendeesMapper attendeesMapper;
-
+    /**
+     * setter注入
+     */
+    @Autowired
+    public void setSysUserMapper (SysUserMapper sysUserMapper) {
+        this.sysUserMapper = sysUserMapper;
+    }
     @Autowired
     public void setMeetingRoomMapper (MeetingRoomMapper meetingRoomMapper) {
         this.meetingRoomMapper = meetingRoomMapper;
     }
-
     @Autowired
     public void setMeetingRecordService (MeetingRecordService meetingRecordService) {
         this.meetingRecordService = meetingRecordService;
     }
-
     @Autowired
     public void setUserService (SysUserService userService) {
         this.userService = userService;
     }
-
     @Autowired
     public void setAttendeesMapper (MeetingAttendeesMapper attendeesMapper) {
         this.attendeesMapper = attendeesMapper;
     }
 
+
     /**
+     * 新增会议室
      * @param meetingRoom 会议室对象
-     * @return {@code Integer}
-     * @description 新增会议室
+     * @return 结果
      */
     @Override
     public Result<Integer> addMeetingRoom (MeetingRoom meetingRoom) {
@@ -118,9 +114,9 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     }
 
     /**
+     * 删除会议室
      * @param id 会议室id
-     * @return {@code Integer}
-     * @description 删除会议室
+     * @return 删除结果
      */
     @Override
     public Result<Integer> deleteMeetingRoom (Long id, Integer currentLevel) {
@@ -144,9 +140,9 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
 
     /**
+     * 修改会议室状态
      * @param meetingRoomDTO 会议室DTO对象
-     * @return com.jfzt.meeting.common.Result<java.lang.Integer>
-     * @description 修改会议室状态
+     * @return 修改结果
      */
     @Override
     public Result<Integer> updateStatus (MeetingRoomDTO meetingRoomDTO) {
@@ -173,13 +169,14 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     }
 
     /**
+     * 查询被禁用的会议室的id
      * @param currentLevel 当前登录用户的权限等级
-     * @return com.jfzt.meeting.common.Result<java.util.List < < java.lang.Integer>>
-     * @description 查询被禁用的会议室的id
+     * @return 权限等级
      */
     @Override
     public Result<List<Long>> selectUsableRoom (Integer currentLevel) {
-        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel) || MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)
+                || MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
             List<MeetingRoom> roomList = meetingRoomMapper.selectList(new QueryWrapper<>());
             List<Long> collect = roomList
                     .stream()
@@ -193,25 +190,27 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
 
 
     /**
-     * @return {@code Result<List<MeetingRoomOccupancyVO>>}
-     * @description 查询近七天会议室占用率（9：00-18：00）不包括周末
+     * 查询近七天会议室占用率（9：00-18：00）不包括周末
+     * @return 会议室占用率VO
      */
     @Override
     public Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomOccupancy () {
-        List<MeetingRoom> meetingRooms = this.list(new LambdaQueryWrapper<MeetingRoom>()
-                .eq(MeetingRoom::getStatus, MEETINGROOM_STATUS_AVAILABLE));
-
+        List<MeetingRoom> meetingRooms = this.list();
+        if (meetingRooms.isEmpty()){
+            return Result.success(new ArrayList<>());
+        }
         //查出七日内所有会议
         List<MeetingRecord> meetingRecordList = meetingRecordService.list(new LambdaQueryWrapper<MeetingRecord>()
-                .lt(MeetingRecord::getStartTime, LocalDateTime.now().toLocalDate().atStartOfDay().minusDays(7))
-                .gt(MeetingRecord::getEndTime, LocalDateTime.now().toLocalDate().atStartOfDay())
-                .eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
-                .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING)
-                .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_END));
+                .gt(MeetingRecord::getStartTime, LocalDateTime.now().toLocalDate().atStartOfDay().minusDays(7))
+                .lt(MeetingRecord::getEndTime, LocalDateTime.now().toLocalDate().atStartOfDay())
+                .and(wrapper -> wrapper.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
+                        .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING)
+                        .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_END)));
         //遍历会议室
         List<MeetingRoomOccupancyVO> meetingRoomOccupancyVOList = meetingRooms.stream().map(meetingRoom -> {
             //被占用的时间段总数
-            long count = 0;
+            long count = 0L;
+            long total = 0L;
             //统计前七天，九点开始，十八点结束，半小时为一段
             LocalDateTime startTime = LocalDateTime.now().toLocalDate().atStartOfDay().plusHours(9).minusDays(7);
             LocalDateTime endTime = startTime.plusMinutes(30);
@@ -222,6 +221,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                         || startTime.toLocalDate().getDayOfWeek() == DayOfWeek.SUNDAY) {
                     startTime = startTime.plusDays(1);
                     endTime = endTime.plusDays(1);
+                    continue;
                 }
                 log.info("第{}天,startTime:{}" + "endTime:{}", i + 1, startTime, endTime);
                 //每天18个时间段
@@ -249,10 +249,13 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 //下一天
                 startTime = startTime.plusHours(15);
                 endTime = startTime.plusMinutes(30);
+                total = total + 1;
             }
             MeetingRoomOccupancyVO meetingRoomOccupancyVO = new MeetingRoomOccupancyVO();
             meetingRoomOccupancyVO.setOccupied(count);
-            meetingRoomOccupancyVO.setTotal((long) (7 * 18));
+            meetingRoomOccupancyVO.setTotal((total * 18));
+            float occupancyRate = ((float) count / (total * 18));
+            meetingRoomOccupancyVO.setOccupancyRate(occupancyRate);
             meetingRoomOccupancyVO.setId(meetingRoom.getId());
             meetingRoomOccupancyVO.setName(meetingRoom.getRoomName());
             return meetingRoomOccupancyVO;
@@ -260,10 +263,47 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         return Result.success(meetingRoomOccupancyVOList);
     }
 
+    /**
+     * 查询最近五个工作日内各会议室占用比例
+     * @return 会议室占用比例VO
+     */
+    @Override
+    public Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomProportion () {
+        //查询所有会议室
+        List<MeetingRoom> meetingRoomList = list(new LambdaQueryWrapper<MeetingRoom>()
+                .eq(MeetingRoom::getStatus, MEETINGROOM_STATUS_AVAILABLE));
+        //查出七日内所有会议
+        List<MeetingRecord> meetingRecordList = meetingRecordService.list(new LambdaQueryWrapper<MeetingRecord>()
+                .in(MeetingRecord::getMeetingRoomId, meetingRoomList.stream()
+                        .map(MeetingRoom::getId).collect(Collectors.toList()))
+                .gt(MeetingRecord::getStartTime, LocalDateTime.now().toLocalDate().atStartOfDay().minusDays(7))
+                .lt(MeetingRecord::getEndTime, LocalDateTime.now().toLocalDate().atStartOfDay())
+                .and(wrapper -> wrapper.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
+                        .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING)
+                        .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_END))
+        );
+        long total = meetingRecordList.size();
+        List<MeetingRoomOccupancyVO> occupancyVOList = meetingRoomList.stream().map(meetingRoom -> {
+            MeetingRoomOccupancyVO roomOccupancyVO = new MeetingRoomOccupancyVO();
+            long occupied = meetingRecordList.stream().filter(meetingRecord ->
+                    Objects.equals(meetingRecord.getMeetingRoomId(), meetingRoom.getId())).count();
+            if (total == 0) {
+                roomOccupancyVO.setOccupied(0L);
+            }
+            long occupancyRate = occupied / total;
+            roomOccupancyVO.setName(meetingRoom.getRoomName());
+            roomOccupancyVO.setId(meetingRoom.getId());
+            roomOccupancyVO.setTotal(total);
+            roomOccupancyVO.setOccupied(occupied);
+            roomOccupancyVO.setOccupancyRate(occupancyRate);
+            return roomOccupancyVO;
+        }).sorted((o1, o2) -> Math.toIntExact(o2.getOccupied() - o1.getOccupied())).toList();
+        return Result.success(occupancyVOList);
+    }
 
     /**
-     * @return {@code Result<List<MeetingRoomStatusVO>>}
-     * @description 查询会议室状态
+     * 查询会议室状态
+     * @return 会议室状态VO
      */
     @Override
     public List<MeetingRoomStatusVO> getMeetingRoomStatus () {
@@ -319,12 +359,23 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     }
 
     /**
-     * @return {@code List<Integer>}
-     * @description 查询当天各个时间段会议室占用情况
+     * 查询当天各个时间段会议室占用情况
+     * @return 时间段占用状态
      */
     @Override
     public List<Integer> getTodayTimePeriodStatus () {
         List<Integer> timeStatus = new LinkedList<>();
+        //获取可使用的会议室总数
+        long count = this.count(new LambdaQueryWrapper<MeetingRoom>()
+                .eq(MeetingRoom::getStatus, MEETINGROOM_STATUS_AVAILABLE));
+        if (count == 0) {
+            //无可用会议室
+            for (int i = 0; i < 30; i++) {
+                //全为已过期
+                timeStatus.add(i, TIME_PERIOD_OVERDUE);
+            }
+            return timeStatus;
+        }
         LocalDateTime now = LocalDateTime.now();
         //更新今日所有会议记录状态
         meetingRecordService.updateTodayRecordStatus();
@@ -362,13 +413,8 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 long size = meetingRecords.stream()
                         .collect(Collectors.groupingBy(MeetingRecord::getMeetingRoomId))
                         .size();
-                //获取可使用的会议室总数
-                long count = this.count(new LambdaQueryWrapper<MeetingRoom>()
-                        .eq(MeetingRoom::getIsDeleted, NOT_DELETED)
-                        .eq(MeetingRoom::getStatus, MEETINGROOM_STATUS_AVAILABLE));
+                //判断是否全部被占用
                 if (size >= count) {
-                    System.out.println(timeStatus);
-                    //相同表示时间段全被占用
                     timeStatus.add(i, TIME_PERIOD_BUSY);
                 } else {
                     //没全部占用
@@ -382,10 +428,10 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     }
 
     /**
+     * 查询指定会议室当天各个时间段占用情况
      * @param id   会议室id
      * @param date 日期
-     * @return {@code Result<List<TimePeriodStatusVO>>}
-     * @description 查询指定会议室当天各个时间段占用情况
+     * @return 时间段状态
      */
     @Override
     public Result<List<TimePeriodStatusVO>> getTimePeriodStatusByIdAndDate (Long id, LocalDate date) {
@@ -399,7 +445,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         for (int i = 0; i < 30; i++) {
             TimePeriodStatusVO timePeriodStatusVO = new TimePeriodStatusVO();
             //判断是否过期
-            if (now.isAfter(endTime)) {
+            if (now.isAfter(startTime)) {
                 timePeriodStatusVO.setStartTime(startTime);
                 timePeriodStatusVO.setEndTime(endTime);
                 timePeriodStatusVO.setStatus(TIME_PERIOD_OVERDUE);
@@ -446,10 +492,10 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     }
 
     /**
+     * 根据时间段获取可用的会议室
      * @param startTime 开始时间
      * @param endTime   结束时间
-     * @return {@code Result<List<MeetingRoomVO>>}
-     * @description 根据时间段获取可用的会议室
+     * @return 会议室VO
      */
     @Override
     public Result<List<MeetingRoomVO>> getAvailableMeetingRooms (LocalDateTime startTime, LocalDateTime endTime) {

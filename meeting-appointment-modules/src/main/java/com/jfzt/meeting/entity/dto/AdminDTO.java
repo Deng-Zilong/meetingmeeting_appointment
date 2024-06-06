@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * 新增,删除管理员DTO
  * @author xuchang.yang
- * @since: 2024-05-15 10:50
+ * @since 2024-06-05 10:07:52
  */
 @Data
 public class AdminDTO {

@@ -6,17 +6,16 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
+ * 会议纪要(MeetingMinutes)实体类
  * @author zilong.deng
- * @description 会议纪要
- * @TableName meeting_minutes
- * @date 2024/05/30
+ * @since 2024-06-05 09:44:20
  */
 @Data
 public class MeetingMinutes implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     /**
-     *
+     *纪要id
      */
     private Integer id;
     /**

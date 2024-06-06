@@ -11,11 +11,9 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 会议室表
- *
+ * 会议室表(MeetingRoom)表实体类
  * @author zilong.deng
- * @TableName meeting_room
- * @date 2024/04/29
+ * @since 2024-06-05 09:43:20
  */
 @TableName(value = "meeting_room")
 @Data

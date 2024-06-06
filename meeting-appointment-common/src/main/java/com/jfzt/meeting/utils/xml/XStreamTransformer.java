@@ -7,6 +7,10 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author zhenxing.lu
+ * @since 2024-05-12 10:13:51
+ */
 public class XStreamTransformer {
 
     protected static final Map<Class, XStream> CLASS_2_XSTREAM_INSTANCE = configXStreamInstance();

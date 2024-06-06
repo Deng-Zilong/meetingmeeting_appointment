@@ -13,8 +13,8 @@ import java.util.List;
 /**
  * 会议群组控制类
  *
- * @Author: chenyu.di
- * @since: 2024-04-29 16:44
+ * @author zilong.deng
+ * @since 2024-06-04 11:03:18
  */
 
 @RestController
@@ -30,16 +30,15 @@ public class MeetingGroupController {
      * @Param [userId]
      */
     @GetMapping("/meeting-group-list")
-    public Result<List<MeetingGroupVO>> getMeetingGroupList (MeetingGroupPageDTO meetingGroupPageDTO)  {
+    public Result<List<MeetingGroupVO>> getMeetingGroupList (MeetingGroupPageDTO meetingGroupPageDTO) {
         return meetingGroupService.checkGroup(meetingGroupPageDTO.getPageNum(),
-                                              meetingGroupPageDTO.getPageSize(),
-                                              meetingGroupPageDTO.getUserId());
+                meetingGroupPageDTO.getPageSize(),
+                meetingGroupPageDTO.getUserId());
     }
 
     /**
+     * @param meetingGroupDTO
      * @return com.jfzt.meeting.common.Result<java.lang.Object>
-     * @Description 群组添加
-     * @Param [meetingGroupDTO]
      */
     @PostMapping("/meeting-group")
     public Result<Object> addMeetingGroup (@RequestBody MeetingGroupDTO meetingGroupDTO) {

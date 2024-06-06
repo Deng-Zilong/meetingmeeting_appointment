@@ -14,11 +14,9 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 群组人员关联表
- *
+ * 用户群组关系表(UserGroup)表实体类
  * @author zilong.deng
- * @TableName user_group
- * @date 2024/04/29
+ * @since 2024-06-05 09:42:17
  */
 @TableName(value = "user_group")
 @Data
@@ -30,7 +28,7 @@ public class UserGroup implements Serializable {
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
     /**
-     *
+     *id
      */
     @TableId(type = IdType.AUTO)
     private Long id;

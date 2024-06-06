@@ -5,11 +5,12 @@
             <el-button type="primary" @click="handleToHome">中心会议室目录</el-button>
             <el-divider direction="vertical" />
           </div>
-          <div class="my-main-scrollbar">
+          <div class="my-main-scrollbar" ref="scrollContainer">
             <div class="left-items" v-for="(item, index) in useMeetingStatus.centerRoomName">
                 <el-button class="btn-margin"  :class="active == item.id ? 'active' : ''" :disabled="item.status == 0" @click="handleMenu(item)" >{{item.roomName}}</el-button>
             </div>
           </div>
+          <span class="right-icon" @click="handleRight"><el-icon><DArrowRight /></el-icon></span>
       </div>
      <div class="right">
       <router-link to="/history"><el-button :disabled="cancelDisable">取消预约</el-button> </router-link>
@@ -24,13 +25,24 @@
   const router = useRouter();
   const useMeetingStatus = meetingStatus();
   
+  const scrollContainer = ref();  // 获取滚动容器dom
 
   let active = ref(-1); // 活动页面id
 
   const handleToHome = () => {
+    scrollContainer.value.scrollTo({
+      left: 0,  // 回到原点
+      behavior: 'smooth' // 平滑滚动
+    })
     router.push('/home')
   }
 
+  const handleRight = () => {
+    scrollContainer.value.scrollBy({
+      left: 840,
+      behavior: 'smooth' // 平滑滚动
+    })
+  }
   
   /**
    * @description 点击导航栏切换页面
@@ -43,7 +55,8 @@
         id: item.id,
         title: item.roomName,
         address: item.location,
-        person: item.capacity  // 暂无
+        person: item.capacity,
+        equipment: item.equipment
       }
     });
   }
@@ -104,12 +117,28 @@
                 margin-right: 8.125rem;
               }
               .btn-margin {
-                  margin-right: .625rem;
+                color: #557DF5;
+                border: 1px solid #557DF5;
+                margin-right: .625rem;
+                :deep()span {
+                  font-weight: 400;
+                }
+              }
+              .is-disabled {
+                color: #DCDCDC;
+                border: 1px solid #DCDCDC;
               }
               .active {
-                  background-color:#409EFF;
+                background-color:#409EFF;
+                color: #FFF;
+                border: 1px solid #409EFF;
               }
             }
+          }
+          .right-icon {
+            z-index: 2;
+            margin-left: 10px;
+            color: #A8ABB2;
           }
       }
       .right {

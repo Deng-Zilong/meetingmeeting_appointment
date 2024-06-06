@@ -8,9 +8,8 @@ import java.io.Serializable;
 
 /**
  * 返回状态定义
- *
  * @author zhenxing.lu
- * @since 2024-04-30 10.13:51
+ * @since 2024-04-30 10:13:51
  */
 @Data
 public class Result<T> implements Serializable {
@@ -32,6 +31,9 @@ public class Result<T> implements Serializable {
     public static <T> Result<T> fail (ErrorCodeEnum fails) {
         return new Result<>(fails.getCode(), fails.getDescription(), null);
     }
+    public static <T> Result<T> fail (ErrorCodeEnum fails,T data) {
+        return new Result<>(fails.getCode(), fails.getDescription(), data);
+    }
 
     public static <T> Result<T> success () {
         return new Result<>(ErrorCodeEnum.SUCCESS.getCode(), ErrorCodeEnum.SUCCESS.getDescription(), null);
@@ -47,10 +49,6 @@ public class Result<T> implements Serializable {
 
     public static <T> Result<T> fail (String msg) {
         return new Result<>(ErrorCodeEnum.SYSTEM_ERROR_B0001.getCode(), msg, null);
-    }
-
-    public static <T> Result<T> fail (String code, String msg) {
-        return new Result<>(code, msg, null);
     }
 
     public Result (String code, String msg, T data) {

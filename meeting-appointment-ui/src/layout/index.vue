@@ -52,7 +52,7 @@ const exitLogin = () => {
     .then(res=> {
         // 重置用户信息
         userStore.resetUserInfo();
-        router.push('/login');
+        router.replace('/login');
     })
     .catch(err => {})
     .finally(() => {})

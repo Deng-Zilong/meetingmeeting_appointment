@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * http请求工具类
  * @author zhenxing.lu
- * @date 2024/05/09
+ * @since 2024-05-09 14:12:13
  */
 @Component
 public class HttpClientUtil {
@@ -395,41 +395,4 @@ public class HttpClientUtil {
                 .setRedirectsEnabled(true).build();
         return requestConfig;
     }
-
-    public static void main(String[] args) {
-        HttpClientUtil httpClientUtil = new HttpClientUtil();
-//        StringBuffer stringBuffer = new StringBuffer();
-//        String code = "beoJD7kI1FBHN4bK0eWrinRy-ib8ZPGIRbQRyLD0h-k";
-//        String suite_access_token = "";
-//        String url = "https://qyapi.weixin.qq.com/cgi-bin/service/auth/getuserinfo3rd?suite_access_token=" + suite_access_token +
-//                "&code=" + code;
-//
-//        //获取三方access——token
-//        String url2 = "https://qyapi.weixin.qq.com/cgi-bin/gettoken";
-//        HashMap<String, String> map = new HashMap<>();
-//        map.put("corpid", "wwc99ae5b81a00bddb");
-//        map.put("corpsecret", "3Jv0cyJHk62A2eyfz7LlFrBZyTaO3Tir0_gilp6BNRU");
-//        String response = httpClientUtil.doGet(url2, map);
-//        org.json.JSONObject jsonObject = new JSONObject(response);
-//        String access_token = jsonObject.optString("access_token", null);
-//        System.out.println(access_token);
-        //获取用户身份
-//        String url3 = "https://qyapi.weixin.qq.com/cgi-bin/auth/getuserdetail?access_token=" + "5fVNrV6WTqPCysgdJsHMvWnI40ca1cy7gE3x9TeAl8OaJV1e1cWeu0OsfdrxdthMvk4KRwOqILrDjtfk3VOCnhlWFooKATUhb87lm-Ccf3Qqz5hCBoFQEZvahosAdwZ_CW1EEVKpSqBDm_LjsdOSwgxWcgvsRD-vhUsH1Bdwf0UQu3yLNXRAbQOSkH884YYl8-Lq4idsgG2h7nZvaBgumw";
-//        UserTicketVo testLoginEntity = new UserTicketVo("gwn4gh2a5sj3d6slZwJTEX8TJ3_-VkB6zWFDEGguGHSGDdUzkxlbGMFvi-fwf83eaLhAj8R2n2hOetr2zPdH-yXqA1-Ep28W1QUkff75aYg");
-//        String s = httpClientUtil.doPost(url3, testLoginEntity);
-//        System.out.println(s);
-        //获取用户全部信息
-//        String accessToken = "5fVNrV6WTqPCysgdJsHMvWnI40ca1cy7gE3x9TeAl8OaJV1e1cWeu0OsfdrxdthMvk4KRwOqILrDjtfk3VOCnhlWFooKATUhb87lm-Ccf3Qqz5hCBoFQEZvahosAdwZ_CW1EEVKpSqBDm_LjsdOSwgxWcgvsRD-vhUsH1Bdwf0UQu3yLNXRAbQOSkH884YYl8-Lq4idsgG2h7nZvaBgumw";
-//        String userId = "ab53f229e9e1721d62134bfcd5946817";
-//        HashMap<String, String> map = new HashMap<>();
-//        map.put("access_token", accessToken);
-//        map.put("userid", userId);
-//        String url4 = "https://qyapi.weixin.qq.com/cgi-bin/user/get";
-//        String s = httpClientUtil.doGet(url4, map);
-//        System.out.println(s);
-//        String s = httpClientUtil.doGet("https://open.weixin.qq.com/connect/oauth2/authorize?appid=ww8573547260205f74&redirect_uri=http%3A%2F%2Ftest-web.jifuinfo.com&response_type=CODE&scope=snsapi_privateinfo&state=STATE&agentid=1000026", stringBuffer);
-//        System.out.println(s);
-    }
-
-
 }

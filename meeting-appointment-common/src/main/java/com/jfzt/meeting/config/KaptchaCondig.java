@@ -10,9 +10,8 @@ import java.util.Properties;
 
 /**
  * 生成验证码配置类
- *
  * @author zhenxing.lu
- * @since 2024-04-30 10.13:51
+ * @since 2024-04-30 10:13:51
  */
 @Configuration
 public class KaptchaCondig {

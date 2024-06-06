@@ -15,10 +15,6 @@
             <GuageChart :gaugeData="gaugeData" :width="300" :height="270"  />
           </div>
         </div>
-        <!-- <div class="screen-footer">
-          <p>今日中心会议总次数</p>
-          <div class="num">次</div>
-        </div> -->
       </div>
       <!-- 预约信息 -->
       <div class="every-block info">
@@ -50,18 +46,19 @@
           </div>
           <div class="rules">
             <div class="rule-block">
-              <div class="rule-title">预约规则</div>
+              <div class="rule-title">近期热门时间段</div>
               <div class="rule-main">
                 <div class="rule-scroll">
-                  <div class="scroll-item" v-for="item in appointRule">{{ item }}</div>
+                  <div class="scroll-item" v-for="item in timesData.slice(0, 10)">{{ item }}</div>
+                  <div class="scroll-item">请注意及时预约</div>
                 </div>
               </div>
             </div>
             <div class="rule-block">
-              <div class="rule-title">取消规则</div>
+              <div class="rule-title">规则</div>
               <div class="rule-main">
                 <div class="rule-scroll">
-                  <div class="scroll-item" v-for="item in cancelRule">{{ item }}</div>
+                  <div class="scroll-item" v-for="item in rulesData">{{ item }}</div>
                 </div>
               </div>
             </div>
@@ -83,19 +80,19 @@
         <div class="situation-title">今日会议室预约情况</div>
         <div class="situation-table">
           <div class="table-th">
-            <div class="title">会议主题</div>
-            <div class="title">会议室名称</div>
-            <div class="title">预约时间</div>
-            <div class="title">会议状态</div>
-            <div class="title">人数</div>
-            <div class="title">操作</div>
+            <div class="title t-title">会议主题</div>
+            <div class="title t-room">会议室名称</div>
+            <div class="title t-time">预约时间</div>
+            <div class="title t-status">会议状态</div>
+            <div class="title t-people">人数</div>
+            <div class="title t-operate">操作</div>
           </div>
           <div class="table-main my-main-scrollbar">
             <div class="table-tr" v-for="(item, index) in tableData">
-              <div class="tr-cell tr-title">
+              <div class="tr-cell t-title">
                 <el-popover
                     placement="bottom"
-                    :disabled="item.title?.length < 10"
+                    :disabled="item.title?.length < 11"
                     :width="100"
                     trigger="hover"
                     :content="item.title"
@@ -104,10 +101,10 @@
                         {{ item.title }}
                     </template>
                 </el-popover></div>
-              <div class="tr-cell">
+              <div class="tr-cell t-room">
                 <el-popover
                     placement="bottom"
-                    :disabled="item.meetingRoomName?.length < 5"
+                    :disabled="item.meetingRoomName?.length < 16"
                     :width="100"
                     trigger="hover"
                     :content="item.meetingRoomName"
@@ -117,11 +114,11 @@
                     </template>
                 </el-popover>
               </div>
-              <div class="tr-cell">{{ time(item) }}</div>
-              <div class="tr-cell">{{ statusName(item.status) }}</div>
-              <div class="tr-cell">{{ item.meetingNumber }}</div>
+              <div class="tr-cell t-time">{{ time(item) }}</div>
+              <div class="tr-cell t-status">{{ statusName(item.status) }}</div>
+              <div class="tr-cell t-people">{{ item.meetingNumber }}人</div>
               <div>
-                  <div class="tr-cell" :style="{ 'color': (operate(item) === '修改' ? '#3268DC' : '') }"
+                  <div class="tr-cell t-operate" :style="{ 'color': (operate(item) === '修改' ? '#3268DC' : '#F56C6C') }"
                   @click="operate(item) === '修改' ? modifyMeeting(item) : delMeeting(item,index) ">
                     {{ operate(item) }}
                   </div>
@@ -137,6 +134,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {  getTodayMeetingRecordData, getDeleteMeetingRecordData, getCenterAllNumberData, getRoomStatusData, getTimeBusyData, getNoticeData } from '@/request/api/home'
+import { getTimePeriodDate } from '@/request/api/manage'
 
 import Clock from '@/views/home/component/clock.vue'
 import GuageChart from '@/views/home/component/guage-chart.vue'
@@ -149,24 +147,15 @@ const route = useRoute();
 const router = useRouter();
 const userInfo = ref();  // 获取用户信息 传后端数据
 
-const appointRule = ref<any>([
+let timesData = ref<any>([])  // 排名前十的时间段
+const rulesData = ref<any>([  // 规则
+  // 预约
   "点击首页“会议室预约”按钮",
   "点击自已想预约的会议室名称",
   "紧急预约可直接点击“空闲中”会议室",
   "点击自己想预约会议的时间",
   "长期预约会议室可使用“企微”预约",
-  "点击首页“会议室预约”按钮",
-  "点击自已想预约的会议室名称",
-  "紧急预约可直接点击“空闲中”会议室",
-  "点击自己想预约会议的时间",
-  "长期预约会议室可使用“企微”预约",
-])
-const cancelRule = ref<any>([
-  "点击首页“取消预约”按钮",
-  "点击“历史记录”-“取消会议”",
-  "取消后若该会议室空闲可重新预约",
-  "“修改会议”≠“取消会议”",
-  "取消会议后“历史记录”该记录消失",
+  // 取消
   "点击首页“取消预约”按钮",
   "点击“历史记录”-“取消会议”",
   "取消后若该会议室空闲可重新预约",
@@ -174,6 +163,7 @@ const cancelRule = ref<any>([
   "取消会议后“历史记录”该记录消失",
 ])
 let notice = ref<any>('暂无公告信息'); // 公告信息
+
 let gaugeData = ref<any>([ // echarts数据展示 今日总预约数
   {
     value: 0,
@@ -359,6 +349,17 @@ const getNotice = async () => {
   notice.value = res.data  
 }
 
+/**
+ * @description 获取前十时间段数据
+ */
+getTimePeriodDate()  
+  .then((res) => {
+    res.data.map((item: any) => {
+      timesData.value.push(`${dayjs(item.startTime).format('HH:mm')}-${dayjs(item.endTime).format('HH:mm')} : 使用${item.count}次`)
+    })    
+  })
+  .catch((err) => {})
+
 onMounted( async () => {
     /* 判断扫码登录状态 */
     const code = decodeURIComponent(route.query.code as string);
@@ -390,6 +391,7 @@ onMounted( async () => {
         getRoomStatus(),  // 查询会议室状态
         getTimeBusy(),  // 查询当日时间段占用情况
         getNotice(), // 查询公告
+        getTimePeriodDate()  // 获取时间段数据
     ])
     loading.value = false
 });
@@ -420,6 +422,7 @@ onMounted( async () => {
       .screen-title {
         font-size: 1.13rem;
         color: #3E78F4;
+        margin-left: 17px;
       }
       .screen-main {
         position: relative;
@@ -448,13 +451,17 @@ onMounted( async () => {
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.1);
             box-sizing: border-box;
-            border: 1px solid rgba(111, 167, 249, 0.8);
-            box-shadow: inset 0px 0px 30px 0px rgba(16, 127, 255, 0.3);
-            height: 90px;
-            // 滚动条宽度
-            // &::-webkit-scrollbar {
-            //   width: 0.01rem;
-            // }
+            // border: 1px solid rgba(111, 167, 249, 0.8);
+            // box-shadow: inset 0px 0px 60px -10px rgba(16, 127, 255, 0.4);
+            -webkit-backdrop-filter: blur(.3125rem);
+            backdrop-filter: blur(.3125rem);
+            border: .0625rem solid rgba(0, 102, 255, .5);
+            box-shadow: inset 0 0 1.875rem #1b7ef24d;
+            height: 5.625rem;
+            &:hover {
+              backdrop-filter: blur(.1rem);
+              filter: opacity(0.8); /* 鼠标悬停时模糊效果 */
+            }
             .name {
               font-size: 1.1rem;
               color: #6A6A6A;
@@ -727,13 +734,31 @@ onMounted( async () => {
         border: 2px solid #69A5E4;
         border-radius: 15px;
         padding: 10px 18px;
+
+        // 每个单元格共同样式
+        .table-th, .table-tr {
+          .title, .tr-cell {
+            width: 12.32rem;
+            padding: 0 0.9rem;
+          }
+        }
+        .t-time {
+          width: 8rem !important;
+        }
+        .t-status {
+          width: 6rem !important;
+        }
+        .t-people {
+          width: 4rem !important;
+        }
+        .t-operate {
+          width: 5rem !important;
+        }
+
         .table-th {
           display: flex;
           text-align: center;
           padding-bottom: 0.375rem;
-          .title {
-            width: 11.25rem;
-          }
         }
         .table-main {
           max-height: 18.6rem;
@@ -750,19 +775,12 @@ onMounted( async () => {
             margin: 10px 0;
             padding: 11px 0;
             .tr-cell {
-              width: 130px;
               text-wrap: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
-              padding: 0 10px;
               &:last-child {
                 cursor: pointer;
               }
-            }
-            // 会议主题单元格单独设置
-            .tr-title {
-                text-align: left;
-                padding-left: 15px;
             }
           }
         }

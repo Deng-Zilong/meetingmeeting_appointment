@@ -1,5 +1,10 @@
 package com.jfzt.meeting.weixin;
 
+/**
+ * 企业微信异常处理类
+ * @author zhenxing.lu
+ * @since 2024-04-20 16:12:14
+ */
 @SuppressWarnings("serial")
 public class AesException extends Exception {
 

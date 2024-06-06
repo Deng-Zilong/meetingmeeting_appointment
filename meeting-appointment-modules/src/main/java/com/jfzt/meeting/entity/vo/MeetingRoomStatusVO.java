@@ -6,9 +6,9 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
+ * 会议室状态VO
  * @author zilong.deng
- * @description 会议室状态VO
- * @date 2024/05/06
+ * @since 2024-06-05 10:01:35
  */
 @Data
 public class MeetingRoomStatusVO {
@@ -36,6 +36,11 @@ public class MeetingRoomStatusVO {
      * 容量
      */
     private Integer capacity;
+
+    /**
+     * 会议室设备
+     */
+    private String equipment;
     /**
      * 会议主题
      */

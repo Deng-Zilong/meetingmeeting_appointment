@@ -3,8 +3,9 @@ package com.jfzt.meeting.entity.dto;
 import lombok.Data;
 
 /**
- * @Author: chenyu.di
- * @since: 2024-05-14 10:50
+ * 会议分组分页DTO
+ * @author chenyu.di
+ * @since 2024-05-14 10:50
  */
 @Data
 public class MeetingGroupPageDTO {

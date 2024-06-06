@@ -10,9 +10,8 @@ import java.io.Serializable;
 
 /**
  * 新增公告VO对象
- *
  * @author xuchang.yang
- * @since: 2024-05-14 11:33
+ * @since 2024-05-14 11:33
  */
 @Data
 @AllArgsConstructor

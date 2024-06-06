@@ -7,10 +7,9 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 /**
+ *  针对表【sys_user】的数据库操作Mapper
  * @author zilong.deng
- * @description 针对表【sys_user】的数据库操作Mapper
- * @createDate 2024-05-06 16:47:54
- * @Entity com.jfzt.meeting.entity.SysUser
+ * @since  2024-05-06 16:47:54
  */
 @Mapper
 public interface SysUserMapper extends BaseMapper<SysUser> {

@@ -11,8 +11,8 @@ import java.util.List;
 
 /**
  * 会议公告控制类
- * @Author: xuchang.yang
- * @since: 2024-04-29 16:44
+ * @author xuchang.yang
+ * @since 2024-04-29 16:44
  */
 @RestController
 @RequestMapping("meeting/meeting-notice")
@@ -24,7 +24,7 @@ public class MeetingNoticeController {
     /**
      * 新增通告信息
      * @param meetingNoticeVO 公告信息VO对象
-     * @return com.jfzt.meeting.common.Result<java.lang.Integer>
+     * @return 添加结果
      */
     @PostMapping("/add-notice")
     public Result<Integer> addNotice (@RequestBody MeetingNoticeVO meetingNoticeVO) {
@@ -33,7 +33,7 @@ public class MeetingNoticeController {
 
     /**
      * 查询所有公告
-     * @return com.jfzt.meeting.common.Result<java.util.List<java.lang.String>>
+     * @return 公告
      */
     @GetMapping("/get-notice")
     public Result<List<String>> getNotice () {

@@ -1,21 +1,24 @@
 package com.jfzt.meeting.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
 
 /**
+ * 用户表(SysUser)表实体类
  * @author zilong.deng
- * @TableName sys_user
- * @date 2024/05/06
+ * @since 2024-06-05 09:41:56
  */
 @TableName(value = "sys_user")
 @Data
 public class SysUser implements Serializable {
     /**
-     *
+     *id
      */
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -39,11 +42,7 @@ public class SysUser implements Serializable {
      */
     private Integer level;
 
-    /**
-     * 逻辑删除0否1是
-     */
-    @TableLogic
-    private Integer isDeleted;
+
 
     @Serial
     @TableField(exist = false)
@@ -65,8 +64,7 @@ public class SysUser implements Serializable {
                 && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
                 && (this.getUserName() == null ? other.getUserName() == null : this.getUserName().equals(other.getUserName()))
                 && (this.getPassword() == null ? other.getPassword() == null : this.getPassword().equals(other.getPassword()))
-                && (this.getLevel() == null ? other.getLevel() == null : this.getLevel().equals(other.getLevel()))
-                && (this.getIsDeleted() == null ? other.getIsDeleted() == null : this.getIsDeleted().equals(other.getIsDeleted()));
+                && (this.getLevel() == null ? other.getLevel() == null : this.getLevel().equals(other.getLevel()));
     }
 
     @Override
@@ -78,7 +76,6 @@ public class SysUser implements Serializable {
         result = prime * result + ((getUserName() == null) ? 0 : getUserName().hashCode());
         result = prime * result + ((getPassword() == null) ? 0 : getPassword().hashCode());
         result = prime * result + ((getLevel() == null) ? 0 : getLevel().hashCode());
-        result = prime * result + ((getIsDeleted() == null) ? 0 : getIsDeleted().hashCode());
         return result;
     }
 
@@ -92,7 +89,6 @@ public class SysUser implements Serializable {
                 ", userName=" + userName +
                 ", password=" + password +
                 ", level=" + level +
-                ", isDeleted=" + isDeleted +
                 ", serialVersionUID=" + serialVersionUID +
                 "]";
     }

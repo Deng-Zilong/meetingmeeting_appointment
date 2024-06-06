@@ -12,8 +12,9 @@ import org.xml.sax.InputSource;
 
 /**
  * XMLParse class
- *
- * 提供提取消息格式中的密文及生成回复消息格式的接口.
+ * 提供提取消息格式中的密文及生成回复消息格式的接口
+ * @author zhenxing.lu
+ * @since 2024-04-20 16:12:4
  */
 class XMLParse {
 

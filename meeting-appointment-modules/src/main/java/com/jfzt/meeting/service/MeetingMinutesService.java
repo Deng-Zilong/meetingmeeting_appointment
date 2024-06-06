@@ -3,30 +3,43 @@ package com.jfzt.meeting.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingMinutes;
-import com.jfzt.meeting.entity.MeetingMinutesVO;
+import com.jfzt.meeting.entity.vo.MeetingMinutesVO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 /**
+ * 针对表【meeting_minutes(会议纪要)】的数据库操作Service
  * @author zilong.deng
- * @description 针对表【meeting_minutes(会议纪要)】的数据库操作Service
- * @createDate 2024-05-29 18:04:16
+ * @since 2024-06-04 14:09:31
  */
 @Service
 public interface MeetingMinutesService extends IService<MeetingMinutes> {
 
     /**
+     * 根据会议记录id或用户id查询会议纪要
      * @param meetingMinutes 会议记录id或用户id
-     * @return {@code List<MeetingMinutesVO>}
-     * @description 根据会议记录id或用户id查询会议纪要
+     * @return 会议纪要VO
      */
     List<MeetingMinutesVO> getMeetingMinutes (MeetingMinutes meetingMinutes);
 
+
     /**
-     * @Description 保存会议纪要
-     * @Param [meetingMinutes]
-     * @return com.jfzt.meeting.common.Result<java.lang.Object>
+     * 根据用户id 纪要id删除指定纪要
+     * @param meetingMinutes userId id
      */
-    Result<Object> saveOrUpdateMinutes(MeetingMinutes meetingMinutes);
+    void deleteMeetingMinutes (MeetingMinutes meetingMinutes);
+
+    /**
+     * 根据会议id删除所有会议纪要
+     * @param meetingRecordId 会议id
+     */
+    void deleteMeetingMinutes (Long meetingRecordId);
+
+    /**
+     * 保存会议纪要
+     * @param meetingMinutes 会议纪要
+     * @return 保存结果
+     */
+    Result<Object> saveOrUpdateMinutes (MeetingMinutes meetingMinutes);
 }

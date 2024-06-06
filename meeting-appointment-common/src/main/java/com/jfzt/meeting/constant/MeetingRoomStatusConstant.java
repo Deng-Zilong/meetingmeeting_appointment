@@ -1,10 +1,9 @@
 package com.jfzt.meeting.constant;
 
 /**
- * 会议室状态
- *
+ * 会议室状态常量类
  * @author zilong.deng
- * @date 2024/05/10
+ * @since 2024-5-9 14:13:51
  */
 public class MeetingRoomStatusConstant {
 
