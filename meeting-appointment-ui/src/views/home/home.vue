@@ -72,7 +72,7 @@
       <div class="every-block choose">
         <div class="choose-title">今日会议预约时间选择</div>
         <div class="choose-main" >
-          <div class="choose-cell" :ref="(el) => timeRefs(el, item.time)" :class="timeColor(item.state)" v-for="item in timeArr" @click.stop="selectTime(item)" @contextmenu.prevent="onRightClick(item.time)">{{ item.time }}</div>
+          <div class="choose-cell" :ref="(el) => timeRefs(el, item.time)" :class="timeColor(item.state)" v-for="item in timeArr" @click.stop="selectTime(item)" @contextmenu.prevent="onRightClick(item.time, item.state)">{{ item.time }}</div>
         </div>
       </div>
       <!-- 会议室预约情况 -->
@@ -261,16 +261,20 @@ const selectTime = (item: any) => {
     return;
   } else {
     router.push('/meeting-appoint')
-    // 如果存在多选时间点
-    if (sortTimeArr) {
+    // 如果存在多选时间点    
+    if (sortTimeArr?.length) {
         const startTime = sortTimeArr[1] ?? sortTimeArr[0];
         // 结束时间加半个小时
         const index = timeArr.value.findIndex((el: any) => el.time == sortTimeArr[0]);
-        const endTime = [...timeArr.value].splice(index+1, 1)[0].time;
-
+        let endTime = '';
+        if (timeArr.value.length == index + 1) {
+          endTime = sortTimeArr[0];
+        } else {
+          endTime = [...timeArr.value].splice(index+1, 1)[0].time;
+        }
         return sessionStorage.setItem('meetingInfo', JSON.stringify({startTime, endTime}));
     }
-    sessionStorage.setItem('meetingInfo', JSON.stringify({startTime: item.time}));
+    sessionStorage.setItem('meetingInfo', JSON.stringify({ startTime: item.time }));
   }
 }
 let classListTimeRefs:any = {}; // 存储dom的classList
@@ -280,7 +284,10 @@ const timeRefs = (el:any, key: string) => {
 }
 let selectTimeArr = ref<any>([]); // 选中的时间点
 let sortTimeArr:any = []; // 降序排序后的选中时间点
-const onRightClick = (time: any) => {
+const onRightClick = (time: any, state: number) => {
+  if ([0, 1].includes(state)) {
+    return;
+  } else {
     // 重复点击同一时间点 移除选中状态
     if (selectTimeArr.value.length == 1 && selectTimeArr.value.includes(time)) {
         classListTimeRefs[time].remove('active');
@@ -324,6 +331,7 @@ const onRightClick = (time: any) => {
             classListTimeRefs[key].remove('active');
         }
     }
+  }
 };
 
 
