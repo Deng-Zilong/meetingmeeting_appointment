@@ -130,7 +130,7 @@ public class MeetingRecordController {
      * @return 会议提示VO
      */
     @GetMapping("/index/meeting-record-prompt")
-    public Result<List<MeetingPromptVO>> prompt(@RequestParam String userId) {
+    public Result<MeetingPromptVO> prompt(@RequestParam String userId) {
         return meetingRecordService.prompt(userId);
     }
 }

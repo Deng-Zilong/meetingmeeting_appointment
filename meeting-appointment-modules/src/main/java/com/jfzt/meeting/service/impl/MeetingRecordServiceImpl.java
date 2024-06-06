@@ -640,7 +640,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .peek(sysUser -> sysUser.setPassword(null))
                 .toList();
         return MeetingPromptVO.builder()
-                .title(lastMeeting.getTitle())
                 .meetingRoomId(lastMeeting.getMeetingRoomId())
                 .meetingRoomName(meetingRoom.getRoomName())
                 .users(userList)
