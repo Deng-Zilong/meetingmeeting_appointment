@@ -21,6 +21,7 @@ public class MessageConstant {
     public static final String NO_USER = "成员不能为空！";
     public static final String CREATE_SUCCESS = "创建成功！";
     public static final String OCCUPIED = "当前会议室已被占用！";
+    public static final int MAX_NAME_LENGTH = 15;
 
     /**
      * 权限处理提示信息
@@ -35,6 +36,8 @@ public class MessageConstant {
     public static final Integer SUPER_ADMIN_LEVEL = 0;
     public static final Integer ADMIN_LEVEL = 1;
     public static final Integer EMPLOYEE_LEVEL = 2;
+
+
 
 
 }

@@ -72,7 +72,7 @@
       <div class="every-block choose">
         <div class="choose-title">今日会议预约时间选择</div>
         <div class="choose-main" >
-          <div class="choose-cell" :class="timeColor(item.state)" v-for="item in timeArr" @click.stop="selectTime(item)">{{ item.time }}</div>
+          <div class="choose-cell" :ref="(el) => timeRefs(el, item.time)" :class="timeColor(item.state)" v-for="item in timeArr" @click.stop="selectTime(item)" @contextmenu.prevent="onRightClick(item.time, item.state)">{{ item.time }}</div>
         </div>
       </div>
       <!-- 会议室预约情况 -->
@@ -260,10 +260,79 @@ const selectTime = (item: any) => {
   if ([0, 1].includes(item.state)) {
     return;
   } else {
-    sessionStorage.setItem('meetingInfo', JSON.stringify({startTime: item.time}));
     router.push('/meeting-appoint')
+    // 如果存在多选时间点    
+    if (sortTimeArr?.length) {
+        const startTime = sortTimeArr[1] ?? sortTimeArr[0];
+        // 结束时间加半个小时
+        const index = timeArr.value.findIndex((el: any) => el.time == sortTimeArr[0]);
+        let endTime = '';
+        if (timeArr.value.length == index + 1) {
+          endTime = sortTimeArr[0];
+        } else {
+          endTime = [...timeArr.value].splice(index+1, 1)[0].time;
+        }
+        return sessionStorage.setItem('meetingInfo', JSON.stringify({startTime, endTime}));
+    }
+    sessionStorage.setItem('meetingInfo', JSON.stringify({ startTime: item.time }));
   }
 }
+let classListTimeRefs:any = {}; // 存储dom的classList
+// 获取时间选择器dom
+const timeRefs = (el:any, key: string) => {
+    classListTimeRefs[key] = el?.classList;
+}
+let selectTimeArr = ref<any>([]); // 选中的时间点
+let sortTimeArr:any = []; // 降序排序后的选中时间点
+const onRightClick = (time: any, state: number) => {
+  if ([0, 1].includes(state)) {
+    return;
+  } else {
+    // 重复点击同一时间点 移除选中状态
+    if (selectTimeArr.value.length == 1 && selectTimeArr.value.includes(time)) {
+        classListTimeRefs[time].remove('active');
+        return selectTimeArr.value = [];
+    }
+
+    if (selectTimeArr.value.length == 2) {
+        // 选中的时间点中 是否存在 当前点击的时间点
+        const index = selectTimeArr.value.findIndex((el: any) => el == time);
+        // 选中的时间点中 已存在 当前点击的时间点 移除选中状态 并删除此时间点
+        if (index != -1) {
+            classListTimeRefs[time].remove('active');
+            return selectTimeArr.value.splice(index, 1);
+        }
+        // 不存在 删除旧时间点 添加新时间点
+        selectTimeArr.value.splice(1,1);
+    }
+    // 添加时间点
+    selectTimeArr.value.push(time);
+
+    // 将时间点按照降序排列（跳转预约页面需要区分开始和结束时间）
+    sortTimeArr = [...selectTimeArr.value].sort((a: string, b: string) => {
+        // 将字符串时间转换为分钟数以便比较
+        const timeA = parseInt(a.split(':')[0]) * 60 + parseInt(a.split(':')[1]);
+        const timeB = parseInt(b.split(':')[0]) * 60 + parseInt(b.split(':')[1]);
+
+        // 返回值决定排序顺序，此处返回负数使得a排在b前面，即降序排列
+        return timeB - timeA;
+    })
+
+    // 添加选中状态
+    if (selectTimeArr.value.length == 1) {
+        return classListTimeRefs[time].add('active');
+    }
+
+    // 将选中的时间区间内的时间点变成选中状态
+    for (const key in classListTimeRefs) {
+        if (sortTimeArr[0] >= key && key >= sortTimeArr[1]) {
+            classListTimeRefs[key].add('active');
+        } else {
+            classListTimeRefs[key].remove('active');
+        }
+    }
+  }
+};
 
 
 /******************************************* 会议室预约情况 ***********************************/
@@ -313,6 +382,7 @@ const getTodayRecord = (data: { userId: string }) => {
 // 点击修改会议
 const modifyMeeting = (item: any) => {
   // 会议-未开始 且 登陆人员=创建者时(item.createdBy === userInfo.value.userId) 才可以修改
+  item.date = dayjs(item.startTime).format('YYYY-MM-DD');  // 获取日期
   if (item.status === 0 && item.createdBy === userInfo.value.userId) {
     sessionStorage.setItem('meetingInfo', JSON.stringify(item));
     router.push('/meeting-appoint')
@@ -701,6 +771,13 @@ onMounted( async () => {
             background-color: #1273DB;
             transform: translateY(-0.3125rem) scale(1.06);
           }
+        }
+        .active {
+            cursor: pointer;
+            font-size: 1rem;
+            color: #FFF;
+            background-color: #1273DB;
+            transform: translateY(-0.3125rem) scale(1.06);
         }
       }
 

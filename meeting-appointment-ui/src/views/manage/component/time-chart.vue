@@ -20,7 +20,7 @@ const setChart = () => {
 // 指定图表的配置项和数据
   const option = {
     title: {
-      text: '统计过去七天使用前十的时间段',
+      text: '近五个工作日使用频次前十的时间段',
       top: "5%",
       left: 'center',
     },
@@ -34,6 +34,8 @@ const setChart = () => {
       // left: '50px',  // grid布局设置适当调整避免X轴文字只能部分显示
       // right: '100px', // grid布局设置适当调整避免X轴文字只能部分显示
       // bottom: '70px',
+    },
+    tooltip: { // 提示框浮层设置 删除就不显示了
     },
     // color: ['#719BE8'],  // 柱状图颜色
     xAxis: {

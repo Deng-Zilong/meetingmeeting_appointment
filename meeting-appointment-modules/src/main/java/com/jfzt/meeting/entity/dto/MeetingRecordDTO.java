@@ -13,7 +13,6 @@ import java.util.List;
  * @author chenyu.di
  * @since 2024-05-09 09:51
  */
-
 @Data
 public class MeetingRecordDTO {
     /**

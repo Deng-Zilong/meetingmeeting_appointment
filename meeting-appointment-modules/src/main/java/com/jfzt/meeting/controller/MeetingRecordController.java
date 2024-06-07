@@ -61,7 +61,8 @@ public class MeetingRecordController {
      * @return 会议记录VO
      */
     @GetMapping("/meeting-record/all-meeting-record")
-    public Result<List<MeetingRecordVO>> getRecordPage (@RequestParam String userId, @RequestParam Long page, @RequestParam Long limit) {
+    public Result<List<MeetingRecordVO>> getRecordPage (@RequestParam String userId,
+                                                        @RequestParam Long page, @RequestParam Long limit) {
         List<MeetingRecordVO> recordVoList = meetingRecordService.getAllRecordVoListPage(userId, page, limit);
         return Result.success(recordVoList);
     }

@@ -19,8 +19,15 @@
                         <el-input v-model="formData.title" placeholder="请输入" />
                     </el-form-item>
                     <el-form-item label="参会人" prop="meetingPeople">
-                        <el-input class="meeting-people" v-model="formData.meetingPeople" readonly :prefix-icon="Plus"
+                        <el-popover placement="bottom" trigger="hover" width="270">
+                            <template #reference>
+                                <el-input class="meeting-people" v-model="formData.meetingPeople" readonly :prefix-icon="Plus"
                             placeholder="添加参会人" @click="handleAddPerson" />
+                            </template>
+                            <div>
+                                <p class="prompt" @click="handlePromptPerson" >{{ popoverObj.meetingPeople }}</p>
+                            </div>
+                        </el-popover>
                     </el-form-item>
                 </div>
                 <div class="appoint-row">
@@ -118,13 +125,14 @@ const isCreate = ref(true); // 是否是创建会议 true创建 false修改
 onMounted(() => {
     // 获取会议相关参数
     const meetingInfo = JSON.parse(sessionStorage.getItem('meetingInfo') as string);
+    
     // 历史记录修改
     if (meetingInfo?.id) {
         // 修改会议
         isCreate.value = false;
         // 解构所需数据
         const { id, meetingRoomId, title, description, meetingRoomName, status, createdBy, adminUserName, startTime, endTime, users, date } = meetingInfo;
-    
+        
         const meetingPeople = Array.from(new Set(users?.map((el: any) => el.userName))).join(','); // 获取参会人名字并去重
         addPersonForm.value.personIds = Array.from(new Set(users.map((el: any) => el.userId))); // 获取参会人id并去重 用于成员树回显
         // 重组 form 表单数据
@@ -133,35 +141,38 @@ onMounted(() => {
             meetingRoomId: String(meetingRoomId),      // 会议室id
             title,              // 会议名称
             description,        // 会议描述
-            startTime: dayjs(startTime as string).format('HH:mm'), // 会议开始时间
-            endTime: dayjs(endTime as string).format('HH:mm'),     // 会议结束时间
+            startTime: String(dayjs(startTime as string).format('HH:mm')), // 会议开始时间
+            endTime: String(dayjs(endTime as string).format('HH:mm')),     // 会议结束时间
             meetingRoomName,     // 会议室名称
             meetingPeople,       // 参会人名字
             status,              // 会议状态
             createdBy,           // 创建人id
             adminUserName,       // 创建人名字
             users,               // 参会人列表
-            date,   // 会议日期
+            date,                // 会议日期
             groupName: '',       // 群组名称
         }
-        
+    }
+    
+    if (!meetingInfo?.id) {
+        handleMeetingRecordPrompt(); // 获取最近1次创建人创建会议的信息
+        // 预约会议室 处理传参数据
+        if ((meetingInfo?.meetingRoomId || meetingInfo?.startTime)) {
+            const {date, meetingRoomId, startTime, endTime } = meetingInfo;
+            
+            formData.value.meetingRoomId = meetingRoomId ? meetingRoomId : ''; // 会议室id
+            formData.value.startTime = startTime ? startTime as string : '';   // 开始时间
+            formData.value.endTime = endTime ? endTime as string : '';   // 结束时间
+            formData.value.date = date ? date : currentDate;  // 日期
+        }
     }
 
-    // 预约会议室 处理传参数据
-    if ((meetingInfo?.meetingRoomId || meetingInfo?.startTime) && !meetingInfo?.id) {
-        const {date, meetingRoomId, startTime } = meetingInfo;
-        
-        formData.value.meetingRoomId = meetingRoomId ? meetingRoomId : ''; // 会议室id
-        formData.value.startTime = startTime ? startTime as string : '';   // 开始时间
-        formData.value.date = date ? date : currentDate;  // 日期
-    }
     // 获取当前开始时间和结束时间的可选时间段
     minStartTime.value = currentTime;
     minEndTime.value = formData.value.startTime;
 
     // 获取群组列表
     getGroupList();
-    handleMeetingRecordPrompt(); // 获取最近三次创建人创建会议的信息
     handleAvailableMeetingRooms(formData.value.startTime, formData.value.endTime); // 获取可用会议室
 })
 
@@ -422,21 +433,27 @@ const submitForm = (formEl: FormInstance | undefined) => {
         }
     })
 }
+const popoverObj = ref<any>({
+    users: [],
+    meetingPeople: '',
+})
 /**
- * @description 提示最近三次创建人创建会议的信息
+ * @description 提示最近1次创建人创建会议的信息
  */
 const handleMeetingRecordPrompt = () => {
-    // meetingRecordPrompt({userId: userInfo.value.userId})
-    // .then((res: any) => {
-    //     const {meetingRoomId, meetingRoomName, title, users} = res.data[0];
-    //     formData.value.meetingRoomId = String(meetingRoomId);
-    //     formData.value.meetingRoomName = meetingRoomName;
-    //     // formData.value.meetingPeople = 
-    //     formData.value.title = title;
-    //     formData.value.users = users;
-    //     addPersonForm.value.personIds = Array.from(new Set(users.map((el: any) => el.userId))); // 获取参会人id并去重 用于成员树回显
-    // })
-    // .catch((err: any) => {})
+    meetingRecordPrompt({userId: userInfo.value.userId})
+    .then((res: any) => {
+        const { users} = res.data;
+        popoverObj.value.users = users;
+        popoverObj.value.meetingPeople = Array.from(new Set(users.map((el: any) => el.userName))).join(",");
+    })
+    .catch((err: any) => {})
+}
+const handlePromptPerson = () => {
+    const {users, meetingPeople} = popoverObj.value;
+    formData.value.users = users;
+    formData.value.meetingPeople = meetingPeople;
+    addPersonForm.value.personIds = Array.from(new Set(users.map((el: any) => el.userId))); // 获取参会人id并去重 用于成员树回显
 }
 // 离开页面
 onBeforeUnmount(() => {
@@ -571,6 +588,10 @@ onBeforeUnmount(() => {
             }
         }
     }
-
+    // 历史参会人提示信息
+    
+}
+.prompt {
+    cursor: pointer;
 }
 </style>

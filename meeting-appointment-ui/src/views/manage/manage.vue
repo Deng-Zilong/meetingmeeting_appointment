@@ -127,7 +127,6 @@
 
     const activeName = ref('first')
     const handleClick = (tab: TabsPaneContext, event: Event) => {
-      console.log(tab.props, event)
     }
     onMounted(() => {
       userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}');  // 用户信息

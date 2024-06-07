@@ -18,13 +18,14 @@ import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
 import com.jfzt.meeting.mapper.MeetingRecordMapper;
 import com.jfzt.meeting.mapper.MeetingRoomMapper;
+import com.jfzt.meeting.mapper.SysUserMapper;
 import com.jfzt.meeting.service.*;
 import com.jfzt.meeting.task.MeetingReminderScheduler;
 import com.jfzt.meeting.utils.WxUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import me.chanjar.weixin.common.error.WxErrorException;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
 import static com.jfzt.meeting.constant.IsDeletedConstant.IS_DELETED;
 import static com.jfzt.meeting.constant.IsDeletedConstant.NOT_DELETED;
 import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
+import static com.jfzt.meeting.constant.MeetingRoomStatusConstant.MEETINGROOM_STATUS_PAUSE;
 import static com.jfzt.meeting.constant.MessageConstant.*;
 
 /**
@@ -65,6 +67,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     private MeetingReminderScheduler meetingReminderScheduler;
     @Resource
     private MeetingMinutesService meetingMinutesService;
+    @Autowired
+    private SysUserMapper sysUserMapper;
 
 
     /**
@@ -158,7 +162,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         return Math.toIntExact(this.baseMapper.selectCount(
                 new LambdaQueryWrapper<MeetingRecord>()
                         .between(MeetingRecord::getStartTime, LocalDateTime.now().toLocalDate().atStartOfDay()
-                                , LocalDateTime.now().toLocalDate().atTime(23, 59, 59))));
+                                , LocalDateTime.now().toLocalDate().atTime(23, 59, 59))
+                        .ne(MeetingRecord::getStatus, MEETING_RECORD_STATUS_CANCEL)));
     }
 
     /**
@@ -264,7 +269,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             List<String> userIds = attendeesMapper.selectList(
                             new LambdaQueryWrapper<MeetingAttendees>()
                                     .eq(MeetingAttendees::getMeetingRecordId, record.getId()))
-                    .stream().map(MeetingAttendees::getUserId).collect(Collectors.toList());
+                    .stream().map(MeetingAttendees::getUserId).distinct().collect(Collectors.toList());
             StringBuffer attendees = new StringBuffer();
             ArrayList<SysUserVO> users = new ArrayList<>();
             userService.getUserInfo(userIds, attendees, users);
@@ -306,11 +311,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                         MeetingRoom meetingRoom = meetingRoomMapper.getByRoomId(record.getMeetingRoomId());
                         if (meetingRoom != null) {
                             recordVO.setMeetingRoomName(meetingRoom.getRoomName());
-                        }
-                        // 设置创建人信息
-                        SysUser adminUser = userService.getById(record.getCreatedBy());
-                        if (adminUser != null) {
-                            recordVO.setAdminUserName(adminUser.getUserName());
                         }
                         // 设置参会人信息
                         List<String> userIds = attendeesMapper.selectList(
@@ -401,23 +401,26 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         this.baseMapper.updateById(meetingRecord);
         attendeesMapper.delete(new LambdaQueryWrapper<MeetingAttendees>()
                 .eq(MeetingAttendees::getMeetingRecordId, meetingId));
+        //取消会议提醒
         meetingReminderScheduler.cancelMeetingReminder(meetingId);
         //清除会议纪要
         meetingMinutesService.deleteMeetingMinutes(meetingId);
+        MeetingRoom meetingRoom = meetingRoomService.getById(meetingRecord.getMeetingRoomId());
+        SysUser sysUser = sysUserMapper.selectByUserId(meetingRecord.getCreatedBy());
         String reminder =
-                "**会议提醒**\n" +
-                        "会议 : " + meetingRecord.getTitle() + "\n" +
-                        "日期 :" + meetingRecord.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "\n"
-                        + "时间 : " + meetingRecord.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
-                        + " ~ " + meetingRecord.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")) + "\n" +
-                        "会议已取消！";
-        try {
-            //发送取消会议提醒
-            wxUtil.sendsWxReminders(userIds, reminder);
-        } catch (WxErrorException e) {
-            log.error("发送取消会议提醒失败！", e);
-            //            throw new RRException("发送取消会议提醒失败！", ErrorCodeEnum.SERVICE_ERROR_C0001.getCode());
-        }
+                "#### 会议提醒\n" +
+                        "**会议主题 :** " + meetingRecord.getTitle() + "\n" +
+                        "**发起人 :** " +sysUser.getUserName()  + "\n" +
+                        "**日期 :** " + meetingRecord.getStartTime().format(DateTimeFormatter.ofPattern("yyyy 年 MM 月 dd 日"))
+                        + "\n" +
+                        "**时间 :** " + meetingRecord.getStartTime().format(DateTimeFormatter.ofPattern("HH : mm"))
+                        + " ~ "
+                        + meetingRecord.getEndTime().format(DateTimeFormatter.ofPattern("HH : mm")) + "\n" +
+                        "**会议室 :** " + meetingRoom.getRoomName() + "\n" +
+                        "**地点 :** " + meetingRoom.getLocation() + "\n" +
+                 "<font color=\"comment\">**会议已取消！** </font>";
+        //发送取消会议提醒
+        wxUtil.sendsWxReminders(userIds, reminder);
         return Result.success();
     }
 
@@ -426,6 +429,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      * @param meetingRecordDTO 会议记录DTO
      * @return 新增会议结果
      */
+
     @Override
     @Transactional
     public Result<Objects> addMeeting (MeetingRecordDTO meetingRecordDTO) {
@@ -440,6 +444,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         } else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())) {
             // 判断meetingRecord的开始时间是否早于当前时间，如果是，则返回错误信息
             throw new RRException(START_TIME_LT_NOW);
+        }
+        //会议室是否被禁用
+        MeetingRoom meetingRoom = meetingRoomService.getById(meetingRecord.getMeetingRoomId());
+        if (Objects.equals(meetingRoom.getStatus(), MEETINGROOM_STATUS_PAUSE))  {
+            throw new RRException("会议室不可用", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
         }
         //根据时间段查看是否有会议占用
         LambdaQueryWrapper<MeetingRecord> queryWrapper = new LambdaQueryWrapper<>();
@@ -470,6 +479,21 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         // 保存MeetingAttendees列表
         meetingAttendeesService.saveBatch(attendeesList);
         meetingRecordDTO.setId(meetingRecord.getId());
+        SysUser sysUser = userService
+                .getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, meetingRecordDTO.getCreatedBy()));
+        String reminder =
+                "#### 会议提醒\n" +
+                        "**会议主题 :** " + meetingRecordDTO.getTitle() + "\n" +
+                        "**发起人 :** " +sysUser.getUserName()  + "\n" +
+                        "**日期 :** " + meetingRecordDTO.getStartTime().format(DateTimeFormatter.ofPattern("yyyy 年 MM 月 dd 日"))
+                        + "\n" +
+                "**时间 :** " + meetingRecordDTO.getStartTime().format(DateTimeFormatter.ofPattern("HH : mm"))
+                + " ~ "
+                + meetingRecordDTO.getEndTime().format(DateTimeFormatter.ofPattern("HH : mm")) + "\n" +
+                "**会议室 :** " + meetingRoom.getRoomName() + "\n" +
+                "**地点 :** " + meetingRoom.getLocation() + "\n" +
+                "<font color=\"info\">**会议已预约！** </font>";
+        wxUtil.sendsWxReminders(meetingRecordDTO.getUsers().stream().map(SysUser::getUserId).toList(),reminder);
         //定时发送提醒
         meetingReminderScheduler.scheduleMeetingReminder(meetingRecordDTO);
         return Result.success(CREATE_SUCCESS);
@@ -490,10 +514,35 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         BeanUtils.copyProperties(meetingRecordDTO, meetingRecord);
         // 判断meetingRecord的结束时间是否早于开始时间，如果是，则返回错误信息
         if (meetingRecord.getEndTime().isBefore(meetingRecord.getStartTime())) {
-            return Result.fail(START_TIME_GT_END_TIME);
+            throw new RRException(START_TIME_GT_END_TIME, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
         } else if (meetingRecord.getStartTime().isBefore(LocalDateTime.now())) {
             // 判断meetingRecord的开始时间是否早于当前时间，如果是，则返回错误信息
-            return Result.fail(START_TIME_LT_NOW);
+            throw new RRException(START_TIME_LT_NOW, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+        }
+        //会议室是否被禁用
+        MeetingRoom meetingRoom = meetingRoomService.getById(meetingRecord.getMeetingRoomId());
+        if (Objects.equals(meetingRoom.getStatus(), MEETINGROOM_STATUS_PAUSE))  {
+            throw new RRException("会议室不可用", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+        }
+        //根据时间段查看是否有会议占用会议室
+        LambdaQueryWrapper<MeetingRecord> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.notIn(MeetingRecord::getStatus, MEETING_RECORD_STATUS_CANCEL)
+                .eq(MeetingRecord::getMeetingRoomId, meetingRecord.getMeetingRoomId());
+        //开始时间或结束时间在时间段内 或 开始时间与结束时间之间包含时间段
+        queryWrapper.and(recordQueryWrapper -> recordQueryWrapper
+                //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
+                .between(MeetingRecord::getStartTime, meetingRecord.getStartTime(), meetingRecord.getEndTime().minusSeconds(1))
+                //结束时间在时间段内 前不含后含  8-9属于8.5-9不属于9-9.5
+                .or().between(MeetingRecord::getEndTime, meetingRecord.getStartTime().plusSeconds(1), meetingRecord.getEndTime())
+                //时间段包含在开始时间(含)和结束时间(含)之间    8-9 属于8-8.5属于8.5-9
+                .or().lt(MeetingRecord::getStartTime, meetingRecord.getStartTime().plusSeconds(1))
+                .gt(MeetingRecord::getEndTime, meetingRecord.getEndTime().minusSeconds(1)));
+        List<MeetingRecord> meetingRecords = list(queryWrapper);
+        //占用会议为修改的会议则可以修改
+        if (!meetingRecords.isEmpty()) {
+            if (!Objects.equals(meetingRecords.getFirst().getId(), meetingRecord.getId())) {
+                throw new RRException(OCCUPIED, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+            }
         }
         // 使用meetingRecord中的数据更新数据库中的数据
         updateById(meetingRecord);
@@ -512,7 +561,23 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .collect(Collectors.toList());
         // 更新MeetingAttendees列表
         meetingAttendeesService.saveBatch(attendeesList);
-        //重新发送定时任务提醒
+        SysUser sysUser = userService
+                .getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, meetingRecordDTO.getCreatedBy()));
+
+        String reminder =
+                "#### 会议提醒\n" +
+                        "**会议主题 :** " + meetingRecordDTO.getTitle() + "\n" +
+                        "**发起人 :** " +sysUser.getUserName()  + "\n" +
+                        "**日期 :** " + meetingRecordDTO.getStartTime().format(DateTimeFormatter.ofPattern("yyyy 年 MM 月 dd 日"))
+                        + "\n" +
+                        "**时间 :** " + meetingRecordDTO.getStartTime().format(DateTimeFormatter.ofPattern("HH : mm"))
+                        + " ~ "
+                        + meetingRecordDTO.getEndTime().format(DateTimeFormatter.ofPattern("HH : mm")) + "\n" +
+                        "**会议室 :** " + meetingRoom.getRoomName() + "\n" +
+                        "**地点 :** " + meetingRoom.getLocation() + "\n" +
+                        "<font color=\"info\">**会议信息已变更，请注意！** </font>";
+        wxUtil.sendsWxReminders(meetingRecordDTO.getUsers().stream().map(SysUser::getUserId).toList(),reminder);
+        // 重新发送定时任务提醒
         meetingReminderScheduler.cancelMeetingReminder(meetingRecordDTO.getId());
         meetingReminderScheduler.scheduleMeetingReminder(meetingRecordDTO);
         return Result.success(UPDATE_SUCCESS);
@@ -605,14 +670,13 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      */
     @Override
     public Result<MeetingPromptVO> prompt(String userId) {
-
+        try {
         MeetingRecord lastMeeting = lambdaQuery()
                 .select(MeetingRecord::getId, MeetingRecord::getMeetingRoomId)
                 .eq(MeetingRecord::getCreatedBy, userId)
                 .orderByDesc(MeetingRecord::getGmtCreate)
                 .list()
                 .getFirst();
-        try {
             getMeetingPromptVO(lastMeeting);
             return Result.success(getMeetingPromptVO(lastMeeting));
         } catch (Exception e) {
