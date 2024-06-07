@@ -332,7 +332,7 @@ watch(()=>formData.value.date, (newValue)=> {
     // 清空开始和结束时间
     formData.value.startTime = '';
     formData.value.endTime = '';
-}, {immediate: true})
+}, {deep: true})
 
 // 验证群组名称
 const validateGroupName = (rule: any, value: any, callback: any) => {

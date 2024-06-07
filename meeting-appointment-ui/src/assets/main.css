@@ -15,15 +15,16 @@
   &::-webkit-scrollbar { /* WebKit */
     width: 0;
     height: 0;
+    color: transparent;
   }
 
   overflow: scroll; /* 使内容可滚动 */
   
-  /* 假滚动条样式  目前不起作用 */
-  &::-webkit-scrollbar-thumb { /* WebKit 滚动条拇指样式 */
-    background-color: rgba(0,0,0,1); /* 颜色自定义 */
+  /* 假滚动条样式  目前不起作用 *//* WebKit 滚动条拇指样式 */
+  /* &::-webkit-scrollbar-thumb { 
+    background-color: rgba(0,0,0,1); 
     border-radius: 6px;
-  }
+  } */
 }
 
 /* 中心*/
