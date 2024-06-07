@@ -19,7 +19,7 @@ const setChart = () => {
 // 指定图表的配置项和数据
   const option = {
     title: {
-      text: '统计七日内各会议室占用率（不包括周末9：00-18：00）',
+      text: '前五个工作日会议室占用率（ 9：00 - 18：00 ）',
       top: "5%",
       left: 'center',
     },
@@ -57,7 +57,7 @@ const setChart = () => {
     series: [
       {
         type: 'bar',
-        name: '已占用时间段次数',
+        name: '时间段已占用个数',
         // barWidth: 20,
         // barGap:'0%',/*多个并排柱子设置柱子之间的间距*/
         // barCategoryGap:'50%',/*多个并排柱子设置柱子之间的间距*/
@@ -69,7 +69,7 @@ const setChart = () => {
       },
       {
         type: 'bar',
-        name: '时间段可使用总次数',
+        name: '时间段总数',
         // barWidth: 20,
         barGap: '-100%',
         z: '-1',

@@ -538,8 +538,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .or().lt(MeetingRecord::getStartTime, meetingRecord.getStartTime().plusSeconds(1))
                 .gt(MeetingRecord::getEndTime, meetingRecord.getEndTime().minusSeconds(1)));
         List<MeetingRecord> meetingRecords = list(queryWrapper);
+        //占用会议为修改的会议则可以修改
         if (!meetingRecords.isEmpty()) {
-            throw new RRException(OCCUPIED, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+            if (!Objects.equals(meetingRecords.getFirst().getId(), meetingRecord.getId())) {
+                throw new RRException(OCCUPIED, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+            }
         }
         // 使用meetingRecord中的数据更新数据库中的数据
         updateById(meetingRecord);
