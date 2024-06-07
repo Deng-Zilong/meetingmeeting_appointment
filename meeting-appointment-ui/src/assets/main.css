@@ -10,12 +10,13 @@
 /* 滚动条样式 不占位置 */
 .my-main-scrollbar {
   /* 实际滚动条透明 */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important;  /* IE and Edge */
   &::-webkit-scrollbar { /* WebKit */
-    width: 0;
-    height: 0;
-    color: transparent;
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    color: transparent !important;
   }
 
   overflow: scroll; /* 使内容可滚动 */

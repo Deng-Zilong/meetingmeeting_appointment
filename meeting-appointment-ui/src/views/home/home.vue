@@ -511,7 +511,7 @@ onMounted( async () => {
           gap: 10px;
           width: 770px;
           height: 320px;
-          overflow-y: auto;
+          // overflow-y: auto;
           .main-items {
             display: flex;
             flex-direction: column;  // 控制内部元素垂直排列
@@ -839,10 +839,10 @@ onMounted( async () => {
         }
         .table-main {
           max-height: 18.6rem;
-          overflow-y: auto;
-          &::-webkit-scrollbar {
-            display: none;
-          }
+          // overflow-y: auto;
+          // &::-webkit-scrollbar {
+          //   display: none;
+          // }
           .table-tr {
             display: flex;
             text-align: center;

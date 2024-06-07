@@ -469,8 +469,9 @@
             font-weight: 300;
           }
           &::-webkit-scrollbar {
-            width: 1.1rem;
-            border-radius: .9375rem;
+            display: block !important;
+            width: 1.1rem !important;
+            border-radius: .9375rem !important;
           }
           /* 自定义滚动条轨道 */
           &::-webkit-scrollbar-track {
