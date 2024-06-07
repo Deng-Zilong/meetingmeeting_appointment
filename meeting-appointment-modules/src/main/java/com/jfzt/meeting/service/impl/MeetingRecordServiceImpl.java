@@ -667,14 +667,13 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      */
     @Override
     public Result<MeetingPromptVO> prompt(String userId) {
-
+        try {
         MeetingRecord lastMeeting = lambdaQuery()
                 .select(MeetingRecord::getId, MeetingRecord::getMeetingRoomId)
                 .eq(MeetingRecord::getCreatedBy, userId)
                 .orderByDesc(MeetingRecord::getGmtCreate)
                 .list()
                 .getFirst();
-        try {
             getMeetingPromptVO(lastMeeting);
             return Result.success(getMeetingPromptVO(lastMeeting));
         } catch (Exception e) {
