@@ -52,7 +52,19 @@
                   <div class="table-tr" v-for="(item, index) in value.list">
                     <div class="tr-cell">{{ item.meetingRoomName }}</div>
                     <div class="tr-cell">{{ item.time }}</div>
-                    <div class="tr-cell">{{ item.title }}</div>
+                    <div class="tr-cell">
+                      <el-popover
+                            placement="bottom"
+                            :disabled="item.title?.length < 12"
+                            :width="240"
+                            trigger="hover"
+                            :content="item.title"
+                        >
+                            <template #reference>
+                              <p class="three-dot">{{ item.title }}</p>
+                            </template>
+                        </el-popover>
+                    </div>
                     <div class="tr-cell attend-cell">
                         <el-popover
                             placement="bottom"
@@ -62,7 +74,7 @@
                             :content="item.attendees"
                         >
                             <template #reference>
-                              {{ item.attendees }}
+                              <p class="three-dot">{{ item.attendees }}</p>
                             </template>
                         </el-popover>
                     </div>
@@ -393,6 +405,13 @@
           .attend-cell {
             flex: 1;
           }
+          // 有显示popover的 单独设置溢出为省略号
+          .three-dot {
+            text-wrap: nowrap;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
         }
         .table-th {
           margin-left: 2.5rem;
@@ -436,6 +455,7 @@
               padding: 20px 0; // 单独控制单元行上下内边距
               .tr-cell {
                 text-wrap: nowrap;
+                white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
               }
