@@ -20,7 +20,7 @@ const setChart = () => {
 // 指定图表的配置项和数据
   const option = {
     title: {
-      text: '统计过去七天使用前十的时间段',
+      text: '近五个工作日使用频次前十的时间段',
       top: "5%",
       left: 'center',
     },
