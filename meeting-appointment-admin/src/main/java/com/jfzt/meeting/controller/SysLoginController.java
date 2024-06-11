@@ -139,10 +139,15 @@ public class SysLoginController {
      *
      * @return Result
      */
-    @GetMapping("delete")
-    public Result<String> delete (@RequestParam("userId") String userId) {
-        //        redisTemplate.opsForValue().getAndDelete("userInfo:"+userId);
-        return Result.success("删除成功");
+    @GetMapping("delete/{name}")
+
+    public Result<String> delete (@PathVariable("spuId") String userId) {
+        if(StringUtils.isEmpty(userId)){
+            return Result.success("用户已经退出");
+        }else {
+            redisTemplate.opsForValue().getAndDelete("userInfo:"+userId);
+            return Result.success("删除成功");
+        }
     }
 
 
