@@ -43,11 +43,13 @@ public interface SysDepartmentUserService extends IService<SysDepartmentUser> {
 
     /**
      * 查找企业微信用户部门关联表
+     *
      * @param departmentLength 部门长度
-     * @throws WxErrorException WxErrorException
+     * @return
+     * @throws WxErrorException         WxErrorException
      * @throws NoSuchAlgorithmException NoSuchAlgorithmException
-     **/
-    void findDepartmentUser (Long departmentLength) throws WxErrorException, NoSuchAlgorithmException;
+     */
+    Boolean findDepartmentUser (Long departmentLength) throws WxErrorException, NoSuchAlgorithmException;
 
     /**
      * 获取部门成员树
