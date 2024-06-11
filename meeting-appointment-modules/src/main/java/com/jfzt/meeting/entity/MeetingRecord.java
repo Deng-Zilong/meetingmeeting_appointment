@@ -15,11 +15,9 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 会议记录表
- *
- * @author zilong.deng
- * @TableName meeting_record
- * @date 2024/04/28
+ * 会议记录表(MeetingRecord)表实体类
+ *  @author zilong.deng
+ * @since 2024-06-05 09:43:39
  */
 @TableName(value = "meeting_record")
 @Data

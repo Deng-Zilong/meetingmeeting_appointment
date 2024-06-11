@@ -19,8 +19,15 @@
                         <el-input v-model="formData.title" placeholder="请输入" />
                     </el-form-item>
                     <el-form-item label="参会人" prop="meetingPeople">
-                        <el-input class="meeting-people" v-model="formData.meetingPeople" readonly :prefix-icon="Plus"
+                        <el-popover placement="bottom" trigger="hover" width="270">
+                            <template #reference>
+                                <el-input class="meeting-people" v-model="formData.meetingPeople" readonly :prefix-icon="Plus"
                             placeholder="添加参会人" @click="handleAddPerson" />
+                            </template>
+                            <div>
+                                <p class="prompt" @click="handlePromptPerson" >{{ popoverObj.meetingPeople }}</p>
+                            </div>
+                        </el-popover>
                     </el-form-item>
                 </div>
                 <div class="appoint-row">
@@ -31,8 +38,8 @@
                     <el-form-item label="结束时间" prop="endTime">
                         <el-time-select 
                             v-model="formData.endTime" 
-                            :min-time="minEndTime" 
-                            :start="timeStart"
+                            :min-time="minEndTime || timeStart" 
+                            :start="minEndTime || timeStart"
                             step="00:15" 
                             :end="timeEnd" 
                             placeholder="请选择"
@@ -43,7 +50,7 @@
                 <div class="appoint-row">
                     <el-form-item label="日期" prop="date" class="row-date">
                         <el-date-picker v-model="formData.date" type="date" class="date" :disabled-date="disabledDate"
-                            placeholder="选择日期" />
+                            placeholder="选择日期"/>
                     </el-form-item>
                     <el-form-item label="当前可选地点" prop="meetingRoomId">
                         <el-select v-model.string="formData.meetingRoomId" placeholder="请选择" @change="handleChangeRoom">
@@ -99,8 +106,10 @@ import { ElMessage, dayjs } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import personTreeDialog from '@/components/person-tree-dialog.vue'
 import { addMeetingGroup, getMeetingGroupList } from '@/request/api/group'
-import { addMeetingRecord, availableMeetingRooms, updateMeetingRecord } from '@/request/api/meeting-appoint'
+import { addMeetingRecord, availableMeetingRooms, meetingRecordPrompt, updateMeetingRecord } from '@/request/api/meeting-appoint'
 import { meetingStatus } from '@/stores/meeting-status'
+import { useThrottle } from '@/utils/method'
+import { meetingAppointTime } from '@/utils/types'
 
 const routes = useRoute();
 const router = useRouter();
@@ -108,18 +117,22 @@ const useMeetingStatus = meetingStatus();
 const userInfo = ref<any>(JSON.parse(localStorage.getItem('userInfo') as string) || '');
 const currentUserId = ref<string>(userInfo.value.userId);
 
+const currentDate:string = dayjs(new Date()).format('YYYY-MM-DD');  // 当前日期 yy-mm-dd
+const currentTime:string = dayjs(new Date()).format('HH:mm'); // 当前时间 HH:mm
+
 const isCreate = ref(true); // 是否是创建会议 true创建 false修改
 
 onMounted(() => {
     // 获取会议相关参数
     const meetingInfo = JSON.parse(sessionStorage.getItem('meetingInfo') as string);
+    
     // 历史记录修改
     if (meetingInfo?.id) {
         // 修改会议
         isCreate.value = false;
         // 解构所需数据
-        const { id, meetingRoomId, title, description, meetingRoomName, status, createdBy, adminUserName, startTime, endTime, users } = meetingInfo;
-    
+        const { id, meetingRoomId, title, description, meetingRoomName, status, createdBy, adminUserName, startTime, endTime, users, date } = meetingInfo;
+        
         const meetingPeople = Array.from(new Set(users?.map((el: any) => el.userName))).join(','); // 获取参会人名字并去重
         addPersonForm.value.personIds = Array.from(new Set(users.map((el: any) => el.userId))); // 获取参会人id并去重 用于成员树回显
         // 重组 form 表单数据
@@ -128,31 +141,39 @@ onMounted(() => {
             meetingRoomId: String(meetingRoomId),      // 会议室id
             title,              // 会议名称
             description,        // 会议描述
-            startTime: dayjs(startTime as string).format('HH:mm'), // 会议开始时间
-            endTime: dayjs(endTime as string).format('HH:mm'),     // 会议结束时间
+            startTime: String(dayjs(startTime as string).format('HH:mm')), // 会议开始时间
+            endTime: String(dayjs(endTime as string).format('HH:mm')),     // 会议结束时间
             meetingRoomName,     // 会议室名称
             meetingPeople,       // 参会人名字
             status,              // 会议状态
             createdBy,           // 创建人id
             adminUserName,       // 创建人名字
             users,               // 参会人列表
-            date: dayjs(new Date()).format('YYYY-MM-DD'),  // 会议日期
+            date,                // 会议日期
             groupName: '',       // 群组名称
         }
     }
-
-    // 预约会议室 处理传参数据
-    if ((meetingInfo?.meetingRoomId || meetingInfo?.startTime) && !meetingInfo?.id) {
-        const { meetingRoomId, startTime } = meetingInfo;
-        formData.value.meetingRoomId = meetingRoomId ? meetingRoomId : '';
-        formData.value.startTime = startTime ? startTime : '';
+    
+    if (!meetingInfo?.id) {
+        handleMeetingRecordPrompt(); // 获取最近1次创建人创建会议的信息
+        // 预约会议室 处理传参数据
+        if ((meetingInfo?.meetingRoomId || meetingInfo?.startTime)) {
+            const {date, meetingRoomId, startTime, endTime } = meetingInfo;
+            
+            formData.value.meetingRoomId = meetingRoomId ? meetingRoomId : ''; // 会议室id
+            formData.value.startTime = startTime ? startTime as string : '';   // 开始时间
+            formData.value.endTime = endTime ? endTime as string : '';   // 结束时间
+            formData.value.date = date ? date : currentDate;  // 日期
+        }
     }
-    // 获取当前可选时间
-    minStartTime.value = dayjs(new Date()).format('HH:m');
-    minEndTime.value = formData.value.startTime ? formData.value.startTime : dayjs(new Date()).format('HH:m');
+
+    // 获取当前开始时间和结束时间的可选时间段
+    minStartTime.value = currentTime;
+    minEndTime.value = formData.value.startTime;
 
     // 获取群组列表
     getGroupList();
+    handleAvailableMeetingRooms(formData.value.startTime, formData.value.endTime); // 获取可用会议室
 })
 
 /**
@@ -160,13 +181,6 @@ onMounted(() => {
  */
 const goBack = () => {
     window.history.go(-1)
-}
-/**
- * @description 添加参会人员
- */
-const handleAddPerson = () => {
-    addPersonForm.value.type = 3;
-    addPersonForm.value.visible = true;
 }
 
 // 禁止选择今日之前的日期
@@ -180,8 +194,24 @@ let minStartTime = ref('8:00'); // 开始最小可选时间
 let minEndTime = ref('8:00'); // 结束最小可选时间
 const seconds = ('00'); // 获取当前时间的秒
 
-// 会议室数组
-const roomArr = ref<any>(useMeetingStatus.centerRoomName);
+const formSize = ref<ComponentSize>('large'); // 表单尺寸
+const ruleFormRef = ref<FormInstance>(); // 表单实例
+const formData = ref<any>({
+    // id: '',
+    meetingRoomId: '',   // 会议室id
+    title: '',           // 会议主题
+    description: '',     // 会议描述
+    startTime: '',       // 会议开始时间
+    endTime: '',         // 会议结束时间
+    meetingRoomName: '', // 会议室名称
+    status: 0,           // 会议室状态 默认为0
+    createdBy: '',       // 创建人id
+    adminUserName: '',   // 创建人姓名
+    users: [],           // 参会人员
+    date: currentDate,   // 日期 yy-mm-dd
+    checked: false,      // 是否添加为群组
+    groupName: '',       // 群组名称
+})
 
 // 添加参会人员弹窗表单数据
 let addPersonForm = ref<any>({
@@ -191,6 +221,13 @@ let addPersonForm = ref<any>({
     list: [],              // 弹窗数据
     personIds: [],         // 选中的人员ids，用于节点树回显
 })
+/**
+ * @description 添加参会人员
+ */
+ const handleAddPerson = () => {
+    addPersonForm.value.type = 3;
+    addPersonForm.value.visible = true;
+}
 
 /**
  * @description 获取群组列表
@@ -232,10 +269,7 @@ const closeAddPersonDialog = () => {
  */
 const handleChangeStartTime = (value: any) => {
     minEndTime.value = value;
-    if (!formData.value.endTime || !value) return;
-    const startTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${value}:${seconds}`;
-    const endTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${formData.value.endTime}:${seconds}`;
-    handleAvailableMeetingRooms(startTime, endTime);
+    handleAvailableMeetingRooms(value, formData.value.endTime);
 }
 
 /**
@@ -243,18 +277,28 @@ const handleChangeStartTime = (value: any) => {
  * @param value 选中的结束时间
  */
 const handleChangeEndTime = (value: any) => {
-    if (!formData.value.startTime || !value) return;
-    const startTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${formData.value.startTime}:${seconds}`;
-    const endTime:string = dayjs(formData.value.date).format('YYYY-MM-DD') + ` ${value}:${seconds}`;
-    handleAvailableMeetingRooms(startTime, endTime);
+    // if (!formData.value.startTime) {
+    //     formData.value.endTime = '';
+    //     return ElMessage.warning('请先选择开始时间');
+    // }
+    // if (formData.value.startTime >= value) {
+    //     formData.value.endTime = '';
+    //     return ElMessage.warning('结束时间不能小于或等于开始时间');
+    // }
+    handleAvailableMeetingRooms(formData.value.startTime, value);
 }
 
+const roomArr = ref<any>(useMeetingStatus.centerRoomName); // 会议室数组
 /**
  * @description 根据开始时间和结束时间获取可用会议室
  * @param startTime 开始时间
  * @param endTime 结束时间
  */
-const handleAvailableMeetingRooms = (startTime: string, endTime: string) => {
+const handleAvailableMeetingRooms = useThrottle((start: string, end: string) => {
+    if (!start || !end) return;
+    const date = dayjs(formData.value.date).format('YYYY-MM-DD');
+    const startTime:string = date + ` ${start}:${seconds}`;
+    const endTime:string = date + ` ${end}:${seconds}`;
     availableMeetingRooms({
         startTime,
         endTime,
@@ -263,7 +307,7 @@ const handleAvailableMeetingRooms = (startTime: string, endTime: string) => {
         roomArr.value = res.data;
     })
     .catch(err => {})
-}
+}, 500)
 
 /**
  * @description 获取选中会议室的id
@@ -273,37 +317,23 @@ const handleChangeRoom = (value: any) => {
     formData.value.meetingRoomId = value;
 }
 
-// 表单验证
-const formSize = ref<ComponentSize>('large')
-const ruleFormRef = ref<FormInstance>()
-const formData = ref<any>({
-    // id: '',
-    meetingRoomId: '',   // 会议室id
-    title: '',           // 会议主题
-    description: '',     // 会议描述
-    startTime: '',       // 会议开始时间
-    endTime: '',         // 会议结束时间
-    meetingRoomName: '', // 会议室名称
-    status: 0,           // 会议室状态 默认为0
-    createdBy: '',       // 创建人id
-    adminUserName: '',   // 创建人姓名
-    users: [],           // 参会人员
-    date: dayjs(new Date()).format('YYYY-MM-DD'),  // 日期 yy-mm-dd
-    checked: false,      // 是否添加为群组
-    groupName: '',       // 群组名称
-})
+// 监听日期变化
 watch(()=>formData.value.date, (newValue)=> {
     // 如果选中的日期大于今天的日期 则默认最小可选时间为8:00
-    if (newValue.getTime() > new Date().getTime()) {
+    handleAvailableMeetingRooms(formData.value.startTime, formData.value.endTime);
+    if (new Date(newValue).getTime() > new Date().getTime()) {
+        timeStart.value = '8:00';
         return minStartTime.value = '7:59';
     }
+    
+    timeStart.value = meetingAppointTime.value.find((item: any) => item > currentTime) ?? ''; // 设置时间段的开始时间
+    minStartTime.value = currentTime;// 重置开始时间的最小可选时间
+
     // 清空开始和结束时间
     formData.value.startTime = '';
     formData.value.endTime = '';
-    // 重置开始最小可选时间
-    minStartTime.value = dayjs(new Date()).format('HH:m');
-    
-})
+}, {deep: true})
+
 // 验证群组名称
 const validateGroupName = (rule: any, value: any, callback: any) => {
     if (formData.value.checked) {
@@ -365,7 +395,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
             groupName,
         })
         // 判断开时间是否大于结束时间
-        if (startTime > endTime) {
+        if (startTime >= endTime) {
             return ElMessage.error("开始时间不能大于或等于结束时间！")
         }
         // 是否添加为群组
@@ -403,7 +433,29 @@ const submitForm = (formEl: FormInstance | undefined) => {
         }
     })
 }
-
+const popoverObj = ref<any>({
+    users: [],
+    meetingPeople: '',
+})
+/**
+ * @description 提示最近1次创建人创建会议的信息
+ */
+const handleMeetingRecordPrompt = () => {
+    meetingRecordPrompt({userId: userInfo.value.userId})
+    .then((res: any) => {
+        const { users} = res.data;
+        popoverObj.value.users = users;
+        popoverObj.value.meetingPeople = Array.from(new Set(users.map((el: any) => el.userName))).join(",");
+    })
+    .catch((err: any) => {})
+}
+const handlePromptPerson = () => {
+    const {users, meetingPeople} = popoverObj.value;
+    formData.value.users = users;
+    formData.value.meetingPeople = meetingPeople;
+    addPersonForm.value.personIds = Array.from(new Set(users.map((el: any) => el.userId))); // 获取参会人id并去重 用于成员树回显
+}
+// 离开页面
 onBeforeUnmount(() => {
     // 清除sessionStorage
     sessionStorage.clear();
@@ -536,6 +588,10 @@ onBeforeUnmount(() => {
             }
         }
     }
-
+    // 历史参会人提示信息
+    
+}
+.prompt {
+    cursor: pointer;
 }
 </style>

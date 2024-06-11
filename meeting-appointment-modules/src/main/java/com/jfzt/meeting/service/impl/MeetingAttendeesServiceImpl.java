@@ -7,8 +7,8 @@ import com.jfzt.meeting.service.MeetingAttendeesService;
 import org.springframework.stereotype.Service;
 
 /**
+ * 针对表【meeting_attendees(参会人员表)】的数据库操作Service实现
  * @author zilong.deng
- * @description 针对表【meeting_attendees(参会人员表)】的数据库操作Service实现
  * @since 2024-04-28 11:30:57
  */
 @Service

@@ -4,11 +4,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.entity.SysDepartment;
 
 /**
+ * 针对表【sys_department】的数据库操作Service
  * @author zilong.deng
- * @description 针对表【sys_department】的数据库操作Service
- * @createDate 2024-04-28 16:04:11
+ * @since 2024-06-04 14:18:58
  */
 public interface SysDepartmentService extends IService<SysDepartment> {
 
-    void findDepartmentAll();
 }

@@ -10,12 +10,11 @@
             <result property="userName" column="user_name" jdbcType="VARCHAR"/>
             <result property="password" column="password" jdbcType="VARCHAR"/>
             <result property="level" column="level" jdbcType="TINYINT"/>
-            <result property="isDeleted" column="is_deleted" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,user_id,user_name,
-        password,level,is_deleted
+        password,level
     </sql>
 
     <update id="deleteAdmin" parameterType="String">
@@ -27,7 +26,7 @@
     </update>
 
     <select id="selectByUserId" resultType="com.jfzt.meeting.entity.SysUser">
-        select id,user_id,user_name,password,level,is_deleted from sys_user where user_id = #{userId}
+        select id,user_id,user_name,password,level from sys_user where user_id = #{userId}
     </select>
 
 </mapper>

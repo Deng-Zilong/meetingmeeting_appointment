@@ -1,9 +1,9 @@
 package com.jfzt.meeting.constant;
 
 /**
- * 会议状态码
+ * 会议状态码常量类
  * @author zilong.deng
- * @date 2024/05/09
+ * @since 2024-05-10 14:13:51
  */
 public class MeetingRecordStatusConstant {
     /**

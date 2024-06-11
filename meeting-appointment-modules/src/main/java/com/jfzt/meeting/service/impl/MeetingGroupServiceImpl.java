@@ -28,8 +28,8 @@ import java.util.List;
 import static com.jfzt.meeting.constant.MessageConstant.*;
 
 /**
+ * 针对表【meeting_group(群组表)】的数据库操作Service实现
  * @author zilong.deng
- * @description 针对表【meeting_group(群组表)】的数据库操作Service实现
  * @since 2024-04-28 11:33:49
  */
 @Service
@@ -45,9 +45,11 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
 
 
     /**
-     * @return com.jfzt.meeting.common.Result<java.util.List < com.jfzt.meeting.entity.vo.MeetingGroupVO>>
-     * @Description 群组查询
-     * @Param [userId]
+     * 群组查询
+     * @param pageNum 页码
+     * @param pageSize 每页条数
+     * @param userId 用户id
+     * @return 群组列表
      */
     @Override
     public Result<List<MeetingGroupVO>> checkGroup (Integer pageNum, Integer pageSize, String userId) {
@@ -116,8 +118,9 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
 
 
     /**
-     * @return com.jfzt.meeting.common.Result<java.lang.Object>
-     * @Description 群组添加
+     * 群组添加
+     * @param meetingGroupDTO 群组DTO
+     * @return 添加结果
      */
     @Override
     @Transactional
@@ -134,7 +137,8 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         BeanUtils.copyProperties(meetingGroupDTO, meetingGroup);
         // 使用lambdaQuery查询 MeetingGroup 表中 GroupName 字段等于 meetingGroupDTO 中 getGroupName() 字段的数量
         Long sameName = lambdaQuery()
-                .eq(meetingGroupDTO.getGroupName() != null, MeetingGroup::getGroupName, meetingGroupDTO.getGroupName())
+                .eq(meetingGroupDTO.getGroupName() != null,
+                        MeetingGroup::getGroupName, meetingGroupDTO.getGroupName())
                 .count();
         if (sameName <= 0) {
             // 保存meetingGroup
@@ -145,7 +149,8 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         }
         // 根据meetingGroupDTO中的groupName查询MeetingGroup表，获取groupId
         Long groupId = lambdaQuery()
-                .eq(StringUtils.isNotBlank(meetingGroupDTO.getGroupName()), MeetingGroup::getGroupName, meetingGroupDTO.getGroupName())
+                .eq(StringUtils.isNotBlank(meetingGroupDTO.getGroupName()),
+                        MeetingGroup::getGroupName, meetingGroupDTO.getGroupName())
                 .one()
                 .getId();
         // 获取meetingGroupDTO中的用户列表
@@ -171,9 +176,9 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     }
 
     /**
-     * @return com.jfzt.meeting.common.Result<java.lang.Object>
-     * @Description 群组修改
-     * @Param [meetingGroupDTO]
+     * 群组修改
+     * @param meetingGroupDTO 群组DTO
+     * @return 修改结果
      */
     @Override
     public Result<Object> updateMeetingGroup (MeetingGroupDTO meetingGroupDTO) {
@@ -214,9 +219,9 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     }
 
     /**
-     * @return com.jfzt.meeting.common.Result<java.lang.Object>
-     * @Description 群组删除
-     * @Param [meetingGroupDTO]
+     * 群组删除
+     * @param id 群组id
+     * @return 删除结果
      */
     @Override
     @Transactional

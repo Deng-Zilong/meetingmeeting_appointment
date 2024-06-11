@@ -10,8 +10,8 @@ import lombok.Getter;
  * 4. C代表第三方服务异常
  * 4. 若无法确定具体错误，选择宏观错误
  * 6. 大的错误类间的步长间距预留100
- *
- * @date 2024/05/12
+ * @author zhenxing.lu
+ * @since 2024-05-12 10:13:51
  */
 @Getter
 public enum ErrorCodeEnum {
@@ -30,8 +30,10 @@ public enum ErrorCodeEnum {
     USER_ERROR_A0101("A0101", "用户未同意隐私协议"),
     SERVICE_ERROR_A0240("A0240", "用户验证码错误"),
     SERVICE_ERROR_A0201("A0201", "用户账户不存在"),
+    SERVICE_ERROR_A02011111("A02011111", "参数格式校验失败"),
     SERVICE_ERROR_A020111("A020111", "用户不允许多方登录"),
     SERVICE_ERROR_A02011("A02011", "用户扫码登录失败请重新扫码"),
+    SERVICE_ERROR_A0201111("A0201111", "企业微信登陆小程序失败"),
     SERVICE_ERROR_A0210("A0210", "用户密码错误"),
     SERVICE_ERROR_A0230("A0230", "用户登录已过期"),
 

@@ -6,8 +6,9 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * @Author: chenyu.di
- * @since: 2024-05-28 16:14
+ * 时间段VO
+ * @author chenyu.di
+ * @since 2024-05-28 16:14
  */
 @Data
 @Builder

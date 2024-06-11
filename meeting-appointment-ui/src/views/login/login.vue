@@ -1,5 +1,10 @@
 <template>
-    <div class="login-container">
+    <div 
+        class="login-container"
+        v-loading="allLoading"
+        element-loading-text="正在登录..."
+        element-loading-background="rgba(100, 100, 100, 0.8)"
+    >
         <div class="left-background"></div>
         <div class="right-login">
             <!-- 账号登录 -->
@@ -71,8 +76,12 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { Picture as IconPicture } from '@element-plus/icons-vue'
 import { v4 as uuidv4 } from 'uuid';
 import { useUserStore } from '@/stores/user'
-import { getCaptcha, getQrCode } from '@/request/api/login'
+import { Login, getCaptcha, getQrCode, qwLogin } from '@/request/api/login'
 import { Md5 } from 'ts-md5';
+import { useRouter, useRoute  } from 'vue-router';
+
+const router = useRouter();
+const route = useRoute();
 
 // 用户信息
 const userStore = useUserStore();
@@ -132,11 +141,12 @@ const changeLogin = () => {
     isShow.value = !isShow.value;
     if (!isShow.value) {
         return nextTick(() => {
-            code();
+            getCode();
         })
     }
     changeCaptcha();
 }
+
 // 账号登录 
 const submitForm = async (formEl: FormInstance | undefined) => {
     if (!formEl) return
@@ -151,18 +161,54 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         md5.appendAsciiStr(ruleForm.password);
         const password = md5.end();
         // 登录请求
-        await userStore.getUserInfo({ name, password, code: captcha, uuid: uuid.value });
-        // 关闭 button loading
-        loginBtnLoading.value = false;
+        await Login({ name, password, code: captcha, uuid: uuid.value })
+                .then((res: any) => {
+                    localStorage.setItem('userInfo', JSON.stringify(res.data));
+                    ElMessage.success('登陆成功!'); 
+                    router.push('/home');
+                })
+                .catch((err: any) => {
+                    changeCaptcha();
+                })
+                .finally(() => {
+                    // 关闭 button loading
+                    loginBtnLoading.value = false;
+                })
+        
     })
 }
 
+
+let allLoading = ref<boolean>(false);
 onMounted(() => {
     // 展示扫码登录
-    code();
-});
+    getCode();
 
-const code = () => {
+    /********************* 免密登录 ***************************/
+
+    allLoading.value = true; // 开启loading
+    
+    const urlParams = new URLSearchParams(window.location.search); // 获取url参数
+    const code = urlParams?.get('code') as string; // 获取code
+    const loginMethod: number = 1; // 测试登录
+
+    // 若code不存在 关闭loading
+    if (!code) {
+        return allLoading.value = false;
+    }
+    
+    qwLogin({code, loginMethod})
+    .then(res => {
+        localStorage.setItem('userInfo', JSON.stringify(res.data));
+        location.href = `/#/home`;
+    })
+    .catch(error => {})
+    .finally(() => {
+        allLoading.value = false;
+    })
+});
+// 获取二维码
+const getCode = () => {
     // 前端生成二维码
     //@ts-ignore
     // new WwLogin({
@@ -195,6 +241,16 @@ const code = () => {
     display: flex;
     width: 100vw;
     height: 100vh;
+    ::v-deep(.el-loading-spinner .path) {
+        stroke: #fff;
+        opacity: 0.7;
+    }
+    ::v-deep(.el-loading-text){
+        color: #fff;
+        font-size: 1.2rem;
+        letter-spacing: .2rem;
+        opacity: 0.7;
+    }
 
     .left-background {
         width: 70vw;

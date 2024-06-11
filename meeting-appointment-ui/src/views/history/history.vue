@@ -30,7 +30,7 @@
                                     :content="item.title"
                                 >
                                 <template #reference>
-                                        <p class="ellipsis">{{ item.title }}</p>
+                                        <p class="ellipsis" @click="handleMeetingSummary(item)">{{ item.title }}</p>
                                     </template>
                                 </el-popover>
                             </div>
@@ -38,7 +38,7 @@
                             <div>
                                 <el-popover
                                 placement="bottom"
-                                :disabled="item.meetingRoomName?.length < 10"
+                                :disabled="item.meetingRoomName?.length < 16"
                                 :width="150"
                                 trigger="hover"
                                 :content="item.meetingRoomName"
@@ -74,6 +74,7 @@
                                     <span @click="handleEditMeeting(item)" >修改</span>
                                     <span @click="handleCancelMeeting(item.id)">取消</span>
                                 </p>
+                                <span @click="handleEditMeetingSummary(item)">会议纪要</span>
                             </div>
                         </div>
                     </el-timeline-item>
@@ -81,6 +82,7 @@
                 </el-timeline>
             </div>
         </div>
+        <!-- 转发会议 -->
         <div class="transmit-dialog" >
             <el-dialog
                 v-model="isTransmitMeeting"
@@ -96,6 +98,25 @@
                 </template>
             </el-dialog>
         </div>
+        <!-- 会议纪要 -->
+        <el-dialog  class="meeting-summary" v-model="meetingSummaryVisible" :title="meetingSummaryTitle" :before-close="handleCancelMeetingSummary" width="35%" :close-on-click-modal="false">
+            <el-scrollbar max-height="388px">
+                <el-input
+                    v-model="meetingSummary"
+                    :autosize="{ minRows: 18}"
+                    maxlength="10000"
+                    :show-word-limit="true"
+                    type="textarea"
+                    placeholder="请输入会议纪要"
+                />
+            </el-scrollbar>
+            <template #footer>
+            <div class="dialog-footer" v-show="!isMeetingSummaryDetail">
+                <el-button @click="handleCancelMeetingSummary">取 消</el-button>
+                <el-button type="primary" @click="handleConfirmMeetingSummary"> 确 认 </el-button>
+            </div>
+            </template>
+        </el-dialog>
     </div>
 </template>
 <script setup lang="ts">
@@ -103,7 +124,7 @@
     import { onMounted, ref } from 'vue';
     import { useRouter } from 'vue-router';
     import { useInfiniteScroll } from '@vueuse/core'
-    import { cancelMeetingRecord, getHistoryList } from '@/request/api/history'
+    import { addMeetingMinutes, cancelMeetingRecord, getHistoryList, getMeetingMinutes } from '@/request/api/history'
     import { meetingState } from '@/utils/types'
     
     const router = useRouter();
@@ -267,12 +288,92 @@
      */
     const transmitMeeting = (item: any) => {
         address.value = 
-        `会议主题: ${item.title}\n发起人: ${item.adminUserName}\n会议日期: ${item.date}\n会议时间: ${item.time}\n会议地点: ${item.meetingRoomName}\nURL:${userInfo.value.url}/#/login`;
+        `会议主题: ${item.title}\n发起人: ${item.adminUserName}\n会议日期: ${item.date}\n会议时间: ${item.time}\n会议地点: ${item.meetingRoomName}\nURL:${decodeURIComponent(userInfo.value.url)}/#/login`;
         isTransmitMeeting.value = true;
-        navigator.clipboard.writeText(address.value).then(() => {})
-        .catch(() => {
+
+        // navigator.clipboard.writeText(address.value).then(() => {})
+        // .catch(() => {
+        //     message.value = "复制失败！";
+        // })
+
+        // 创建text area
+        let textArea = document.createElement("textarea");
+        textArea.value = address.value;
+        // 使text area不在viewport，同时设置不可见
+        textArea.style.position = "absolute";
+        textArea.style.opacity = '0';
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        if (!document.execCommand('copy')) {
             message.value = "复制失败！";
+        }
+        textArea.remove();
+    }
+
+
+    let meetingSummaryVisible = ref<boolean>(false); // 会议纪要弹窗
+    let meetingSummary = ref<string>('');  // 会议纪要内容
+    let meetingRecordId = ref<number>(0);  // 会议记录id
+    let meetingSummaryId = ref<number>(0); // 会议纪要id
+    let isMeetingSummaryDetail = ref<boolean>(true); // 是否是查看会议纪要详情 true 查看 false 编辑/新增
+    let meetingSummaryTitle = ref<string>('查看会议纪要'); // 弹窗标题
+    /**
+     * @description 获取会议纪要
+     */
+    const handleMeetingSummary = (item: any) => {
+        meetingSummaryVisible.value = true;
+        isMeetingSummaryDetail.value = true;
+        meetingSummaryTitle.value = `查看会议纪要（${item.date} / ${item.title}）`;
+        getMeetingMinutesReq(item.id);
+    }
+    /**
+     * @description 获取会议纪要请求
+     * @param meetingRecordId 会议记录id
+     */
+    const getMeetingMinutesReq = (meetingRecordId: number) => {
+        getMeetingMinutes({userId: userInfo.value.userId, meetingRecordId})
+        .then((res) => {
+            meetingSummary.value = res.data.minutes;
+            meetingSummaryId.value = res.data.id;
         })
+        .catch(err => {})
+    }
+    /*
+     * @description 编辑会议纪要
+     */
+    const handleEditMeetingSummary = (item: any) => {
+        meetingRecordId.value = item.id;
+        isMeetingSummaryDetail.value = false;
+        meetingSummaryTitle.value = `编辑会议纪要（${item.date} / ${item.title}）`;
+        getMeetingMinutesReq(item.id);
+        meetingSummaryVisible.value = true;
+    }
+    /**
+     * @description 提交会议纪要
+     */
+    const handleConfirmMeetingSummary = () => {
+        if (!meetingSummary.value) {
+            ElMessage.warning('请输入会议纪要!');
+            return;
+        }
+        addMeetingMinutes({id: meetingSummaryId.value, userId: userInfo.value.userId, minutes: meetingSummary.value, meetingRecordId: meetingRecordId.value})
+        .then((res) => {
+            ElMessage.success('提交成功!');
+        })
+        .catch(err => {})
+        .finally(() => {
+            handleCancelMeetingSummary();
+        })
+    }
+    /**
+     * @description 取消会议纪要
+     */
+    const handleCancelMeetingSummary = () => {
+        meetingSummaryVisible.value = false;
+        meetingSummary.value = '';
     }
 
 </script>
@@ -370,8 +471,11 @@
                                 color: #409EFF;
                             }
                             &>p>span:nth-child(2) {
-                                margin-left: .625rem;
+                                margin: 0 .625rem;
                                 color: #F56C6C;
+                            }
+                            &>span {
+                                color: #67C23A;
                             }
                             cursor: pointer;
                         }
@@ -405,6 +509,7 @@
                         width: 11.5rem;
                         flex: 1.2;
                         padding: 0 .375rem 0 3.625rem;
+                        cursor: pointer;
                     }
                     &:nth-child(2) {
                         width: 11.5rem;
@@ -417,6 +522,14 @@
                         flex: 1.5;
                     }
                 }
+            }
+        }
+        :deep().meeting-summary {
+            border-radius: 0.9375rem;
+            padding: 1.25rem;
+            .el-dialog__title {
+                font-size: 1rem;
+                font-weight: 500;
             }
         }
        

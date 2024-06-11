@@ -83,7 +83,7 @@ const refreshChart = () => {
       formatter: function (params: any) { // 提示框浮层内容格式器，支持字符串模板和回调函数两种形式
         return params.marker + params.name + ': ' + params.value || '--'
       },
-      backgroundColor: 'transparent', 
+      backgroundColor: '#CEDCEA',  // 透明 transparent
       borderColor: '#719BE8', 
       borderWidth: 1, 
       borderRadius: 6, 

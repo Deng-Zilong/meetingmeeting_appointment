@@ -1,10 +1,9 @@
 package com.jfzt.meeting.constant;
 
 /**
- * 逻辑删除
- *
+ * 逻辑删除常量类
  * @author zilong.deng
- * @date 2024/05/10
+ * @since 2024-05-10 14:13:51
  */
 public class IsDeletedConstant {
 

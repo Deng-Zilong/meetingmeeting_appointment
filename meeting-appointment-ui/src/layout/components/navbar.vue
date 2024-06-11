@@ -5,11 +5,12 @@
             <el-button type="primary" @click="handleToHome">中心会议室目录</el-button>
             <el-divider direction="vertical" />
           </div>
-          <div class="my-main-scrollbar">
+          <div class="my-main-scrollbar" ref="scrollContainer">
             <div class="left-items" v-for="(item, index) in useMeetingStatus.centerRoomName">
-                <el-button class="btn-margin"  :class="active == item.id ? 'active' : ''" :disabled="item.status == 0" @click="handleMenu(item)" >{{item.roomName}}</el-button>
+                <el-button class="btn-margin" :class="active == item.id ? 'active' : ''" :disabled="item.status == 0" @click="handleMenu(item)" >{{item.roomName}}</el-button>
             </div>
           </div>
+          <span class="right-icon" @click="handleRight" v-if="isShow"><el-icon><DArrowRight /></el-icon></span>
       </div>
      <div class="right">
       <router-link to="/history"><el-button :disabled="cancelDisable">取消预约</el-button> </router-link>
@@ -18,19 +19,46 @@
   </div>
 </template>
 <script setup lang="ts">
-  import { computed, onMounted, ref, watch } from "vue";
+  import { computed, nextTick, onMounted, ref, watch } from "vue";
   import { useRouter } from "vue-router";
   import { meetingStatus } from '@/stores/meeting-status'
   const router = useRouter();
   const useMeetingStatus = meetingStatus();
   
+  const scrollContainer = ref();  // 获取滚动容器dom
 
   let active = ref(-1); // 活动页面id
+  let isShow = ref(false);
+  const handleToHome = async() => {
+    await nextTick()  // 等待下一次DOM更新刷新的工具方法
 
-  const handleToHome = () => {
-    router.push('/home')
+    let sumWidth:number = 0;
+    [...scrollContainer.value.children].forEach((item:any) => {
+      sumWidth += item.offsetWidth;
+    });
+    if (sumWidth > 840) {
+      isShow.value = true;
+    } else {
+      isShow.value = false;
+    }
+    
+    // isShow.value = (scrollContainer.value.scrollWidth > scrollContainer.value.clientWidth);  // 滚动容器宽度是否大于容器宽度
+    
+    scrollContainer.value.scrollTo({
+      left: 0,  // 回到原点
+      behavior: 'smooth' // 平滑滚动
+    })
+    // router.push('/home')
   }
 
+  const handleRight = () => {
+    scrollContainer.value.scrollBy({
+      left: 840,
+      behavior: 'smooth' // 平滑滚动
+    })
+  }
+  
+  watch(() => useMeetingStatus.centerRoomName, () => handleToHome(), {deep: true})  // 监听会议室数据变化 并调用
   
   /**
    * @description 点击导航栏切换页面
@@ -43,7 +71,8 @@
         id: item.id,
         title: item.roomName,
         address: item.location,
-        person: item.capacity  // 暂无
+        person: item.capacity,
+        equipment: item.equipment
       }
     });
   }
@@ -61,6 +90,7 @@
   })
   onMounted(() => {
     useMeetingStatus.getCenterRoomName();
+    handleToHome();
   })
   
 
@@ -89,6 +119,7 @@
           .my-main-scrollbar{
             display: flex;
             align-items: center;
+            width: 53.125rem;
             &::before {
               z-index: 1;
               width: 8.125rem;
@@ -104,12 +135,28 @@
                 margin-right: 8.125rem;
               }
               .btn-margin {
-                  margin-right: .625rem;
+                color: #557DF5;
+                border: 1px solid #557DF5;
+                margin-right: .625rem;
+                :deep()span {
+                  font-weight: 400;
+                }
+              }
+              .is-disabled {
+                color: #DCDCDC;
+                border: 1px solid #DCDCDC;
               }
               .active {
-                  background-color:#409EFF;
+                background-color:#409EFF;
+                color: #FFF;
+                border: 1px solid #409EFF;
               }
             }
+          }
+          .right-icon {
+            z-index: 2;
+            margin-left: 10px;
+            color: #A8ABB2;
           }
       }
       .right {

@@ -11,11 +11,9 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 参会人员表
- *
+ * 会议参与人表(MeetingAttendees)表实体类
  * @author zilong.deng
- * @TableName meeting_attendees
- * @date 2024/04/29
+ * @since 2024-06-05 09:44:39
  */
 @TableName(value = "meeting_attendees")
 @Data
@@ -24,7 +22,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class MeetingAttendees implements Serializable {
     /**
-     *
+     *id
      */
     @TableId(type = IdType.AUTO)
     private Long id;

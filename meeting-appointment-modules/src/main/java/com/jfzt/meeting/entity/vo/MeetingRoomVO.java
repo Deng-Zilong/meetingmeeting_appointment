@@ -3,10 +3,10 @@ package com.jfzt.meeting.entity.vo;
 import lombok.Data;
 
 /**
+ * 会议室VO
  * @author zilong.deng
- * @date 2024/04/28
+ * @since 2024-06-05 10:01:45
  */
-
 @Data
 public class MeetingRoomVO {
 

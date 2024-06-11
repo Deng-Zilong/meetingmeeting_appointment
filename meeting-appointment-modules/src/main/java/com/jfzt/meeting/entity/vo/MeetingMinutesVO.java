@@ -1,10 +1,11 @@
-package com.jfzt.meeting.entity;
+package com.jfzt.meeting.entity.vo;
 
 import lombok.Data;
 
 /**
+ * 会议纪要VO
  * @author zilong.deng
- * @date 2024/05/30
+ * @since 2024-06-05 11:05:17
  */
 @Data
 public class MeetingMinutesVO {

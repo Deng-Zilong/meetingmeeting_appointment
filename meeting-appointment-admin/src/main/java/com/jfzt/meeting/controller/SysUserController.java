@@ -51,41 +51,50 @@ public class SysUserController {
     private JwtProperties jwtProperties;
 
 
-
     /**
      * QR code 返回前端二维码
-     * @return Result<Map<String, String>>
+     *
+     * @return Result<Map < String, String>>
      */
     @GetMapping(value = "qr-code")
-    public Result<Map<String, String>> qrCode(){
+    public Result<Map<String, String>> qrCode() {
         //返回一个地址
-        Map<String,String> map = sysUserService.userQrCode();
-
+        Map<String, String> map = sysUserService.userQrCode();
         return Result.success(map);
     }
+
+
     /**
-     *
      * 获取token，部门，部门人员
+     * @param  code
+     * @param loginMethod
+     * @return Result<UserInfoVO>
      */
     @GetMapping(value = "info")
     @Transactional
-    public Result<UserInfoVO> info(@RequestParam("code") String code) throws WxErrorException, NoSuchAlgorithmException {
-        if (StringUtils.isBlank(code)) {
+    public Result<UserInfoVO> info(@RequestParam("code") String code,
+                                   @RequestParam("loginMethod") String loginMethod)
+            throws WxErrorException, NoSuchAlgorithmException {
+        String method = "0";
+        String methods = "1";
+        if (method.equals(loginMethod) && StringUtils.isBlank(code)) {
             log.error("用户扫码登录失败请重新扫码");
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A02011);
+        }else if (methods.equals(loginMethod) && StringUtils.isBlank(code)){
+            log.error("企业微信登陆小程序失败");
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0201111);
         }
         //获取登录token
         String accessToken = sysDepartmentUserService.findTocken();
         log.info("获取登录token成功");
         //获取用户详细信息
         WxCpUser wxUser = sysDepartmentUserService.findUserName(accessToken, code);
-        log.info("获取用户详细信息成功"+wxUser);
+        log.info("获取用户详细信息成功" + wxUser);
         //获取部门信息
         Long departmentLength = sysDepartmentUserService.findDepartment();
         log.info("获取部门信息成功");
         //获取部门人员
-        Boolean flg = sysDepartmentUserService.findDepartmentUser(departmentLength);
-        log.info("获取部门人员成功"+flg);
+        sysDepartmentUserService.findDepartmentUser(departmentLength);
 
         //登录成功后，生成jwt令牌
         Map<String, Object> claims = new HashMap<>();
@@ -102,7 +111,8 @@ public class SysUserController {
                 .level(userId)
                 .url(wxCpDefaultConfiguration.getUrl())
                 .build();
-        redisTemplate.opsForValue().set("userInfo:" + userInfo.getUserId(), JSONObject.toJSONString(userInfo), Duration.ofHours(24));
+        redisTemplate.opsForValue().set("userInfo:" + userInfo.getUserId(),
+                JSONObject.toJSONString(userInfo), Duration.ofHours(24));
         return Result.success(userInfo);
     }
 

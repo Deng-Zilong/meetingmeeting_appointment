@@ -6,10 +6,10 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
+ * 时间段状态VO
  * @author zilong.deng
- * @date 2024/05/09
+ * @since 2024-06-05 10:02:33
  */
-
 @Data
 public class TimePeriodStatusVO {
     /**

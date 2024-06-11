@@ -10,14 +10,6 @@ const routes = [
     component: () => import("@/views/login/login.vue"),
   },
   {
-    path: "/loginTest",
-    name: "loginTest",
-    meta: {
-        title: '登录测试',
-    },
-    component: () => import("@/views/login/loginTest.vue"),
-  },
-  {
     // 匹配不到路由时跳转登录页面
     path: '/:pathMatch(.*)*',
     component: () => import("@/views/login/login.vue"),

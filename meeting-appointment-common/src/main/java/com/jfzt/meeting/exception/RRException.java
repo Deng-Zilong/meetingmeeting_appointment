@@ -7,7 +7,9 @@ import lombok.Setter;
 import java.io.Serial;
 
 /**
- * 自定义异常
+ * 自定义异常类
+ * @author zhenxing.lu
+ * @since 2024-05-12 10:13:51
  */
 @EqualsAndHashCode(callSuper = true)
 @Getter
@@ -19,6 +21,7 @@ public class RRException extends RuntimeException {
     private String msg;
     @Setter
     private String code;
+
 
     public RRException (String msg) {
         super(msg);

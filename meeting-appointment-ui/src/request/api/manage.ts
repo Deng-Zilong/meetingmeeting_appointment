@@ -6,7 +6,7 @@ export const getMeetingBanData = (data: {id: number, status: number, currentLeve
 }
 
 // 新增会议室
-export const addRoomData = (data: {createdBy: string, roomName: string, location: string, capacity: number}) => {
+export const addRoomData = (data: { createdBy: string, roomName: string, location: string, capacity: number, status: number , equipment: string}) => {
   return http.post("/meeting/add-meeting-room", data)
 }
 
@@ -14,6 +14,17 @@ export const addRoomData = (data: {createdBy: string, roomName: string, location
 export const deleteRoomDate = (data: { currentLevel: number, id: number }) => {
   return http.delete("/meeting/delete-meeting-room", data)
 }
+
+// 时间段频次统计
+export const getTimePeriodDate = () => {
+  return http.get("/meeting/statistics/time-period")
+}
+
+// 会议室占用率统计
+export const getRoomOccupancyDate = () => {
+  return http.get("/meeting/statistics/meeting-room-occupancy")
+}
+
 
 // 上传公告
 export const addNoticeData = (data: { currentLevel: number, currentUserId: string, substance: string }) => {

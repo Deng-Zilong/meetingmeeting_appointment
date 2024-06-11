@@ -3,14 +3,12 @@ package com.jfzt.meeting.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * 跨域处理，拦截器
- *
  * @author zhenxing.lu
- * @since 2024-04-30 10.13:51
+ * @since 2024-04-30 10:13:51
  */
 
 @Configuration

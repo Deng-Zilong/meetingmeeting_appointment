@@ -5,7 +5,6 @@
           <el-input v-model="input" placeholder="请输入公告" />
           <el-button type="primary" @click="uploadBulletin(input)">上传新公告</el-button>
       </div>
-      <el-button class="theme-mid" type="primary">更新人员</el-button>
       <div class="theme-right" v-if="userInfo.level === 0">
         <el-tooltip content="新增管理员" placement="top" effect="light">
           <el-button type="primary" @click="handleAddManage">增加管理员</el-button>
@@ -42,8 +41,8 @@
             <div class="title">会议状态</div>
             <div class="title">其他</div>
           </div>
-          <div class="table-container">
-            <el-timeline ref="timelineRef">
+          <div class="table-container" ref="timelineRef">
+            <el-timeline>
               <el-timeline-item  placement="top" v-for="(value, index) in manageData">
                 <div class="table-left">
                   <p>{{ value.month }}月</p>
@@ -53,7 +52,19 @@
                   <div class="table-tr" v-for="(item, index) in value.list">
                     <div class="tr-cell">{{ item.meetingRoomName }}</div>
                     <div class="tr-cell">{{ item.time }}</div>
-                    <div class="tr-cell">{{ item.title }}</div>
+                    <div class="tr-cell">
+                      <el-popover
+                            placement="bottom"
+                            :disabled="item.title?.length < 12"
+                            :width="240"
+                            trigger="hover"
+                            :content="item.title"
+                        >
+                            <template #reference>
+                              <p class="three-dot">{{ item.title }}</p>
+                            </template>
+                        </el-popover>
+                    </div>
                     <div class="tr-cell attend-cell">
                         <el-popover
                             placement="bottom"
@@ -63,7 +74,7 @@
                             :content="item.attendees"
                         >
                             <template #reference>
-                              {{ item.attendees }}
+                              <p class="three-dot">{{ item.attendees }}</p>
                             </template>
                         </el-popover>
                     </div>
@@ -79,18 +90,19 @@
       </el-tab-pane>
 
       <el-tab-pane label="操作会议室" name="second" class="second-tab">
-        <ManageRoom />
-        <!-- 新增会议室 -->
-        
+        <ManageRoom />        
       </el-tab-pane>
       
-      <el-tab-pane label="柱状图统计" name="third">Role</el-tab-pane>
+      <el-tab-pane label="柱状图统计" name="third" class="third-tab">
+        <TimeChart class="tab-echart" v-if="activeName == 'third'" />
+        <RoomChart class="tab-echart" v-if="activeName == 'third'" />
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
 <script lang="ts" setup>
     import { ref, onMounted, computed } from 'vue'
-    import { ElMessage, ElMessageBox, dayjs } from 'element-plus';
+    import { ElMessage, ElMessageBox, dayjs, type TabsPaneContext } from 'element-plus';
     import { useInfiniteScroll } from '@vueuse/core'
     import { Close } from '@element-plus/icons-vue'
 
@@ -98,7 +110,10 @@
     import { meetingState } from '@/utils/types';
     import personTreeDialog from "@/components/person-tree-dialog.vue";
     import ManageRoom from '@/views/manage/component/manage-room.vue';
-    import { getMeetingBanData, addRoomData, deleteRoomDate, addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData } from '@/request/api/manage'
+    import TimeChart from '@/views/manage/component/time-chart.vue';
+    import RoomChart from '@/views/manage/component/room-chart.vue';
+    
+    import { addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData } from '@/request/api/manage'
       
 
     // let loading = ref(true) // 加载状态
@@ -106,12 +121,6 @@
     const useMeetingStatus = meetingStatus();
     
     // 会议室状态 0-暂停使用 1-空闲 2-使用中
-    // 新增会议室信息
-    let addMeetingForm = ref<any>({
-      roomName: '',
-      location: '',
-      capacity: ''
-    })
 
     let input = ref<any>('');   // 公告信息框
     let manageList = ref<any>([])  // 所有管理员列表
@@ -129,8 +138,7 @@
 
 
     const activeName = ref('first')
-    const handleClick = (event: Event) => {
-      
+    const handleClick = (tab: TabsPaneContext, event: Event) => {
     }
     onMounted(() => {
       userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}');  // 用户信息
@@ -365,9 +373,6 @@
           }
         }
       }
-      .theme-mid {
-        margin-left: 40px;
-      }
       .theme-right {
         display: flex;
         align-items: center;
@@ -399,6 +404,13 @@
           // 参会人员 单独设置宽
           .attend-cell {
             flex: 1;
+          }
+          // 有显示popover的 单独设置溢出为省略号
+          .three-dot {
+            text-wrap: nowrap;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
         }
         .table-th {
@@ -443,6 +455,7 @@
               padding: 20px 0; // 单独控制单元行上下内边距
               .tr-cell {
                 text-wrap: nowrap;
+                white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
               }
@@ -477,6 +490,15 @@
       .second-tab {
         display: flex;
         justify-content: space-between;
+      }
+
+      .third-tab {
+        display: flex;
+        justify-content: space-between;
+        .tab-echart {
+          background: #FFF;
+          border-radius: .9375rem;
+        }
       }
     }
   }

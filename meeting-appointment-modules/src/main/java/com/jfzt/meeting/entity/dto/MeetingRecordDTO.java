@@ -9,10 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @Author: chenyu.di
- * @since: 2024-05-09 09:51
+ * 会议记录DTO
+ * @author chenyu.di
+ * @since 2024-05-09 09:51
  */
-
 @Data
 public class MeetingRecordDTO {
     /**

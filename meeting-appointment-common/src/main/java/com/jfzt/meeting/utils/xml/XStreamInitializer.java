@@ -16,9 +16,8 @@ import com.thoughtworks.xstream.security.AnyTypePermission;
 import java.io.Writer;
 
 /**
- * The type X stream initializer.
- *
- * @author Daniel Qian
+ * @author zhenxing.lu
+ * @since 2024-05-12 10:13:51
  */
 public class XStreamInitializer {
     private static final XppDriver XPP_DRIVER = new XppDriver() {
@@ -55,11 +54,7 @@ public class XStreamInitializer {
         }
     };
 
-    /**
-     * Gets instance.
-     *
-     * @return the instance
-     */
+
     public static XStream getInstance() {
         XStream xstream = new XStream(new PureJavaReflectionProvider(), XPP_DRIVER) {
             // only register the converters we need; other converters generate a private access warning in the console on Java9+...
