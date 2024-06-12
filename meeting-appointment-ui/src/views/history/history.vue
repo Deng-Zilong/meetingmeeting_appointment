@@ -503,7 +503,7 @@
                             .download-excel {
                                 font-size: 1.125rem;
                                 color: #409EFF;
-                                margin: 0 .625rem;
+                                margin: 0 0 0 .625rem;
                                 transition: transform 0.2s ease;
                                 &:hover {
                                     color:#3268dc;
