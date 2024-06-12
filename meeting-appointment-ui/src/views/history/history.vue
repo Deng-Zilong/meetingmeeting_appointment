@@ -74,7 +74,15 @@
                                     <span @click="handleEditMeeting(item)" >修改</span>
                                     <span @click="handleCancelMeeting(item.id)">取消</span>
                                 </p>
-                                <span @click="handleEditMeetingSummary(item)">会议纪要</span>
+                                <span class="edit-meeting-summary" @click="handleEditMeetingSummary(item)">会议纪要</span>
+                                <el-tooltip
+                                    class="box-item"
+                                    effect="light"
+                                    content="导出会议内容"
+                                    placement="top-start"
+                                >
+                                    <span class="download-excel" @click="handleExportExcel(item)"><el-icon><Download /></el-icon></span>
+                                </el-tooltip>
                             </div>
                         </div>
                     </el-timeline-item>
@@ -121,10 +129,11 @@
 </template>
 <script setup lang="ts">
     import { ElMessage, ElMessageBox, dayjs } from 'element-plus'
+    import { Download } from '@element-plus/icons-vue'
     import { onMounted, ref } from 'vue';
     import { useRouter } from 'vue-router';
     import { useInfiniteScroll } from '@vueuse/core'
-    import { addMeetingMinutes, cancelMeetingRecord, getHistoryList, getMeetingMinutes } from '@/request/api/history'
+    import { addMeetingMinutes, cancelMeetingRecord, getHistoryList, getMeetingMinutes, recordExport } from '@/request/api/history'
     import { meetingState } from '@/utils/types'
     
     const router = useRouter();
@@ -376,6 +385,20 @@
         meetingSummary.value = '';
     }
 
+    /**
+     * @description 导出会议记录excel
+     */
+    const handleExportExcel = (row: any) => {
+        const {id, title, description, createdBy, adminUserName, meetingRoomId, meetingRoomName, location, meetingNumber, attendees, users, startTime, endTime, status, isDeleted} = row;
+        // 重组参数
+        const params = {id, title, description, createdBy, adminUserName, meetingRoomId, meetingRoomName, location, meetingNumber, attendees, users, startTime, endTime, status, isDeleted};
+        recordExport([params])
+            .then((res:any) => {
+                ElMessage.success('导出成功!');
+            })
+            .catch(err => {})
+    }
+
 </script>
 
 <style scoped lang="scss">
@@ -474,8 +497,18 @@
                                 margin: 0 .625rem;
                                 color: #F56C6C;
                             }
-                            &>span {
+                            .edit-meeting-summary {
                                 color: #67C23A;
+                            }
+                            .download-excel {
+                                font-size: 1.125rem;
+                                color: #409EFF;
+                                margin: 0 .625rem;
+                                transition: transform 0.2s ease;
+                                &:hover {
+                                    color:#3268dc;
+                                    transform: scale(1.1);
+                                }
                             }
                             cursor: pointer;
                         }
@@ -520,6 +553,9 @@
                         width: 15.1875rem;
                         padding: 0 3rem;
                         flex: 1.5;
+                    }
+                    &:nth-child(7) {
+                        flex: 1.3;
                     }
                 }
             }

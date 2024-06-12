@@ -17,3 +17,8 @@ export const addMeetingMinutes = (data: {id?: number, userId: string, minutes: s
 export const getMeetingMinutes = (data: {userId: string, meetingRecordId: number}) => {
     return http.get("/meeting/minutes", data)
 }
+
+// 导出历史会议记录（单条，后可能批量导出）
+export const recordExport = (data: any[]) => {
+    return http.post("/meeting/meeting-record/record-export", data)
+}

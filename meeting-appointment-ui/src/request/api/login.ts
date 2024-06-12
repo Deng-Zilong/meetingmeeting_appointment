@@ -26,6 +26,6 @@ export const getCaptcha = (data: {uuid: string}) => {
 }
 
 // 退出登录
-export const deleteInfo = (data: {userId: string}) => {
-    return http.get("/meeting/user/delete", data)
+export const deleteInfo = (userId: string) => {
+    return http.get(`/meeting/user/delete${userId}`)
 }

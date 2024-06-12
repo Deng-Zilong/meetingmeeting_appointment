@@ -48,7 +48,7 @@ const userInfo = JSON.parse(localStorage.getItem('userInfo') as string); // 用�
  */
 const exitLogin = () => {
   const userId = JSON.parse(localStorage.getItem('userInfo') as string).userId; // 用户id
-  deleteInfo({userId})
+  deleteInfo(userId)
     .then(res=> {
         // 重置用户信息
         userStore.resetUserInfo();
