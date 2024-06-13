@@ -50,8 +50,6 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
     private SysDepartmentMapper sysDepartmentMapper;
     @Autowired
     private WxCpServiceImpl wxCpService;
-    @Autowired
-    private SysUserMapper sysUserMapper;
     @Resource
     private SysDepartmentUserService sysDepartmentUserService;
     @Resource
@@ -119,12 +117,13 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
 
     /**
      * 查找企业微信用户部门关联表
+     *
      * @param departmentLength 部门长度
-     * @throws WxErrorException WxErrorException
+     * @throws WxErrorException         WxErrorException
      * @throws NoSuchAlgorithmException NoSuchAlgorithmException
-     **/
+     */
     @Override
-    public void findDepartmentUser(Long departmentLength) throws WxErrorException, NoSuchAlgorithmException {
+    public Boolean findDepartmentUser(Long departmentLength) throws WxErrorException, NoSuchAlgorithmException {
         log.info("删除企业部门表，用户表");
         sysDepartmentUserMapper.deleteAll();
         WxCpUserServiceImpl wxCpUserService = new WxCpUserServiceImpl(wxCpService);
@@ -146,6 +145,7 @@ public class SysDepartmentUserServiceImpl extends ServiceImpl<SysDepartmentUserM
             }
         }
         sysDepartmentUserMapper.insertAll(sysDepartmentUserList);
+        return null;
     }
 
 

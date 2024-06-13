@@ -27,10 +27,10 @@ variables:
   FRONT_PATH: "meeting-appointment-ui"
 
   # 设置后端分支和前端分支的默认值
-  BACK_BRANCH: "feature"
+  BACK_BRANCH: "release"
 
   #【请修改】后端Dockerfile存在路径(参考上述目录结构)
-  DOCKERFILE_PATH: "meeting-appointment-admin/Dockerfile"
+  DOCKERFILE_PATH: "Dockerfile"
 
   #【请修改】1 项目名称 不能使用_用-代替,2【前端】项目用web或app结尾，前、后端 "PROJECT_NAME" 不一样； 3【后端】采用-backend结尾
   #正例：前端jf-training-web 后端jf-training-backend
@@ -46,7 +46,7 @@ variables:
   JAR_PORT: 8080
 
   #【请修改】后端Jar包存在地址(参考上述目录结构)
-  JAR_PATH: "./meeting-appointment-admin/target/meeting-appointment-admin-0.0.1-SNAPSHOT.jar"
+  JAR_PATH: "target/ipr.jar"
 
   #【请修改】前端项目打包方式 $BUILD_COMMAND run build:$ENVIRONMENT
   BUILD_COMMAND: "npm"

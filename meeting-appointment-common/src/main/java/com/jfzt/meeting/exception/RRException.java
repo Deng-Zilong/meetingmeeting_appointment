@@ -11,15 +11,14 @@ import java.io.Serial;
  * @author zhenxing.lu
  * @since 2024-05-12 10:13:51
  */
+@Setter
 @EqualsAndHashCode(callSuper = true)
 @Getter
 public class RRException extends RuntimeException {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    @Setter
     private String msg;
-    @Setter
     private String code;
 
 

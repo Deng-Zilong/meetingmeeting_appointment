@@ -17,10 +17,10 @@ test_to_develop_back:
   stage: test # 指定该任务属于测试阶段
   # 这是一个执行脚本操作的配置段
   script:
-      # 切换到指定的后端路径
-      - cd ${BACK_PATH}
-      # 执行mvn verify命令后,Maven 将会自动执行项目中定义的测试和检查过程,包括单元测试、集成测试、代码风格检查、代码覆盖率检查等
-      - mvn verify
+    # 切换到指定的后端路径
+    - cd ${BACK_PATH}
+    # 执行mvn verify命令后,Maven 将会自动执行项目中定义的测试和检查过程,包括单元测试、集成测试、代码风格检查、代码覆盖率检查等
+    - mvn verify
   rules:
     # 规则定义任务的执行条件
     - if: '$CI_COMMIT_BRANCH == $BACK_BRANCH && $CI_COMMIT_MESSAGE =~ /build/' # 分支和提交信息匹配条件
@@ -78,9 +78,8 @@ deploy_to_develop_back:
     # 定义任务执行的规则，包括条件和触发机制
     - if: '$CI_COMMIT_BRANCH == $BACK_BRANCH && $CI_COMMIT_MESSAGE =~ /build/' # 分支必须为指定的后端分支，且提交信息包含"build"
       changes:
-        - $BACK_PATH/** # 指定只有当后端代码路径或.gitlab-ci.yml发生变化时才触发任务
-      when: on_success # 前一个任务成功时触发
+        - $BACK_PATH/**/* # 如果指定路径下的文件发生变化
+        - .gitlab-ci.yml # 指定触发构建的文件路径条件
     - if: '$CI_COMMIT_TAG' # 排除标签提交的情况，不执行该任务
       when: never
     - if: '$CI_PIPELINE_SOURCE == "web"' # 允许通过网页手动触发该任务
-
