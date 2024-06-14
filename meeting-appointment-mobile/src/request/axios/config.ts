@@ -4,7 +4,7 @@ import { ReqResolve, ReqReject, ResResolve, ResReject } from "./interceptors";
 
 const service: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
-  //   baseURL: "api",
+//   baseURL: '/api',
   timeout: 10000,
   headers: {
     // 传参方式json

@@ -1,5 +1,5 @@
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
-// import { showToast } from "vant";
+import { showToast } from "vant";
 // import { ElMessage } from "element-plus";
 // import router from "@/router";
 // import { useUserStore } from "@/stores/user";
@@ -8,8 +8,7 @@ export function ReqResolve(req: InternalAxiosRequestConfig) {
   if (
     req.url === "/meeting/user/login" ||
     req.url === "/meeting/user/captcha.jpg" ||
-    req.url === "/meeting/user/info" ||
-    req.url === "/meeting/user/qr-code"
+    req.url === "/meeting/user/info"
   ) {
     return req;
   }
@@ -41,11 +40,10 @@ export function ResResolve(res: any) {
       return res.data;
     } else {
     //   ElMessage.error(res.data.msg);
-        // showToast({
-        //     type: 'success',
-        //     message: res.data.msg,
-        //     position: 'top',
-        // });
+        showToast({
+            message: res.data.msg,
+            position: 'top',
+        });
         return Promise.reject(res);
     }
   }

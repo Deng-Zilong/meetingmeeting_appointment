@@ -68,6 +68,7 @@ const routes:any = [
   const router = createRouter({
     history: createWebHashHistory(),
     routes,
+    // base: '/app/',
   });
   router.beforeEach((to, from, next) => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo') as string); // 用户信息

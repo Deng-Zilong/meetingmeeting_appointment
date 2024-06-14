@@ -6,12 +6,22 @@ import VueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: "/app/",
   plugins: [
     vue(),
     VueDevTools(),
   ],
   server: {
     port: 5714, // 默认端口
+    // hmr:true,
+    // proxy: {
+    //   '/api': {
+    //     target: (import.meta as any).VITE_BASE_URL, //目标url
+    //     changeOrigin: true, //支持跨域
+    //     rewrite: (path) => path.replace(/^\/api/, ""),
+    //     //重写路径,替换/api
+    //   }
+    // }
   },
   resolve: {
     alias: {
@@ -24,5 +34,5 @@ export default defineConfig({
         additionalData: '@import "./src/styles/global.scss";' // 添加公共样式
       }
     }
-  }
+  },
 })
