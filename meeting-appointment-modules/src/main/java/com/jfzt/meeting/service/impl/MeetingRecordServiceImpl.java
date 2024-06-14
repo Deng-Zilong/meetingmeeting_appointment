@@ -123,6 +123,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                         List<SysUserVO> users = new ArrayList<>();
                         StringBuffer attendees = new StringBuffer();
                         //遍历参会人，拼接姓名，获取userIdList
+                        userIds.addFirst(meetingRecord.getCreatedBy());
                         userService.getUserInfo(userIds, attendees, users);
                         //更新会议状态
                         updateRecordStatus(meetingRecord);
@@ -270,6 +271,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                             new LambdaQueryWrapper<MeetingAttendees>()
                                     .eq(MeetingAttendees::getMeetingRecordId, record.getId()))
                     .stream().map(MeetingAttendees::getUserId).distinct().collect(Collectors.toList());
+            //创建人排在首位
+            userIds.addFirst(record.getCreatedBy());
             StringBuffer attendees = new StringBuffer();
             ArrayList<SysUserVO> users = new ArrayList<>();
             userService.getUserInfo(userIds, attendees, users);
@@ -319,6 +322,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                                 .stream().map(MeetingAttendees::getUserId).collect(Collectors.toList());
                         StringBuffer attendees = new StringBuffer();
                         ArrayList<SysUserVO> users = new ArrayList<>();
+                        userIds.addFirst(record.getCreatedBy());
                         userService.getUserInfo(userIds, attendees, users);
                         // 设置参会人员详情
                         recordVO.setAttendees(attendees.toString());
