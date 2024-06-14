@@ -128,6 +128,7 @@ const changeCaptcha = async() => {
         imgUrl.value = 'data:image/png;base64,' + btoa(
             new Uint8Array(res.data).reduce((data, byte) => data + String.fromCharCode(byte), '')
         )
+        
     } else {
         ElMessage.error('获取验证码失败!')
     }
@@ -225,6 +226,8 @@ const getCode = () => {
     getQrCode()
         .then(res => {
             iframeSrc.value = res.data.url;
+            console.log( iframeSrc.value, " iframeSrc.value");
+            
         })
         .catch(err => {
             isIframeSrc.value = false;

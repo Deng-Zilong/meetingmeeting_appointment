@@ -25,13 +25,6 @@ public interface SysUserService extends IService<SysUser> {
      */
     void getUserInfo (List<String> userIds, StringBuffer attendees, List<SysUserVO> sysUserVOList);
 
-    /**
-     * 获取不是管理员的企业微信用户姓名
-     * @param sysUser      用户信息
-     * @param currentLevel 当前登录用户的权限等级
-     * @return 用户姓名集合
-     */
-    Result<List<String>> selectAll (SysUser sysUser, Integer currentLevel);
 
     /**
      * 根据权限等级查询企微用户是否为管理员

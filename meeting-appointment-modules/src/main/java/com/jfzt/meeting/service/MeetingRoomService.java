@@ -91,4 +91,11 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      */
     Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomProportion ();
 
+
+    /**
+     * 修改会议室
+     * @param meetingRoomDTO 会议室DTO对象
+     * @return 修改结果
+     */
+    Result<Integer> updateRoom(MeetingRoomDTO meetingRoomDTO);
 }

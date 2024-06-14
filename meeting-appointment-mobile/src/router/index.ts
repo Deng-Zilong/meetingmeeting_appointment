@@ -20,10 +20,10 @@ const routes:any = [
         path: '/',
         name: 'layout',
         component: () => import('@/layout/index.vue'),
-        redirect: '/home',
+        redirect: '/home2',
         children: [
             {
-                path: '/home',
+                path: '/home2',
                 name: 'home',
                 meta: {
                     title: '首页',
@@ -68,6 +68,7 @@ const routes:any = [
   const router = createRouter({
     history: createWebHashHistory(),
     routes,
+    // base: '/app/',
   });
   router.beforeEach((to, from, next) => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo') as string); // 用户信息

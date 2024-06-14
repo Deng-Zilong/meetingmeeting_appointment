@@ -3,12 +3,13 @@ import service from './axios-config'
 const currying = () => {
   return {
 
-    post: (url: string, data: {} = {}, headers?: any) => {
+    post: (url: string, data: {} = {}, responseType?: any, headers?: any) => {
       return service.request({
         url,
         method: 'POST',
         data,
-        headers
+        headers,
+        responseType
       })
     },
 

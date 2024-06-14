@@ -7,7 +7,11 @@ import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
 import com.jfzt.meeting.entity.vo.MeetingPromptVO;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
 import com.jfzt.meeting.entity.vo.PeriodTimesVO;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
+
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -102,4 +106,14 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      * @return 最近会议信息
      */
     Result<MeetingPromptVO> prompt(String userId);
+
+    /**
+     * 导出excel
+     * @param userId 用户id
+     * @param meetingRecordVOList 会议室历史记录信息
+     * @param response 返回respose
+     * @throws IOException io流异常
+     * @throws InvalidFormatException 无效格式异常
+     */
+    void getRecordExport(String userId, List<MeetingRecordVO> meetingRecordVOList, HttpServletResponse response) throws IOException, InvalidFormatException;
 }

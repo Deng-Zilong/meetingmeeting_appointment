@@ -95,7 +95,6 @@ public class MeetingRoomController {
     @DeleteMapping("/delete-meeting-room")
     public Result<Integer> deleteMeetingRoom (@RequestParam Long id, @RequestParam("currentLevel") Integer currentLevel) {
         return meetingRoomService.deleteMeetingRoom(id, currentLevel);
-
     }
 
     /**
@@ -106,6 +105,16 @@ public class MeetingRoomController {
     @PutMapping("/update-status")
     public Result<Integer> updateStatus (@RequestBody MeetingRoomDTO meetingRoomDTO) {
         return meetingRoomService.updateStatus(meetingRoomDTO);
+    }
+
+    /**
+     * 根据会议室id修改会议室
+     * @param meetingRoomDTO 会议室DTO对象
+     * @return 修改结果
+     */
+    @PutMapping("/update-room")
+    public Result<Integer> updateRoom (@RequestBody MeetingRoomDTO meetingRoomDTO) {
+        return meetingRoomService.updateRoom(meetingRoomDTO);
     }
 
 

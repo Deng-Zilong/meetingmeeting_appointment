@@ -116,21 +116,6 @@ public class SysUserController {
         return Result.success(userInfo);
     }
 
-
-    /**
-     * 获取不是管理员的企业微信用户姓名
-     *
-     * @param sysUser      用户对象
-     * @param currentLevel 当前登录用户的权限等级
-     * @return com.jfzt.meeting.common.Result<java.util.List < java.lang.String>>
-     */
-    @GetMapping("/select-name")
-    public Result<List<String>> selectList(SysUser sysUser, @RequestParam("currentLevel") Integer currentLevel) {
-        return sysUserService.selectAll(sysUser, currentLevel);
-
-    }
-
-
     /**
      * 查询所有的管理员
      *
@@ -148,7 +133,7 @@ public class SysUserController {
      * @param adminDTO 用户DTO对象
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
-    @PutMapping("/delete-admin")
+    @PutMapping("/delete-admin1")
     public Result<Integer> deleteAdmin(@RequestBody AdminDTO adminDTO) {
         return sysUserService.deleteAdmin(adminDTO.getUserId());
     }
