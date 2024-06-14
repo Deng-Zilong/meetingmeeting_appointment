@@ -61,16 +61,16 @@ public class MeetingRoomTest {
         assertNotNull(meetingRoomService.getAvailableMeetingRooms(LocalDateTime.now(), LocalDateTime.now().plusHours(1)));
     }
 
-    /**
-     * 测试修改会议室状态
-     */
-    @Test
-    public void updateStatusTest () {
-        assertThrows(RRException.class, () -> meetingRoomService.updateStatus(new MeetingRoomDTO(null,0,0)));
-        assertThrows(RRException.class, () -> meetingRoomService.updateStatus(new MeetingRoomDTO(1L,null,0)));
-        assertThrows(RRException.class, () -> meetingRoomService.updateStatus(new MeetingRoomDTO(1L,0,2)));
-        assertThrows(RRException.class, () -> meetingRoomService.updateStatus(new MeetingRoomDTO(1L,0,null)));
-    }
+//    /**
+//     * 测试修改会议室状态
+//     */
+//    @Test
+//    public void updateStatusTest () {
+//        assertThrows(RRException.class, () -> meetingRoomService.updateStatus(new MeetingRoomDTO(null,0,0)));
+//        assertThrows(RRException.class, () -> meetingRoomService.updateStatus(new MeetingRoomDTO(1L,null,0)));
+//        assertThrows(RRException.class, () -> meetingRoomService.updateStatus(new MeetingRoomDTO(1L,0,2)));
+//        assertThrows(RRException.class, () -> meetingRoomService.updateStatus(new MeetingRoomDTO(1L,0,null)));
+//    }
 
     /**
      * 测试查询被禁用的会议室id

@@ -35,9 +35,9 @@ public class KaptchaCondig {
         properties.setProperty("kaptcha.textproducer.font.names", "宋体,楷体,微软雅黑");
         // 这是 是图片样式配置 原生的有三种 水纹 、 鱼眼 、 阴影
         // 这里是 我们自己实现的一个 也就是 样式自定义
-        properties.setProperty("kaptcha.obscurificator.impl","com.jfzt.meeting.config.NoWaterRipple");
-        // 配置使用原生的 无噪 实现类 NoNoise
-        properties.setProperty("kaptcha.noise.impl","com.google.code.kaptcha.impl.NoNoise");
+//        properties.setProperty("kaptcha.obscurificator.impl","com.jfzt.meeting.config.NoWaterRipple");
+        // 干状线
+        properties.setProperty("kaptcha.noise.impl","com.google.code.kaptcha.impl.DefaultNoise");
         Config config = new Config(properties);
         defaultKaptcha.setConfig(config);
 

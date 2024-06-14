@@ -24,4 +24,8 @@
     </foreach>
 
     </insert>
+    <select id="findDepartment" resultType="com.jfzt.meeting.entity.SysDepartment">
+        SELECT  d.department_name FROM sys_department_user du left join sys_department d on du.department_id = d.department_id WHERE du.user_id = #{userId} LIMIT 0,1
+    </select>
+
 </mapper>

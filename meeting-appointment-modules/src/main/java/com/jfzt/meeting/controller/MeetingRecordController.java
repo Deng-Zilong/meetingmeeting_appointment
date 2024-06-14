@@ -6,10 +6,13 @@ import com.jfzt.meeting.entity.dto.UpdateMeetingDTO;
 import com.jfzt.meeting.entity.vo.MeetingPromptVO;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
 import com.jfzt.meeting.service.MeetingRecordService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -65,6 +68,23 @@ public class MeetingRecordController {
                                                         @RequestParam Long page, @RequestParam Long limit) {
         List<MeetingRecordVO> recordVoList = meetingRecordService.getAllRecordVoListPage(userId, page, limit);
         return Result.success(recordVoList);
+    }
+
+    /**
+     * 导出excel
+     * @param userId 用户id
+     * @param meetingRecordVOList 会议室历史记录信息
+     * @param response 返回respose
+     * @throws IOException io流异常
+     * @throws InvalidFormatException 无效格式异常
+     */
+    @PostMapping("/meeting-record/record-export/{userId}")
+    public void recordExport(
+                                       HttpServletResponse response,
+                                       @PathVariable("userId") String userId ,
+                                       @RequestBody List<MeetingRecordVO> meetingRecordVOList
+                                       ) throws IOException, InvalidFormatException {
+        meetingRecordService.getRecordExport(userId,meetingRecordVOList,response);
     }
 
     /**

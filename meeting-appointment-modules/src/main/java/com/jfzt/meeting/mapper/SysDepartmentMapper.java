@@ -27,6 +27,13 @@ public interface SysDepartmentMapper extends BaseMapper<SysDepartment> {
      */
     @Delete("delete from sys_department where department_id !=0")
     void deleteAll();
+
+    /**
+     * 通过用户id查看部门
+     * @param userId 用户id
+     * @return
+     */
+    SysDepartment findDepartment(String userId);
 }
 
 
