@@ -6,10 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MeetingRecordStatusConstant;
 import com.jfzt.meeting.constant.MessageConstant;
-import com.jfzt.meeting.entity.MeetingAttendees;
-import com.jfzt.meeting.entity.MeetingRecord;
-import com.jfzt.meeting.entity.MeetingRoom;
-import com.jfzt.meeting.entity.SysUser;
+import com.jfzt.meeting.entity.*;
 import com.jfzt.meeting.entity.dto.MeetingRoomDTO;
 import com.jfzt.meeting.entity.vo.MeetingRoomOccupancyVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
@@ -20,6 +17,7 @@ import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
 import com.jfzt.meeting.mapper.MeetingRoomMapper;
 import com.jfzt.meeting.mapper.SysUserMapper;
+import com.jfzt.meeting.service.MeetingDeviceService;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MeetingRoomService;
 import com.jfzt.meeting.service.SysUserService;
@@ -50,6 +48,8 @@ import static com.jfzt.meeting.constant.TimePeriodStatusConstant.*;
 @Service
 public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, MeetingRoom> implements MeetingRoomService {
 
+    private MeetingDeviceService meetingDeviceService;
+
     private SysUserMapper sysUserMapper;
     private MeetingRoomMapper meetingRoomMapper;
     private MeetingRecordService meetingRecordService;
@@ -61,6 +61,10 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     @Autowired
     public void setSysUserMapper (SysUserMapper sysUserMapper) {
         this.sysUserMapper = sysUserMapper;
+    }
+    @Autowired
+    public void setMeetingDeviceService (MeetingDeviceService meetingDeviceService) {
+        this.meetingDeviceService = meetingDeviceService;
     }
     @Autowired
     public void setMeetingRoomMapper (MeetingRoomMapper meetingRoomMapper) {
@@ -346,6 +350,12 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             MeetingRoomStatusVO meetingRoomStatusVO = new MeetingRoomStatusVO();
             //复制到VO
             BeanUtils.copyProperties(meetingRoom, meetingRoomStatusVO);
+            //插入设备信息
+            meetingRoomStatusVO.setEquipment(
+                    String.join(",", meetingDeviceService
+                            .list(new LambdaQueryWrapper<MeetingDevice>()
+                                    .eq(MeetingDevice::getRoomId, meetingRoom.getId()))
+                            .stream().map(MeetingDevice::getDeviceName).toList()));
             //暂停使用直接返回
             if (Objects.equals(meetingRoomStatusVO.getStatus(), MEETINGROOM_STATUS_PAUSE)) {
                 return meetingRoomStatusVO;
