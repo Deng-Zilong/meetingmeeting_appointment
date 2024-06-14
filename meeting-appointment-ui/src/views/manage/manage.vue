@@ -92,7 +92,11 @@
       <el-tab-pane label="操作会议室" name="second" class="second-tab">
         <ManageRoom />        
       </el-tab-pane>
-      
+
+      <el-tab-pane label="管理设备" name="fourth" class="fourth-tab">
+        <ManageEquip />
+      </el-tab-pane>
+
       <el-tab-pane label="柱状图统计" name="third" class="third-tab">
         <TimeChart class="tab-echart" v-if="activeName == 'third'" />
         <RoomChart class="tab-echart" v-if="activeName == 'third'" />
@@ -110,6 +114,7 @@
     import { meetingState } from '@/utils/types';
     import personTreeDialog from "@/components/person-tree-dialog.vue";
     import ManageRoom from '@/views/manage/component/manage-room.vue';
+    import ManageEquip from '@/views/manage/component/manage-equip.vue';
     import TimeChart from '@/views/manage/component/time-chart.vue';
     import RoomChart from '@/views/manage/component/room-chart.vue';
     
@@ -501,6 +506,7 @@
           border-radius: .9375rem;
         }
       }
+
     }
   }
 </style>

@@ -1,8 +1,7 @@
 <template>
-  <!-- 新增会议室 -->
   <el-card>
     <template #header>
-      <div class="card-header">新增会议室</div>
+      <div class="card-header">{{ isNew ? "新增" : "编辑" }}会议室</div>
     </template>
     <el-form :model="addMeetingForm">
       <el-form-item label="会议室名称：">
@@ -14,24 +13,21 @@
       <el-form-item label="会议室容量：">
         <el-input type="number" min="1" v-model.number="addMeetingForm.capacity" @input="handleInputInt" />
       </el-form-item>
-      <el-form-item label="会议室设备：">
+      <!-- <el-form-item label="会议室设备：">
         <el-input v-model="addMeetingForm.equipment" />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="会议室状态：">
         <el-radio-group v-model="addMeetingForm.status">
           <el-radio :value="0" size="large">禁用</el-radio>
           <el-radio :value="1" size="large">空闲</el-radio>
         </el-radio-group>
-        <!-- <el-select v-model="addMeetingForm.status" placeholder="请选择会议室初始状态">
-          <el-option v-for="item in meetingStates" :key="item.type" :label="item.label" :value="item.type"/>
-        </el-select> -->
       </el-form-item>
     </el-form>
     <template #footer>
       <div class="card-footer">
         <el-button @click="clearAddInfo()">重置</el-button>
-        <el-button type="primary" @click="addMeetingInfo()">
-          确认
+        <el-button type="primary" @click="submitTab(isNew)">
+          {{ isNew ? "确认" : "修改" }}
         </el-button>
       </div>
     </template>
@@ -47,7 +43,7 @@
     </div>
     <div class="room-table-main my-main-scrollbar">
       <div class="room-table-tr" v-for="item in useMeetingStatus.centerRoomName">
-        <div class="room-tr-cell t-name">
+        <div class="room-tr-cell t-name" @click="handleEditRoom(item)">
           <el-popover
               placement="bottom"
               :disabled="item.roomName.length < 20"
@@ -63,7 +59,7 @@
         <div class="room-tr-cell t-location">
           <el-popover
               placement="bottom"
-              :disabled="item.location?.length < 27"
+              :disabled="item.location?.length < 26"
               :width="200"
               trigger="hover"
               :content="item.location"
@@ -74,7 +70,7 @@
           </el-popover>
         </div>
         <div class="room-tr-cell t-people">{{ item.capacity }}人</div>
-        <div class="room-tr-cell t-equip">{{ item.equipment }}</div>
+        <div class="room-tr-cell t-equip">{{ item.equipment ? item.equipment : '暂无设备' }}</div>
         <div class="room-tr-cell t-status">{{ item.roomStatusLabel }}</div>
         <div>
           <div class="room-tr-cell t-operate">
@@ -92,11 +88,12 @@
     import { ElMessage, ElMessageBox } from 'element-plus';
 
     import { meetingStatus } from '@/stores/meeting-status'
-    import { getMeetingBanData, addRoomData, deleteRoomDate } from '@/request/api/manage'
+    import { getMeetingBanData, addRoomData, updateRoomData, deleteRoomDate } from '@/request/api/manage'
       
     let userInfo = ref<any>({});  // 获取用户信息 用于传后端参数
     const useMeetingStatus = meetingStatus();
-  
+
+    let isNew = ref(true)  // 判断 新增/修改
     // 会议室状态 0-暂停使用 1-空闲 2-使用中
     // 定义 新增会议室信息
     let addMeetingForm = ref<any>({
@@ -111,8 +108,6 @@
       userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}');  // 用户信息
       useMeetingStatus.getCenterRoomName();  // 获取所有会议室及状态
     })
-
-/******************************************* 会议室 ***********************************/
 
     // 操作 禁用显示
     const editRoomStatus = computed(() => (status: any) => {
@@ -146,19 +141,41 @@
 
    // 点击取消 就将表单数据清空
     const clearAddInfo = () => {
-      addMeetingForm.value = {
-        roomName: '',  // 会议室名称
-        location: '',   // 会议室位置
-        capacity: '',  // 会议室容量
-        status: '', // 0-暂停使用(禁用) 1-可使用/空闲(空闲)
-        equipment: '',  // 会议室设备
+      addMeetingForm.value = {}
+      isNew.value = true  // "修改"按钮变回"确认"
+    }
+    
+    // 切换提交事件
+    const submitTab = (isNew: boolean) => {
+      if (isNew) {
+        addMeetingInfo()
+      } else {
+        submitEditRoom()
       }
     }
+    
+    // 容量输入为整数 不可以为小数
+    const handleInputInt = (value: any) => {
+      // 使用正则表达式来确保输入的是整数
+      const regex = /^[0-9]*$/;
+      if (!regex.test(value) || parseInt(value, 10) <= 0) {
+        // 如果输入的不是大于0的整数，则设置为''
+        addMeetingForm.value.capacity = value.replace('');
+        ElMessage.warning('请输入大于0的整数');
+      }
+    }
+
     /**
      * @description 添加会议室
+     * @param {roomName} 会议室名称
+     * @param {location} 会议室位置
+     * @param {capacity} 会议室容量
+     * @param {createdBy} 创建人id
+     * @param {status} 会议室状态 0-暂停使用 1-可使用/空闲
+     * @param {equipment} 会议室设备
     */
     const addMeetingInfo = () => {
-      const { roomName, location, capacity,status,equipment } = addMeetingForm.value
+      const { roomName, location, capacity, status, equipment } = addMeetingForm.value
       addRoomData({ createdBy: userInfo.value.userId, roomName, location, capacity: Number(capacity), status: Number(status), equipment })
       .then(() => {
         ElMessage.success('新增会议室成功')
@@ -170,15 +187,38 @@
       })
     }
 
-    // 容量输入为整数 不可以为小数
-    const handleInputInt = (value: any) => {
-      // 使用正则表达式来确保输入的是整数
-      const regex = /^[0-9]*$/;
-      if (!regex.test(value) || parseInt(value, 10) <= 0) {
-        // 如果输入的不是大于0的整数，则设置为''
-        addMeetingForm.value.capacity = value.replace('');
-        ElMessage.warning('请输入大于0的整数');
+    // 点击编辑会议室信息
+    const handleEditRoom = (item: any) => {
+      isNew.value = false;  // 切换为修改
+      addMeetingForm.value = {
+        id: item.id,
+        roomName: item.roomName,  // 会议室名称
+        location: item.location,   // 会议室位置
+        capacity: item.capacity,  // 会议室容量
+        status: item.status == 0 ? 0 : 1, // 0-暂停使用(禁用) 1-可使用/空闲(空闲)
       }
+    }
+    
+    /**
+     * @description 编辑会议室
+     * @param {id} 会议室id
+     * @param {currentLevel} 用户等级 0超级管理员 1管理员 2员工
+     * @param {roomName} 会议室名称
+     * @param {location} 会议室位置
+     * @param {capacity} 会议室容量
+     * @param {status} 会议室状态
+    */
+    const submitEditRoom = () => {
+      const { id, roomName, location, capacity, status } = addMeetingForm.value
+      updateRoomData({id: Number(id), currentLevel: userInfo.value.level, roomName, location, capacity: Number(capacity), status: Number(status) })
+        .then(() => {
+          ElMessage.success('修改会议室成功')
+          useMeetingStatus.getCenterRoomName()
+          clearAddInfo()  // 修改会议室后清空表单数据
+        })
+        .catch(() => {
+          ElMessage.warning('取消修改会议室')
+        })
     }
     
     /**
@@ -205,7 +245,6 @@
     
 </script>
 <style scoped lang="scss">
-  // tab-操作会议室
   .el-card {
     width: 29rem;
     margin-right: 20px;
@@ -219,7 +258,7 @@
     }
     .el-form {
       .el-form-item {
-        height: 70px;
+        height: 90px;
         flex-direction: column;
         :deep().el-form-item__label {
           justify-content: flex-start;
@@ -281,6 +320,12 @@
         border-radius: 15px;
         margin: 10px 0;
         padding: 11px 0;
+        .t-name {
+          cursor: pointer;
+          &:hover {
+            color: #1890ff;
+          }
+        }
         .room-tr-cell {
           text-wrap: nowrap;
           overflow: hidden;
