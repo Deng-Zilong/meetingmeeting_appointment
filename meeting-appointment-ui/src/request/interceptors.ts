@@ -31,7 +31,7 @@ export function ReqReject(error: AxiosError) {
 }
 // 响应拦截
 export function ResResolve(res: any) {
-    const userId = JSON.parse(localStorage.getItem("userInfo") as string).userId;
+    const userId = JSON.parse(localStorage.getItem("userInfo") as string)?.userId;
   // 验证码不判断状态码
   if (res.config.url === "/meeting/user/captcha.jpg" || res.config.url === `/meeting/meeting-record/record-export/${userId}`) {
     return res;
