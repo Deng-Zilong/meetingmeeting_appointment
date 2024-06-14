@@ -395,8 +395,19 @@
         recordExport([params])
             .then((res:any) => {
                 ElMessage.success('导出成功!');
+                downloadExcel(res.data, '会议纪要')
             })
             .catch(err => {})
+    }
+    const downloadExcel = (blobData: Blob | MediaSource , fileName: string) => {
+        // 创建一个虚拟链接
+        var link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blobData);
+        
+        link.download = fileName;
+
+        // 模拟点击链接进行下载
+        link.click();
     }
 
 </script>
