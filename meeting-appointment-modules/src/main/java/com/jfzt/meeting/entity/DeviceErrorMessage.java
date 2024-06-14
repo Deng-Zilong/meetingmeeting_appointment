@@ -38,9 +38,14 @@ public class DeviceErrorMessage implements Serializable {
      */
     private Long deviceId;
     /**
-     * 报损人
+     * 报损人id
      */
     private String userId;
+    /**
+     * 报损人姓名
+     */
+    @TableField(exist = false)
+    private String userName;
     /**
      * 报损信息
      */

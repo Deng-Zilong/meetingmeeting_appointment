@@ -1,22 +1,33 @@
 package com.jfzt.meeting.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.entity.DeviceErrorMessage;
 import com.jfzt.meeting.entity.MeetingDevice;
 import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.dto.MeetingDeviceDTO;
 import com.jfzt.meeting.entity.dto.MeetingDevicePageDTO;
 import com.jfzt.meeting.entity.vo.MeetingDeviceVO;
+import com.jfzt.meeting.entity.vo.PageVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingDeviceMapper;
+import com.jfzt.meeting.service.DeviceErrorMessageService;
 import com.jfzt.meeting.service.MeetingDeviceService;
 import com.jfzt.meeting.service.MeetingRoomService;
+import com.jfzt.meeting.utils.PageUtil;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 针对表【meeting_device(设备表)】的数据库操作Service实现
  * @author: chenyu.di
@@ -27,6 +38,8 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
         implements MeetingDeviceService {
     @Resource
     private MeetingRoomService meetingRoomService;
+    @Resource
+    private DeviceErrorMessageService deviceErrorMessageService;
     /**
      * 获取设备信息
      * @param meetingDevicePageDTO 获取设备信息入参请求体
@@ -37,12 +50,14 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
         try{
             Page<MeetingDevice> page = this.page(new Page<>(meetingDevicePageDTO.getCurrent(),
                     meetingDevicePageDTO.getSize()), new LambdaQueryWrapper<MeetingDevice>()
-                    .eq(meetingDevicePageDTO.getRoomId() != null,
+                    .eq((meetingDevicePageDTO.getRoomId()) != null,
                             MeetingDevice::getRoomId, meetingDevicePageDTO.getRoomId())
                     .eq(meetingDevicePageDTO.getStatus() != null,
                             MeetingDevice::getStatus, meetingDevicePageDTO.getStatus())
                     .like(meetingDevicePageDTO.getDeviceName() != null,
                             MeetingDevice::getDeviceName, meetingDevicePageDTO.getDeviceName()));
+
+
             Page<MeetingDeviceVO> deviceVOPage = new Page<>();
              deviceVOPage.setRecords(page.getRecords().stream().map(meetingDevice -> {
                 MeetingDeviceVO meetingDeviceVO = new MeetingDeviceVO();
@@ -119,12 +134,17 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
      * @return 成功信息
      */
     @Override
-    public Result<Object> updateStatusDevice(Integer id) {
+    @Transactional
+    public Result<Object> updateStatusDevice(Long id) {
         try {
             MeetingDevice meetingDevice = this.lambdaQuery().eq(MeetingDevice::getId, id).one();
             meetingDevice.setStatus(meetingDevice.getStatus()==1 ? 0 : 1);
             if (meetingDevice.getStatus() == 1){
                 meetingDevice.setExtent(0);
+                List<DeviceErrorMessage> list = deviceErrorMessageService.lambdaQuery()
+                        .eq(DeviceErrorMessage::getDeviceId, id)
+                        .list();
+                deviceErrorMessageService.removeBatchByIds(list.stream().map(DeviceErrorMessage::getId).toList());
             }
             this.updateById(meetingDevice);
             return Result.success();

@@ -51,5 +51,5 @@ public interface MeetingDeviceService extends IService<MeetingDevice> {
      * @param id 设备id
      * @return 成功信息
      */
-    Result<Object> updateStatusDevice(Integer id);
+    Result<Object> updateStatusDevice(Long id);
 }
