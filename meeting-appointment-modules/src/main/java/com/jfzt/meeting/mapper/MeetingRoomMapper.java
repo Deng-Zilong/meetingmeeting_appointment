@@ -30,6 +30,8 @@ public interface MeetingRoomMapper extends BaseMapper<MeetingRoom> {
     @Select("select * from meeting_room where id = #{roomId}")
     MeetingRoom getByRoomId (Long roomId);
 
+    int updateRoom(@Param("id")Long id, @Param("roomName")String roomName, @Param("location")String location,
+                   @Param("capacity")Integer capacity, @Param("status") Integer status);
 }
 
 

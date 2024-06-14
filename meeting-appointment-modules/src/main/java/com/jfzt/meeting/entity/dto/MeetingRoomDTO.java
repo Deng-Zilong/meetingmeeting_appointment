@@ -22,6 +22,20 @@ public class MeetingRoomDTO {
      */
     Integer status;
     /**
+     * 会议室名称
+     */
+    private String roomName;
+
+    /**
+     * 会议室位置
+     */
+    private String location;
+
+    /**
+     * 容量
+     */
+    private Integer capacity;
+    /**
      * 当前登录用户权限
      */
     Integer currentLevel;

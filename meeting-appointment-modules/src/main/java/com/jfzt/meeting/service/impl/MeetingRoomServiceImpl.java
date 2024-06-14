@@ -304,6 +304,33 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         return Result.success(occupancyVOList);
     }
 
+    @Override
+    public Result<Integer> updateRoom(MeetingRoomDTO meetingRoomDTO) {
+        // 检查输入的会议室ID是否存在
+        MeetingRoom meetingRoom = meetingRoomMapper.selectById(meetingRoomDTO.getId());
+        if (meetingRoom == null) {
+            log.error(UPDATE_FAIL + EXCEPTION_TYPE, RRException.class);
+            throw new RRException(UPDATE_FAIL, ErrorCodeEnum.SERVICE_ERROR_A0421.getCode());
+        }
+        if (meetingRoomDTO.getRoomName() == null || meetingRoomDTO.getCurrentLevel() == null ||
+                meetingRoomDTO.getLocation() == null || meetingRoomDTO.getCapacity() == null ||
+                meetingRoomDTO.getStatus() == null) {
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
+        }
+        // 获取当前登录用户的权限等级
+        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(meetingRoomDTO.getCurrentLevel())
+                || MessageConstant.ADMIN_LEVEL.equals(meetingRoomDTO.getCurrentLevel())) {
+            int row = meetingRoomMapper.updateRoom(meetingRoomDTO.getId(), meetingRoomDTO.getRoomName(),
+                    meetingRoomDTO.getLocation(), meetingRoomDTO.getCapacity(), meetingRoomDTO.getStatus());
+            if (row > 0) {
+                return Result.success(row);
+            }
+            log.error("修改会议室失败！");
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
+        }
+        throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0301);
+    }
+
     /**
      * 查询会议室状态
      * @return 会议室状态VO

@@ -28,4 +28,11 @@
         set status = #{status}
         where id = #{id}
     </update>
+
+    <update id="updateRoom" parameterType="com.jfzt.meeting.entity.dto.MeetingRoomDTO">
+        update meeting_room
+        set room_name = #{roomName},location = #{location},capacity = #{capacity},status = #{status}
+        where id = #{id}
+    </update>
+
 </mapper>
