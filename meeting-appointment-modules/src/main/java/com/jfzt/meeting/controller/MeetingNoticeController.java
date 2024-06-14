@@ -37,7 +37,7 @@ public class MeetingNoticeController {
      */
     @GetMapping("/get-notice")
     public Result<List<String>> getNotice () {
-        return meetingNoticeService.selectAll();
+        return Result.success(meetingNoticeService.selectAll());
 
     }
 }

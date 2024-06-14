@@ -27,6 +27,6 @@ public interface MeetingNoticeService extends IService<MeetingNotice> {
      * 查询所有通告信息
      * @return 通告信息
      */
-    Result<List<String>> selectAll();
+    List<String> selectAll();
 
 }

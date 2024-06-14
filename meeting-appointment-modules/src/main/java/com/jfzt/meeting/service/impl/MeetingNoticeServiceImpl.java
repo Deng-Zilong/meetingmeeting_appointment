@@ -63,12 +63,12 @@ public class MeetingNoticeServiceImpl extends ServiceImpl<MeetingNoticeMapper, M
      * @return 通告信息
      */
     @Override
-    public Result<List<String>> selectAll() {
+    public List<String> selectAll() {
         List<MeetingNotice> meetingNotices = meetingNoticeMapper.selectList(new QueryWrapper<>());
-        return Result.success(meetingNotices.stream()
+        return meetingNotices.stream()
                 .filter(notice -> IsDeletedConstant.NOT_DELETED.equals(notice.getIsDeleted()))
                 .map(MeetingNotice::getSubstance)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
     }
 
 }

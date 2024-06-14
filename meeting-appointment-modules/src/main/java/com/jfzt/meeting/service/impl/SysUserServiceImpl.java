@@ -78,29 +78,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         });
     }
 
-    /**
-     * 获取不是管理员的企业微信用户姓名
-     * @param sysUser      用户信息
-     * @param currentLevel 当前登录用户的权限等级
-     * @return 用户姓名集合
-     */
-    @Override
-    public Result<List<String>> selectAll (SysUser sysUser, Integer currentLevel) {
-        // 判断当前登录用户的权限等级
-        if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)) {
-            // 获取所有的用户信息
-            List<SysUser> sysUsers = sysUserMapper.selectList(new QueryWrapper<>());
-            return Result.success(sysUsers.stream()
-                    // 过滤掉管理员和超级管理员
-                    .filter(user -> !MessageConstant.ADMIN_LEVEL.equals(user.getLevel()) &&
-                            !MessageConstant.SUPER_ADMIN_LEVEL.equals(user.getLevel()))
-                    // 获取管理员和超级管理员的名字
-                    .map(SysUser::getUserName)
-                    .collect(Collectors.toList()));
-        }
-        return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A0301);
-
-    }
 
     /**
      * 根据权限等级查询企微用户是否为管理员
