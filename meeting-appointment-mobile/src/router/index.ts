@@ -20,10 +20,10 @@ const routes:any = [
         path: '/',
         name: 'layout',
         component: () => import('@/layout/index.vue'),
-        redirect: '/home',
+        redirect: '/home2',
         children: [
             {
-                path: '/home',
+                path: '/home2',
                 name: 'home',
                 meta: {
                     title: '首页',
