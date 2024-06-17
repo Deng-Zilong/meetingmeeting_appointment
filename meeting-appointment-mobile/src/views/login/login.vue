@@ -56,7 +56,7 @@
     import { useRouter } from 'vue-router';
     import { v4 as uuidv4 } from "uuid";
     import { Md5 } from 'ts-md5';
-    import { showSuccessToast, showToast } from 'vant';
+    import { showSuccessToast, showFailToast, showToast } from 'vant';
     import type { FormInstance } from 'vant';
     import { getCaptcha, Login } from '@/request/api/login';
 
@@ -81,7 +81,7 @@
         } else {
             // 获取验证码失败
             imgUrl.value = '';
-            showToast("获取验证码失败!");
+            showFailToast("获取验证码失败!");
         }
     }
 
@@ -95,16 +95,12 @@
         
         // md5 加密密码
         const md5:any = new Md5();
-        // console.log(md5.appendAsciiStr(),"md5加密前:");
-        
         md5.appendAsciiStr(values.password);
         const password = md5.end();
-        console.log({name: username, password, uuid: uuid.value, code: captcha});
         
         const res = await Login({name: username, password, uuid: uuid.value, code: captcha});
         try {
-            // await formRef.value?.validate()
-            showSuccessToast("登陆成功");
+            showSuccessToast("登录成功");
             localStorage.setItem('userInfo',JSON.stringify(res.data));
             router.replace("/home2");
         } catch (error) {
@@ -126,28 +122,22 @@
 
 <style lang="scss" scoped>
     .login {
-        width: 100%;
+        width: 100vw;
         height: 100vh;
         background: url(@/assets/imgs/login.png) no-repeat top;
         display: flex;
         margin: auto 0;
         justify-content: center;
         align-items: center;
-        // background-size: 100% 100%;
-        
-        // background-size: contain;
-        // background-size: auto 100;
-        // background-position: center;
         .login-form {
             height: 25rem;
-            width: 80%;
+            width: 80vw;
             display: flex;
             justify-content: center;
             align-items: center;
-            
             border-radius: 10px;
+            z-index: 100;
             // background: rgba(255, 255, 255, 0.1);
-            box-sizing: border-box;
             -webkit-backdrop-filter: blur(.3125rem);
             backdrop-filter: blur(.3125rem);
             border: .0625rem solid rgba(230, 233, 239, .5);
@@ -159,6 +149,7 @@
                     // color: #333;
                     margin: 10px 0 0;
                     border-radius: .3125rem;
+                    flex: 1;
                 }
                 .captcha {
                     display: flex;
@@ -167,7 +158,8 @@
                     .captcha-img {
                         width: 5.45rem;
                         height: 2.75rem;
-                        margin-top: .625rem;
+                        margin: .625rem 0 0 5px;
+                        flex: 0.9;
                         cursor: pointer;
                         img {
                             width: 100%;
@@ -183,5 +175,14 @@
                 align-items: center;
             }
         }
+    }
+    .login::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.15); /* 黑色蒙版，50% 不透明度 */
     }
 </style>
