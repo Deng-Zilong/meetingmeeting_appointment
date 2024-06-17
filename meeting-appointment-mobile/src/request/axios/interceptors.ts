@@ -1,7 +1,7 @@
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
-import { showToast } from "vant";
+import { showFailToast, showToast } from "vant";
 // import { ElMessage } from "element-plus";
-// import router from "@/router";
+import router from "@/router";
 // import { useUserStore } from "@/stores/user";
 // 请求拦截
 export function ReqResolve(req: InternalAxiosRequestConfig) {
@@ -40,9 +40,8 @@ export function ResResolve(res: any) {
       return res.data;
     } else {
     //   ElMessage.error(res.data.msg);
-        showToast({
+        showFailToast({
             message: res.data.msg,
-            position: 'top',
         });
         return Promise.reject(res);
     }
@@ -53,8 +52,9 @@ export function ResReject(error: AxiosError) {
     // const userStore = useUserStore(); 
   if (error.response?.status == 402) {
     // userStore.resetUserInfo();
-    // router.replace("/login");
-    // ElMessage.warning("登录已过期，请重新登录！");
+    localStorage.removeItem("userInfo");
+    router.replace("/login");
+    showFailToast("登录已过期，请重新登录！");
     return Promise.reject(error);
   }
   // router.push("/500");

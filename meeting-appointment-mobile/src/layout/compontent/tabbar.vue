@@ -3,7 +3,7 @@
     <van-tabbar v-model="active" route placeholder>
         <van-tabbar-item to="/home2" icon="home-o">首页</van-tabbar-item>
         <van-tabbar-item to="/createMeeting" icon="add-o">新建</van-tabbar-item>
-        <van-tabbar-item to="/info" icon="friends-o">我的</van-tabbar-item>
+        <van-tabbar-item to="/info" icon="contact-o">我的</van-tabbar-item>
     </van-tabbar>
 </template>
 
