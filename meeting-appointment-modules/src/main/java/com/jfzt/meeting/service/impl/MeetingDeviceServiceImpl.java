@@ -1,7 +1,6 @@
 package com.jfzt.meeting.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
@@ -11,15 +10,14 @@ import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.dto.MeetingDeviceDTO;
 import com.jfzt.meeting.entity.dto.MeetingDevicePageDTO;
 import com.jfzt.meeting.entity.vo.MeetingDeviceVO;
-import com.jfzt.meeting.entity.vo.PageVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingDeviceMapper;
 import com.jfzt.meeting.service.DeviceErrorMessageService;
 import com.jfzt.meeting.service.MeetingDeviceService;
 import com.jfzt.meeting.service.MeetingRoomService;
-import com.jfzt.meeting.utils.PageUtil;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -33,6 +31,7 @@ import java.util.List;
  * @author: chenyu.di
  * @since: 2024-06-12 11:08
  */
+@Slf4j
 @Service
 public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,MeetingDevice>
         implements MeetingDeviceService {
@@ -56,7 +55,6 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
                             MeetingDevice::getStatus, meetingDevicePageDTO.getStatus())
                     .like(meetingDevicePageDTO.getDeviceName() != null,
                             MeetingDevice::getDeviceName, meetingDevicePageDTO.getDeviceName()));
-
 
             Page<MeetingDeviceVO> deviceVOPage = new Page<>();
              deviceVOPage.setRecords(page.getRecords().stream().map(meetingDevice -> {
@@ -83,18 +81,33 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
      */
     @Override
     public Result<Object> addDevice(MeetingDeviceDTO meetingDeviceDTO) {
-        if (meetingDeviceDTO.getRoomId()==null || meetingDeviceDTO.getDeviceName()==null || meetingDeviceDTO.getUserId()==null){
+        if (meetingDeviceDTO.getRoomId()==null ||
+                StringUtils.isBlank(meetingDeviceDTO.getDeviceName()) ||
+                StringUtils.isBlank(meetingDeviceDTO.getUserId())){
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
         }
-        MeetingDevice meetingDevice = new MeetingDevice();
-        BeanUtils.copyProperties(meetingDeviceDTO, meetingDevice);
-        Long count = lambdaQuery().eq(MeetingDevice::getRoomId, meetingDeviceDTO.getRoomId())
-                .eq(MeetingDevice::getDeviceName, meetingDeviceDTO.getDeviceName())
-                .count();
-        if (count>0){
-            return Result.fail("设备名重复!");
+        ArrayList<MeetingDevice> duplicateList = new ArrayList<>();
+
+        meetingDeviceDTO.getRoomId().stream().peek(roomId -> {
+            MeetingDevice meetingDevice = new MeetingDevice();
+            BeanUtils.copyProperties(meetingDeviceDTO, meetingDevice,"roomId");
+            meetingDevice.setRoomId(roomId);
+            List<MeetingDevice> duplicate = lambdaQuery().eq(MeetingDevice::getRoomId, roomId)
+                    .eq(MeetingDevice::getDeviceName, meetingDeviceDTO.getDeviceName())
+                    .list();
+            duplicateList.addAll(duplicate);
+            this.save(meetingDevice);
+        }).toList();
+        if (!duplicateList.isEmpty()){
+            List<MeetingDeviceVO> deviceVOList = duplicateList.stream().map(duplicate -> {
+                MeetingDeviceVO meetingDeviceVO = new MeetingDeviceVO();
+                MeetingRoom room = meetingRoomService.lambdaQuery().eq(MeetingRoom::getId, duplicate.getRoomId()).one();
+                meetingDeviceVO.setRoomName(room.getRoomName());
+                return meetingDeviceVO;
+            }).toList();
+            List<String> duplicateDevices = deviceVOList.stream().map(MeetingDeviceVO::getRoomName).distinct().toList();
+            return Result.fail(String.join("、",duplicateDevices) + " 的设备名重复，请重新输入!");
         }
-        this.save(meetingDevice);
         return Result.success("添加成功!");
     }
 
@@ -106,6 +119,12 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
     @Override
     public Result<Object> updateDevice(MeetingDevice meetingDevice) {
         try{
+            Long count = lambdaQuery().eq(MeetingDevice::getRoomId, meetingDevice.getRoomId())
+                    .eq(MeetingDevice::getDeviceName, meetingDevice.getDeviceName())
+                    .count();
+            if (count>0){
+                return Result.fail("设备名重复!");
+            }
             this.updateById(meetingDevice);
             return Result.success("修改成功!");
         }catch (Exception e){

@@ -87,7 +87,6 @@ public class DeviceErrorMessageServiceImpl extends ServiceImpl<DeviceErrorMessag
                             +"\n因"
                             + deviceErrorMessageDTO.getInfo()
                             + "\n目前已被禁用，请及时处理!!");
-
             }
             wxUtil.sendsWxReminders(sysUserService.lambdaQuery()
                     .ne(SysUser::getLevel, 2)

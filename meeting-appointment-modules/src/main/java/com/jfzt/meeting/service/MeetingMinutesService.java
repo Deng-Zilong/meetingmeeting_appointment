@@ -3,6 +3,7 @@ package com.jfzt.meeting.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingMinutes;
+import com.jfzt.meeting.entity.dto.MeetingMinutesDTO;
 import com.jfzt.meeting.entity.vo.MeetingMinutesVO;
 import org.springframework.stereotype.Service;
 
@@ -41,5 +42,5 @@ public interface MeetingMinutesService extends IService<MeetingMinutes> {
      * @param meetingMinutes 会议纪要
      * @return 保存结果
      */
-    Result<Object> saveOrUpdateMinutes (MeetingMinutes meetingMinutes);
+    Result<Object> saveOrUpdateMinutes (MeetingMinutesDTO meetingMinutesDTO);
 }

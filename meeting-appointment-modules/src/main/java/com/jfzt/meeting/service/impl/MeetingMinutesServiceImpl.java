@@ -5,14 +5,18 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingMinutes;
 import com.jfzt.meeting.entity.MeetingRecord;
+import com.jfzt.meeting.entity.MinutesPlan;
 import com.jfzt.meeting.entity.SysUser;
+import com.jfzt.meeting.entity.dto.MeetingMinutesDTO;
 import com.jfzt.meeting.entity.vo.MeetingMinutesVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingMinutesMapper;
 import com.jfzt.meeting.service.MeetingMinutesService;
 import com.jfzt.meeting.service.MeetingRecordService;
+import com.jfzt.meeting.service.MinutesPlanService;
 import com.jfzt.meeting.service.SysUserService;
+import jakarta.annotation.Resource;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +37,8 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
     SysUserService sysUserService;
     @Autowired
     MeetingRecordService meetingRecordService;
-
+    @Resource
+    private MinutesPlanService minutesPlanService;
 
     /**
      * 根据会议记录id或用户id查询会议纪要
@@ -74,31 +79,72 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
 
     /**
      * 保存会议纪要
-     * @param meetingMinutes 会议纪要
+     * @param meetingMinutesDTO 会议纪要
      * @return 保存结果
      */
     @Override
-    public Result<Object> saveOrUpdateMinutes (MeetingMinutes meetingMinutes) {
-        MeetingMinutes selfMinutes =
-                lambdaQuery().eq(MeetingMinutes::getMeetingRecordId, meetingMinutes.getMeetingRecordId())
-                        .eq(MeetingMinutes::getUserId, meetingMinutes.getUserId())
+    public Result<Object> saveOrUpdateMinutes (MeetingMinutesDTO meetingMinutesDTO) {
+        MeetingMinutes selfMinutes = lambdaQuery()
+                        .eq(MeetingMinutes::getMeetingRecordId, meetingMinutesDTO.getMeetingRecordId())
+                        .eq(MeetingMinutes::getUserId, meetingMinutesDTO.getUserId())
                         .one();
+        // 当前用户没有会议纪要，保存会议纪要
         if (selfMinutes == null) {
-            save(meetingMinutes);
+            MeetingMinutes minutes = new MeetingMinutes();
+            BeanUtils.copyProperties(meetingMinutesDTO, minutes);
+            save(minutes);
+            meetingMinutesDTO.setId(minutes.getId());
         } else {
+            // 当前用户有会议纪要，修改会议纪要
             SysUser user = sysUserService.lambdaQuery()
-                    .eq(SysUser::getUserId, meetingMinutes.getUserId())
+                    .eq(SysUser::getUserId, meetingMinutesDTO.getUserId())
                     .one();
             MeetingRecord meetingRecord = meetingRecordService.lambdaQuery()
-                    .eq(MeetingRecord::getId, meetingMinutes.getMeetingRecordId())
+                    .eq(MeetingRecord::getId, meetingMinutesDTO.getMeetingRecordId())
                     .one();
             if (user == null || meetingRecord == null) {
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
             }
-            meetingMinutes.setId(selfMinutes.getId());
-            updateById(meetingMinutes);
+            meetingMinutesDTO.setId(selfMinutes.getId());
+            MeetingMinutes minutes = new MeetingMinutes();
+            BeanUtils.copyProperties(meetingMinutesDTO, minutes);
+            updateById(minutes);
         }
+        plan(meetingMinutesDTO);
+
         return Result.success();
+    }
+    /**
+     * 新增修改迭代内容
+     * @param meetingMinutesDTO 入参请求体
+     */
+    private void plan(MeetingMinutesDTO meetingMinutesDTO) {
+        if (meetingMinutesDTO.getMinutesPlan().isEmpty()){
+            return;
+        }
+        meetingMinutesDTO.getMinutesPlan().stream().peek(plan -> {
+            MinutesPlan existMinutesPlan = minutesPlanService.lambdaQuery()
+                    .eq(MinutesPlan::getId, plan.getId())
+                    .one();
+            //新增内容
+            if (existMinutesPlan == null) {
+                MinutesPlan minutesPlan = MinutesPlan.builder()
+                        .minutesId(meetingMinutesDTO.getId())
+                        .status(plan.getStatus())
+                        .plan(plan.getPlan())
+                        .build();
+                minutesPlanService.save(minutesPlan);
+            }else {
+                //更新内容
+                MinutesPlan updateMinutesPlan = MinutesPlan.builder()
+                        .id(plan.getId())
+                        .status(plan.getStatus())
+                        .minutesId(meetingMinutesDTO.getId())
+                        .plan(plan.getPlan())
+                        .build();
+                minutesPlanService.updateById(updateMinutesPlan);
+            }
+        }).toList();
     }
 
     /**

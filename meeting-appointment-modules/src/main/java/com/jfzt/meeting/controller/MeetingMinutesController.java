@@ -2,6 +2,7 @@ package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingMinutes;
+import com.jfzt.meeting.entity.dto.MeetingMinutesDTO;
 import com.jfzt.meeting.entity.vo.MeetingMinutesVO;
 import com.jfzt.meeting.service.MeetingMinutesService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,12 +40,12 @@ public class MeetingMinutesController {
 
     /**
      * 保存或更新会议纪要
-     * @param meetingMinutes 会议纪要
-     * @return 结果
+     * @param meetingMinutesDTO 迭代内容入参请求体
+     * @return 保存结果
      */
     @PostMapping("/minutes")
-    public Result<Object> saveOrUpdateMinutes (@RequestBody MeetingMinutes meetingMinutes) {
-        return meetingMinutesService.saveOrUpdateMinutes(meetingMinutes);
+    public Result<Object> saveOrUpdateMinutes (@RequestBody MeetingMinutesDTO meetingMinutesDTO) {
+        return meetingMinutesService.saveOrUpdateMinutes(meetingMinutesDTO);
     }
 
     /**

@@ -1,9 +1,11 @@
 package com.jfzt.meeting.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * 会议纪要(MeetingMinutes)实体类
@@ -30,6 +32,16 @@ public class MeetingMinutes implements Serializable {
      * 会议记录id
      */
     private Integer meetingRecordId;
+    /**
+     * 添加时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime gmtCreate;
+    /**
+     * 修改时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime gmtModified;
 
     @Override
     public boolean equals (Object that) {
