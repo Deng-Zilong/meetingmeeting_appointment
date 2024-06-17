@@ -132,7 +132,7 @@ public class GlobalExceptionHandler {
      * 调用企业微信接口异常
      */
     @ExceptionHandler(AesException.class)
-    public Result<String> handleRRException(AesException e) {
+    public Result<String> handleRRException() {
         log.error(ErrorCodeEnum.SERVICE_ERROR_C0200.getCode(), ErrorCodeEnum.SERVICE_ERROR_C0200.getDescription());
         Result<String> result = new Result<>();
         result.setCode(ErrorCodeEnum.SERVICE_ERROR_C0200.getCode());
@@ -147,9 +147,8 @@ public class GlobalExceptionHandler {
         BindingResult bindingResult = e.getBindingResult();
 
         Map<String,String> errorMap = new HashMap<>();
-        bindingResult.getFieldErrors().forEach((fieldError)->{
-            errorMap.put(fieldError.getField(),fieldError.getDefaultMessage());
-        });
+        bindingResult.getFieldErrors()
+                .forEach((fieldError)-> errorMap.put(fieldError.getField(),fieldError.getDefaultMessage()));
         return Result.fail(ErrorCodeEnum.SERVICE_ERROR_A02011111,errorMap);
     }
 

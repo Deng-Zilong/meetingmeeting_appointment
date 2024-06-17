@@ -4,16 +4,18 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.DeviceErrorMessage;
 import com.jfzt.meeting.entity.MeetingDevice;
+import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.dto.DeviceErrorMessageDTO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.DeviceErrorMessageMapper;
 import com.jfzt.meeting.service.DeviceErrorMessageService;
 import com.jfzt.meeting.service.MeetingDeviceService;
+import com.jfzt.meeting.service.SysUserService;
+import com.jfzt.meeting.utils.WxUtil;
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 /**
@@ -24,7 +26,10 @@ import java.util.List;
 @Service
 public class DeviceErrorMessageServiceImpl extends ServiceImpl<DeviceErrorMessageMapper,DeviceErrorMessage>
         implements DeviceErrorMessageService {
-
+    @Resource
+    private WxUtil wxUtil;
+    @Resource
+    private SysUserService sysUserService;
     @Resource
     private MeetingDeviceService meetingDeviceService;
 
@@ -35,7 +40,15 @@ public class DeviceErrorMessageServiceImpl extends ServiceImpl<DeviceErrorMessag
      */
     @Override
     public Result<List<DeviceErrorMessage>> getInfo(Integer deviceId) {
-        List<DeviceErrorMessage> list = lambdaQuery().eq(DeviceErrorMessage::getDeviceId, deviceId).list();
+        List<DeviceErrorMessage> list = lambdaQuery()
+                .eq(DeviceErrorMessage::getDeviceId, deviceId)
+                .list()
+                .stream()
+                .peek(deviceErrorMessage -> deviceErrorMessage.setUserName(sysUserService.lambdaQuery()
+                        .eq(SysUser::getUserId, deviceErrorMessage.getUserId())
+                        .one()
+                        .getUserName()))
+                .toList();
         return Result.success(list);
     }
 
@@ -59,6 +72,37 @@ public class DeviceErrorMessageServiceImpl extends ServiceImpl<DeviceErrorMessag
                 .one();
         Integer extent = meetingDevice.getExtent();
         extent++;
+        try {
+            // 判断报损次数是否大于等于3
+            if (extent>=3){
+                meetingDevice.setStatus(0);
+                    wxUtil.sendsWxReminders(sysUserService.lambdaQuery()
+                            .ne(SysUser::getLevel, 2)
+                            .list()
+                            .stream()
+                            .map(SysUser::getUserId)
+                            .toList(),meetingDevice.getRoomId()
+                            + "的"
+                            + meetingDevice.getDeviceName()
+                            +"\n因"
+                            + deviceErrorMessageDTO.getInfo()
+                            + "\n目前已被禁用，请及时处理!!");
+
+            }
+            wxUtil.sendsWxReminders(sysUserService.lambdaQuery()
+                    .ne(SysUser::getLevel, 2)
+                    .list()
+                    .stream()
+                    .map(SysUser::getUserId)
+                    .toList(),meetingDevice.getRoomId()
+                    + "的"
+                    + meetingDevice.getDeviceName()
+                    +"已损坏\n损坏原因为："
+                    + deviceErrorMessageDTO.getInfo()
+                    + "\n请及时处理!!");
+        }catch (Exception e){
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
+        }
         meetingDevice.setExtent(extent);
         meetingDeviceService.updateById(meetingDevice);
 

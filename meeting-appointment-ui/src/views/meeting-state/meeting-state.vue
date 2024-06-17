@@ -1,6 +1,6 @@
 <template>
   <!-- 会议室状态 -->
-  <div class="container meeting-container" v-loading="loading">
+  <div class="container meeting-container">
     <header>
       <el-divider direction="vertical" /><div class="title-animation"><span>{{ title }}</span></div>
     </header>
@@ -52,6 +52,45 @@
               <div class="items-right-info">{{ item.info }}</div>
             </div>
           </div>
+          <!-- 设备信息 单独 -->
+          <div class="right-items">
+            <img class="items-left" style="width: 40px; height: 40px;" :src="deviceInfo.src" alt="">
+            <div class="items-right">
+              <div class="items-right-title item-click">
+                <span>{{ deviceInfo.title }}</span>
+                <el-tooltip content="点击设备报损" placement="top" effect="light" v-if="deviceInfo.info" >
+                  <el-icon @click="handleBreak(title)"><WarnTriangleFilled /></el-icon>
+                </el-tooltip>
+              </div>
+              <div class="items-right-info">{{ deviceInfo.info ? deviceInfo.info : "暂无设备" }}</div>
+            </div>
+          </div>
+          <!-- 报损弹窗 -->
+          <el-dialog v-model="dialogFormVisible" width="500" top="25vh">
+            <!-- <el-form :model="formDialog">
+              <el-form-item label="报损信息" label-width="">
+                <el-input v-model="formDialog.input" />
+              </el-form-item>
+              <el-form-item label="报损设备" label-width="">
+                <el-select v-model="formDialog.selected" placeholder="请选择报损设备">
+                  <el-option v-for="item in deviceData" :label="item.label" :value="item.value" />
+                </el-select>
+              </el-form-item>
+            </el-form> -->
+            <el-table :data="gridData" >
+              <el-table-column property="deviceName" label="设备" width="150" />
+              <el-table-column property="info" label="报损信息" width="200">
+                <template #default="scope">
+                  <el-input v-model="scope.row.info" />
+                </template>
+                </el-table-column>
+              <el-table-column label="操作">
+                <template #default="scope">
+                  <el-button type="primary" @click="submitBreak(scope.row)">提交</el-button>
+                </template>
+                </el-table-column>
+            </el-table>
+          </el-dialog>
         </div>
       </div>
     </main>
@@ -61,7 +100,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { dayjs } from 'element-plus';
+import { ElMessage, dayjs } from 'element-plus';
 
 // 导入图片地址
 import chamber from '@/assets/img/chamber.png'
@@ -69,17 +108,20 @@ import address from '@/assets/img/address.png'
 import capacity from '@/assets/img/capacity.png'
 import device from '@/assets/img/device.png'
 import { getBusyData } from '@/request/api/home'
+import { addBreakInfoData, getDeviceData } from '@/request/api/manage'
 
-const loading = ref(false)  // 获取数据loading
 const routes = useRoute();  // 用于传数据
 const router = useRouter() // 用于选择时间段
 
+const userInfo = ref<any>()
 const date = ref<any>(dayjs().startOf('date').format('YYYY-MM-DD'))  // 会议日期选择
 const currentMeetingId = ref<any>(routes.query.id);  // 会议室id
 const title = ref(routes.query.title);  // 会议室名称
 const locate = ref(routes.query.address);  // 会议室位置
 const person = ref(routes.query.person);  // 会议室容量人数
-const equipment = ref(routes.query.equipment);  // 会议室容量人数
+// const equipment = ref(routes.query.equipment);  // 会议室设备
+const equipment = ref()  // 会议室设备(最新的) 用于展示
+const equipmentData = ref()  // 设备信息数组 用于弹窗
 const time = ref(new Date().toLocaleTimeString().substring(0, 5))  // 显示当前时间点
 const hoveredItem = ref<any>(null)  // 鼠标悬浮内容
 
@@ -101,12 +143,17 @@ const infoArr = reactive([
     title: '会议室容量',
     info: personInfo
   },
-  {
-    src: device,
-    title: '设备',
-    info: equipment
-  }
+  // {
+  //   src: device,
+  //   title: '设备',
+  //   info: equipment
+  // }
 ])
+const deviceInfo = ref({
+  src: device,
+  title: '设备',
+  info: equipment
+})
 
 // 会议时间点
 const timeArr = ref([
@@ -151,9 +198,11 @@ setInterval(() => {  // 更新 时间 会议室名称、位置
 }, 100)
 
 
-onMounted(() => {
-  loading.value = false;
+onMounted(async() => {
   getBusy({ id: currentMeetingId.value, date: dayjs(date.value).format('YYYY-MM-DD') });
+  userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}');  // 用户信息
+  // 从“查询设备”接口中获取设备信息
+  newDeviceData()
 })
 
 /**
@@ -226,15 +275,6 @@ const selectTime = (item: any) => {
   }
 }
 
-// 监听会议室页面切换时 传的值是否变化
-// watch(() => router.currentRoute.value.query, (newValue: any) => {
-//   currentMeetingId.value = newValue.id
-//   title.value = newValue.title
-//   locate.value = newValue.address
-//   person.value = routes.query.person  // 会议室容量人数
-//   getBusy({ id: currentMeetingId.value, date: dayjs(date.value).format('YYYY-MM-DD') })  // 切换会议室时 调用会议室接口
-// })
-
 let classListTimeRefs:any = {}; // 存储dom的classList
 // 获取时间选择器dom
 const timeRefs = (el:any, key: string) => {
@@ -291,9 +331,82 @@ const onRightClick = (time: any, state: number) => {
     }
   }
 };
+
+/***************************************************报损信息***********************************************/
+const dialogFormVisible = ref(false)  // 报损信息弹出框
+let formDialog = reactive({
+  input: '',
+  selected: ''
+})
+
+const gridData = ref<any>([])
+
+const newDeviceData = async() => {
+  equipmentData.value = (await getDeviceData({ current: -1, size: -1, roomId: currentMeetingId.value, status: 1 })).data.records.map((item: any) => {
+    return item
+  })
+  equipment.value = equipmentData.value.map((item: any) => item.deviceName).join(', ')  // 用于设备展示
+  gridData.value = equipmentData.value.map((item: any) => {  // 将信息给弹窗gridData
+    const id = item.id
+    const deviceName = item.deviceName
+    const info = ''
+    const extent = item.extent
+    return { id, deviceName, info, extent }
+  })
+}
+
+/**
+ * @description  新增报损信息
+ * @param {deviceId} 设备id
+ * @param {userId} 申报人id
+ * @param {info} 报损内容
+}
+*/
+const submitBreak = (row: any) => {
+  if (row.info != '') {
+    addBreakInfoData({ deviceId: row.id, userId: userInfo.value.userId, info: row.info })
+      .then((res) => {
+        ElMessage.success(`成功提交${row.deviceName}的报损信息`)
+        newDeviceData()
+        row.info = ''
+      })
+      .catch((err) => { })
+  } else {
+    ElMessage.warning('提交信息不可为空！')
+  }
+}
+
+// 打开报损弹窗
+const handleBreak = (title: any) => {
+  dialogFormVisible.value = true
+  // 打开弹窗 内容清空
+  formDialog.input = ''
+  formDialog.selected = ''
+}
+
+
 </script>
 
 <style scoped lang="scss">
+// 弹窗样式修改
+:deep().el-dialog {
+  .el-table__inner-wrapper {
+    &::before {
+      height: 0;
+    }
+    .el-table__body-wrapper {
+      .el-scrollbar {
+        padding-bottom: 20px;
+        max-height: 245px;
+        overflow-y: auto;
+        &::-webkit-scrollbar {  // 滚动条隐藏
+          display: none !important;
+          width: 0 !important;
+        }
+      }
+    }
+  }
+}
 .meeting-container {
   padding: 2.5rem 3.5rem;
 
@@ -491,6 +604,16 @@ const onRightClick = (time: any, state: number) => {
             .items-right-info {
               font-size: 1.2rem;
               color: #585858;
+            }
+            // 报损信息单独样式
+            .item-click {
+              display: flex;
+              align-items: center;
+              .el-icon {
+                cursor: pointer;
+                // margin-left: 5px;
+                color: #F16105;
+              }
             }
           }
         }
