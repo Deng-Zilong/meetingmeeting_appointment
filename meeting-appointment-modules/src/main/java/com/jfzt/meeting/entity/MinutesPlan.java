@@ -15,8 +15,8 @@ import java.time.LocalDateTime;
 
 /**
  * 会议纪要迭代内容(MinutesPlan)表实体类
- * @author: chenyu.di
- * @since: 2024-06-17 14:51
+ * @author chenyu.di
+ * @since 2024-06-17 14:51
  */
 @TableName(value = "minutes_plan")
 @Data
@@ -27,7 +27,7 @@ public class MinutesPlan implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     /**
-     *迭代内容id
+     * 迭代内容id
      */
     @TableId(type = IdType.AUTO)
     private Long id;

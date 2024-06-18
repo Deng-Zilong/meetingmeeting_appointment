@@ -39,7 +39,7 @@ public interface MeetingMinutesService extends IService<MeetingMinutes> {
 
     /**
      * 保存会议纪要
-     * @param meetingMinutes 会议纪要
+     * @param meetingMinutesDTO 会议纪要
      * @return 保存结果
      */
     Result<Object> saveOrUpdateMinutes (MeetingMinutesDTO meetingMinutesDTO);

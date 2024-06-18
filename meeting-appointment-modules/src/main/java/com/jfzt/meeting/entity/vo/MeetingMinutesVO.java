@@ -2,6 +2,8 @@ package com.jfzt.meeting.entity.vo;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 会议纪要VO
  * @author zilong.deng
@@ -10,7 +12,7 @@ import lombok.Data;
 @Data
 public class MeetingMinutesVO {
     /**
-     *
+     * id
      */
     private Integer id;
 
@@ -38,4 +40,9 @@ public class MeetingMinutesVO {
      * 会议记录主题
      */
     private String meetingRecordTitle;
+
+    /**
+     * 会议纪要迭代内容
+     */
+    private List<MinutesPlanVO> minutesPlans;
 }

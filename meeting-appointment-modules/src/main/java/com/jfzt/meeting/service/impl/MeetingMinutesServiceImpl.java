@@ -9,6 +9,7 @@ import com.jfzt.meeting.entity.MinutesPlan;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.dto.MeetingMinutesDTO;
 import com.jfzt.meeting.entity.vo.MeetingMinutesVO;
+import com.jfzt.meeting.entity.vo.MinutesPlanVO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingMinutesMapper;
@@ -21,6 +22,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -72,6 +74,17 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
                     new LambdaQueryWrapper<MeetingRecord>().eq(MeetingRecord::getId, minutes.getMeetingRecordId()));
             if (!meetingRecords.isEmpty()) {
                 meetingMinutesVO.setMeetingRecordTitle(meetingRecords.getFirst().getTitle());
+                if (Objects.equals(meetingRecords.getFirst().getCreatedBy(), meetingMinutes.getUserId())) {
+                    List<MinutesPlanVO> minutesPlans = minutesPlanService.list(
+                                    new LambdaQueryWrapper<MinutesPlan>()
+                                            .eq(MinutesPlan::getMinutesId, minutes.getId()))
+                            .stream().map(minutesPlan -> {
+                                MinutesPlanVO minutesPlanVO = new MinutesPlanVO();
+                                BeanUtils.copyProperties(minutesPlan, minutesPlanVO);
+                                return minutesPlanVO;
+                            }).toList();
+                    meetingMinutesVO.setMinutesPlans(minutesPlans);
+                }
             }
             return meetingMinutesVO;
         }).toList();
@@ -85,9 +98,9 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
     @Override
     public Result<Object> saveOrUpdateMinutes (MeetingMinutesDTO meetingMinutesDTO) {
         MeetingMinutes selfMinutes = lambdaQuery()
-                        .eq(MeetingMinutes::getMeetingRecordId, meetingMinutesDTO.getMeetingRecordId())
-                        .eq(MeetingMinutes::getUserId, meetingMinutesDTO.getUserId())
-                        .one();
+                .eq(MeetingMinutes::getMeetingRecordId, meetingMinutesDTO.getMeetingRecordId())
+                .eq(MeetingMinutes::getUserId, meetingMinutesDTO.getUserId())
+                .one();
         // 当前用户没有会议纪要，保存会议纪要
         if (selfMinutes == null) {
             MeetingMinutes minutes = new MeetingMinutes();
@@ -114,12 +127,13 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
 
         return Result.success();
     }
+
     /**
      * 新增修改迭代内容
      * @param meetingMinutesDTO 入参请求体
      */
-    private void plan(MeetingMinutesDTO meetingMinutesDTO) {
-        if (meetingMinutesDTO.getMinutesPlan().isEmpty()){
+    private void plan (MeetingMinutesDTO meetingMinutesDTO) {
+        if (meetingMinutesDTO.getMinutesPlan().isEmpty()) {
             return;
         }
         meetingMinutesDTO.getMinutesPlan().stream().peek(plan -> {
@@ -134,7 +148,7 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
                         .plan(plan.getPlan())
                         .build();
                 minutesPlanService.save(minutesPlan);
-            }else {
+            } else {
                 //更新内容
                 MinutesPlan updateMinutesPlan = MinutesPlan.builder()
                         .id(plan.getId())
@@ -151,19 +165,29 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
      * 根据会议id删除所有会议纪要
      * @param meetingRecordId 会议id
      */
+    @Transactional
     @Override
     public void deleteMeetingMinutes (Long meetingRecordId) {
         if (meetingRecordId == null) {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
         }
-        remove(new LambdaQueryWrapper<MeetingMinutes>()
-                .eq(MeetingMinutes::getMeetingRecordId, meetingRecordId));
+        List<Integer> minutesIds = list(new LambdaQueryWrapper<MeetingMinutes>()
+                .eq(MeetingMinutes::getMeetingRecordId, meetingRecordId))
+                .stream().map(MeetingMinutes::getId).toList();
+        //删除纪要
+        removeBatchByIds(minutesIds);
+        //删除迭代计划
+        if (!minutesIds.isEmpty()) {
+            minutesPlanService.remove(new LambdaQueryWrapper<MinutesPlan>()
+                    .in(MinutesPlan::getMinutesId, minutesIds));
+        }
     }
 
     /**
      * 根据用户id 纪要id删除指定纪要
      * @param meetingMinutes userId id
      */
+    @Transactional
     @Override
     public void deleteMeetingMinutes (MeetingMinutes meetingMinutes) {
         if (meetingMinutes == null) {
@@ -174,6 +198,9 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
             throw new RRException("用户没有删除权限！", ErrorCodeEnum.SERVICE_ERROR_A0312.getCode());
         }
         removeById(meetingMinutes.getId());
+        //删除迭代计划
+        minutesPlanService.remove(new LambdaQueryWrapper<MinutesPlan>()
+                .eq(MinutesPlan::getMinutesId, minutes.getId()));
     }
 
 }
