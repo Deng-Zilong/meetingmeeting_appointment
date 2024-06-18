@@ -3,11 +3,9 @@ package com.jfzt.meeting.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingRoom;
+import com.jfzt.meeting.entity.dto.DatePeriodDTO;
 import com.jfzt.meeting.entity.dto.MeetingRoomDTO;
-import com.jfzt.meeting.entity.vo.MeetingRoomOccupancyVO;
-import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
-import com.jfzt.meeting.entity.vo.MeetingRoomVO;
-import com.jfzt.meeting.entity.vo.TimePeriodStatusVO;
+import com.jfzt.meeting.entity.vo.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -86,10 +84,11 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
     Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomOccupancy ();
 
     /**
-     * 查询最近五个工作日内各会议室占用比例
+     * 查询时间区间内各会议室选择率
+     * @param datePeriodDTO 时间范围
      * @return 会议室占用比例VO
      */
-    Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomProportion ();
+    Result<List<MeetingRoomSelectionRateVO>> getAllMeetingRoomProportion (DatePeriodDTO datePeriodDTO);
 
 
     /**

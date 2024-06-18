@@ -7,11 +7,9 @@ import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MeetingRecordStatusConstant;
 import com.jfzt.meeting.constant.MessageConstant;
 import com.jfzt.meeting.entity.*;
+import com.jfzt.meeting.entity.dto.DatePeriodDTO;
 import com.jfzt.meeting.entity.dto.MeetingRoomDTO;
-import com.jfzt.meeting.entity.vo.MeetingRoomOccupancyVO;
-import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
-import com.jfzt.meeting.entity.vo.MeetingRoomVO;
-import com.jfzt.meeting.entity.vo.TimePeriodStatusVO;
+import com.jfzt.meeting.entity.vo.*;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
@@ -30,6 +28,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -271,45 +270,56 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     }
 
     /**
-     * 查询最近五个工作日内各会议室占用比例
+     * 查询时间区间内各会议室选择率
+     * @param datePeriodDTO 日期区间
      * @return 会议室占用比例VO
      */
     @Override
-    public Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomProportion () {
+    public Result<List<MeetingRoomSelectionRateVO>> getAllMeetingRoomProportion (DatePeriodDTO datePeriodDTO) {
+        //无条件默认统计前七天
+        LocalDate startDate = LocalDate.now().minusDays(7);
+        LocalDate endDate = LocalDate.now().minusDays(1);
+        if (datePeriodDTO.getStartDate() != null && datePeriodDTO.getEndDate() != null) {
+            startDate = datePeriodDTO.getStartDate();
+            endDate = datePeriodDTO.getEndDate();
+        }
         //查询所有会议室
         List<MeetingRoom> meetingRoomList = list(new LambdaQueryWrapper<MeetingRoom>()
                 .eq(MeetingRoom::getStatus, MEETINGROOM_STATUS_AVAILABLE));
-        //查出七日内所有会议
+        //查出时间段内所有会议
         List<MeetingRecord> meetingRecordList = meetingRecordService.list(new LambdaQueryWrapper<MeetingRecord>()
                 .in(MeetingRecord::getMeetingRoomId, meetingRoomList.stream()
                         .map(MeetingRoom::getId).collect(Collectors.toList()))
-                .gt(MeetingRecord::getStartTime, LocalDateTime.now().toLocalDate().atStartOfDay().minusDays(7))
-                .lt(MeetingRecord::getEndTime, LocalDateTime.now().toLocalDate().atStartOfDay())
+                .gt(MeetingRecord::getStartTime, startDate.atStartOfDay())
+                .lt(MeetingRecord::getEndTime, endDate.atStartOfDay().plusHours(18))
                 .and(wrapper -> wrapper.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
                         .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING)
                         .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_END))
         );
         long total = meetingRecordList.size();
-        List<MeetingRoomOccupancyVO> occupancyVOList = meetingRoomList.stream().map(meetingRoom -> {
-            MeetingRoomOccupancyVO roomOccupancyVO = new MeetingRoomOccupancyVO();
+        List<MeetingRoomSelectionRateVO> occupancyVOList = meetingRoomList.stream().map(meetingRoom -> {
+            MeetingRoomSelectionRateVO roomSelectionVO = new MeetingRoomSelectionRateVO();
             long occupied = meetingRecordList.stream().filter(meetingRecord ->
                     Objects.equals(meetingRecord.getMeetingRoomId(), meetingRoom.getId())).count();
             if (total == 0) {
-                roomOccupancyVO.setOccupied(0L);
+                roomSelectionVO.setTotal(0L);
             }
-            long occupancyRate = occupied / total;
-            roomOccupancyVO.setName(meetingRoom.getRoomName());
-            roomOccupancyVO.setId(meetingRoom.getId());
-            roomOccupancyVO.setTotal(total);
-            roomOccupancyVO.setOccupied(occupied);
-            roomOccupancyVO.setOccupancyRate(occupancyRate);
-            return roomOccupancyVO;
-        }).sorted((o1, o2) -> Math.toIntExact(o2.getOccupied() - o1.getOccupied())).toList();
+            roomSelectionVO.setRoomName(meetingRoom.getRoomName());
+            roomSelectionVO.setRoomId(meetingRoom.getId());
+            roomSelectionVO.setTotal(total);
+            roomSelectionVO.setSelected(occupied);
+            return roomSelectionVO;
+        }).sorted((o1, o2) -> Math.toIntExact(o2.getSelected() - o1.getSelected())).toList();
         return Result.success(occupancyVOList);
     }
 
+    /**
+     * 修改会议室
+     * @param meetingRoomDTO 会议室DTO对象
+     * @return 修改结果
+     */
     @Override
-    public Result<Integer> updateRoom(MeetingRoomDTO meetingRoomDTO) {
+    public Result<Integer> updateRoom (MeetingRoomDTO meetingRoomDTO) {
         // 检查输入的会议室ID是否存在
         MeetingRoom meetingRoom = meetingRoomMapper.selectById(meetingRoomDTO.getId());
         if (meetingRoom == null) {
@@ -452,7 +462,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                         .collect(Collectors.groupingBy(MeetingRecord::getMeetingRoomId))
                         .size();
                 //判断是否全部被占用
-                if (size >= count) {
+                if (size >= totalOccupancy) {
                     timeStatus.add(i, TIME_PERIOD_BUSY);
                 } else {
                     //没全部占用

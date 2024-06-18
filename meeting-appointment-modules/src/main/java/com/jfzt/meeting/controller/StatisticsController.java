@@ -1,7 +1,9 @@
 package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.entity.dto.DatePeriodDTO;
 import com.jfzt.meeting.entity.vo.MeetingRoomOccupancyVO;
+import com.jfzt.meeting.entity.vo.MeetingRoomSelectionRateVO;
 import com.jfzt.meeting.entity.vo.PeriodTimesVO;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MeetingRoomService;
@@ -30,12 +32,13 @@ public class StatisticsController {
 
 
     /**
-     *  查询最近五个工作日内各会议室占用次数比例
-     * @return 占用次数比例
+     * 统计时间区间内各会议室选择率
+     * @param datePeriodDTO 日期区间
+     * @return 会议室占用次数比例
      */
-    @GetMapping("/meeting-room-proportion")
-    public Result<List<MeetingRoomOccupancyVO>> getMeetingRoomProportion () {
-        return meetingRoomService.getAllMeetingRoomProportion();
+    @GetMapping("/meeting-room-selection")
+    public Result<List<MeetingRoomSelectionRateVO>> getMeetingRoomProportion (DatePeriodDTO datePeriodDTO) {
+        return meetingRoomService.getAllMeetingRoomProportion(datePeriodDTO);
     }
 
 
