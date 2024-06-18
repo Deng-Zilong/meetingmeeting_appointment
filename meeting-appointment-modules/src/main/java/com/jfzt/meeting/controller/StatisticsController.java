@@ -43,12 +43,13 @@ public class StatisticsController {
 
 
     /**
-     *  统计七日内各会议室占用率
-     * @return 占用率
+     * 统计时间区间内各会议室占用率以及被占用次数前三的时间段
+     * @param datePeriodDTO 日期区间
+     * @return 用率以及被占用次数前三的时间段
      */
     @GetMapping("/meeting-room-occupancy")
-    public Result<List<MeetingRoomOccupancyVO>> getMeetingRoomOccupancy () {
-        return meetingRoomService.getAllMeetingRoomOccupancy();
+    public Result<List<MeetingRoomOccupancyVO>> getMeetingRoomOccupancy (DatePeriodDTO datePeriodDTO) {
+        return meetingRoomService.getAllMeetingRoomOccupancy(datePeriodDTO);
     }
 
     /**

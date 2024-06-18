@@ -48,12 +48,12 @@ import static com.jfzt.meeting.constant.TimePeriodStatusConstant.*;
 public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, MeetingRoom> implements MeetingRoomService {
 
     private MeetingDeviceService meetingDeviceService;
-
     private SysUserMapper sysUserMapper;
     private MeetingRoomMapper meetingRoomMapper;
     private MeetingRecordService meetingRecordService;
     private SysUserService userService;
     private MeetingAttendeesMapper attendeesMapper;
+
     /**
      * setter注入
      */
@@ -61,22 +61,27 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     public void setSysUserMapper (SysUserMapper sysUserMapper) {
         this.sysUserMapper = sysUserMapper;
     }
+
     @Autowired
     public void setMeetingDeviceService (MeetingDeviceService meetingDeviceService) {
         this.meetingDeviceService = meetingDeviceService;
     }
+
     @Autowired
     public void setMeetingRoomMapper (MeetingRoomMapper meetingRoomMapper) {
         this.meetingRoomMapper = meetingRoomMapper;
     }
+
     @Autowired
     public void setMeetingRecordService (MeetingRecordService meetingRecordService) {
         this.meetingRecordService = meetingRecordService;
     }
+
     @Autowired
     public void setUserService (SysUserService userService) {
         this.userService = userService;
     }
+
     @Autowired
     public void setAttendeesMapper (MeetingAttendeesMapper attendeesMapper) {
         this.attendeesMapper = attendeesMapper;
@@ -90,8 +95,8 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      */
     @Override
     public Result<Integer> addMeetingRoom (MeetingRoom meetingRoom) {
-        if (meetingRoom.getCapacity()<=0){
-            throw new RRException("会议室容量不正确",ErrorCodeEnum.SERVICE_ERROR_A0421.getCode());
+        if (meetingRoom.getCapacity() <= 0) {
+            throw new RRException("会议室容量不正确", ErrorCodeEnum.SERVICE_ERROR_A0421.getCode());
         }
         // 根据创建人Id查询用户信息
         SysUser sysUser = sysUserMapper.selectByUserId(meetingRoom.getCreatedBy());
@@ -194,49 +199,64 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0301);
     }
 
-
     /**
-     * 查询近七天会议室占用率（9：00-18：00）不包括周末
+     * 统计时间区间内各会议室占用率以及被占用次数前三的时间段（只统计工作日9：00-18：00，参数为空默认前五个工作日）
+     * @param datePeriodDTO 日期区间
      * @return 会议室占用率VO
      */
     @Override
-    public Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomOccupancy () {
+    public Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomOccupancy (DatePeriodDTO datePeriodDTO) {
+        //查询所有会议室，包括禁用的
         List<MeetingRoom> meetingRooms = this.list();
-        if (meetingRooms.isEmpty()){
+        if (meetingRooms.isEmpty()) {
             return Result.success(new ArrayList<>());
         }
-        //查出七日内所有会议
+        //无条件默认统计前七天
+        LocalDate startDate = LocalDate.now().minusDays(7);
+        LocalDate endDate = LocalDate.now().minusDays(1);
+        if (datePeriodDTO.getStartDate() != null && datePeriodDTO.getEndDate() != null) {
+            startDate = datePeriodDTO.getStartDate();
+            endDate = datePeriodDTO.getEndDate();
+        }
+        //查出开始时间段在时间段内9:00-18:00的所有会议
         List<MeetingRecord> meetingRecordList = meetingRecordService.list(new LambdaQueryWrapper<MeetingRecord>()
-                .gt(MeetingRecord::getStartTime, LocalDateTime.now().toLocalDate().atStartOfDay().minusDays(7))
-                .lt(MeetingRecord::getEndTime, LocalDateTime.now().toLocalDate().atStartOfDay())
+                .gt(MeetingRecord::getStartTime, startDate.atStartOfDay().plusHours(9).minusSeconds(1))
+                .lt(MeetingRecord::getStartTime, endDate.atStartOfDay().plusHours(18).plusSeconds(1))
                 .and(wrapper -> wrapper.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
                         .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING)
                         .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_END)));
         //遍历会议室
+        LocalDate finalEndDate = endDate;
+        LocalDate finalStartDate = startDate;
         List<MeetingRoomOccupancyVO> meetingRoomOccupancyVOList = meetingRooms.stream().map(meetingRoom -> {
             //被占用的时间段总数
-            long count = 0L;
+            long totalOccupancy = 0L;
+            //总时间段数
             long total = 0L;
-            //统计前七天，九点开始，十八点结束，半小时为一段
-            LocalDateTime startTime = LocalDateTime.now().toLocalDate().atStartOfDay().plusHours(9).minusDays(7);
-            LocalDateTime endTime = startTime.plusMinutes(30);
+            ArrayList<TimePeriodOccupancyVO> timePeriodList = new ArrayList<>();
+            for (int i = 0; i < 18; i++) {
+                TimePeriodOccupancyVO timePeriodOccupancyVO = new TimePeriodOccupancyVO();
+                timePeriodOccupancyVO.setOccupancyRate(0L);
+                timePeriodOccupancyVO.setOccupied(0L);
+                timePeriodList.add(timePeriodOccupancyVO);
+            }
             //遍历七天
-            for (int i = 0; i < 7; i++) {
+            for (LocalDate i = finalStartDate; i.isBefore(finalEndDate.plusDays(1)); i = i.plusDays(1)) {
                 // 跳过周末
-                if (startTime.toLocalDate().getDayOfWeek() == DayOfWeek.SATURDAY
-                        || startTime.toLocalDate().getDayOfWeek() == DayOfWeek.SUNDAY) {
-                    startTime = startTime.plusDays(1);
-                    endTime = endTime.plusDays(1);
+                if (i.getDayOfWeek() == DayOfWeek.SATURDAY
+                        || i.getDayOfWeek() == DayOfWeek.SUNDAY) {
                     continue;
                 }
-                log.info("第{}天,startTime:{}" + "endTime:{}", i + 1, startTime, endTime);
+                //统计从九点开始，十八点结束，半小时为一段
+                LocalDateTime startTime = i.atStartOfDay().plusHours(9);
+                LocalDateTime endTime = startTime.plusMinutes(30);
                 //每天18个时间段
                 for (int j = 0; j < 18; j++) {
                     LocalDateTime finalStartTime = startTime;
                     LocalDateTime finalEndTime = endTime;
-                    count = count + meetingRecordList.stream().filter(record -> {
-                        //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
-                        return Objects.equals(record.getMeetingRoomId(), meetingRoom.getId())
+                    long occupied = meetingRecordList.stream().filter(record -> {
+                        return record.getMeetingRoomId().equals(meetingRoom.getId())
+                                //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
                                 && (record.getStartTime().isAfter(finalStartTime.minusSeconds(1))
                                 && record.getStartTime().isBefore(finalEndTime)
                                 //结束时间在时间段内 前不含后含  8-9属于8.5-9不属于9-9.5
@@ -246,26 +266,50 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                                 || record.getStartTime().isBefore(finalStartTime.plusSeconds(1))
                                 && record.getEndTime().isAfter(finalEndTime.minusSeconds(1)));
                     }).count();
-                    //被占用，总数加
-                    log.info("时间段：{}--{},count:{}", startTime, endTime, count);
+                    TimePeriodOccupancyVO timePeriodOccupancyVO = timePeriodList.get(j);
+                    timePeriodOccupancyVO.setTimePeriod(startTime.format(DateTimeFormatter.ofPattern("HH:mm"))
+                            + "-" + endTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+                    if (occupied > 0) {
+                        totalOccupancy++;
+                        timePeriodOccupancyVO.setOccupied(timePeriodOccupancyVO.getOccupied() + 1);
+                    }
+                    timePeriodList.set(j, timePeriodOccupancyVO);
                     //下一时间段
                     startTime = startTime.plusMinutes(30);
                     endTime = endTime.plusMinutes(30);
                 }
-                //下一天
-                startTime = startTime.plusHours(15);
-                endTime = startTime.plusMinutes(30);
-                total = total + 1;
+                //总时间段加
+                total = total + 18;
             }
             MeetingRoomOccupancyVO meetingRoomOccupancyVO = new MeetingRoomOccupancyVO();
-            meetingRoomOccupancyVO.setOccupied(count);
-            meetingRoomOccupancyVO.setTotal((total * 18));
-            float occupancyRate = ((float) count / (total * 18));
-            meetingRoomOccupancyVO.setOccupancyRate(occupancyRate);
-            meetingRoomOccupancyVO.setId(meetingRoom.getId());
-            meetingRoomOccupancyVO.setName(meetingRoom.getRoomName());
+            meetingRoomOccupancyVO.setRoomId(meetingRoom.getId());
+            meetingRoomOccupancyVO.setRoomName(meetingRoom.getRoomName());
+            meetingRoomOccupancyVO.setTotal(total);
+            meetingRoomOccupancyVO.setTotalOccupancy(totalOccupancy);
+            float rate = (float) totalOccupancy / total;
+            meetingRoomOccupancyVO.setTotalOccupancyRate(rate);
+            long finalTotal = total;
+            List<TimePeriodOccupancyVO> list = timePeriodList.stream()
+                    .peek(timePeriod ->
+                            timePeriod.setOccupancyRate(((float) timePeriod.getOccupied() / finalTotal)))
+                    .sorted((o1, o2) -> (int) (o2.getOccupied() - o1.getOccupied()))
+                    .toList();
+            TimePeriodOccupancyVO other = new TimePeriodOccupancyVO();
+            other.setTimePeriod("other");
+            other.setOccupied(0L);
+            for (int i = 3; i < 18; i++) {
+                TimePeriodOccupancyVO timePeriod = list.get(i);
+                other.setOccupied(other.getOccupied() + timePeriod.getOccupied());
+            }
+            other.setOccupancyRate(((float) other.getOccupied() / finalTotal));
+            ArrayList<TimePeriodOccupancyVO> occupancyVOList = new ArrayList<>();
+            occupancyVOList.add(list.get(0));
+            occupancyVOList.add(list.get(1));
+            occupancyVOList.add(list.get(2));
+            occupancyVOList.add(other);
+            meetingRoomOccupancyVO.setTimePeriods(occupancyVOList);
             return meetingRoomOccupancyVO;
-        }).sorted((o1, o2) -> Math.toIntExact(o2.getOccupied() - o1.getOccupied())).collect(Collectors.toList());
+        }).toList();
         return Result.success(meetingRoomOccupancyVOList);
     }
 
@@ -420,8 +464,8 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                         .eq(MeetingRoom::getStatus, MEETINGROOM_STATUS_AVAILABLE))
                 .stream().map(MeetingRoom::getId)
                 .distinct().toList();
-        long count = roomIds.size();
-        if (count == 0) {
+        long totalOccupancy = roomIds.size();
+        if (totalOccupancy == 0) {
             //无可用会议室
             for (int i = 0; i < 30; i++) {
                 //全为已过期
