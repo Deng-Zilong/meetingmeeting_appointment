@@ -90,16 +90,23 @@
       </el-tab-pane>
 
       <el-tab-pane label="操作会议室" name="second" class="second-tab">
-        <ManageRoom />        
+        <ManageRoom v-if="activeName == 'second'" />        
       </el-tab-pane>
 
       <el-tab-pane label="管理设备" name="fourth" class="fourth-tab">
-        <ManageEquip />
+        <ManageEquip v-if="activeName == 'fourth'" />
       </el-tab-pane>
 
       <el-tab-pane label="柱状图统计" name="third" class="third-tab">
-        <TimeChart class="tab-echart" v-if="activeName == 'third'" />
-        <RoomChart class="tab-echart" v-if="activeName == 'third'" />
+        <div class="third-tab-date">
+          <span class="demonstration">选择日期：</span>
+          <el-date-picker v-model="pickDates" type="daterange" range-separator="To" value-format="YYYY-MM-DD"
+          start-placeholder="开始日期" end-placeholder="结束日期" :shortcuts="shortcuts" @change="handleEchartDate" />
+        </div>
+        <div class="third-tab-echart">
+          <TimeChart class="tab-echart" :pieData="pieData" v-if="activeName == 'third'" />
+          <RoomChart class="tab-echart" v-if="activeName == 'third'" />
+        </div>
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -115,10 +122,10 @@
     import personTreeDialog from "@/components/person-tree-dialog.vue";
     import ManageRoom from '@/views/manage/component/manage-room.vue';
     import ManageEquip from '@/views/manage/component/manage-equip.vue';
-    import TimeChart from '@/views/manage/component/time-chart.vue';
+    import TimeChart from '@/views/manage/component/room-pie.vue';
     import RoomChart from '@/views/manage/component/room-chart.vue';
     
-    import { addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData } from '@/request/api/manage'
+    import { addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData, getRoomSelectionRate } from '@/request/api/manage'
       
 
     // let loading = ref(true) // 加载状态
@@ -333,6 +340,46 @@
         }
     );
     
+/******************************************* 统计图 ***********************************/
+    const pickDates = ref<any>(); // 统计图 日期选择
+    const shortcuts = [
+      {
+        text: '过去七天',
+        value: () => {
+          const end = new Date()
+          const start = new Date()
+          start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
+          return [start, end]
+        },
+      },
+      {
+        text: '过去一个月',
+        value: () => {
+          const end = new Date()
+          const start = new Date()
+          start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
+          return [start, end]
+        },
+      },
+      {
+        text: '过去三个月',
+        value: () => {
+          const end = new Date()
+          const start = new Date()
+          start.setTime(start.getTime() - 3600 * 1000 * 24 * 90)
+          return [start, end]
+        },
+      },
+    ]
+    const pieData = ref<any>(); // 饼图数据
+    const handleEchartDate = (val: any) => {
+      if (!val) return;
+      getRoomSelectionRate({ startDate: val[0], endDate: val[1] })  // 获取会议室选择率数据 接口
+        .then((res) => {
+          pieData.value = res.data
+        })
+        .catch((err) => {})
+    }
 </script>
 <style scoped lang="scss">
   // 操作管理员 气泡弹窗样式
@@ -499,11 +546,16 @@
       }
 
       .third-tab {
-        display: flex;
-        justify-content: space-between;
-        .tab-echart {
-          background: #FFF;
-          border-radius: .9375rem;
+        .third-tab-date {
+          margin: 0 0 .625rem calc(50% - 16rem) ;
+        }
+        .third-tab-echart {
+          display: flex;
+          justify-content: space-between;
+          .tab-echart {
+            background: #FFF;
+            border-radius: .9375rem;
+          }
         }
       }
 

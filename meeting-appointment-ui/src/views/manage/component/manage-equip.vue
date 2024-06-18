@@ -1,12 +1,12 @@
 <template>  
   <!-- 新增设备 弹窗 -->
-  <el-dialog v-model="dialogAddVisible" width="500" top="25vh" title="新增设备">
+  <el-dialog v-model="dialogAddVisible" width="450" top="25vh" title="新增设备">
     <el-form :model="addEquipForm">
       <el-form-item label="设备名称：">
         <el-input v-model="addEquipForm.deviceName" :maxlength="15" />
       </el-form-item>
       <el-form-item label="所在会议室：">
-        <el-select v-model="addEquipForm.roomId" filterable placeholder="会议室">
+        <el-select v-model="addEquipForm.roomId" filterable multiple placement="right-start" placeholder="会议室">
           <el-option v-for="item in roomOptions" :key="item.id" :label="item.value" :value="item.id" />
         </el-select>
       </el-form-item>
@@ -24,11 +24,7 @@
   <div class="equip-container">
     <div class="equip-top">
       <el-button type="primary" @click="dialogAddVisible = true">新增设备</el-button>
-      <el-input v-model="equipValue" clearable placeholder="请搜索设备" style="width: 240px" @input="handleChangeEquip">
-        <template #suffix>
-          <el-icon class="el-input__icon"><Search /></el-icon>
-        </template>
-      </el-input>
+      <el-input v-model="equipValue" clearable placeholder="请搜索设备" style="width: 240px" @input="handleChangeEquip" />
       <el-select v-model="roomValue" filterable clearable placeholder="会议室" style="width: 240px" @change="handleChangeRoom">
         <el-option v-for="item in roomOptions" :key="item.id" :label="item.value" :value="item.id" />
       </el-select>

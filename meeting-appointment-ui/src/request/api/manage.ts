@@ -25,13 +25,18 @@ export const deleteRoomDate = (data: { currentLevel: number, id: number }) => {
 /***************************************************柱状图统计***********************************************************/
 
 // 时间段频次统计
-export const getTimePeriodDate = () => {
-  return http.get("/meeting/statistics/time-period")
-}
+// export const getTimePeriodDate = () => {
+//   return http.get("/meeting/statistics/time-period")
+// }
 
 // 会议室占用率统计
-export const getRoomOccupancyDate = () => {
-  return http.get("/meeting/statistics/meeting-room-occupancy")
+// export const getRoomOccupancyDate = () => {
+//   return http.get("/meeting/statistics/meeting-room-occupancy")
+// }
+
+// 会议室选择率统计
+export const getRoomSelectionRate = (data: { startDate?: string, endDate?: string}) => {
+  return http.get("/meeting/statistics/meeting-room-selection", data)
 }
 
 

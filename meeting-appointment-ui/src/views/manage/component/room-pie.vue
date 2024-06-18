@@ -1,16 +1,18 @@
 <template>
-  <div ref="chart" style="width: 600px; height:600px;"></div>
+  <div ref="chart" style="width: 770px; height:600px;"></div>
 </template>
 
 <script setup lang="ts">
 import * as echarts from 'echarts';// 5.4区别4引入方式
 
 import { onMounted, ref, watch } from 'vue'
-import { getRoomOccupancyDate } from '@/request/api/manage'
+import { getRoomSelectionRate } from '@/request/api/manage'
 
 const chart = ref()
 const chartInstance = ref()
-
+const props = defineProps({
+  pieData: Array
+})
 let data = ref<any>([]) // 接收后端接口数据
 
 const setChart = () => {
@@ -18,11 +20,12 @@ const setChart = () => {
 // 指定图表的配置项和数据
   const option = {
     title: {
-      text: '统计七日内各会议室占用率（不包括周末9：00-18：00）',
+      text: '统计会议室选择率',
+      top: "5%",
       left: 'center'
     },
     legend: {  // 图例
-      show: false,
+      show: true,
       orient: 'vertical',
       right: 0,
       top: 30,
@@ -30,7 +33,7 @@ const setChart = () => {
       icon: 'circle', // 展示icon
       data: data.value.map((item: any) =>{
         return {
-          name: item.name
+          name: item.roomName
         }
       }),
     },
@@ -51,7 +54,7 @@ const setChart = () => {
       {
         type: 'pie',
         radius: '60%',  // 饼图大小 如果有两个属性值，如：['60%', '70%']，第一个值表示内圈大小，第二个表示外圈大小
-        // center: ['50%','60%'],
+        center: ['50%','60%'],
         label: {
           show: true, // 是否显示文字
           backgroundColor: '#ECF0F3',
@@ -61,8 +64,8 @@ const setChart = () => {
         },
         data: data.value.map((item: any) => {
           return {
-            value: item.occupied,
-            name: item.name
+            value: item.selected,
+            name: item.roomName
           }
         })
       }
@@ -74,16 +77,22 @@ const setChart = () => {
 // 使用刚指定的配置项和数据显示图表。
 onMounted(() => {
   chartInstance.value = echarts.init(chart.value);  // 初始化图表
+
+  getRoomSelectionRate({})  // 获取会议室选择率数据 接口
+  .then((res) => {
+    data.value = res.data
+    setChart();  // 数据请求到后渲染图表 刷新chart
+  })
+  .catch((err) => {})
   
-  getRoomOccupancyDate()  // 获取会议室占用率数据 接口
-    .then((res) => {
-      data.value = res.data
-      setChart();  // 数据请求到后渲染图表 刷新chart
-    })
-    .catch((err) => {})
 })
 
-// 当roomX或occupied改变时，更新图表
-watch([], () => setChart(), { deep: true });
+// 当data改变时，更新图表
+watch(() => [data, props.pieData], () => {
+  setChart()
+  if (props.pieData) {
+    data.value = props.pieData
+  }
+}, { deep: true });
 
 </script>

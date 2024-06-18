@@ -56,7 +56,7 @@
               </template>
           </el-popover>
         </div>
-        <div class="room-tr-cell t-location">
+        <div class="room-tr-cell t-location" @click="handleEditRoom(item)">
           <el-popover
               placement="bottom"
               :disabled="item.location?.length < 26"
@@ -70,7 +70,19 @@
           </el-popover>
         </div>
         <div class="room-tr-cell t-people">{{ item.capacity }}人</div>
-        <div class="room-tr-cell t-equip">{{ item.equipment ? item.equipment : '暂无设备' }}</div>
+        <div class="room-tr-cell t-equip">
+          <el-popover
+              placement="bottom"
+              :disabled="item.equipment?.length < 7"
+              :width="120"
+              trigger="hover"
+              :content="item.equipment"
+          >
+              <template #reference>
+                <p class="t-equip-span">{{ item.equipment ? item.equipment : '暂无设备' }}</p>
+              </template>
+          </el-popover>
+        </div>
         <div class="room-tr-cell t-status">{{ item.roomStatusLabel }}</div>
         <div>
           <div class="room-tr-cell t-operate">
@@ -287,6 +299,11 @@
     }
     .t-equip {
       width: 7rem !important;
+      p {
+        text-wrap: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
     .t-status {
       width: 8rem !important;
@@ -320,7 +337,7 @@
         border-radius: 15px;
         margin: 10px 0;
         padding: 11px 0;
-        .t-name {
+        .t-name, .t-location {
           cursor: pointer;
           &:hover {
             color: #1890ff;
