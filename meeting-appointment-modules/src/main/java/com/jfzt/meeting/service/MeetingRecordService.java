@@ -115,5 +115,5 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      * @throws IOException io流异常
      * @throws InvalidFormatException 无效格式异常
      */
-    void getRecordExport(String userId, List<MeetingRecordVO> meetingRecordVOList, HttpServletResponse response) throws IOException, InvalidFormatException;
+    void getRecordExport(String userId,String type, List<MeetingRecordVO> meetingRecordVOList, HttpServletResponse response) throws IOException, InvalidFormatException;
 }

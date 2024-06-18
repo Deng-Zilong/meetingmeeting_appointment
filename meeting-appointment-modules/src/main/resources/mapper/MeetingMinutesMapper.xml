@@ -9,7 +9,6 @@
         <result property="userId" column="user_id" jdbcType="VARCHAR"/>
         <result property="minutes" column="minutes" jdbcType="VARCHAR"/>
         <result property="meetingRecordId" column="meeting_record_id" jdbcType="INTEGER"/>
-        <result property="isDeleted" column="is_deleted" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">

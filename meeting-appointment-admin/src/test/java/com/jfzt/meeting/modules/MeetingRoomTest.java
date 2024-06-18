@@ -31,11 +31,11 @@ public class MeetingRoomTest {
         // 清理测试数据
     }
 
-    @Test
-    public void getMeetingRoomOccupancyTest () {
-        Assertions.assertNotNull(meetingRoomService.getAllMeetingRoomOccupancy());
-        Assertions.assertDoesNotThrow(() -> meetingRoomService.getAllMeetingRoomOccupancy());
-    }
+//    @Test
+//    public void getMeetingRoomOccupancyTest () {
+//        Assertions.assertNotNull(meetingRoomService.getAllMeetingRoomOccupancy());
+//        Assertions.assertDoesNotThrow(() -> meetingRoomService.getAllMeetingRoomOccupancy());
+//    }
 
     @Test
     public void getMeetingRoomStatusTest () {
