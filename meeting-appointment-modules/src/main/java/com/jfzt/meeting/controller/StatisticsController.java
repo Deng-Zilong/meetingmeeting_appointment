@@ -7,7 +7,6 @@ import com.jfzt.meeting.entity.vo.MeetingRoomSelectionRateVO;
 import com.jfzt.meeting.entity.vo.PeriodTimesVO;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MeetingRoomService;
-import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,13 +22,21 @@ import java.util.List;
 @RestController
 @RequestMapping("/meeting/statistics")
 public class StatisticsController {
-
-    @Resource
+    private MeetingRoomService meetingRoomService;
     private MeetingRecordService meetingRecordService;
 
+    /**
+     * setter注入
+     */
     @Autowired
-    MeetingRoomService meetingRoomService;
+    public void setMeetingRecordService (MeetingRecordService meetingRecordService) {
+        this.meetingRecordService = meetingRecordService;
+    }
 
+    @Autowired
+    public void setMeetingRoomService (MeetingRoomService meetingRoomService) {
+        this.meetingRoomService = meetingRoomService;
+    }
 
     /**
      * 统计时间区间内各会议室选择率

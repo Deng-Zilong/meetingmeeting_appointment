@@ -41,6 +41,7 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -60,7 +61,6 @@ import static com.jfzt.meeting.utils.ExcelUtil.InsertRow;
 
 /**
  * 针对表【meeting_record(会议记录表)】的数据库操作Service实现
- *
  * @author zilong.deng
  * @since 2024-04-28 11:47:39
  */
@@ -95,7 +95,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 获取当天用户参与的所有会议
-     *
      * @param userId 用户id
      * @return 会议记录VO
      */
@@ -140,7 +139,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                         //没有匹配的参会人，返回空对象，最后过滤
                         return null;
                     }
-                    List<String> userIds = attendeesList.stream().map(MeetingAttendees::getUserId).toList();
+                    List<String> attendeesIds = attendeesList.stream().map(MeetingAttendees::getUserId).toList();
+                    List<String> userIds = new ArrayList<>();
+                    if (!attendeesIds.isEmpty()) {
+                        userIds.addAll(attendeesIds);
+                    }
                     //当前用户参与会议
                     if (userIds.contains(userId)) {
                         List<SysUserVO> users = new ArrayList<>();
@@ -179,7 +182,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 查询今日中心会议总次数
-     *
      * @return 会议总次数
      */
     @Override
@@ -193,7 +195,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 更新会议状态
-     *
      * @param meetingRecord 会议记录
      * @return 会议记录
      */
@@ -247,7 +248,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 分页获取用户参与的所有会议
-     *
      * @param userId 用户id
      * @return 会议记录列表
      */
@@ -311,7 +311,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 查询所有会议记录
-     *
      * @param pageNum      页码
      * @param pageSize     每页显示条数
      * @param currentLevel 当前登录用户的权限等级
@@ -364,7 +363,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 根据会议记录id删除会议(首页不展示非删除)
-     *
      * @param userId    用户id
      * @param meetingId 会议id
      * @return 删除结果
@@ -401,7 +399,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 根据会议记录id取消会议
-     *
      * @param userId    用户id
      * @param meetingId 会议id
      * @return 取消结果
@@ -459,7 +456,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 新增会议
-     *
      * @param meetingRecordDTO 会议记录DTO
      * @return 新增会议结果
      */
@@ -536,7 +532,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 更新会议
-     *
      * @param meetingRecordDTO 会议记录DTO
      * @return 会议记录VO
      */
@@ -620,7 +615,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 统计七日内各时间段预约频率
-     *
      * @return 预约频率
      */
     @Override
@@ -663,7 +657,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 会议创建自动提示最近三次
-     *
      * @param userId 用户ID
      * @return 自动提示结果
      */
@@ -702,7 +695,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 会议创建自动提示最近一次
-     *
      * @param userId 用户ID
      * @return 自动提示结果
      */
@@ -867,7 +859,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 查询对应会议室及参会人
-     *
      * @param lastMeeting 最近会议记录
      * @return 自动提示结果
      */

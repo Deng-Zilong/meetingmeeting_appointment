@@ -241,7 +241,8 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 timePeriodList.add(timePeriodOccupancyVO);
             }
             //遍历七天
-            for (LocalDate i = finalStartDate; i.isBefore(finalEndDate.plusDays(1)); i = i.plusDays(1)) {
+            for (LocalDate i = finalStartDate; i.isBefore(finalEndDate.plusDays(1));
+                 i = i.plusDays(1)) {
                 // 跳过周末
                 if (i.getDayOfWeek() == DayOfWeek.SATURDAY
                         || i.getDayOfWeek() == DayOfWeek.SUNDAY) {
@@ -254,18 +255,16 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 for (int j = 0; j < 18; j++) {
                     LocalDateTime finalStartTime = startTime;
                     LocalDateTime finalEndTime = endTime;
-                    long occupied = meetingRecordList.stream().filter(record -> {
-                        return record.getMeetingRoomId().equals(meetingRoom.getId())
-                                //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
-                                && (record.getStartTime().isAfter(finalStartTime.minusSeconds(1))
-                                && record.getStartTime().isBefore(finalEndTime)
-                                //结束时间在时间段内 前不含后含  8-9属于8.5-9不属于9-9.5
-                                || record.getEndTime().isAfter(finalStartTime)
-                                && record.getEndTime().isBefore(finalEndTime.plusSeconds(1))
-                                //时间段包含在开始时间(含)和结束时间(含)之间    8-9 属于8-8.5属于8.5-9
-                                || record.getStartTime().isBefore(finalStartTime.plusSeconds(1))
-                                && record.getEndTime().isAfter(finalEndTime.minusSeconds(1)));
-                    }).count();
+                    long occupied = meetingRecordList.stream().filter(record -> record.getMeetingRoomId().equals(meetingRoom.getId())
+                            //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
+                            && (record.getStartTime().isAfter(finalStartTime.minusSeconds(1))
+                            && record.getStartTime().isBefore(finalEndTime)
+                            //结束时间在时间段内 前不含后含  8-9属于8.5-9不属于9-9.5
+                            || record.getEndTime().isAfter(finalStartTime)
+                            && record.getEndTime().isBefore(finalEndTime.plusSeconds(1))
+                            //时间段包含在开始时间(含)和结束时间(含)之间    8-9 属于8-8.5属于8.5-9
+                            || record.getStartTime().isBefore(finalStartTime.plusSeconds(1))
+                            && record.getEndTime().isAfter(finalEndTime.minusSeconds(1)))).count();
                     TimePeriodOccupancyVO timePeriodOccupancyVO = timePeriodList.get(j);
                     timePeriodOccupancyVO.setTimePeriod(startTime.format(DateTimeFormatter.ofPattern("HH:mm"))
                             + "-" + endTime.format(DateTimeFormatter.ofPattern("HH:mm")));
@@ -489,7 +488,8 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 LambdaQueryWrapper<MeetingRecord> recordQueryWrapper = new LambdaQueryWrapper<>();
                 recordQueryWrapper.in(MeetingRecord::getMeetingRoomId, roomIds);
                 recordQueryWrapper.and(wrapper -> wrapper.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
-                        .or().eq(MeetingRecord::getStatus, MeetingRecordStatusConstant.MEETING_RECORD_STATUS_PROCESSING));
+                        .or()
+                        .eq(MeetingRecord::getStatus, MeetingRecordStatusConstant.MEETING_RECORD_STATUS_PROCESSING));
                 LocalDateTime finalStartTime = startTime;
                 LocalDateTime finalEndTime = endTime;
                 recordQueryWrapper.and(wrapper -> wrapper
@@ -544,8 +544,10 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             } else {
                 LambdaQueryWrapper<MeetingRecord> recordQueryWrapper = new LambdaQueryWrapper<>();
                 recordQueryWrapper.eq(MeetingRecord::getMeetingRoomId, id);
-                recordQueryWrapper.and(wrapper -> wrapper.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
-                        .or().eq(MeetingRecord::getStatus, MeetingRecordStatusConstant.MEETING_RECORD_STATUS_PROCESSING));
+                recordQueryWrapper
+                        .and(wrapper -> wrapper.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
+                                .or().eq(MeetingRecord::getStatus,
+                                        MeetingRecordStatusConstant.MEETING_RECORD_STATUS_PROCESSING));
                 LocalDateTime finalStartTime = startTime;
                 LocalDateTime finalEndTime = endTime;
                 recordQueryWrapper.and(wrapper -> wrapper
