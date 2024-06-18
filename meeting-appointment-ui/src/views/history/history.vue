@@ -416,7 +416,8 @@
         const {id, title, description, createdBy, adminUserName, meetingRoomId, meetingRoomName, location, meetingNumber, attendees, users, startTime, endTime, status, isDeleted} = downloadRow.value;
         // 重组参数
         const params = {id, title, description, createdBy, adminUserName, meetingRoomId, meetingRoomName, location, meetingNumber, attendees, users, startTime, endTime, status, isDeleted};
-        const res:any = await recordExport({type, data: [params]});
+        const res:any = await recordExport(type, [params]);
+        
         if (res.code === '00000') {
             ElMessage.success('导出成功!');
             downloadExcel(res.data, '会议纪要');
