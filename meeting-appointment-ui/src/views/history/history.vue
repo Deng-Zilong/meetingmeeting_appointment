@@ -107,7 +107,20 @@
             </el-dialog>
         </div>
         <!-- 会议纪要 -->
-        <el-dialog  class="meeting-summary" v-model="meetingSummaryVisible" :title="meetingSummaryTitle" :before-close="handleCancelMeetingSummary" width="35%" :close-on-click-modal="false">
+        <el-dialog 
+            class="meeting-summary" 
+            v-model="meetingSummaryVisible" 
+            :title="meetingSummaryTitle" 
+            :before-close="handleCancelMeetingSummary" 
+            width="35%" 
+            :close-on-click-modal="false"
+        >
+            <template #header="{ close, titleId, titleClass }">
+                <div class="my-header">
+                    <h4 :id="titleId" :class="titleClass">{{meetingSummaryTitle}}</h4>
+                    <el-button type="primary" plain @click="handleSwitchMeetingSummary">本周内容</el-button>
+                </div>
+            </template>
             <el-scrollbar max-height="388px">
                 <el-input
                     v-model="meetingSummary"
@@ -117,6 +130,39 @@
                     type="textarea"
                     placeholder="请输入会议纪要"
                 />
+                <!-- <div class="work-detail">
+                    <el-form
+                        ref="formRef"
+                        :model="workDetailForm"
+                        label-width="auto"
+                        class="demo-dynamic"
+                    >
+                        <el-divider content-position="left">1.本次目标</el-divider>
+                        <div class="target" v-for="(target, index) in workDetailForm.target" :key="index">
+                            <el-form-item
+                                :label="'目标' + `${index+1}`"
+                                :prop="'target.' + index + '.value'"
+                                :rules="{
+                                    required: true,
+                                    message: '不可为空',
+                                    trigger: 'blur',
+                                }"
+                            >
+                                <el-input v-model="target.value" style="width: 200px;"/>
+                                <div>
+                                    <el-icon size="large" @click="handleAddTarget"><CirclePlus /></el-icon>
+                                    <el-icon size="large" @click="handleDeleteTarget(index)"><Remove /></el-icon>
+                                </div>
+                            </el-form-item>
+                        </div>
+                        <el-divider content-position="left">2.问题</el-divider>
+                        <div class="problem"></div>
+                        <el-divider content-position="left">1.项目未来的优化方向</el-divider>
+                        <div class="future-direction"></div>
+                        <el-divider content-position="left">1.迭代需求</el-divider>
+                        <div class="requirement"></div>
+                    </el-form>
+                </div> -->
             </el-scrollbar>
             <template #footer>
             <div class="dialog-footer" v-show="!isMeetingSummaryDetail">
@@ -141,9 +187,9 @@
     </div>
 </template>
 <script setup lang="ts">
-    import { ElMessage, ElMessageBox, dayjs } from 'element-plus'
+    import { ElMessage, ElMessageBox, dayjs, type FormInstance } from 'element-plus'
     import { Download } from '@element-plus/icons-vue'
-    import { onMounted, ref } from 'vue';
+    import { onMounted, reactive, ref } from 'vue';
     import { useRouter } from 'vue-router';
     import { useInfiniteScroll } from '@vueuse/core'
     import { addMeetingMinutes, cancelMeetingRecord, getHistoryList, getMeetingMinutes, recordExport } from '@/request/api/history'
@@ -397,6 +443,74 @@
         meetingSummaryVisible.value = false;
         meetingSummary.value = '';
     }
+    const formRef = ref<FormInstance>()
+    const dynamicValidateForm = reactive<any>({
+        domains: [
+            {
+                key: 1,
+                value: '',
+            },
+        ],
+        email: '',
+    })
+    const workDetailForm = ref<any>({
+        target: [{
+            value: "11111",
+        },
+        {
+            value: "222222",
+        }],
+        problem:[],
+        direction: [],
+        futureDirection: '',
+        requirement:[],
+    })
+    const handleAddTarget = () => {
+        workDetailForm.value.target.push({
+            value: "",
+        })
+    }
+    const handleDeleteTarget = (index: number) => {
+        workDetailForm.value.target.splice(index, 1)
+    }
+
+const removeDomain = (item: any) => {
+  const index = dynamicValidateForm.domains.indexOf(item)
+  if (index !== -1) {
+    dynamicValidateForm.domains.splice(index, 1)
+  }
+}
+
+const addDomain = () => {
+  dynamicValidateForm.domains.push({
+    key: Date.now(),
+    value: '',
+  })
+}
+
+const submitForm = (formEl: FormInstance | undefined) => {
+    console.log(workDetailForm.value);
+    
+  if (!formEl) return
+  formEl.validate((valid) => {
+    if (valid) {
+      console.log('submit!')
+    } else {
+      console.log('error submit!')
+    }
+  })
+}
+
+const resetForm = (formEl: FormInstance | undefined) => {
+  if (!formEl) return
+  formEl.resetFields()
+}
+    /**
+     * @description 切换会议纪要
+     */
+    const handleSwitchMeetingSummary = () => {
+
+    }
 
     let downloadVisible = ref<boolean>(false);
     let downloadRow = ref<any>();
@@ -416,8 +530,8 @@
         const {id, title, description, createdBy, adminUserName, meetingRoomId, meetingRoomName, location, meetingNumber, attendees, users, startTime, endTime, status, isDeleted} = downloadRow.value;
         // 重组参数
         const params = {id, title, description, createdBy, adminUserName, meetingRoomId, meetingRoomName, location, meetingNumber, attendees, users, startTime, endTime, status, isDeleted};
-        const res:any = await recordExport(type, [params]);
         
+        const res:any = await recordExport(type, [params]);
         if (res.code === '00000') {
             ElMessage.success('导出成功!');
             downloadExcel(res.data, '会议纪要');
@@ -601,9 +715,21 @@
         :deep().meeting-summary {
             border-radius: 0.9375rem;
             padding: 1.25rem;
-            .el-dialog__title {
-                font-size: 1rem;
-                font-weight: 500;
+            .my-header {
+                display: flex;
+                align-items: center;
+                .el-dialog__title {
+                    font-size: 1rem;
+                    font-weight: 500;
+                }
+            }
+            .work-detail {
+                .el-form {
+                    padding: 10px;
+                    .el-form-item__content {
+                        justify-content: space-between;
+                    }
+                }
             }
         }
         :deep().downLoad—dialog {

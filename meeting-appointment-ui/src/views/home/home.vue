@@ -134,7 +134,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {  getTodayMeetingRecordData, getDeleteMeetingRecordData, getCenterAllNumberData, getRoomStatusData, getTimeBusyData, getNoticeData } from '@/request/api/home'
-import { getTimePeriodDate } from '@/request/api/manage'
+//import { getTimePeriodDate } from '@/request/api/manage'
 
 import Clock from '@/views/home/component/clock.vue'
 import GuageChart from '@/views/home/component/guage-chart.vue'
@@ -422,13 +422,13 @@ const getNotice = async () => {
 /**
  * @description 获取前十时间段数据
  */
-getTimePeriodDate()  
-  .then((res) => {
-    res.data.map((item: any) => {
-      timesData.value.push(`${dayjs(item.startTime).format('HH:mm')}-${dayjs(item.endTime).format('HH:mm')} : 使用${item.count}次`)
-    })    
-  })
-  .catch((err) => {})
+// getTimePeriodDate()  
+//   .then((res) => {
+//     res.data.map((item: any) => {
+//       timesData.value.push(`${dayjs(item.startTime).format('HH:mm')}-${dayjs(item.endTime).format('HH:mm')} : 使用${item.count}次`)
+//     })    
+//   })
+//   .catch((err) => {})
 
 onMounted( async () => {
     /* 判断扫码登录状态 */
@@ -461,7 +461,7 @@ onMounted( async () => {
         getRoomStatus(),  // 查询会议室状态
         getTimeBusy(),  // 查询当日时间段占用情况
         getNotice(), // 查询公告
-        getTimePeriodDate()  // 获取时间段数据
+        // getTimePeriodDate()  // 获取时间段数据
     ])
     loading.value = false
 });
