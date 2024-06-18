@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfzt.meeting.mapper.MinutesPlanMapper">
+
+    <resultMap id="BaseResultMap" type="com.jfzt.meeting.entity.MinutesPlan">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="minutesId" column="minutes_id" jdbcType="BIGINT"/>
+        <result property="plan" column="plan" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="gmtCreate" column="gmt_create" jdbcType="TIMESTAMP"/>
+        <result property="gmtModified" column="gmt_modified" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,minutes_id,plan,
+        status,gmt_create,gmt_modified
+    </sql>
+</mapper>

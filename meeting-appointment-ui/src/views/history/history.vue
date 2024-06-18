@@ -81,7 +81,7 @@
                                     content="导出会议内容"
                                     placement="top-start"
                                 >
-                                    <span class="download-excel" @click="handleExportExcel(item)"><el-icon><Download /></el-icon></span>
+                                    <span class="download-excel" @click="handleOpenExport(item)"><el-icon><Download /></el-icon></span>
                                 </el-tooltip>
                             </div>
                         </div>
@@ -124,6 +124,19 @@
                 <el-button type="primary" @click="handleConfirmMeetingSummary"> 确 认 </el-button>
             </div>
             </template>
+        </el-dialog>
+        <!-- 选择导出类型 -->
+        <el-dialog 
+            class="meeting-summary downLoad—dialog" 
+            v-model="downloadVisible" 
+            title="请选择导出类型" 
+            :before-close="handleCancelExport" 
+            width="20%" 
+            top="30vh" 
+            :close-on-click-modal="false"
+        >
+            <img src="@/assets/img/excel.png" alt="" @click="handleExportMeeting(0)">
+            <img src="@/assets/img/word.png" alt="" @click="handleExportMeeting(1)">
         </el-dialog>
     </div>
 </template>
@@ -385,19 +398,33 @@
         meetingSummary.value = '';
     }
 
+    let downloadVisible = ref<boolean>(false);
+    let downloadRow = ref<any>();
+    const handleOpenExport = (item: any) => {
+        downloadVisible.value = true;
+        downloadRow.value = item;
+    }
+    const handleCancelExport = () => {
+        downloadVisible.value = false;
+        downloadRow.value = '';
+    }
     /**
      * @description 导出会议记录excel
+     * @param type 0:excel 1:word
      */
-    const handleExportExcel = (row: any) => {
-        const {id, title, description, createdBy, adminUserName, meetingRoomId, meetingRoomName, location, meetingNumber, attendees, users, startTime, endTime, status, isDeleted} = row;
+    const handleExportMeeting = async(type: number) => {
+        const {id, title, description, createdBy, adminUserName, meetingRoomId, meetingRoomName, location, meetingNumber, attendees, users, startTime, endTime, status, isDeleted} = downloadRow.value;
         // 重组参数
         const params = {id, title, description, createdBy, adminUserName, meetingRoomId, meetingRoomName, location, meetingNumber, attendees, users, startTime, endTime, status, isDeleted};
-        recordExport([params])
-            .then((res:any) => {
-                ElMessage.success('导出成功!');
-                downloadExcel(res.data, '会议纪要')
-            })
-            .catch(err => {})
+        const res:any = await recordExport(type, [params]);
+        
+        if (res.code === '00000') {
+            ElMessage.success('导出成功!');
+            downloadExcel(res.data, '会议纪要');
+        } else {
+            ElMessage.error("导出失败！");
+        }
+        handleCancelExport();
     }
     const downloadExcel = (blobData: Blob | MediaSource , fileName: string) => {
         // 创建一个虚拟链接
@@ -577,6 +604,17 @@
             .el-dialog__title {
                 font-size: 1rem;
                 font-weight: 500;
+            }
+        }
+        :deep().downLoad—dialog {
+            .el-dialog__body {
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                padding: 15px 0;
+                img {
+                    cursor: pointer;
+                }
             }
         }
        

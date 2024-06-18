@@ -2,34 +2,43 @@ package com.jfzt.meeting.entity.vo;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 会议室占用率VO
+ *
  * @author zilong.deng
  * @since 2024-06-05 10:00:02
  */
 @Data
 public class MeetingRoomOccupancyVO {
+
     /**
-     *时间段总数
+     * 会议室id
+     */
+    private Long roomId;
+    /**
+     * 会议室名称
+     */
+    private String roomName;
+    /**
+     * 时间段总数
      */
     private Long total;
-    /**
-     *    已占用数
-     */
-    private Long occupied;
 
     /**
-     *占用率
+     * 总占用数
      */
-    private float occupancyRate;
+    private Long totalOccupancy;
 
     /**
-     *会议室名称
+     * 总占用率
      */
-    private String name;
+    private Float totalOccupancyRate;
+
     /**
-     *会议室id
+     * 不同时间段占用率（top1、top2、top3、other）
      */
-    private Long id;
+    private List<TimePeriodOccupancyVO> timePeriods;
 
 }

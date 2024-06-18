@@ -3,11 +3,9 @@ package com.jfzt.meeting.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingRoom;
+import com.jfzt.meeting.entity.dto.DatePeriodDTO;
 import com.jfzt.meeting.entity.dto.MeetingRoomDTO;
-import com.jfzt.meeting.entity.vo.MeetingRoomOccupancyVO;
-import com.jfzt.meeting.entity.vo.MeetingRoomStatusVO;
-import com.jfzt.meeting.entity.vo.MeetingRoomVO;
-import com.jfzt.meeting.entity.vo.TimePeriodStatusVO;
+import com.jfzt.meeting.entity.vo.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -42,7 +40,7 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
     Result<Integer> deleteMeetingRoom (Long id, Integer currentLevel);
 
 
-     /**
+    /**
      * 查询当天各个时间段会议室占用情况
      * @return 时间段占用状态
      */
@@ -80,16 +78,18 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
 
 
     /**
-     * 查询近七天会议室占用率（9：00-18：00）不包括周末
+     * 统计时间区间内各会议室占用率以及被占用次数前三的时间段（只统计工作日9：00-18：00，参数为空默认前五个工作日）
+     * @param datePeriodDTO 时间区间
      * @return 会议室占用率VO
      */
-    Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomOccupancy ();
+    Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomOccupancy (DatePeriodDTO datePeriodDTO);
 
     /**
-     * 查询最近五个工作日内各会议室占用比例
+     * 查询时间区间内各会议室选择率
+     * @param datePeriodDTO 时间范围
      * @return 会议室占用比例VO
      */
-    Result<List<MeetingRoomOccupancyVO>> getAllMeetingRoomProportion ();
+    Result<List<MeetingRoomSelectionRateVO>> getAllMeetingRoomProportion (DatePeriodDTO datePeriodDTO);
 
 
     /**
@@ -97,5 +97,5 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      * @param meetingRoomDTO 会议室DTO对象
      * @return 修改结果
      */
-    Result<Integer> updateRoom(MeetingRoomDTO meetingRoomDTO);
+    Result<Integer> updateRoom (MeetingRoomDTO meetingRoomDTO);
 }
