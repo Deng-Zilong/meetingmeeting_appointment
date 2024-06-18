@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
 
 /**
  * 报损信息(DeviceErrorMessage)实体类
- * @author: chenyu.di
- * @since: 2024-06-12 11:40
+ * @author chenyu.di
+ * @since 2024-06-12 11:40
  */
 @TableName(value = "device_error_message")
 @Data
