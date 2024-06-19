@@ -18,12 +18,14 @@ import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MinutesPlanService;
 import com.jfzt.meeting.service.SysUserService;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -75,14 +77,17 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
             if (!meetingRecords.isEmpty()) {
                 meetingMinutesVO.setMeetingRecordTitle(meetingRecords.getFirst().getTitle());
                 if (Objects.equals(meetingRecords.getFirst().getCreatedBy(), meetingMinutes.getUserId())) {
-                    List<MinutesPlanVO> minutesPlans = minutesPlanService.list(
+                    List<MinutesPlanVO> minutesPlans = new ArrayList<>(minutesPlanService.list(
                                     new LambdaQueryWrapper<MinutesPlan>()
                                             .eq(MinutesPlan::getMinutesId, minutes.getId()))
                             .stream().map(minutesPlan -> {
                                 MinutesPlanVO minutesPlanVO = new MinutesPlanVO();
                                 BeanUtils.copyProperties(minutesPlan, minutesPlanVO);
                                 return minutesPlanVO;
-                            }).toList();
+                            }).toList());
+                    if (minutesPlans.isEmpty()){
+                        minutesPlans.add(new MinutesPlanVO());
+                    }
                     meetingMinutesVO.setMinutesPlans(minutesPlans);
                 }
             }
