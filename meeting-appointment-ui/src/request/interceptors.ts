@@ -33,7 +33,7 @@ export function ReqReject(error: AxiosError) {
 export function ResResolve(res: any) {
     const userId = JSON.parse(localStorage.getItem("userInfo") as string)?.userId;
   // 验证码不判断状态码
-  if (res.config.url === "/meeting/user/captcha.jpg") {
+  if (res.config.url === "/meeting/user/captcha.jpg" || res.config.url === "/meeting/meeting-record/record-export/admin/0" || res.config.url === "/meeting/meeting-record/record-export/admin/1") {
     return res;
   }
 
@@ -41,7 +41,6 @@ export function ResResolve(res: any) {
     if (res.data.code === "00000") {
       return res.data;
     } else {
-        console.log(res, "res")
       ElMessage.error(res.data.msg);
       return Promise.reject(res);
     }

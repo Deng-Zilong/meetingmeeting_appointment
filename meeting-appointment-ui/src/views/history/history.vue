@@ -113,31 +113,76 @@
             :title="meetingSummaryTitle" 
             :before-close="handleCancelMeetingSummary" 
             width="35%" 
+            top="8vh"
             :close-on-click-modal="false"
         >
-            <template #header="{ close, titleId, titleClass }">
+            <template #header="{titleId, titleClass }">
                 <div class="my-header">
                     <h4 :id="titleId" :class="titleClass">{{meetingSummaryTitle}}</h4>
-                    <el-button type="primary" plain @click="handleSwitchMeetingSummary">本周内容</el-button>
+                    <el-button type="primary" plain @click="handleSwitchMeetingSummary" v-show="meetingSummaryRow.createdBy == currentUserId">{{ isExcel ? '切换word内容' : '切换excel内容' }}</el-button>
                 </div>
             </template>
-            <el-scrollbar max-height="388px">
-                <el-input
-                    v-model="meetingSummary"
-                    :autosize="{ minRows: 18}"
-                    maxlength="10000"
-                    :show-word-limit="true"
-                    type="textarea"
-                    placeholder="请输入会议纪要"
-                />
-                <!-- <div class="work-detail">
+            <el-scrollbar max-height="500px">
+                <div v-if="isExcel">
+                    <el-input
+                        v-model="meetingSummary"
+                        :autosize="{ minRows: 15}"
+                        maxlength="10000"
+                        :show-word-limit="true"
+                        type="textarea"
+                        placeholder="请输入会议纪要"
+                    />
+                    <div class="summary-detail" v-show="meetingSummaryRow.createdBy == currentUserId">
+                        <el-form
+                            ref="formRef"
+                            :model="summaryDetailForm"
+                            label-width="auto"
+                            >
+                            <p class="title">目标与工作内容：</p>
+                            <div class="target" v-for="(plan, index) in summaryDetailForm.list" :key="index">
+                                <div class="target-item">
+                                    <el-form-item
+                                        class="plan"
+                                        :label="`${index+1}`"
+                                        :prop="'plan.' + index + '.value'"
+                                        :rules="{required: true,message: '不可为空',trigger: 'blur',}"  
+                                    >
+                                        <el-input placeholder="请输入目标或工作内容" v-model="plan.plan"/>
+                                    </el-form-item>
+                                    <el-form-item
+                                        :prop="'plan.' + index + '.value'"
+                                        :rules="{required: true,message: '不可为空',trigger: 'blur',}"
+                                    >
+                                        <el-select
+                                            v-model="plan.status"
+                                            placeholder="请选择状态"
+                                            style="width: 150px"
+                                        >
+                                            <el-option
+                                                v-for="item in summaryDetailTypeList"
+                                                :key="item.value"
+                                                :label="item.label"
+                                                :value="item.value"
+                                            />
+                                        </el-select>
+                                    </el-form-item>
+                                    <div class="operation-btn">
+                                        <el-icon @click="handleAddSummaryInput()" class="circle-plus"><CirclePlus /></el-icon>
+                                        <el-icon @click="handleDeleteSummaryInput(index)" v-show="summaryDetailForm.list?.length > 1" class="remove"  ><Remove /></el-icon>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-form>
+                    </div>
+                </div>
+                <div class="work-detail" v-else>
                     <el-form
                         ref="formRef"
                         :model="workDetailForm"
                         label-width="auto"
                         class="demo-dynamic"
                     >
-                        <el-divider content-position="left">1.本次目标</el-divider>
+                        <p class="title">1.本次目标</p>
                         <div class="target" v-for="(target, index) in workDetailForm.target" :key="index">
                             <el-form-item
                                 :label="'目标' + `${index+1}`"
@@ -148,21 +193,65 @@
                                     trigger: 'blur',
                                 }"
                             >
-                                <el-input v-model="target.value" style="width: 200px;"/>
-                                <div>
-                                    <el-icon size="large" @click="handleAddTarget"><CirclePlus /></el-icon>
-                                    <el-icon size="large" @click="handleDeleteTarget(index)"><Remove /></el-icon>
+                                <el-input v-model="target.value" style="width: 460px;"/>
+                                <div class="operation-btn">
+                                    <el-icon @click="handleAddInput(1)" class="circle-plus"><CirclePlus /></el-icon>
+                                    <el-icon @click="handleDeleteInput(1, index)" class="remove" v-show="workDetailForm.target?.length > 1"><Remove /></el-icon>
                                 </div>
                             </el-form-item>
                         </div>
-                        <el-divider content-position="left">2.问题</el-divider>
-                        <div class="problem"></div>
-                        <el-divider content-position="left">1.项目未来的优化方向</el-divider>
-                        <div class="future-direction"></div>
-                        <el-divider content-position="left">1.迭代需求</el-divider>
-                        <div class="requirement"></div>
+                        <p class="title">2.问题</p>
+                        <div class="problem" v-for="(problem, index) in workDetailForm.problem" :key="index">
+                            <el-form-item
+                                :label="'问题' + `${index+1}`"
+                                :prop="'problem.' + index + '.value'"
+                                :rules="{
+                                    required: true,
+                                    message: '不可为空',
+                                    trigger: 'blur',
+                                }"
+                            >
+                                <el-input v-model="problem.value" style="width: 460px;"/>
+                                <div class="operation-btn">
+                                    <el-icon @click="handleAddInput(2)" class="circle-plus"><CirclePlus /></el-icon>
+                                    <el-icon @click="handleDeleteInput(2, index)" class="remove" v-show="workDetailForm.problem?.length > 1"><Remove /></el-icon>
+                                </div>
+                            </el-form-item>
+                        </div>
+                        <p class="title">3.项目未来的优化方向</p>
+                        <div class="future-direction">
+                            <el-form-item
+                                label="方向"
+                                prop="futureDirection"
+                                :rules="{
+                                    required: true,
+                                    message: '不可为空',
+                                    trigger: 'blur',
+                                }"
+                            >
+                                <el-input v-model="workDetailForm.futureDirection" style="width: 460px;"/>
+                            </el-form-item>
+                        </div>
+                        <p class="title">4.迭代需求</p>
+                        <div class="requirement" v-for="(require, index) in workDetailForm.requirement" :key="index">
+                            <el-form-item
+                                :label="'需求' + `${index+1}`"
+                                :prop="'require.' + index + '.value'"
+                                :rules="{
+                                    required: true,
+                                    message: '不可为空',
+                                    trigger: 'blur',
+                                }"
+                            >
+                                <el-input v-model="require.value" style="width: 460px;"/>
+                                <div class="operation-btn">
+                                    <el-icon @click="handleAddInput(4)" class="circle-plus"><CirclePlus /></el-icon>
+                                    <el-icon @click="handleDeleteInput(4, index)" class="remove" v-show="workDetailForm.requirement?.length > 1"><Remove /></el-icon>
+                                </div>
+                            </el-form-item>
+                        </div>
                     </el-form>
-                </div> -->
+                </div>
             </el-scrollbar>
             <template #footer>
             <div class="dialog-footer" v-show="!isMeetingSummaryDetail">
@@ -388,10 +477,27 @@
     let meetingSummaryId = ref<number>(0); // 会议纪要id
     let isMeetingSummaryDetail = ref<boolean>(true); // 是否是查看会议纪要详情 true 查看 false 编辑/新增
     let meetingSummaryTitle = ref<string>('查看会议纪要'); // 弹窗标题
+    let meetingSummaryRow = ref<any>(); // 行数据
+    let isExcel = ref<boolean>(true);
+    let summaryDetailTypeList = ref<any[]>([
+      { label: '待优化', value: 1 },
+      { label: '研发需求', value: 2 },
+    ]);
+    let summaryDetailForm = ref<any>(
+        {
+            list: [
+                {
+                    plan: '',
+                    status: '', // 状态 1：待优化、2：研发需求
+                }
+            ]
+        }
+    );
     /**
      * @description 获取会议纪要
      */
     const handleMeetingSummary = (item: any) => {
+        meetingSummaryRow.value = item;
         meetingSummaryVisible.value = true;
         isMeetingSummaryDetail.value = true;
         meetingSummaryTitle.value = `查看会议纪要（${item.date} / ${item.title}）`;
@@ -413,11 +519,21 @@
      * @description 编辑会议纪要
      */
     const handleEditMeetingSummary = (item: any) => {
+        meetingSummaryRow.value = item;
         meetingRecordId.value = item.id;
         isMeetingSummaryDetail.value = false;
         meetingSummaryTitle.value = `编辑会议纪要（${item.date} / ${item.title}）`;
         getMeetingMinutesReq(item.id);
         meetingSummaryVisible.value = true;
+    }
+    const handleAddSummaryInput = () => {
+        summaryDetailForm.value.list.push({
+            plan: '',
+            status: '', // 状态 1：待优化、2：研发需求
+        })
+    }
+    const handleDeleteSummaryInput = (index: number) => {
+        summaryDetailForm.value.list.splice(index, 1)
     }
     /**
      * @description 提交会议纪要
@@ -444,49 +560,55 @@
         meetingSummary.value = '';
     }
     const formRef = ref<FormInstance>()
-    const dynamicValidateForm = reactive<any>({
-        domains: [
-            {
-                key: 1,
-                value: '',
-            },
-        ],
-        email: '',
-    })
     const workDetailForm = ref<any>({
         target: [{
-            value: "11111",
-        },
-        {
-            value: "222222",
-        }],
-        problem:[],
-        direction: [],
-        futureDirection: '',
-        requirement:[],
-    })
-    const handleAddTarget = () => {
-        workDetailForm.value.target.push({
             value: "",
-        })
-    }
-    const handleDeleteTarget = (index: number) => {
-        workDetailForm.value.target.splice(index, 1)
-    }
+        }],
+        problem:[{
+            value: "",
+        }],
+        futureDirection: '',
+        requirement:[{
+            value: "",
+        },],
+    })
 
-const removeDomain = (item: any) => {
-  const index = dynamicValidateForm.domains.indexOf(item)
-  if (index !== -1) {
-    dynamicValidateForm.domains.splice(index, 1)
-  }
-}
-
-const addDomain = () => {
-  dynamicValidateForm.domains.push({
-    key: Date.now(),
-    value: '',
-  })
-}
+    /**
+     * @description: 添加输入框
+     * @param {number} type 输入框类型 1: 目标 2：问题 4：需求
+     * @return {*}
+     */
+    const handleAddInput = (type: number) => {
+        switch(type) {
+            case 1:
+                return workDetailForm.value.target.push({
+                    value: "",
+                });
+            case 2:
+                return workDetailForm.value.problem.push({
+                    value: "",
+                });
+            case 4:
+                return workDetailForm.value.requirement.push({
+                    value: "",
+                });
+        }
+    }
+    /**
+     * @description 删除输入框
+     * @param type 输入框类型 1: 目标 2：问题 4：需求
+     * @param index 输入框索引
+     */
+    const handleDeleteInput = (type: number, index: number) => {
+        switch(type) {
+            case 1:
+                return workDetailForm.value.target.splice(index, 1);
+            case 2:
+                return workDetailForm.value.problem.splice(index, 1);
+            case 4:
+                return workDetailForm.value.requirement.splice(index, 1);
+        }
+    }
 
 const submitForm = (formEl: FormInstance | undefined) => {
     console.log(workDetailForm.value);
@@ -509,7 +631,13 @@ const resetForm = (formEl: FormInstance | undefined) => {
      * @description 切换会议纪要
      */
     const handleSwitchMeetingSummary = () => {
-
+        const {date, title} = meetingSummaryRow.value;
+        isExcel.value = !isExcel.value;
+        if (isExcel.value) {
+            meetingSummaryTitle.value = `编辑会议纪要（${date} / ${title}）`;
+        } else {
+            meetingSummaryTitle.value = `编辑本周内容（${date} / ${title}）`;
+        }
     }
 
     let downloadVisible = ref<boolean>(false);
@@ -532,7 +660,7 @@ const resetForm = (formEl: FormInstance | undefined) => {
         const params = {id, title, description, createdBy, adminUserName, meetingRoomId, meetingRoomName, location, meetingNumber, attendees, users, startTime, endTime, status, isDeleted};
         
         const res:any = await recordExport(type, [params]);
-        if (res.code === '00000') {
+        if (res?.data.type == "application/json") {
             ElMessage.success('导出成功!');
             downloadExcel(res.data, '会议纪要');
         } else {
@@ -717,19 +845,62 @@ const resetForm = (formEl: FormInstance | undefined) => {
             padding: 1.25rem;
             .my-header {
                 display: flex;
-                align-items: center;
+                // align-items: space-between;
+                justify-content: space-between;
                 .el-dialog__title {
                     font-size: 1rem;
                     font-weight: 500;
                 }
             }
-            .work-detail {
-                .el-form {
-                    padding: 10px;
-                    .el-form-item__content {
-                        justify-content: space-between;
+            .summary-detail {
+                .title {
+                    font-weight: bold;
+                    color: #303133;
+                    margin: 25px 0 10px;
+                }
+                 .target-item {
+                    display: flex;
+                    justify-content: space-between;
+                    .plan {
+                        flex: .8;
                     }
                 }
+                .operation-btn {
+                    text-align: right;
+                    line-height: 3;
+                }
+            }
+            .work-detail{
+                .el-form {
+                    padding: 10px;
+                    .title {
+                        font-weight: bold;
+                        color: #303133;
+                        margin: 45px 0 10px;
+                    }
+                    
+                    .operation-btn {
+                        text-align: right;
+                    }
+                }
+            }
+            .work-detail, .summary-detail {
+                .el-form-item__content {
+                        justify-content: space-between;
+                        align-items: center;
+                        line-height: 0;
+                    }
+                    .circle-plus {
+                        margin-right: .625rem;
+                        color: #409EFF;
+                    }
+                    .remove {
+                        color: #F56C6C;
+                    }
+                    .circle-plus, .remove {
+                        font-size: 1.4rem;
+                        cursor: pointer;
+                    }
             }
         }
         :deep().downLoad—dialog {

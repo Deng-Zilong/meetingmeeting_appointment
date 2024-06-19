@@ -21,17 +21,5 @@ export const getMeetingMinutes = (data: {userId: string, meetingRecordId: number
 // 导出历史会议记录（单条，后可能批量导出）
 export const recordExport = (type: number, data: any[]) => {
     const userId = JSON.parse(localStorage.getItem("userInfo") as string).userId;
-
-    let headers:any = {};
-    if (type === 0) {
-        headers = {
-            'Content-Type': 'application/vnd.ms-excel;charset=utf-8',
-        }
-    }
-    if (type == 1) {
-        headers = {
-            'Content-Type': 'application/msword;charset=utf-8',
-        }
-    }
-    return http.post(`/meeting/meeting-record/record-export/${userId}/${type}`, data, "", headers)
+    return http.post(`/meeting/meeting-record/record-export/${userId}/${type}`, data, "blob")
 }
