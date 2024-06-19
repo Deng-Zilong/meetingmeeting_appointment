@@ -1,6 +1,6 @@
 import http from "@/request/axios/http";
 // 获取群组列表数据
-export const getMeetingGroupList = (data: {userId: string, pageNum?: number, pageSize?: number, }) => {
+export const getMeetingGroupList = (data: {userId: string, pageNum?: number, pageSize?: number, groupName?: string }) => {
     return http.get("/meeting/meeting-group-list", data)
 }
 // 删除群组

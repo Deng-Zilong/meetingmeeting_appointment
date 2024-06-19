@@ -105,7 +105,7 @@
         </div>
         <div class="third-tab-echart">
           <TimeChart class="tab-echart" :pieData="pieData" v-if="activeName == 'third'" />
-          <RoomChart class="tab-echart" v-if="activeName == 'third'" />
+          <RoomChart class="tab-echart" :barData="barData" v-if="activeName == 'third'" />
         </div>
       </el-tab-pane>
     </el-tabs>
@@ -125,7 +125,7 @@
     import TimeChart from '@/views/manage/component/room-pie.vue';
     import RoomChart from '@/views/manage/component/room-chart.vue';
     
-    import { addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData, getRoomSelectionRate } from '@/request/api/manage'
+    import { addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData, getRoomSelectionRate, getRoomOccupancyDate } from '@/request/api/manage'
       
 
     // let loading = ref(true) // 加载状态
@@ -372,13 +372,28 @@
       },
     ]
     const pieData = ref<any>(); // 饼图数据
+    const barData = ref<any>(); // 柱状图数据
     const handleEchartDate = (val: any) => {
-      if (!val) return;
-      getRoomSelectionRate({ startDate: val[0], endDate: val[1] })  // 获取会议室选择率数据 接口
-        .then((res) => {
-          pieData.value = res.data
-        })
-        .catch((err) => {})
+      if (!val) {
+        getRoomSelectionRate({})  // 获取会议室选择率数据 接口
+          .then((res) => {
+            pieData.value = res.data
+          })
+          .catch((err) => {})
+      } else {
+        getRoomSelectionRate({ startDate: val[0], endDate: val[1] })  // 获取会议室选择率数据 接口
+          .then((res) => {
+            pieData.value = res.data
+          })
+          .catch((err) => { })
+
+        getRoomOccupancyDate({ startDate: val[0], endDate: val[1] })  // 获取会议室选择率数据 接口
+          .then((res) => {
+            barData.value = res.data
+            console.log(barData.value,'mana', res)
+          })
+          .catch((err) => {})
+      }
     }
 </script>
 <style scoped lang="scss">
