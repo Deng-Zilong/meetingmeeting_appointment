@@ -53,7 +53,7 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
                             MeetingDevice::getRoomId, meetingDevicePageDTO.getRoomId())
                     .eq(meetingDevicePageDTO.getStatus() != null,
                             MeetingDevice::getStatus, meetingDevicePageDTO.getStatus())
-                    .like(meetingDevicePageDTO.getDeviceName() != null,
+                    .like(StringUtils.isNotBlank(meetingDevicePageDTO.getDeviceName()),
                             MeetingDevice::getDeviceName, meetingDevicePageDTO.getDeviceName()));
 
             Page<MeetingDeviceVO> deviceVOPage = new Page<>();
@@ -96,7 +96,9 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
                     .eq(MeetingDevice::getDeviceName, meetingDeviceDTO.getDeviceName())
                     .list();
             duplicateList.addAll(duplicate);
-            this.save(meetingDevice);
+            if (duplicate.isEmpty()){
+                this.save(meetingDevice);
+            }
         }).toList();
         if (!duplicateList.isEmpty()){
             List<MeetingDeviceVO> deviceVOList = duplicateList.stream().map(duplicate -> {

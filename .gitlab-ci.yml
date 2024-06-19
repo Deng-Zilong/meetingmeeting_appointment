@@ -17,6 +17,7 @@
 include:
   # 分别包含前端和后端项目的CI配置文件。
   - local: "meeting-appointment-ui/.gitlab-ci.yml"  # 包含H5项目的CI配置
+  - local: "meeting-appointment-mobile/.gitlab-ci.yml"  # 包含H5项目的CI配置
   - local: "meeting-appointment-admin/.gitlab-ci.yml"  # 包含H5项目的CI配置
 
 variables:
@@ -25,9 +26,9 @@ variables:
 
   #【请修改】前端文件夹路径
   FRONT_PATH: "meeting-appointment-ui"
-
+  H5_FRONT_PATH: "meeting-appointment-mobile"
   # 设置后端分支和前端分支的默认值
-  BACK_BRANCH: "release"
+  BACK_BRANCH: "develop"
 
   #【请修改】后端Dockerfile存在路径(参考上述目录结构)
   DOCKERFILE_PATH: "Dockerfile"
@@ -37,10 +38,11 @@ variables:
   #反例：前端jf___training-web 后端jf___training
   #反例：前端jf-training 后端jf-training
   #反例：前端JF-TRAINING 后端JF-TRAINING  不能使用大写
-  FRONT_PROJECT_NAME: "meeting-appointment-pc-web"
+  FRONT_PROJECT_NAME: "jf-meeting-appointment-pc-web"
+  H5_PROJECT_NAME: "jf-meeting-appointment-mobile-web"
 
   #【请修改】后端项目名称(要求同上)
-  BACK_PROJECT_NAME: "meeting-appointment-backend"
+  BACK_PROJECT_NAME: "jf-meeting-appointment-backend"
 
   #【请修改】Jar包的端口号，建议各项目组设置后端服务用8080端口
   JAR_PORT: 8080

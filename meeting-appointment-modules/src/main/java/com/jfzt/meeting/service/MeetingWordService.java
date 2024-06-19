@@ -1,7 +1,12 @@
 package com.jfzt.meeting.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingWord;
+import com.jfzt.meeting.entity.dto.MeetingWordDTO;
+import com.jfzt.meeting.entity.vo.MeetingMinutesVO;
+
+import java.util.List;
 
 /**
  * @author zilong.deng
@@ -9,4 +14,7 @@ import com.jfzt.meeting.entity.MeetingWord;
  */
 public interface MeetingWordService extends IService<MeetingWord> {
 
+    Result<List<MeetingWord>> getMeetingWord(Long meetingRecordId);
+
+    Result<Object> saveOrUpdateWord(MeetingWord meetingWord);
 }

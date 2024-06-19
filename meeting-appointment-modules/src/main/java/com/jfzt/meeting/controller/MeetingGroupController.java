@@ -31,11 +31,12 @@ public class MeetingGroupController {
     public Result<List<MeetingGroupVO>> getMeetingGroupList (MeetingGroupPageDTO meetingGroupPageDTO) {
         return meetingGroupService.checkGroup(meetingGroupPageDTO.getPageNum(),
                 meetingGroupPageDTO.getPageSize(),
-                meetingGroupPageDTO.getUserId());
+                meetingGroupPageDTO.getUserId(),
+                meetingGroupPageDTO.getGroupName());
     }
 
     /**
-     * @param meetingGroupDTO
+     * @param meetingGroupDTO 群组入参
      * @return com.jfzt.meeting.common.Result<java.lang.Object>
      */
     @PostMapping("/meeting-group")

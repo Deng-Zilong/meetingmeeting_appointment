@@ -52,7 +52,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
      * @return 群组列表
      */
     @Override
-    public Result<List<MeetingGroupVO>> checkGroup (Integer pageNum, Integer pageSize, String userId) {
+    public Result<List<MeetingGroupVO>> checkGroup (Integer pageNum, Integer pageSize, String userId, String groupName) {
         SysUserVO userVO = new SysUserVO();
         // 用户参加过的所有群组集合
         // 判断userId是否为空
@@ -75,8 +75,9 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         // 查询当前用户参与的所有群组
         Page<MeetingGroup> meetingGroupPage = this.baseMapper
                 .selectPage(new Page<>(pageNum, pageSize), new LambdaQueryWrapper<MeetingGroup>()
-                        .in(MeetingGroup::getId, idList)
-                        .orderByDesc(MeetingGroup::getGmtCreate));
+                .like(StringUtils.isNotBlank(groupName), MeetingGroup::getGroupName, groupName)
+                .in(MeetingGroup::getId, idList)
+                .orderByDesc(MeetingGroup::getGmtCreate));
         List<MeetingGroup> joinList = meetingGroupPage.getRecords();
 
         //遍历所参与的所有群组
@@ -96,7 +97,6 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
                     .eq(meetingGroup.getId() != null, UserGroup::getGroupId, meetingGroup.getId())
                     .orderByAsc(UserGroup::getGmtCreate)
                     .list();
-
 
             userGroups.stream().peek((userGroup) -> {
                 SysUserVO sysUserVO = new SysUserVO();

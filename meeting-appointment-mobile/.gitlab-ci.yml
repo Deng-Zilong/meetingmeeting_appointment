@@ -18,7 +18,7 @@ build_and_push_develop_h5_front:
     build
   script: # 在此部分定义任务运行时执行的脚本命令
     - export PROJECT_TYPE="frontend" # 定义打包类型前端
-    - cd ${FRONT_PATH} # 进入前端项目路径
+    - cd ${H5_FRONT_PATH} # 进入前端项目路径
     - ${BUILD_COMMAND} config set registry https://registry.npmjs.org  # 设置 打包 镜像源
     - ${BUILD_COMMAND} install --no-frozen-lockfile # 安装项目依赖
     - ${BUILD_COMMAND} run build # 根据环境变量进行项目构建
