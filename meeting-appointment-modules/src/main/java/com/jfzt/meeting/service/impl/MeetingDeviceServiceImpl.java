@@ -96,7 +96,9 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
                     .eq(MeetingDevice::getDeviceName, meetingDeviceDTO.getDeviceName())
                     .list();
             duplicateList.addAll(duplicate);
-            this.save(meetingDevice);
+            if (duplicate.isEmpty()){
+                this.save(meetingDevice);
+            }
         }).toList();
         if (!duplicateList.isEmpty()){
             List<MeetingDeviceVO> deviceVOList = duplicateList.stream().map(duplicate -> {

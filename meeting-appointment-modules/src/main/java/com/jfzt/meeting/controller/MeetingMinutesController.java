@@ -2,9 +2,12 @@ package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingMinutes;
+import com.jfzt.meeting.entity.MeetingWord;
 import com.jfzt.meeting.entity.dto.MeetingMinutesDTO;
 import com.jfzt.meeting.entity.vo.MeetingMinutesVO;
 import com.jfzt.meeting.service.MeetingMinutesService;
+import com.jfzt.meeting.service.MeetingWordService;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +22,8 @@ import java.util.List;
 @RequestMapping("/meeting")
 public class MeetingMinutesController {
 
+    @Resource
+    private MeetingWordService meetingWordService;
     private MeetingMinutesService meetingMinutesService;
     /**
      * setter注入
@@ -58,5 +63,13 @@ public class MeetingMinutesController {
         meetingMinutesService.deleteMeetingMinutes(meetingMinutes);
         return Result.success();
     }
+    @GetMapping("/word")
+    public Result<List<MeetingWord>> getMeetingWord (@RequestParam Long meetingRecordId) {
+        return meetingWordService.getMeetingWord(meetingRecordId);
+    }
 
+    @PostMapping("/word")
+    public Result<Object> saveOrUpdateWord (@RequestBody MeetingWord meetingWord) {
+        return meetingWordService.saveOrUpdateWord(meetingWord);
+    }
 }

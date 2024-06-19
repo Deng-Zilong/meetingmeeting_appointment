@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingMinutes;
 import com.jfzt.meeting.entity.dto.MeetingMinutesDTO;
+import com.jfzt.meeting.entity.dto.MeetingWordDTO;
 import com.jfzt.meeting.entity.vo.MeetingMinutesVO;
 import org.springframework.stereotype.Service;
 

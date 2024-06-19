@@ -1,15 +1,19 @@
 package com.jfzt.meeting.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.jfzt.meeting.entity.dto.MeetingWordDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 会议纪要-word
@@ -25,7 +29,7 @@ public class MeetingWord implements Serializable {
     /**
      * 主键id
      */
-    @TableId
+    @TableId(type = IdType.AUTO)
     private Integer id;
 
     /**
@@ -57,7 +61,13 @@ public class MeetingWord implements Serializable {
      * 修改时间
      */
     private Date gmtModified;
+    /**
+     * 文本集合
+     */
+    @TableField(exist = false)
+    private List<MeetingWordDTO> meetingWordDTOList;
 
+    @Serial
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 

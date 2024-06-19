@@ -63,6 +63,6 @@ public class MeetingGroupTest {
         //        List<MeetingGroupVO> data = result.getData();
         //        // 断言结果是否符合预期
         //        assertEquals("test", data.getFirst().getGroupName());
-        assertDoesNotThrow(() -> meetingGroupService.checkGroup(1, 10, "admin"));
+        assertDoesNotThrow(() -> meetingGroupService.checkGroup(1, 10, "admin","邓子龙"));
     }
 }

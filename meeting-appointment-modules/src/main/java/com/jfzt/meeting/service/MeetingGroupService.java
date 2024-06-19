@@ -23,7 +23,7 @@ public interface MeetingGroupService extends IService<MeetingGroup> {
      * @param userId 用户id
      * @return 群组列表
      */
-    Result<List<MeetingGroupVO>> checkGroup (Integer pageNum, Integer pageSize, String userId);
+    Result<List<MeetingGroupVO>> checkGroup (Integer pageNum, Integer pageSize, String userId,String groupName);
 
     /**
      * 群组添加
