@@ -8,10 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.*;
 import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
-import com.jfzt.meeting.entity.vo.MeetingPromptVO;
-import com.jfzt.meeting.entity.vo.MeetingRecordVO;
-import com.jfzt.meeting.entity.vo.PeriodTimesVO;
-import com.jfzt.meeting.entity.vo.SysUserVO;
+import com.jfzt.meeting.entity.vo.*;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.*;
@@ -30,7 +27,6 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,7 +39,6 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -94,6 +89,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     private SysDepartmentMapper sysDepartmentMapper;
     @Autowired
     private MeetingMinutesMapper meetingMinutesMapper;
+    @Autowired
+    private MeetingWordMapper meetingWordMapper;
 
 
     /**
@@ -745,6 +742,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             log.error("没有找到模板信息");
             throw new RRException(ErrorCodeEnum.SYSTEM_ERROR_B01011);
         }
+
         //获取word模板的路径应用
         for (MeetingRecordVO meetingRecordVO : meetingRecordVOList) {
             if (type.equals("0")) {
@@ -752,50 +750,78 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 extractedExcel(userId, meetingRecordVO, response, templatePathApplyExcel, templatePathBackupsExcel);
             } else {
                 //导出word
-                extractedWord(userId, meetingRecordVO, response, templatePathApplyExcel, templatePathBackupsExcel);
+                extractedWord(userId, meetingRecordVO, response);
             }
         }
 
     }
 
-    private void extractedWord(String userId, MeetingRecordVO meetingRecordVO, HttpServletResponse response, File templatePathApplyExcel, File templatePathBackupsExcel) {
+    private void extractedWord(String userId, MeetingRecordVO meetingRecordVO, HttpServletResponse response) {
         // 模板全的路径
         String templatePaht = "F:\\保险问答系统Sprint02回顾会议纪要.docx";
         Map<String, Object> paramMap = new HashMap<>(16);
         // 普通的占位符示例 参数数据结构 {str,str}
-        paramMap.put("title", meetingRecordVO.getTitle()+"会议纪要");
-        paramMap.put("time", meetingRecordVO.getStartTime());
+        paramMap.put("title", meetingRecordVO.getTitle() + "会议纪要");
+        paramMap.put("time", meetingRecordVO.getStartTime().getYear()+"年"+meetingRecordVO.getStartTime().getMonthValue()+"月"
+                +meetingRecordVO.getStartTime().getDayOfMonth()+"日  "
+                +meetingRecordVO.getStartTime().getHour()+":"+meetingRecordVO.getStartTime().getMinute()+
+                "-"+meetingRecordVO.getEndTime().getHour()+":"+meetingRecordVO.getEndTime().getMinute());
         paramMap.put("meetingTime", meetingRecordVO.getMeetingRoomName());
         paramMap.put("attendees", meetingRecordVO.getAttendees());
         paramMap.put("meetinggenda", meetingRecordVO.getTitle());
 
-        // 段落中的动态段示例 [str], 支持动态行中添加图片
-        List<Object> list1 = new ArrayList<>(Arrays.asList("2、list1_11111", "3、list1_2222"));
+        List<MeetingWord> meetingWords = meetingWordMapper.selectList(new LambdaQueryWrapper<MeetingWord>()
+                .eq(MeetingWord::getMeetingRecordId, meetingRecordVO.getId()));
 
+        List<Object> list1 = meetingWords.stream().filter((meetingWord -> meetingWord.getType() == 1))
+                .map(menu->menu.getContent())
+                .collect(Collectors.toList());
         paramMap.put("thisGoal", list1);
-
-        List<String> list2 = new ArrayList<>(Arrays.asList("2、list2_11111", "3、list2_2222"));
+        List<Object> list2 = meetingWords.stream().filter((meetingWord -> meetingWord.getType() == 2))
+                .map(menu->menu.getContent())
+                .collect(Collectors.toList());
         paramMap.put("problem", list2);
+        List<Object> list3 = meetingWords.stream().filter((meetingWord -> meetingWord.getType() == 3))
+                .map(menu->menu.getContent())
+                .collect(Collectors.toList());
+        paramMap.put("optimization", list3);
+        List<Object> list4 = meetingWords.stream().filter((meetingWord -> meetingWord.getType() == 4))
+                .map(menu->menu.getContent())
+                .collect(Collectors.toList());
+        paramMap.put("requirements", list4);
 
-        List<String> list3 = new ArrayList<>(Arrays.asList("2、list2_11111", "3、list2_2222"));
-        paramMap.put("optimization", list2);
-        List<String> list4 = new ArrayList<>(Arrays.asList("2、list2_11111", "3、list2_2222"));
-        paramMap.put("requirements", list2);
-
-        DynWordUtils.process(paramMap, templatePaht, response,meetingRecordVO.getTitle());
+        DynWordUtils.process(paramMap, templatePaht, response, meetingRecordVO.getTitle());
     }
 
     private void extractedExcel(String userId, MeetingRecordVO meetingRecordVO, HttpServletResponse response, File templatePathApplyExcel, File templatePathBackupsExcel) throws IOException, InvalidFormatException {
+        //还原文件
+        restoreFile(templatePathBackupsExcel.toString(), templatePathApplyExcel.toString());
         //查看参与用户
         List<SysUserVO> name = meetingRecordVO.getUsers();
         //添加用户行
-        ExcelWriter writer = ExcelUtil.getWriter(templatePathBackupsExcel, "Sheet1");
+        ExcelWriter writer = ExcelUtil.getWriter(templatePathApplyExcel, "Sheet1");
         int startRow = 11;
         int rows = name.size() - 1;
         XSSFSheet sheets = (XSSFSheet) writer.getSheet();
         InsertRow(writer, startRow, rows, sheets, false);
+        //查询其他新增的内容
+        MeetingMinutes meetingMinutes = new MeetingMinutes();
+        meetingMinutes.setMeetingRecordId(Integer.valueOf(String.valueOf(meetingRecordVO.getId())));
+        meetingMinutes.setUserId(meetingRecordVO.getCreatedBy());
+        List<MeetingMinutesVO> minutesVOList = meetingMinutesService.getMeetingMinutes(meetingMinutes);
+        List<MinutesPlanVO> minutesPlans = new ArrayList<>();
+        int sizeOrder = 0;
+        if (minutesVOList.size() != 0) {
+            minutesPlans = minutesVOList.getFirst().getMinutesPlans();
+            //添加"其他标题"行
+            sizeOrder = minutesVOList.getFirst().getMinutesPlans().size()-1;
+            ExcelWriter other = ExcelUtil.getWriter(templatePathApplyExcel, "Sheet1");
+            int start = 11 + name.size();
+            XSSFSheet xssSheet = (XSSFSheet) other.getSheet();
+            InsertRow(other, start, sizeOrder, xssSheet, false);
+        }
         //读取模板文件产生workbook对象,这个workbook是一个有内容的工作薄
-        Workbook workbook = new XSSFWorkbook(templatePathBackupsExcel);
+        Workbook workbook = new XSSFWorkbook(templatePathApplyExcel);
         //读取工作薄的第一个工作表，向工作表中放数据
         Sheet sheet = workbook.getSheetAt(0);
 
@@ -820,7 +846,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         //7
         sheet.getRow(6).getCell(0).setCellValue("参会人员：" + meetingRecordVO.getAttendees());
         //8
-        sheet.getRow(7).getCell(0).setCellValue("参会时间：" + meetingRecordVO.getStartTime() + "（am）");
+        sheet.getRow(7).getCell(0).setCellValue("参会时间：" + meetingRecordVO.getStartTime().getHour()+":"+meetingRecordVO.getStartTime().getMinute());
         //9
         sheet.getRow(8).getCell(0).setCellValue("参会地点：" + meetingRecordVO.getMeetingRoomName());
         //10
@@ -843,12 +869,26 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         //12其他
         sheet.getRow(10 + name.size()).getCell(0).setCellValue("其他");
         sheet.getRow(10 + name.size()).getCell(1).setCellValue(sysUserMapper.selectByUserId(userId).getUserName());
+        sheet.getRow(10 + name.size()).getCell(3).setCellValue(meetingRecordVO.getTitle());
+        if (sizeOrder != 0) {
+            //把数据插入到新增行里
+            for (int i = 0; i < sizeOrder+1; i++) {
+                sheet.getRow(10 + name.size() + i + 1).getCell(3).setCellValue(minutesPlans.get(i).getPlan());
+                sheet.getRow(10 + name.size() + i + 1).getCell(6).setCellValue(minutesPlans.get(i).getStatus() == 1 ? "待优化" : "研发需求");
+            }
+        }
+
+
         //13
-        sheet.getRow(15 + name.size()).getCell(0).setCellValue("抄送对象:");
-        sheet.getRow(15 + name.size()).getCell(4).setCellValue("制表人：" + meetingRecordVO.getCreatedBy());
+        sheet.getRow(9 + name.size() + 3 + sizeOrder).getCell(0).setCellValue("抄送对象:");
+        sheet.getRow(9 + name.size() + 3 + sizeOrder).getCell(4).setCellValue("制表人：" + meetingRecordVO.getCreatedBy());
+
         sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 0, 0));
         sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 4, 4));
         sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 5, 5));
+        if (sizeOrder != 0) {
+            sheet.addMergedRegion(new CellRangeAddress(10 + name.size(), 10 + sizeOrder + name.size(), 0, 0));
+        }
         //直接导出电脑文件夹
 //            FileOutputStream outputStream = new FileOutputStream("F:\\会议纪要.xlsx");
 //            workbook.write(outputStream);
@@ -857,16 +897,15 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 //            //还原文件
 //            restoreFile(templatePaths.toString(), templatePath.toString());
         // 另一种，下载到浏览器。
-        response.setContentType("application/vnd.ms-excel;charset=utf-8");
-        response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(meetingRecordVO.getTitle()+".xlsx", "UTF-8"));
+
+        response.setContentType("application/vnd.ms-excel");
+        response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(meetingRecordVO.getTitle() + ".xlsx", "UTF-8"));
         OutputStream os = response.getOutputStream();
         workbook.write(os);
         os.flush();
         os.close();
         //还原文件
-        restoreFile(templatePathApplyExcel.toString(), templatePathBackupsExcel.toString());
-
-
+        restoreFile(templatePathBackupsExcel.toString(), templatePathApplyExcel.toString());
     }
 
 
@@ -885,10 +924,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         // 还原文件
         try {
             Files.copy(Paths.get(backupFilePath), Paths.get(targetFilePath), StandardCopyOption.REPLACE_EXISTING);
-            System.out.println("文件还原成功！");
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("文件还原失败！");
         }
     }
 
@@ -896,7 +933,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         if (size < 1) {
             sheet.getRow(size + 10).getCell(0).setCellValue(sysDepartment.getDepartmentName());
             sheet.getRow(size + 10).getCell(4).setCellValue(meetingRecordVO.getAdminUserName());
-            sheet.getRow(size + 10).getCell(5).setCellValue(meetingRecordVO.getEndTime().toString());
+            sheet.getRow(size + 10).getCell(5).setCellValue(meetingRecordVO.getEndTime().getHour()+":"+meetingRecordVO.getEndTime().getMinute());
         }
         sheet.getRow(size + 10).getCell(1).setCellValue(name.get(size).getUserName());
         sheet.getRow(size + 10).getCell(2).setCellValue(size + 1);
