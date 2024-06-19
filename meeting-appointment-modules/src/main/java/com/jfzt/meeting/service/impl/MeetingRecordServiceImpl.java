@@ -39,6 +39,7 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -731,7 +732,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      * @param type                导出类型，0表示excel，1表示word
      * @param meetingRecordVOList 会议室历史记录信息
      * @param response            返回respose
-     * @throws InvalidFormatException
+     * @throws InvalidFormatException 1
      */
     @Override
     public void getRecordExport(String userId, String type, List<MeetingRecordVO> meetingRecordVOList, HttpServletResponse response) throws IOException, InvalidFormatException {
@@ -745,27 +746,27 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
         //获取word模板的路径应用
         for (MeetingRecordVO meetingRecordVO : meetingRecordVOList) {
-            if (type.equals("0")) {
+            if ("0".equals(type)) {
                 //导出excel
                 extractedExcel(userId, meetingRecordVO, response, templatePathApplyExcel, templatePathBackupsExcel);
             } else {
                 //导出word
-                extractedWord(userId, meetingRecordVO, response);
+                extractedWord(meetingRecordVO, response);
             }
         }
 
     }
 
-    private void extractedWord(String userId, MeetingRecordVO meetingRecordVO, HttpServletResponse response) {
+    private void extractedWord(MeetingRecordVO meetingRecordVO, HttpServletResponse response) {
         // 模板全的路径
         String templatePaht = "F:\\保险问答系统Sprint02回顾会议纪要.docx";
         Map<String, Object> paramMap = new HashMap<>(16);
         // 普通的占位符示例 参数数据结构 {str,str}
         paramMap.put("title", meetingRecordVO.getTitle() + "会议纪要");
-        paramMap.put("time", meetingRecordVO.getStartTime().getYear()+"年"+meetingRecordVO.getStartTime().getMonthValue()+"月"
-                +meetingRecordVO.getStartTime().getDayOfMonth()+"日  "
-                +meetingRecordVO.getStartTime().getHour()+":"+meetingRecordVO.getStartTime().getMinute()+
-                "-"+meetingRecordVO.getEndTime().getHour()+":"+meetingRecordVO.getEndTime().getMinute());
+        paramMap.put("time", meetingRecordVO.getStartTime().getYear() + "年" + meetingRecordVO.getStartTime().getMonthValue() + "月"
+                + meetingRecordVO.getStartTime().getDayOfMonth() + "日  "
+                + meetingRecordVO.getStartTime().getHour() + ":" + meetingRecordVO.getStartTime().getMinute() +
+                "-" + meetingRecordVO.getEndTime().getHour() + ":" + meetingRecordVO.getEndTime().getMinute());
         paramMap.put("meetingTime", meetingRecordVO.getMeetingRoomName());
         paramMap.put("attendees", meetingRecordVO.getAttendees());
         paramMap.put("meetinggenda", meetingRecordVO.getTitle());
@@ -774,19 +775,19 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .eq(MeetingWord::getMeetingRecordId, meetingRecordVO.getId()));
 
         List<Object> list1 = meetingWords.stream().filter((meetingWord -> meetingWord.getType() == 1))
-                .map(menu->menu.getContent())
+                .map(MeetingWord::getContent)
                 .collect(Collectors.toList());
         paramMap.put("thisGoal", list1);
         List<Object> list2 = meetingWords.stream().filter((meetingWord -> meetingWord.getType() == 2))
-                .map(menu->menu.getContent())
+                .map(MeetingWord::getContent)
                 .collect(Collectors.toList());
         paramMap.put("problem", list2);
         List<Object> list3 = meetingWords.stream().filter((meetingWord -> meetingWord.getType() == 3))
-                .map(menu->menu.getContent())
+                .map(MeetingWord::getContent)
                 .collect(Collectors.toList());
         paramMap.put("optimization", list3);
         List<Object> list4 = meetingWords.stream().filter((meetingWord -> meetingWord.getType() == 4))
-                .map(menu->menu.getContent())
+                .map(MeetingWord::getContent)
                 .collect(Collectors.toList());
         paramMap.put("requirements", list4);
 
@@ -814,7 +815,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         if (minutesVOList.size() != 0) {
             minutesPlans = minutesVOList.getFirst().getMinutesPlans();
             //添加"其他标题"行
-            sizeOrder = minutesVOList.getFirst().getMinutesPlans().size()-1;
+            sizeOrder = minutesVOList.getFirst().getMinutesPlans().size() - 1;
             ExcelWriter other = ExcelUtil.getWriter(templatePathApplyExcel, "Sheet1");
             int start = 11 + name.size();
             XSSFSheet xssSheet = (XSSFSheet) other.getSheet();
@@ -846,7 +847,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         //7
         sheet.getRow(6).getCell(0).setCellValue("参会人员：" + meetingRecordVO.getAttendees());
         //8
-        sheet.getRow(7).getCell(0).setCellValue("参会时间：" + meetingRecordVO.getStartTime().getHour()+":"+meetingRecordVO.getStartTime().getMinute());
+        sheet.getRow(7).getCell(0).setCellValue("参会时间：" + meetingRecordVO.getStartTime().getHour() + ":" + meetingRecordVO.getStartTime().getMinute());
         //9
         sheet.getRow(8).getCell(0).setCellValue("参会地点：" + meetingRecordVO.getMeetingRoomName());
         //10
@@ -872,7 +873,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         sheet.getRow(10 + name.size()).getCell(3).setCellValue(meetingRecordVO.getTitle());
         if (sizeOrder != 0) {
             //把数据插入到新增行里
-            for (int i = 0; i < sizeOrder+1; i++) {
+            for (int i = 0; i < sizeOrder + 1; i++) {
                 sheet.getRow(10 + name.size() + i + 1).getCell(3).setCellValue(minutesPlans.get(i).getPlan());
                 sheet.getRow(10 + name.size() + i + 1).getCell(6).setCellValue(minutesPlans.get(i).getStatus() == 1 ? "待优化" : "研发需求");
             }
@@ -899,7 +900,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         // 另一种，下载到浏览器。
 
         response.setContentType("application/vnd.ms-excel");
-        response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(meetingRecordVO.getTitle() + ".xlsx", "UTF-8"));
+        response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(meetingRecordVO.getTitle() + ".xlsx", StandardCharsets.UTF_8));
         OutputStream os = response.getOutputStream();
         workbook.write(os);
         os.flush();
@@ -933,7 +934,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         if (size < 1) {
             sheet.getRow(size + 10).getCell(0).setCellValue(sysDepartment.getDepartmentName());
             sheet.getRow(size + 10).getCell(4).setCellValue(meetingRecordVO.getAdminUserName());
-            sheet.getRow(size + 10).getCell(5).setCellValue(meetingRecordVO.getEndTime().getHour()+":"+meetingRecordVO.getEndTime().getMinute());
+            sheet.getRow(size + 10).getCell(5).setCellValue(meetingRecordVO.getEndTime().getHour() + ":" + meetingRecordVO.getEndTime().getMinute());
         }
         sheet.getRow(size + 10).getCell(1).setCellValue(name.get(size).getUserName());
         sheet.getRow(size + 10).getCell(2).setCellValue(size + 1);
@@ -981,7 +982,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     public static void picture(Workbook workbook, Sheet sheet, String fileUrl, String fileType, int row, int col) {
         try {
-            Drawing patriarch = sheet.createDrawingPatriarch();
+            Drawing<?> patriarch = sheet.createDrawingPatriarch();
             URL url = new URL(fileUrl);  // 构造URL
             URLConnection con = url.openConnection();   // 打开连接
             con.setConnectTimeout(8 * 1000);  //设置请求超时
