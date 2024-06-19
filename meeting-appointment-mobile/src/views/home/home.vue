@@ -1,19 +1,183 @@
 <template>
     <div id="container" class="home">
-
-        <van-button type="primary" >首页</van-button>
-        <a href="http://172.17.34.161:5173/">跳转</a>
-        <span>
-            2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。2023年7月29日，习近平总书记参观汉中市博物馆有关历史文物展陈，了解汉中历史文化、文物保护情况。他指出，文物承载灿烂文明，传承历史文化，维系民族精神。要发挥好博物馆保护、传承、研究、展示人类文明的重要作用，守护好中华文脉，并让文物活起来，扩大中华文化的影响力。1111111111111
-    
-        </span>
+        <van-notice-bar
+            left-icon="volume-o"
+            :text="notice"
+            :scrollable="isNoticeRoll"
+            @mouseenter="mouseenter"
+            @mouseleave="mouseleave"
+        />
+        <div class="screen-box">
+          <h1 class="title">{{ gaugeData.name}}: {{ gaugeData.value }}</h1>
+          <div class="main-table my-main-scrollbar">
+            <div class="room-items" :class="item.status === 1 ? 'pointer' : 'ban'" v-for="item in useMeetingStatus.centerRoomName" @click="handleRoomClick(item)">
+                <p class="name">{{ item.roomName }}</p>
+                <p class="state">{{ item.roomStatusLabel }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-box">
+            <!-- <van-steps direction="vertical" :active="0">
+                <van-step>
+                    <h3>【城市】物流状态1</h3>
+                    <p>2016-07-12 12:40</p>
+                </van-step>
+                <van-step>
+                    <h3>【城市】物流状态2</h3>
+                    <p>2016-07-11 10:00</p>
+                </van-step>
+                <van-step>
+                    <h3>快件已发货</h3>
+                    <p>2016-07-10 09:30</p>
+                </van-step>
+            </van-steps> -->
+            <TodyMeeting/>
+        </div>
     </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+    import { getCenterAllNumberData, getNoticeData } from '@/request/api/home';
+    import { ref, onMounted } from 'vue';
+    import { useRouter } from 'vue-router'
+    import { meetingStatus } from '@/stores/meeting-status'
+    import TodyMeeting from '@/views/home/components/today-meeting.vue'
+
+    const router = useRouter();
+    const useMeetingStatus = meetingStatus();
+    
+
+    onMounted(() => {
+        getNotice();
+        getCenterAllNumber();
+        useMeetingStatus.getCenterRoomName();
+    })
+
+    /******************************************* 公告 ***********************************/
+
+    let notice = ref<string>('');
+    /**
+     * @description 查询所有公告
+     */
+    const getNotice = async () => {
+        const res = await getNoticeData()
+        notice.value = res?.data[0] ?? '';
+        
+    }
+    const isNoticeRoll = ref<boolean>(true); // 通知栏是否开启滚动
+    /**
+     * @description 鼠标移入停止滚动
+     */
+    const mouseenter = () => {
+        // touchstart
+        isNoticeRoll.value = false;
+    }
+    /**
+     * @description 鼠标移出开始滚动
+     */
+    const mouseleave = () => {
+        // touchend
+        isNoticeRoll.value = true;
+    }
+
+    /******************************************* 会议室大屏 ***********************************/
+    const gaugeData = ref<any>({});
+    /**
+     * @description 今日中心会议总次数
+    */
+    const getCenterAllNumber = () => {
+        getCenterAllNumberData()
+            .then((res) => {
+                gaugeData.value = {
+                    value: res.data,
+                    name: '中心会议总次数'
+                }
+            })
+            .catch((err) => {})
+    }
+    const handleRoomClick = (item: any) => {
+        if(item.status !== 0) {
+            sessionStorage.setItem('meetingInfo', JSON.stringify({meetingRoomId: String(item.id)}));
+            router.push('/meetingAppoint')
+        }
+        
+    }
+</script>
 
 <style lang="scss" scoped>
     .home {
-        padding: 2vh 2vw;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background-color: #F7F8FA;
+        padding-bottom: 0 !important;
+        ::v-deep(.van-notice-bar) {
+            color: #1273DB;
+            border-radius: 5px;
+            border: 1px solid rgba(18, 115, 219, 0.6);
+            background-color: #fff;
+            .van-notice-bar__content {
+                font-size: .9rem;
+            }
+        }
+        .screen-box {
+            height: 18rem;
+            padding-top: 10px;
+            margin: .625rem 0;
+            // background-image: url('@/assets/imgs/screen-bg.png');
+            // background-size: 110% 110%;
+            // background-position: center;
+            background-color: aliceblue;
+            border-radius: .3125rem;
+            box-shadow: 0 0 1rem #6869694d;
+            .title {
+                font-size: 1.2rem;
+                text-align: center;
+                font-weight: bold;
+                color: #1273DB;
+            }
+            .main-table {
+                height: 90%;
+                display: grid;
+                grid-template-columns: 10rem 10rem;
+                gap: 5px;
+                justify-content: space-around;
+                padding: 10px 0;
+                overflow: auto;
+                .room-items {
+                    height: 4.6875rem;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-around;
+                    align-items: center;
+                    padding: .325rem 5px;
+                    margin-bottom: .625rem;
+                    border: .0625rem solid rgba(0, 102, 255, .5);
+                    border-radius: 5px;
+                    box-shadow: inset 0 0 1.875rem #1b7ef24d;
+                    backdrop-filter: blur(.3125rem);
+                    &:hover {
+                        backdrop-filter: blur(.1rem);
+                        filter: opacity(0.8); /* 鼠标悬停时模糊效果 */
+                    }
+                    .name {
+                        font-size: .7rem;
+                        color: #6A6A6A;
+                    }
+                    .state {
+                        font-size: 1rem;
+                        font-weight: bold;
+                        color: #1273DB;
+                    }
+                }
+                // main-items 会议室状态为空闲1 为小手，其他为 禁止
+                .pointer {
+                    cursor: pointer;
+                }
+                .ban {
+                    cursor: not-allowed;
+                }
+            }
+        }
     }
 </style>

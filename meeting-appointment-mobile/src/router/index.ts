@@ -55,6 +55,14 @@ const routes:any = [
                 component: () => import('@/views/create-meeting/create-meeting.vue')
             },
             {
+                path: '/meetingAppoint',
+                name: 'meetingAppoint',
+                meta: {
+                    title: '会议预约',
+                },
+                component: () => import('@/views/meeting-appoint/meeting-appoint.vue')
+            },
+            {
                 path: '/info',
                 name: 'info',
                 meta: {

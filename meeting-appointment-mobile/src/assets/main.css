@@ -12,6 +12,26 @@
   #container {
     padding: 2vh 2vw;
   }
+  /* 滚动条样式 不占位置 */
+.my-main-scrollbar {
+    /* 实际滚动条透明 */
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important;  /* IE and Edge */
+    &::-webkit-scrollbar { /* WebKit */
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      color: transparent !important;
+    }
+  
+    overflow: scroll; /* 使内容可滚动 */
+    
+    /* 假滚动条样式  目前不起作用 *//* WebKit 滚动条拇指样式 */
+    /* &::-webkit-scrollbar-thumb { 
+      background-color: rgba(0,0,0,1); 
+      border-radius: 6px;
+    } */
+  }
 
 /* @media (hover: hover) {
   a:hover {
