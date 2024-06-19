@@ -176,7 +176,10 @@
                                     </el-form-item>
                                     <div class="operation-btn" v-show="!isMeetingSummaryDetail">
                                         <el-icon @click="handleAddSummaryInput()" class="circle-plus"><CirclePlus /></el-icon>
-                                        <el-icon @click="handleDeleteSummaryInput(index, plan.id)" v-show="summaryDetailForm.minutesPlans?.length > 1" class="remove"  ><Remove /></el-icon>
+                                        <span>
+                                            <el-icon @click="handleDeleteSummaryInput(index, plan.id)" v-if="summaryDetailForm.minutesPlans?.length > 1" class="remove"  ><Remove /></el-icon>
+                                            <el-icon class="remove-ban" v-else><Remove /></el-icon>
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -206,7 +209,10 @@
                                 <el-input v-model="target.content" style="width: 460px;"/>
                                 <div class="operation-btn" v-show="!isMeetingSummaryDetail">
                                     <el-icon @click="handleAddInput(1)" class="circle-plus"><CirclePlus /></el-icon>
-                                    <el-icon @click="handleDeleteInput(1, index, target.id)" class="remove" v-show="workDetailForm.target?.length > 1"><Remove /></el-icon>
+                                    <span>
+                                        <el-icon @click="handleDeleteInput(1, index, target.id)" class="remove" v-if="workDetailForm.target?.length > 1"><Remove /></el-icon>
+                                            <el-icon class="remove-ban" v-else><Remove /></el-icon>
+                                    </span>
                                 </div>
                             </el-form-item>
                         </div>
@@ -224,7 +230,10 @@
                                 <el-input v-model="problem.content" style="width: 460px;"/>
                                 <div class="operation-btn" v-show="!isMeetingSummaryDetail">
                                     <el-icon @click="handleAddInput(2)" class="circle-plus"><CirclePlus /></el-icon>
-                                    <el-icon @click="handleDeleteInput(2, index, problem.id)" class="remove" v-show="workDetailForm.problem?.length > 1"><Remove /></el-icon>
+                                    <span>
+                                        <el-icon @click="handleDeleteInput(2, index, problem.id)" class="remove" v-if="workDetailForm.problem?.length > 1"><Remove /></el-icon>
+                                        <el-icon class="remove-ban" v-else><Remove /></el-icon>
+                                    </span>
                                 </div>
                             </el-form-item>
                         </div>
@@ -242,7 +251,10 @@
                                 <el-input v-model="futureDirection.content" style="width: 460px;"/>
                                 <div class="operation-btn" v-show="!isMeetingSummaryDetail">
                                     <el-icon @click="handleAddInput(3)" class="circle-plus"><CirclePlus /></el-icon>
-                                    <el-icon @click="handleDeleteInput(3, index, futureDirection.id)" class="remove" v-show="workDetailForm.futureDirection?.length > 1"><Remove /></el-icon>
+                                    <span>
+                                        <el-icon @click="handleDeleteInput(3, index, futureDirection.id)" class="remove" v-if="workDetailForm.futureDirection?.length > 1"><Remove /></el-icon>
+                                        <el-icon class="remove-ban" v-else><Remove /></el-icon>
+                                    </span>
                                 </div>
                             </el-form-item>
                         </div>
@@ -260,7 +272,10 @@
                                 <el-input v-model="requirement.content" style="width: 460px;"/>
                                 <div class="operation-btn" v-show="!isMeetingSummaryDetail">
                                     <el-icon @click="handleAddInput(4)" class="circle-plus"><CirclePlus /></el-icon>
-                                    <el-icon @click="handleDeleteInput(4, index, requirement.id)" class="remove" v-show="workDetailForm.requirement?.length > 1"><Remove /></el-icon>
+                                    <span>
+                                        <el-icon @click="handleDeleteInput(4, index, requirement.id)" class="remove" v-if="workDetailForm.requirement?.length > 1"><Remove /></el-icon>
+                                        <el-icon class="remove-ban" v-else><Remove /></el-icon>
+                                    </span>
                                 </div>
                             </el-form-item>
                         </div>
@@ -295,7 +310,7 @@
     import { onMounted, reactive, ref } from 'vue';
     import { useRouter } from 'vue-router';
     import { useInfiniteScroll } from '@vueuse/core'
-    import { addMeetingMinutes, addMeetingWord, cancelMeetingRecord, getHistoryList, getMeetingMinutes, recordExport, getMeetingWord } from '@/request/api/history'
+    import { addMeetingMinutes, addMeetingWord, cancelMeetingRecord, getHistoryList, getMeetingMinutes, recordExport, getMeetingWord, deleteWordOrPlan } from '@/request/api/history'
     import { meetingState } from '@/utils/types'
     
     const router = useRouter();
@@ -516,14 +531,14 @@
         meetingSummaryVisible.value = true;
         isMeetingSummaryDetail.value = true;
         meetingSummaryTitle.value = `查看会议纪要（${item.date} / ${item.title}）`;
-        getMeetingMinutesReq(item.id);
+        getMeetingMinutesReq();
     }
     /**
      * @description 获取会议纪要请求 excel
      * @param meetingRecordId 会议记录id
      */
-    const getMeetingMinutesReq = (meetingRecordId: number) => {
-        getMeetingMinutes({userId: userInfo.value.userId, meetingRecordId})
+    const getMeetingMinutesReq = () => {
+        getMeetingMinutes({userId: userInfo.value.userId, meetingRecordId: meetingRecordId.value})
         .then((res) => {
             const {minutes, id, minutesPlans} = res.data;
             summaryDetailForm.value.minutes = minutes;
@@ -540,7 +555,7 @@
         meetingRecordId.value = item.id;
         isMeetingSummaryDetail.value = false;
         meetingSummaryTitle.value = `编辑会议纪要（${item.date} / ${item.title}）`;
-        getMeetingMinutesReq(item.id);
+        getMeetingMinutesReq();
         meetingSummaryVisible.value = true;
     }
     /**
@@ -558,8 +573,9 @@
      */
     const handleDeleteSummaryInput = (index: number, id: number) => {
         if (!id) {
-            summaryDetailForm.value.minutesPlans.splice(index, 1);
+            return summaryDetailForm.value.minutesPlans.splice(index, 1);
         }
+        handelDeleteWordOrPlan({planId: id});
     }
 
     // 会议纪要 word 表单
@@ -629,6 +645,17 @@
                     return workDetailForm.value.requirement.splice(index, 1);
             }
         }
+        handelDeleteWordOrPlan({contentId: id});
+    }
+    const handelDeleteWordOrPlan = (data: {contentId?: any, planId?: any}) => {
+        deleteWordOrPlan(data)
+            .then(res => {
+                ElMessage.success('删除成功！');
+                data.contentId ? getMeetingWordDetail() : getMeetingMinutesReq();
+            })
+            .catch(err => {
+                console.log(err);
+            })
     }
     
     /**
@@ -1029,6 +1056,10 @@
                     justify-content: space-between;
                     align-items: center;
                     line-height: 0;
+                }
+                .remove-ban {
+                    font-size: 1.4rem;
+                    cursor: no-drop;
                 }
                 .circle-plus {
                     margin-right: .625rem;

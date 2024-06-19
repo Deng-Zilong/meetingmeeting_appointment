@@ -28,6 +28,11 @@ export const addMeetingWord = (data: {userId: string, meetingRecordId: number, m
     return http.post("/meeting/word", data)
 }
 
+// 删除会议纪要 Word或excel的计划
+export const deleteWordOrPlan = (data: {contentId?: any, planId?: any} ) => {
+    return http.delete("/meeting/wordOrPlan", data)
+}
+
 // 导出历史会议记录（单条，后可能批量导出）
 export const recordExport = (type: number, data: any[]) => {
     const userId = JSON.parse(localStorage.getItem("userInfo") as string).userId;
