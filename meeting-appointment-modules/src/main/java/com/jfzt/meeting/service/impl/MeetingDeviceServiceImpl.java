@@ -53,7 +53,7 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
                             MeetingDevice::getRoomId, meetingDevicePageDTO.getRoomId())
                     .eq(meetingDevicePageDTO.getStatus() != null,
                             MeetingDevice::getStatus, meetingDevicePageDTO.getStatus())
-                    .like(meetingDevicePageDTO.getDeviceName() != null,
+                    .like(StringUtils.isNotBlank(meetingDevicePageDTO.getDeviceName()),
                             MeetingDevice::getDeviceName, meetingDevicePageDTO.getDeviceName()));
 
             Page<MeetingDeviceVO> deviceVOPage = new Page<>();

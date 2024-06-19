@@ -138,7 +138,7 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
      * @param meetingMinutesDTO 入参请求体
      */
     private void plan (MeetingMinutesDTO meetingMinutesDTO) {
-        if (meetingMinutesDTO.getMinutesPlan().isEmpty()) {
+        if (meetingMinutesDTO.getMinutesPlan() == null || meetingMinutesDTO.getMinutesPlan().isEmpty()) {
             return;
         }
         meetingMinutesDTO.getMinutesPlan().stream().peek(plan -> {
