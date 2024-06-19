@@ -123,35 +123,43 @@
                 </div>
             </template>
             <el-scrollbar max-height="500px">
-                <div v-if="isExcel">
-                    <el-input
-                        v-model="meetingSummary"
-                        :autosize="{ minRows: 15}"
-                        maxlength="10000"
-                        :show-word-limit="true"
-                        type="textarea"
-                        placeholder="请输入会议纪要"
-                    />
-                    <div class="summary-detail" v-show="meetingSummaryRow.createdBy == currentUserId">
-                        <el-form
-                            ref="formRef"
-                            :model="summaryDetailForm"
-                            label-width="auto"
-                            >
+                <!-- excel内容 -->
+                <div class="summary-detail" v-if="isExcel">
+                    <el-form
+                        ref="ruleFormRef"
+                        :model="summaryDetailForm"
+                        label-width="10px"
+                        :disabled="isMeetingSummaryDetail"
+                        >
+                        <el-form-item
+                            class="plan"
+                            label=""
+                            prop="minutes"
+                            :rules="{required: true,message: '不可为空',trigger: 'blur',}" >
+                            <el-input
+                                v-model="summaryDetailForm.minutes"
+                                :autosize="{ minRows: 15}"
+                                maxlength="10000"
+                                :show-word-limit="true"
+                                type="textarea"
+                                placeholder="请输入会议纪要"/>
+                        </el-form-item>
+                        <div v-if="meetingSummaryRow.createdBy == currentUserId">
                             <p class="title">目标与工作内容：</p>
-                            <div class="target" v-for="(plan, index) in summaryDetailForm.list" :key="index">
+                            <div class="target" v-for="(plan, index) in summaryDetailForm.minutesPlans" :key="index">
                                 <div class="target-item">
                                     <el-form-item
                                         class="plan"
                                         :label="`${index+1}`"
-                                        :prop="'plan.' + index + '.value'"
-                                        :rules="{required: true,message: '不可为空',trigger: 'blur',}"  
+                                        :prop="'minutesPlans.' + index + '.plan'"
+                                        :rules="{required: true, message: '不可为空', trigger: 'blur',}"  
                                     >
                                         <el-input placeholder="请输入目标或工作内容" v-model="plan.plan"/>
                                     </el-form-item>
                                     <el-form-item
-                                        :prop="'plan.' + index + '.value'"
-                                        :rules="{required: true,message: '不可为空',trigger: 'blur',}"
+                                        label=""
+                                        :prop="'minutesPlans.' + index + '.status'"
+                                        :rules="{required: true,message: '不可为空',trigger: 'change',}"
                                     >
                                         <el-select
                                             v-model="plan.status"
@@ -166,37 +174,39 @@
                                             />
                                         </el-select>
                                     </el-form-item>
-                                    <div class="operation-btn">
+                                    <div class="operation-btn" v-show="!isMeetingSummaryDetail">
                                         <el-icon @click="handleAddSummaryInput()" class="circle-plus"><CirclePlus /></el-icon>
-                                        <el-icon @click="handleDeleteSummaryInput(index)" v-show="summaryDetailForm.list?.length > 1" class="remove"  ><Remove /></el-icon>
+                                        <el-icon @click="handleDeleteSummaryInput(index, plan.id)" v-show="summaryDetailForm.minutesPlans?.length > 1" class="remove"  ><Remove /></el-icon>
                                     </div>
                                 </div>
                             </div>
-                        </el-form>
-                    </div>
+                        </div>
+                    </el-form>
                 </div>
+                <!-- word内容 -->
                 <div class="work-detail" v-else>
                     <el-form
-                        ref="formRef"
+                        ref="ruleFormRef"
                         :model="workDetailForm"
                         label-width="auto"
                         class="demo-dynamic"
+                        :disabled="isMeetingSummaryDetail"
                     >
-                        <p class="title">1.本次目标</p>
+                        <p class="title target-title">1.本次目标</p>
                         <div class="target" v-for="(target, index) in workDetailForm.target" :key="index">
                             <el-form-item
                                 :label="'目标' + `${index+1}`"
-                                :prop="'target.' + index + '.value'"
+                                :prop="'target.' + index + '.content'"
                                 :rules="{
                                     required: true,
                                     message: '不可为空',
                                     trigger: 'blur',
                                 }"
                             >
-                                <el-input v-model="target.value" style="width: 460px;"/>
-                                <div class="operation-btn">
+                                <el-input v-model="target.content" style="width: 460px;"/>
+                                <div class="operation-btn" v-show="!isMeetingSummaryDetail">
                                     <el-icon @click="handleAddInput(1)" class="circle-plus"><CirclePlus /></el-icon>
-                                    <el-icon @click="handleDeleteInput(1, index)" class="remove" v-show="workDetailForm.target?.length > 1"><Remove /></el-icon>
+                                    <el-icon @click="handleDeleteInput(1, index, target.id)" class="remove" v-show="workDetailForm.target?.length > 1"><Remove /></el-icon>
                                 </div>
                             </el-form-item>
                         </div>
@@ -204,49 +214,53 @@
                         <div class="problem" v-for="(problem, index) in workDetailForm.problem" :key="index">
                             <el-form-item
                                 :label="'问题' + `${index+1}`"
-                                :prop="'problem.' + index + '.value'"
+                                :prop="'problem.' + index + '.content'"
                                 :rules="{
                                     required: true,
                                     message: '不可为空',
                                     trigger: 'blur',
                                 }"
                             >
-                                <el-input v-model="problem.value" style="width: 460px;"/>
-                                <div class="operation-btn">
+                                <el-input v-model="problem.content" style="width: 460px;"/>
+                                <div class="operation-btn" v-show="!isMeetingSummaryDetail">
                                     <el-icon @click="handleAddInput(2)" class="circle-plus"><CirclePlus /></el-icon>
-                                    <el-icon @click="handleDeleteInput(2, index)" class="remove" v-show="workDetailForm.problem?.length > 1"><Remove /></el-icon>
+                                    <el-icon @click="handleDeleteInput(2, index, problem.id)" class="remove" v-show="workDetailForm.problem?.length > 1"><Remove /></el-icon>
                                 </div>
                             </el-form-item>
                         </div>
                         <p class="title">3.项目未来的优化方向</p>
-                        <div class="future-direction">
+                        <div class="future-direction" v-for="(futureDirection, index) in workDetailForm.futureDirection" :key="index">
                             <el-form-item
-                                label="方向"
-                                prop="futureDirection"
+                                :label="'方向' + (index + 1)"
+                                :prop="'futureDirection.' + index + '.content'"
                                 :rules="{
                                     required: true,
                                     message: '不可为空',
                                     trigger: 'blur',
                                 }"
                             >
-                                <el-input v-model="workDetailForm.futureDirection" style="width: 460px;"/>
+                                <el-input v-model="futureDirection.content" style="width: 460px;"/>
+                                <div class="operation-btn" v-show="!isMeetingSummaryDetail">
+                                    <el-icon @click="handleAddInput(3)" class="circle-plus"><CirclePlus /></el-icon>
+                                    <el-icon @click="handleDeleteInput(3, index, futureDirection.id)" class="remove" v-show="workDetailForm.futureDirection?.length > 1"><Remove /></el-icon>
+                                </div>
                             </el-form-item>
                         </div>
                         <p class="title">4.迭代需求</p>
-                        <div class="requirement" v-for="(require, index) in workDetailForm.requirement" :key="index">
+                        <div class="requirement" v-for="(requirement, index) in workDetailForm.requirement" :key="index">
                             <el-form-item
                                 :label="'需求' + `${index+1}`"
-                                :prop="'require.' + index + '.value'"
+                                :prop="'requirement.' + index + '.content'"
                                 :rules="{
                                     required: true,
                                     message: '不可为空',
                                     trigger: 'blur',
                                 }"
                             >
-                                <el-input v-model="require.value" style="width: 460px;"/>
-                                <div class="operation-btn">
+                                <el-input v-model="requirement.content" style="width: 460px;"/>
+                                <div class="operation-btn" v-show="!isMeetingSummaryDetail">
                                     <el-icon @click="handleAddInput(4)" class="circle-plus"><CirclePlus /></el-icon>
-                                    <el-icon @click="handleDeleteInput(4, index)" class="remove" v-show="workDetailForm.requirement?.length > 1"><Remove /></el-icon>
+                                    <el-icon @click="handleDeleteInput(4, index, requirement.id)" class="remove" v-show="workDetailForm.requirement?.length > 1"><Remove /></el-icon>
                                 </div>
                             </el-form-item>
                         </div>
@@ -256,7 +270,7 @@
             <template #footer>
             <div class="dialog-footer" v-show="!isMeetingSummaryDetail">
                 <el-button @click="handleCancelMeetingSummary">取 消</el-button>
-                <el-button type="primary" @click="handleConfirmMeetingSummary"> 确 认 </el-button>
+                <el-button type="primary" @click="handleConfirmMeetingSummary(ruleFormRef)"> 确 认 </el-button>
             </div>
             </template>
         </el-dialog>
@@ -281,7 +295,7 @@
     import { onMounted, reactive, ref } from 'vue';
     import { useRouter } from 'vue-router';
     import { useInfiniteScroll } from '@vueuse/core'
-    import { addMeetingMinutes, cancelMeetingRecord, getHistoryList, getMeetingMinutes, recordExport } from '@/request/api/history'
+    import { addMeetingMinutes, addMeetingWord, cancelMeetingRecord, getHistoryList, getMeetingMinutes, recordExport, getMeetingWord } from '@/request/api/history'
     import { meetingState } from '@/utils/types'
     
     const router = useRouter();
@@ -471,52 +485,55 @@
     }
 
 
+    const ruleFormRef = ref<FormInstance>();
     let meetingSummaryVisible = ref<boolean>(false); // 会议纪要弹窗
-    let meetingSummary = ref<string>('');  // 会议纪要内容
     let meetingRecordId = ref<number>(0);  // 会议记录id
     let meetingSummaryId = ref<number>(0); // 会议纪要id
     let isMeetingSummaryDetail = ref<boolean>(true); // 是否是查看会议纪要详情 true 查看 false 编辑/新增
     let meetingSummaryTitle = ref<string>('查看会议纪要'); // 弹窗标题
     let meetingSummaryRow = ref<any>(); // 行数据
-    let isExcel = ref<boolean>(true);
-    let summaryDetailTypeList = ref<any[]>([
-      { label: '待优化', value: 1 },
-      { label: '研发需求', value: 2 },
-    ]);
-    let summaryDetailForm = ref<any>(
+    let isExcel = ref<boolean>(true); // 是否是excel true:excel false:word
+    // 会议纪要 excel 详情
+    let summaryDetailForm = ref<any>({
+        minutes: '',
+        minutesPlans:[
         {
-            list: [
-                {
-                    plan: '',
-                    status: '', // 状态 1：待优化、2：研发需求
-                }
-            ]
+            plan: '',
+            status: '', // 状态 1：待优化、2：研发需求
         }
-    );
+    ]});
+    // excel 状态列表
+    let summaryDetailTypeList = ref<any[]>([
+        { label: '待优化', value: 1 },
+        { label: '研发需求', value: 2 },
+    ]);
     /**
-     * @description 获取会议纪要
+     * @description 查看会议纪要弹窗
      */
     const handleMeetingSummary = (item: any) => {
         meetingSummaryRow.value = item;
+        meetingRecordId.value = item.id;
         meetingSummaryVisible.value = true;
         isMeetingSummaryDetail.value = true;
         meetingSummaryTitle.value = `查看会议纪要（${item.date} / ${item.title}）`;
         getMeetingMinutesReq(item.id);
     }
     /**
-     * @description 获取会议纪要请求
+     * @description 获取会议纪要请求 excel
      * @param meetingRecordId 会议记录id
      */
     const getMeetingMinutesReq = (meetingRecordId: number) => {
         getMeetingMinutes({userId: userInfo.value.userId, meetingRecordId})
         .then((res) => {
-            meetingSummary.value = res.data.minutes;
-            meetingSummaryId.value = res.data.id;
+            const {minutes, id, minutesPlans} = res.data;
+            summaryDetailForm.value.minutes = minutes;
+            meetingSummaryId.value = id;
+            summaryDetailForm.value.minutesPlans = minutesPlans?.length ? minutesPlans : summaryDetailForm.value.minutesPlans;
         })
         .catch(err => {})
     }
     /*
-     * @description 编辑会议纪要
+     * @description 编辑会议纪要 excel
      */
     const handleEditMeetingSummary = (item: any) => {
         meetingSummaryRow.value = item;
@@ -526,53 +543,45 @@
         getMeetingMinutesReq(item.id);
         meetingSummaryVisible.value = true;
     }
+    /**
+     * @description 添加会议纪要 excel 输入框
+     */
     const handleAddSummaryInput = () => {
-        summaryDetailForm.value.list.push({
+        summaryDetailForm.value.minutesPlans.push({
             plan: '',
             status: '', // 状态 1：待优化、2：研发需求
         })
     }
-    const handleDeleteSummaryInput = (index: number) => {
-        summaryDetailForm.value.list.splice(index, 1)
-    }
     /**
-     * @description 提交会议纪要
+     * @description 删除会议纪要 excel 输入框
+     * @param index 输入框索引
      */
-    const handleConfirmMeetingSummary = () => {
-        if (!meetingSummary.value) {
-            ElMessage.warning('请输入会议纪要!');
-            return;
+    const handleDeleteSummaryInput = (index: number, id: number) => {
+        if (!id) {
+            summaryDetailForm.value.minutesPlans.splice(index, 1);
         }
-        addMeetingMinutes({id: meetingSummaryId.value, userId: userInfo.value.userId, minutes: meetingSummary.value, meetingRecordId: meetingRecordId.value})
-        .then((res) => {
-            ElMessage.success('提交成功!');
-        })
-        .catch(err => {})
-        .finally(() => {
-            handleCancelMeetingSummary();
-        })
     }
-    /**
-     * @description 取消会议纪要
-     */
-    const handleCancelMeetingSummary = () => {
-        meetingSummaryVisible.value = false;
-        meetingSummary.value = '';
-    }
-    const formRef = ref<FormInstance>()
+
+    // 会议纪要 word 表单
     const workDetailForm = ref<any>({
         target: [{
-            value: "",
+            content: "",
+            type: 1,
         }],
         problem:[{
-            value: "",
+            content: "",
+            type: 2,
         }],
-        futureDirection: '',
+        futureDirection: [{
+            content: "",
+            type: 3,
+        }],
         requirement:[{
-            value: "",
+            content: "",
+            type: 4,
         },],
+        
     })
-
     /**
      * @description: 添加输入框
      * @param {number} type 输入框类型 1: 目标 2：问题 4：需求
@@ -582,15 +591,23 @@
         switch(type) {
             case 1:
                 return workDetailForm.value.target.push({
-                    value: "",
+                    content: "",
+                    type: 1,
                 });
             case 2:
                 return workDetailForm.value.problem.push({
-                    value: "",
+                    content: "",
+                    type: 2,
+                });
+            case 3:
+                return workDetailForm.value.futureDirection.push({
+                    content: "",
+                    type: 3,
                 });
             case 4:
                 return workDetailForm.value.requirement.push({
-                    value: "",
+                    content: "",
+                    type: 4,
                 });
         }
     }
@@ -599,57 +616,177 @@
      * @param type 输入框类型 1: 目标 2：问题 4：需求
      * @param index 输入框索引
      */
-    const handleDeleteInput = (type: number, index: number) => {
-        switch(type) {
-            case 1:
-                return workDetailForm.value.target.splice(index, 1);
-            case 2:
-                return workDetailForm.value.problem.splice(index, 1);
-            case 4:
-                return workDetailForm.value.requirement.splice(index, 1);
+    const handleDeleteInput = (type: number, index: number, id: number ) => {
+        if (!id) {
+            switch(type) {
+                case 1:
+                    return workDetailForm.value.target.splice(index, 1);
+                case 2:
+                    return workDetailForm.value.problem.splice(index, 1);
+                case 3:
+                    return workDetailForm.value.futureDirection.splice(index, 1);
+                case 4:
+                    return workDetailForm.value.requirement.splice(index, 1);
+            }
         }
     }
-
-const submitForm = (formEl: FormInstance | undefined) => {
-    console.log(workDetailForm.value);
     
-  if (!formEl) return
-  formEl.validate((valid) => {
-    if (valid) {
-      console.log('submit!')
-    } else {
-      console.log('error submit!')
-    }
-  })
-}
-
-const resetForm = (formEl: FormInstance | undefined) => {
-  if (!formEl) return
-  formEl.resetFields()
-}
     /**
      * @description 切换会议纪要
      */
     const handleSwitchMeetingSummary = () => {
-        const {date, title} = meetingSummaryRow.value;
+        const { date, title } = meetingSummaryRow.value;
         isExcel.value = !isExcel.value;
-        if (isExcel.value) {
-            meetingSummaryTitle.value = `编辑会议纪要（${date} / ${title}）`;
-        } else {
-            meetingSummaryTitle.value = `编辑本周内容（${date} / ${title}）`;
+        
+        // 明确命名操作类型，提高代码可读性
+        const operationName = isMeetingSummaryDetail.value ? '查看' : '编辑';
+        
+        // 使用三元运算符直接在赋值时进行条件判断
+        meetingSummaryTitle.value = isExcel.value
+            ? `${operationName}会议纪要（${date} / ${title}）`
+            : `${operationName}本周内容（${date} / ${title}）`;
+  
+        if (!isExcel.value) {
+            getMeetingWordDetail();
         }
     }
+    /**
+     * @description 获取会议纪要word详情
+     */
+    const getMeetingWordDetail = () => {
+        
+        getMeetingWord(meetingRecordId.value)
+            .then(res => {
 
-    let downloadVisible = ref<boolean>(false);
-    let downloadRow = ref<any>();
+                const target = res.data.filter((item: any) => item.type == 1);
+                const problem = res.data.filter((item: any) => item.type == 2);
+                const futureDirection = res.data.filter((item: any) => item.type == 3);
+                const requirement = res.data.filter((item: any) => item.type == 4);
+
+                workDetailForm.value.target = target.length ? target : workDetailForm.value.target;
+                workDetailForm.value.problem = problem.length ? problem : workDetailForm.value.problem;
+                workDetailForm.value.futureDirection = futureDirection.length ? futureDirection : workDetailForm.value.futureDirection;
+                workDetailForm.value.requirement = requirement.length ? requirement : workDetailForm.value.requirement;
+            })
+            .catch(error => {})
+    }
+
+    /**
+     * @description 提交会议纪要
+     */
+     const handleConfirmMeetingSummary = (formEl: FormInstance | undefined) => {
+        console.log(meetingSummaryRow.value.createdBy, "meetingSummaryRow.value.createdBy", currentUserId);
+        
+        if (!formEl) return
+        formEl.validate((valid) => {
+            if (!valid) return;
+            if (isExcel.value) {
+                let params:any = {
+                    id: meetingSummaryId.value, 
+                    userId: userInfo.value.userId, 
+                    minutes: summaryDetailForm.value.minutes, 
+                    meetingRecordId: meetingRecordId.value,
+                }
+                if (meetingSummaryRow.value.createdBy == currentUserId) {
+                    params.minutesPlan = summaryDetailForm.value.minutesPlans;
+                }
+                addMeetingMinutes(params)
+                .then((res) => {
+                    ElMessage.success('提交成功!');
+                })
+                .catch(err => {})
+                .finally(() => {
+                    handleCancelMeetingSummary();
+                })
+            } else {
+                const { target, problem, futureDirection, requirement} = workDetailForm.value;
+                const meetingWordDTOList = [...target, ...problem, ...futureDirection, ...requirement];
+                const params = {
+                    userId: userInfo.value.userId,
+                    meetingRecordId: meetingRecordId.value,
+                    meetingWordDTOList
+                }
+                addMeetingWord(params)
+                .then((res: any) => {
+                    ElMessage.success(res.msg);
+                })
+                .catch(error => {})
+                .finally(() => {
+                    handleCancelMeetingSummary();
+                })
+            }
+        })
+    }
+
+    /**
+     * @description 取消会议纪要
+     */
+     const handleCancelMeetingSummary = () => {
+        meetingSummaryVisible.value = false;
+        meetingRecordId.value = 0;
+        isExcel.value = true;
+        meetingSummaryRow.value = {};
+        resetSummaryDetailForm();
+        resetWorkDetailForm();
+    }
+    /**
+     * @description 重置会议纪要 excel 表单
+     */
+    const resetSummaryDetailForm = () => {
+        summaryDetailForm.value = {
+            minutes: '',
+            minutesPlans:[
+            {
+                plan: '',
+                status: '', // 状态 1：待优化、2：研发需求
+            }
+        ]};
+        ruleFormRef.value?.resetFields();
+    }
+    /**
+     * @description 重置会议纪要 work 表单
+     */
+    const resetWorkDetailForm = () => {
+        workDetailForm.value = {
+            target: [{
+                content: "",
+                type: 1,
+            }],
+            problem:[{
+                content: "",
+                type: 2,
+            }],
+            futureDirection: [{
+                content: "",
+                type: 3,
+            }],
+            requirement:[{
+                content: "",
+                type: 4,
+            },],
+        }
+        ruleFormRef.value?.resetFields();
+    }
+    /*************************************************** 导出会议内容 **********************************/
+    let downloadVisible = ref<boolean>(false); // 选择导出类型弹窗
+    let downloadRow = ref<any>(); // 行数据
+    /**
+     * @description 打开选择导出类型弹窗
+     * @param item 行数据
+     */
     const handleOpenExport = (item: any) => {
         downloadVisible.value = true;
         downloadRow.value = item;
     }
+
+    /**
+     * @description 关闭选择导出类型弹窗
+     */
     const handleCancelExport = () => {
         downloadVisible.value = false;
         downloadRow.value = '';
     }
+
     /**
      * @description 导出会议记录excel
      * @param type 0:excel 1:word
@@ -660,7 +797,7 @@ const resetForm = (formEl: FormInstance | undefined) => {
         const params = {id, title, description, createdBy, adminUserName, meetingRoomId, meetingRoomName, location, meetingNumber, attendees, users, startTime, endTime, status, isDeleted};
         
         const res:any = await recordExport(type, [params]);
-        if (res?.data.type == "application/json") {
+        if (res?.data.type != "application/json") {
             ElMessage.success('导出成功!');
             downloadExcel(res.data, '会议纪要');
         } else {
@@ -878,6 +1015,9 @@ const resetForm = (formEl: FormInstance | undefined) => {
                         color: #303133;
                         margin: 45px 0 10px;
                     }
+                    .target-title {
+                        margin-top: 0;
+                    }
                     
                     .operation-btn {
                         text-align: right;
@@ -886,21 +1026,21 @@ const resetForm = (formEl: FormInstance | undefined) => {
             }
             .work-detail, .summary-detail {
                 .el-form-item__content {
-                        justify-content: space-between;
-                        align-items: center;
-                        line-height: 0;
-                    }
-                    .circle-plus {
-                        margin-right: .625rem;
-                        color: #409EFF;
-                    }
-                    .remove {
-                        color: #F56C6C;
-                    }
-                    .circle-plus, .remove {
-                        font-size: 1.4rem;
-                        cursor: pointer;
-                    }
+                    justify-content: space-between;
+                    align-items: center;
+                    line-height: 0;
+                }
+                .circle-plus {
+                    margin-right: .625rem;
+                    color: #409EFF;
+                }
+                .remove {
+                    color: #F56C6C;
+                }
+                .circle-plus, .remove {
+                    font-size: 1.4rem;
+                    cursor: pointer;
+                }
             }
         }
         :deep().downLoad—dialog {
@@ -912,18 +1052,6 @@ const resetForm = (formEl: FormInstance | undefined) => {
                 img {
                     cursor: pointer;
                 }
-            }
-        }
-       
-        .meeting-dialog { 
-            .meeting-text {
-                padding: 1.575rem 1.25rem;
-                font-size: 1.4625rem;
-                text-align: center;
-            }
-            .dialog-footer {
-                display: flex;
-                justify-content: space-around;
             }
         }
     }

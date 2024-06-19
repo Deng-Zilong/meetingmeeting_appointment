@@ -8,14 +8,24 @@ export const cancelMeetingRecord = (data: {userId: string, meetingId: number}) =
     return http.put("/meeting/index/cancel-meeting-record", data)
 }
 
-// 新增/编辑会议纪要
+// 新增/编辑会议纪要 excel
 export const addMeetingMinutes = (data: {id?: number, userId: string, minutes: string, meetingRecordId: number}) => {
     return http.post("/meeting/minutes", data)
 }
 
-// 获取会议纪要
+// 获取会议纪要 excel
 export const getMeetingMinutes = (data: {userId: string, meetingRecordId: number}) => {
     return http.get("/meeting/minutes", data)
+}
+
+// 获取查询会议纪要 Word
+export const getMeetingWord = (meetingRecordId: number) => {
+    return http.get("/meeting/word", {meetingRecordId})
+}
+
+// 新增/编辑会议纪要 Word
+export const addMeetingWord = (data: {userId: string, meetingRecordId: number, meetingWordDTOList: any[]} ) => {
+    return http.post("/meeting/word", data)
 }
 
 // 导出历史会议记录（单条，后可能批量导出）
