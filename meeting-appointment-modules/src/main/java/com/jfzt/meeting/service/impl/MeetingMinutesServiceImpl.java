@@ -127,6 +127,7 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
             MeetingMinutes minutes = new MeetingMinutes();
             BeanUtils.copyProperties(meetingMinutesDTO, minutes);
             updateById(minutes);
+
         }
         plan(meetingMinutesDTO);
 

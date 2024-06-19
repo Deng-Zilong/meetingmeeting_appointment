@@ -5,13 +5,13 @@ import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingWord;
 import com.jfzt.meeting.entity.dto.MeetingWordDTO;
-import com.jfzt.meeting.entity.vo.MeetingMinutesVO;
 import com.jfzt.meeting.mapper.MeetingWordMapper;
+import com.jfzt.meeting.service.MeetingMinutesService;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MeetingWordService;
+import com.jfzt.meeting.service.MinutesPlanService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -27,15 +27,19 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
     private MeetingWordService meetingWordService;
     @Resource
     private MeetingRecordService meetingRecordService;
-
+    @Resource
+    private MinutesPlanService minutesPlanService;
     @Override
     public Result <List<MeetingWord>> getMeetingWord(Long meetingRecordId) {
         try{
             List<MeetingWord> meetingWords = meetingWordService.lambdaQuery()
                     .eq(MeetingWord::getMeetingRecordId, meetingRecordId)
                     .list();
+            if (meetingWords.isEmpty()){
+                MeetingWord meetingWord = new MeetingWord();
+                meetingWords.add(meetingWord);
+            }
             return Result.success(meetingWords);
-
         }catch (Exception e){
             return Result.success();
         }
@@ -70,7 +74,18 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
             return Result.success("保存成功");
         }
 
+    @Override
+    public Result<Object> deleteWordOrPlan(Long planId, Long contentId) {
+        if (contentId == null && planId == null){
+            return Result.success();
+        }
+        meetingWordService.removeById(contentId);
+        minutesPlanService.removeById(planId);
+        return Result.success();
     }
+
+
+}
 
 
 

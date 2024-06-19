@@ -72,4 +72,9 @@ public class MeetingMinutesController {
     public Result<Object> saveOrUpdateWord (@RequestBody MeetingWord meetingWord) {
         return meetingWordService.saveOrUpdateWord(meetingWord);
     }
+    @DeleteMapping ("/wordOrPlan")
+    public Result<Object> deleteWordOrPlan (@RequestParam(required = false) Long planId,
+                                            @RequestParam(required = false) Long contentId) {
+        return meetingWordService.deleteWordOrPlan(planId,contentId);
+    }
 }

@@ -17,4 +17,7 @@ public interface MeetingWordService extends IService<MeetingWord> {
     Result<List<MeetingWord>> getMeetingWord(Long meetingRecordId);
 
     Result<Object> saveOrUpdateWord(MeetingWord meetingWord);
+
+
+    Result<Object> deleteWordOrPlan(Long planId, Long contentId);
 }
