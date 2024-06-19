@@ -799,12 +799,14 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         restoreFile(templatePathBackupsExcel.toString(), templatePathApplyExcel.toString());
         //查看参与用户
         List<SysUserVO> name = meetingRecordVO.getUsers();
-        //添加用户行
-        ExcelWriter writer = ExcelUtil.getWriter(templatePathApplyExcel, "Sheet1");
-        int startRow = 11;
-        int rows = name.size() - 1;
-        XSSFSheet sheets = (XSSFSheet) writer.getSheet();
-        InsertRow(writer, startRow, rows, sheets, false);
+        if (name.size() >1){
+            //添加用户行
+            ExcelWriter writer = ExcelUtil.getWriter(templatePathApplyExcel, "Sheet1");
+            int startRow = 11;
+            int rows = name.size() - 1;
+            XSSFSheet sheets = (XSSFSheet) writer.getSheet();
+            InsertRow(writer, startRow, rows, sheets, false);
+        }
         //查询其他新增的内容
         MeetingMinutes meetingMinutes = new MeetingMinutes();
         meetingMinutes.setMeetingRecordId(Integer.valueOf(String.valueOf(meetingRecordVO.getId())));
@@ -825,7 +827,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         Workbook workbook = new XSSFWorkbook(templatePathApplyExcel);
         //读取工作薄的第一个工作表，向工作表中放数据
         Sheet sheet = workbook.getSheetAt(0);
-
         //1写入excel图片
         sheet.getRow(0).getCell(0);
         File file = new File("F:\\dd\\apply\\image.png");
@@ -878,15 +879,14 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 sheet.getRow(10 + name.size() + i + 1).getCell(6).setCellValue(minutesPlans.get(i).getStatus() == 1 ? "待优化" : "研发需求");
             }
         }
-
-
         //13
         sheet.getRow(9 + name.size() + 3 + sizeOrder).getCell(0).setCellValue("抄送对象:");
         sheet.getRow(9 + name.size() + 3 + sizeOrder).getCell(4).setCellValue("制表人：" + meetingRecordVO.getCreatedBy());
-
-        sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 0, 0));
-        sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 4, 4));
-        sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 5, 5));
+        if (name.size() >1){
+            sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 0, 0));
+            sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 4, 4));
+            sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 5, 5));
+        }
         if (sizeOrder != 0) {
             sheet.addMergedRegion(new CellRangeAddress(10 + name.size(), 10 + sizeOrder + name.size(), 0, 0));
         }
@@ -898,7 +898,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 //            //还原文件
 //            restoreFile(templatePaths.toString(), templatePath.toString());
         // 另一种，下载到浏览器。
-
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(meetingRecordVO.getTitle() + ".xlsx", StandardCharsets.UTF_8));
         OutputStream os = response.getOutputStream();
