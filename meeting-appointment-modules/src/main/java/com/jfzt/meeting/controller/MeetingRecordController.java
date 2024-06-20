@@ -79,14 +79,13 @@ public class MeetingRecordController {
      * @throws InvalidFormatException 无效格式异常
      */
     @PostMapping(value = "/meeting-record/record-export/{userId}/{type}")
-    public Result<String> recordExport(
+    public void recordExport(
                                        HttpServletResponse response,
                                        @PathVariable("userId") String userId ,
                                        @PathVariable("type") String type ,
                                        @RequestBody List<MeetingRecordVO> meetingRecordVOList
                                        ) throws IOException, InvalidFormatException {
         meetingRecordService.getRecordExport(userId,type, meetingRecordVOList,response);
-        return Result.success("导出成功");
     }
 
     /**
