@@ -89,7 +89,7 @@ public interface MeetingRoomService extends IService<MeetingRoom> {
      * @param datePeriodDTO 时间范围
      * @return 会议室占用比例VO
      */
-    Result<List<MeetingRoomSelectionRateVO>> getAllMeetingRoomProportion (DatePeriodDTO datePeriodDTO);
+    Result<List<MeetingRoomSelectionVO>> getAllMeetingRoomProportion (DatePeriodDTO datePeriodDTO);
 
 
     /**

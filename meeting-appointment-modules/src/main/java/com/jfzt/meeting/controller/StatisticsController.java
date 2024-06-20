@@ -3,7 +3,7 @@ package com.jfzt.meeting.controller;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.dto.DatePeriodDTO;
 import com.jfzt.meeting.entity.vo.MeetingRoomOccupancyVO;
-import com.jfzt.meeting.entity.vo.MeetingRoomSelectionRateVO;
+import com.jfzt.meeting.entity.vo.MeetingRoomSelectionVO;
 import com.jfzt.meeting.entity.vo.PeriodTimesVO;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MeetingRoomService;
@@ -44,7 +44,7 @@ public class StatisticsController {
      * @return 会议室占用次数比例
      */
     @GetMapping("/meeting-room-selection")
-    public Result<List<MeetingRoomSelectionRateVO>> getMeetingRoomProportion (DatePeriodDTO datePeriodDTO) {
+    public Result<List<MeetingRoomSelectionVO>> getMeetingRoomProportion (DatePeriodDTO datePeriodDTO) {
         return meetingRoomService.getAllMeetingRoomProportion(datePeriodDTO);
     }
 
