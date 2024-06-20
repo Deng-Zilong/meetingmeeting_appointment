@@ -198,23 +198,29 @@ public class DynWordUtils {
         String placeholderValue = placeholder;
         List dataList = obj;
         Collections.reverse(dataList);
-        for (int i = 0, size = dataList.size(); i < size; i++) {
-            Object text = dataList.get(i);
-            // 占位符的那行, 不用重新创建新的行
-            if (i == 0) {
-                placeholderValue = String.valueOf(text);
-            } else {
-                XWPFParagraph paragraph = createParagraph(String.valueOf(text));
-                if (paragraph != null) {
-                    oldParagraph = paragraph;
-                }
-                // 增加段落后doc文档的element的size会随着增加（在当前行的上面添加
-                // 这里减操作是回退并解析新增的行（因为可能新增的带有占位符，这里为了支持图片和表格）
-                if (!isTable) {
-                    n--;
+        if (dataList.size() ==0){
+            Object text = " ";
+            placeholderValue = String.valueOf(text);
+        }else {
+            for (int i = 0, size = dataList.size(); i < size; i++) {
+                Object text = dataList.get(i);
+                // 占位符的那行, 不用重新创建新的行
+                if (i == 0) {
+                    placeholderValue = String.valueOf(text);
+                } else {
+                    XWPFParagraph paragraph = createParagraph(String.valueOf(text));
+                    if (paragraph != null) {
+                        oldParagraph = paragraph;
+                    }
+                    // 增加段落后doc文档的element的size会随着增加（在当前行的上面添加
+                    // 这里减操作是回退并解析新增的行（因为可能新增的带有占位符，这里为了支持图片和表格）
+                    if (!isTable) {
+                        n--;
+                    }
                 }
             }
         }
+
         return placeholderValue;
     }
 
