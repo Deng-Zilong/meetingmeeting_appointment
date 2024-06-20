@@ -17,20 +17,6 @@
           </div>
         </div>
         <div class="bottom-box">
-            <!-- <van-steps direction="vertical" :active="0">
-                <van-step>
-                    <h3>【城市】物流状态1</h3>
-                    <p>2016-07-12 12:40</p>
-                </van-step>
-                <van-step>
-                    <h3>【城市】物流状态2</h3>
-                    <p>2016-07-11 10:00</p>
-                </van-step>
-                <van-step>
-                    <h3>快件已发货</h3>
-                    <p>2016-07-10 09:30</p>
-                </van-step>
-            </van-steps> -->
             <TodyMeeting/>
         </div>
     </div>
@@ -62,7 +48,6 @@
     const getNotice = async () => {
         const res = await getNoticeData()
         notice.value = res?.data[0] ?? '';
-        
     }
     const isNoticeRoll = ref<boolean>(true); // 通知栏是否开启滚动
     /**
@@ -121,7 +106,7 @@
             }
         }
         .screen-box {
-            height: 18rem;
+            height: 22rem;
             padding-top: 10px;
             margin: .625rem 0;
             // background-image: url('@/assets/imgs/screen-bg.png');
@@ -137,7 +122,7 @@
                 color: #1273DB;
             }
             .main-table {
-                height: 90%;
+                height: 85%;
                 display: grid;
                 grid-template-columns: 10rem 10rem;
                 gap: 5px;

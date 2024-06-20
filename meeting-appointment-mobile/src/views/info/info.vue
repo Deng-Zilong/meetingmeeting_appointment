@@ -3,7 +3,7 @@
         <div class="top-box">
             <div class="top-title">
                 <div @click="goHome">
-                    <van-icon name="revoke" />
+                    <van-icon name="arrow-left" />
                     首页
                 </div>
                 <div @click="logout">
