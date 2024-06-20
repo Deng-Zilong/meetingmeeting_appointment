@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -136,7 +137,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             // 删除会议室
             if (id != null) {
                 int result = meetingRoomMapper.deleteById(id);
-                meetingDeviceService.remove(meetingDeviceService.lambdaQuery().eq(MeetingDevice::getRoomId, id));
+                meetingDeviceService.remove(new LambdaQueryWrapper<MeetingDevice>().eq(MeetingDevice::getRoomId, id));
                 if (result > 0) {
                     return Result.success(result);
                 } else {
