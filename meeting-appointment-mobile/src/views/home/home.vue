@@ -83,7 +83,9 @@
     const handleRoomClick = (item: any) => {
         if(item.status !== 0) {
             sessionStorage.setItem('meetingInfo', JSON.stringify({meetingRoomId: String(item.id)}));
-            router.push('/meetingAppoint')
+            // router.push('/meetingAppoint')
+            router.push({path: '/createMeeting'})
+
         }
         
     }

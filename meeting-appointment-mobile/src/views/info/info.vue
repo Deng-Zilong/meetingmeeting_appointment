@@ -22,7 +22,7 @@
             </div>
         </div>
         <div class="card-box">
-            <van-cell is-link icon="contact" size="large" title="个人资料" />
+            <!-- <van-cell is-link icon="contact" size="large" title="个人资料" /> -->
             <van-cell is-link to="/history" icon="eye" size="large" title="历史会议" />
             <van-cell is-link to="/group" icon="friends" size="large" title="群组管理" />
         </div>
