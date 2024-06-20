@@ -2,28 +2,34 @@
   <div class="group-Manage">
 
     <van-dialog v-model:show="addShow" title="群组信息" show-cancel-button>
-      <van-form validate-trigger="onSubmit" >
+      <van-form @submit="onSubmit">
         <van-cell-group>
           <van-field v-model="groupName" placeholder="请输入群组名称" :rules="[{ required: true, message: '请填写群组名称' }]" />
-          <van-field v-model="users" left-icon="plus" placeholder="请选择用户" readonly @click="handleAddTree" :rules="[{ required: true, message: '请选择用户' }]" />
+          <van-field v-model="groupPeopleNames" left-icon="plus" placeholder="请选择用户" readonly @click="handleAddTree" :rules="[{ required: true, message: '请选择用户' }]" />
         </van-cell-group>
       </van-form>
+      <!-- <van-button round block type="primary" native-type="submit">
+        提交
+      </van-button> -->
+      <!-- <template #footer>
+        <div class="dialog-footer">
+            <el-button @click="addShow = false">取消</el-button>
+            <el-button type="primary" @click="onSubmit">确 认</el-button>
+        </div>
+      </template> -->
     </van-dialog>
-    <treeSelect
+    <!-- <treeSelect
       ref="treeSelectRef"
-      v-model:show="treeShow"
+      v-model:show="addGroupVisible"
       :modelValue="modelValue"
       :listData="listData"
       :multiple='true'
       placeholder="请选择"
       @changeModelValue="changeModelValue"
-    ></treeSelect>
-    <!-- <van-tree-select
-      :items="listData"
-      :active-id.sync="modelValue"
-      :main-active-index.sync="activeIndex"
-    /> -->
+    ></treeSelect> -->
 
+    <personTreeDialog v-model="addGroupVisible" title="添加群组人员" :type="type" :peopleIds="peopleIds"
+            @close-dialog="closeAddGroupDialog" @submit-dialog="handleCheckedNodes" />
 
     <van-nav-bar title="群组管理" left-text="返回" right-text="添加" left-arrow @click-left="onClickLeft" @click-right="onClickRight" />
     <van-field v-model="blurValue" clearable placeholder="请输入群组名称搜索" @update:model-value="updataBlurValue" />
@@ -35,9 +41,9 @@
             <div class="card">
               <div class="card-title">{{ item.groupName }}</div>
               <div class="card-content">
-                <div class="content-tr content-time"><van-icon name="underway" />{{ item.gmtCreate }}</div>
-                <div class="content-tr content-found"><van-icon name="user" />创建人：{{ item.createdBy }}</div>
-                <div class="content-tr content-users"><van-icon name="friends" />{{ item.users.map((item: any) => { return item.userName}).join(',') }}</div>
+                <div class="content-tr"><van-icon name="underway" />{{ item.gmtCreate }}</div>
+                <div class="content-tr"><van-icon name="user" />创建人：{{ item.createdBy }}</div>
+                <div class="content-tr"><van-icon name="friends" />{{ item.users.map((item: any) => { return item.userName}).join(',') }}</div>
               </div>
             </div>
             <template #right>
@@ -70,19 +76,24 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import TreeSelect from '@/views/group/components/select-tree.vue';
+// import TreeSelect from '@/views/group/components/select-tree.vue';
+import PersonTreeDialog from '@/views/group/components/person-tree-dialog.vue';
 import { getGroupUserTree, getMeetingGroupList, deleteMeetingGroup, updateMeetingGroup, addMeetingGroup } from '@/request/api/group'
 import router from '@/router';
 
 let addShow = ref(false); // 添加弹窗展示与否
-let treeShow = ref(false); // 成员树展示与否
-let modelValue = ref() 
+
+let addGroupVisible = ref(false); // 成员树展示与否
+let peopleIds = ref<any>([]); // 群组成员id
+let groups = ref<any>([]); // 选中的群组成员信息、
+let type = ref<number>(1); // 1 创建群组 2 修改群组
+
+// let modelValue = ref() 
 let listData = ref()
-// let activeIndex = ref(0)  // 原本树的左侧选项索引
 
 let blurValue = ref<string>(''); // 模糊查询群组名称
 let groupName = ref<string>(''); // card-群组名称
-let users = ref<string>(); // card-群组成员
+let groupPeopleNames = ref<string>(''); // card-群组成员
 const userInfo = ref<any>({});  // 用户信息
 let activeNames = ref<any>(['1', '2']);  // 折叠面板 展开的面板的值
 
@@ -115,12 +126,49 @@ const onClickRight = () => {
 
 // 点击 添加成员
 const handleAddTree = () => {
-  treeShow.value = true;
+  addGroupVisible.value = true;
 }
 
+const onSubmit = (val?: any) => {
+  console.log('submit',val)
+}
+
+// 弹窗的确认按钮
+const confirm = () => {
+  onSubmit()
+}
 // 树的变化
-const changeModelValue = () => {
-  
+// const changeModelValue = () => {
+// }
+
+/**
+ * @description 提交需要添加的群组人员
+ */
+ const handleCheckedNodes = (type: number, active: number, form: any) => {
+    // 创建人信息
+    const creator = ref<any>({ userId: userInfo.value.userId, userName: userInfo.value.name });
+    // 获取被选中成员的id
+    peopleIds.value = form.peopleIds;
+    // 获取被选中人员的 信息将创建人信息添加进去并去重
+    groups.value = Array.from(new Set([...form.groups, creator.value]));
+
+    // 创建群组
+    if (type == 1) {
+        // 处理被选中成员的名称 用，隔开
+        groupPeopleNames.value = form.groupPeopleNames;
+    }
+    // 修改群组成员
+    // if (type == 2) {
+    //     updateGroupInfo({ id: groupInfo.value.id, users: groups.value });
+    // }
+    // 关闭弹窗
+    closeAddGroupDialog();
+}
+/**
+ * @description 关闭添加群组人员弹窗
+ */
+const closeAddGroupDialog = () => {
+    addGroupVisible.value = false;
 }
 
 // 获取成员树数据
@@ -176,7 +224,7 @@ const refresh = async() => {
 const edidGroup = (item: any) => {
   addShow.value = true;
   groupName.value = item.groupName;
-  users.value = item.users.map((item: any) => { return item.userId }).join(',');
+  groupPeopleNames.value = item.users.map((item: any) => { return item.userId }).join(',');
 }
  
 // 删除
@@ -243,9 +291,6 @@ html {
               margin-right: .7rem;
             }
           }
-          .content-time {}
-          .content-found {}
-          .content-users {}
         }
       }
       .van-swipe-cell__right {

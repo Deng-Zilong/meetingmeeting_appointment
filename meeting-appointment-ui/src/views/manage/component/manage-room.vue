@@ -3,14 +3,14 @@
     <template #header>
       <div class="card-header">{{ isNew ? "新增" : "编辑" }}会议室</div>
     </template>
-    <el-form :model="addMeetingForm">
-      <el-form-item label="会议室名称：">
+    <el-form :model="addMeetingForm" :rules="rules">
+      <el-form-item label="会议室名称：" prop="roomName">
         <el-input v-model="addMeetingForm.roomName" :maxlength="15"/>
       </el-form-item>
-      <el-form-item label="会议室位置：">
+      <el-form-item label="会议室位置：" prop="location">
         <el-input v-model="addMeetingForm.location" />
       </el-form-item>
-      <el-form-item label="会议室容量：">
+      <el-form-item label="会议室容量：" prop="capacity">
         <el-input type="number" min="1" v-model.number="addMeetingForm.capacity" @input="handleInputInt" />
       </el-form-item>
       <!-- <el-form-item label="会议室设备：">
@@ -46,10 +46,8 @@
         <div class="room-tr-cell t-name" @click="handleEditRoom(item)">
           <el-popover
               placement="bottom"
-              :disabled="item.roomName.length < 20"
-              :width="130"
               trigger="hover"
-              :content="item.roomName"
+              :content="item.roomName.length < 20 ? '可以编辑会议室' : item.roomName"
           >
               <template #reference>
                   {{ item.roomName }}
@@ -59,10 +57,8 @@
         <div class="room-tr-cell t-location" @click="handleEditRoom(item)">
           <el-popover
               placement="bottom"
-              :disabled="item.location?.length < 26"
-              :width="200"
               trigger="hover"
-              :content="item.location"
+              :content="item.location?.length < 26 ? '可以编辑会议室' : item.location"
           >
               <template #reference>
                   {{ item.location }}
@@ -74,7 +70,6 @@
           <el-popover
               placement="bottom"
               :disabled="item.equipment?.length < 7"
-              :width="120"
               trigger="hover"
               :content="item.equipment"
           >
@@ -114,6 +109,20 @@
       capacity: '',  // 会议室容量
       status: '', // 0-暂停使用(禁用) 1-可使用/空闲(空闲)
       equipment: '',  // 会议室设备
+    })
+    // 表单校验
+    const rules = ref({
+      roomName: [
+        { required: true, message: "请输入会议室名称", trigger: "blur" },
+        { pattern: '[^ \x22]+', message: "不可以输入空白信息", trigger: "blur" }
+      ],
+      location: [
+        { required: true, message: "请输入会议室位置", trigger: "blur" },
+        { pattern: '[^ \x22]+', message: "不可以输入空白信息", trigger: "blur" }
+      ],
+      capacity: [
+        { required: true, message: "请输入会议室容量", trigger: "blur" },
+      ]
     })
 
     onMounted(() => {

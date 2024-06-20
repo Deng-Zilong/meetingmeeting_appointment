@@ -28,7 +28,20 @@ const option: any = {
       margin: 11, // 刻度标签与轴线之间的距离
     },
   },
-  series: [],
+  series: [
+    {
+        type: 'bar',
+        name: '时间段总数',
+        // barWidth: 20,
+        // barGap: '-100%',
+        // z: '-1',
+        color: '#D6ECFF',
+        data: [],
+        label: {
+          show: true,
+        }
+  }
+  ],
   tooltip: {}
 };
 

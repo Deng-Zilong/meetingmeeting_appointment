@@ -1,12 +1,17 @@
 <template>  
   <!-- 新增设备 弹窗 -->
-  <el-dialog v-model="dialogAddVisible" width="450" top="25vh" title="新增设备">
-    <el-form :model="addEquipForm">
-      <el-form-item label="设备名称：">
-        <el-input v-model="addEquipForm.deviceName" :maxlength="15" />
+  <el-dialog v-model="dialogAddVisible" width="450" top="25vh" :title="isNew ? '新增设备' : '修改设备'">
+    <el-form :model="addEquipForm" :rules="rules">
+      <el-form-item label="设备名称：" prop="deviceName">
+        <el-input v-model="addEquipForm.deviceName" clearable :maxlength="15" />
       </el-form-item>
-      <el-form-item label="所在会议室：">
-        <el-select v-model="addEquipForm.roomId" filterable multiple placement="right-start" placeholder="会议室">
+      <el-form-item label="所在会议室：" v-if="isNew" prop="roomId">
+        <el-select v-model="addEquipForm.roomId" filterable multiple clearable placement="right-start" placeholder="请选择所在会议室">
+          <el-option v-for="item in roomOptions" :key="item.id" :label="item.value" :value="item.id" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="所在会议室：" v-if="!isNew" prop="oneRoomId">
+        <el-select v-model="addEquipForm.oneRoomId" filterable clearable placement="right-start" placeholder="请选择所在会议室">
           <el-option v-for="item in roomOptions" :key="item.id" :label="item.value" :value="item.id" />
         </el-select>
       </el-form-item>
@@ -23,7 +28,7 @@
 
   <div class="equip-container">
     <div class="equip-top">
-      <el-button type="primary" @click="dialogAddVisible = true">新增设备</el-button>
+      <el-button type="primary" @click="handleAddDevice">新增设备</el-button>
       <el-input v-model="equipValue" clearable placeholder="请搜索设备" style="width: 240px" @input="handleChangeEquip" />
       <el-select v-model="roomValue" filterable clearable placeholder="会议室" style="width: 240px" @change="handleChangeRoom">
         <el-option v-for="item in roomOptions" :key="item.id" :label="item.value" :value="item.id" />
@@ -43,7 +48,7 @@
         </div>
         <div class="room-table-main">
           <div class="room-table-tr" v-for="item in equipList">
-            <div class="room-tr-cell t-name" @click="handleEditRoom(item)">
+            <div class="room-tr-cell t-name" @click="handleEditDevice(item)">
               <el-popover placement="bottom" :disabled="item.deviceName.length < 20" :width="130" trigger="hover"
                 :content="item.deviceName">
                 <template #reference>
@@ -51,7 +56,7 @@
                 </template>
               </el-popover>
             </div>
-            <div class="room-tr-cell t-roomName">
+            <div class="room-tr-cell t-roomName" @click="handleEditDevice(item)">
               <el-popover placement="bottom" :disabled="item.roomName?.length < 20" :width="200" trigger="hover"
                 :content="item.roomName">
                 <template #reference>
@@ -202,7 +207,7 @@ const handleChangeStatus = () => {
   getAllDevice()
 }
 
-let isNew = ref(true)  // 判断 新增/修改
+let isNew = ref()  // 判断 新增/修改
 // 切换提交事件
 const submitTab = (isNew: boolean) => {
   if (isNew) {
@@ -212,20 +217,39 @@ const submitTab = (isNew: boolean) => {
   }
 }
 
+const rules = ref({
+    deviceName: [
+      { required: true, message: "请输入设备名", trigger: "blur" },
+      { pattern: '[^ \x22]+', message: "不可以输入空白信息", trigger: "blur" }
+    ],
+    roomId: [
+      { required: true, message: "请选择会议室", trigger: "change" },
+      { type: 'array', min:1, message: "最少选择一个会议室", trigger: "change" }
+    ],
+    oneRoomId: [
+      { required: true, message: "请选择会议室", trigger: "change" }
+    ]
+})
+
 // 添加设备 表单数据
 let addEquipForm = ref<any>({})
 
-// 点击取消 就将表单数据清空
+// 新增 编辑 取消 都将表单数据清空
 const clearAddInfo = () => {
   addEquipForm.value = {}
-  isNew.value = true  // "修改"按钮变回"确认"
   dialogAddVisible.value = false
 }
 
-// 取消事件
+// 取消事件 并提示
 const cancelForm = () => {
   clearAddInfo()
   ElMessage.warning(`取消${ isNew.value ? '新增' : '修改' }设备`)
+}
+
+// 点击 新增设备 按钮
+const handleAddDevice = () => {
+  dialogAddVisible.value = true
+  isNew.value = true
 }
 
 /**
@@ -239,21 +263,23 @@ const addEquipInfo = () => {
     .then(() => {
       ElMessage.success('新增设备成功')
       getAllDevice();
-      clearAddInfo()  // 新增设备后清空表单数据
     })
-    .catch(() => {})
+    .catch(() => {
+      getAllDevice();
+    })
+  clearAddInfo()  // 新增设备后清空表单数据
 }
 
 /**
  * @description 将信息传给编辑
 */
-const handleEditRoom = (item: any) => {
+const handleEditDevice = (item: any) => {
   isNew.value = false  // 切换为编辑
   dialogAddVisible.value = true
   addEquipForm.value = {
     id: item.id,
     deviceName: item.deviceName,  // 设备名称
-    roomId: item.roomId,   // 会议室id
+    oneRoomId: item.roomId,   // 会议室id
   }
 }
 /**
@@ -264,14 +290,14 @@ const handleEditRoom = (item: any) => {
  * @param {id} 设备id
 */
 const editEquipInfo = () => {
-  const { roomId, deviceName, id } = addEquipForm.value
-  editDeviceData({ roomId, deviceName, userId: userInfo.value.userId, id })
+  const { oneRoomId, deviceName, id } = addEquipForm.value
+  editDeviceData({ roomId: oneRoomId, deviceName, userId: userInfo.value.userId, id })
     .then(() => {
       ElMessage.success('修改设备成功')
       getAllDevice();
-      clearAddInfo()  // 修改设备后清空表单数据
     })
-    .catch(() => {})
+    .catch(() => { })
+  clearAddInfo()  // 修改设备后清空表单数据
 }
 
 
@@ -409,7 +435,7 @@ const handleDeleteRoom = (item: any) => {
           margin: 10px 0;
           padding: 11px 0;
 
-          .t-name {
+          .t-name, .t-roomName {
             cursor: pointer;
 
             &:hover {
