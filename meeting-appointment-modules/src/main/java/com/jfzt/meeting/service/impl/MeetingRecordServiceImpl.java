@@ -27,6 +27,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -763,7 +764,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         Map<String, Object> paramMap = new HashMap<>(16);
         // 普通的占位符示例 参数数据结构 {str,str}
         paramMap.put("title", meetingRecordVO.getTitle() + "会议纪要");
-        paramMap.put("time", meetingRecordVO.getStartTime().getYear() + "年" + meetingRecordVO.getStartTime().getMonthValue() + "月"
+        paramMap.put("time", meetingRecordVO.getStartTime().getYear() + "年" +
+                meetingRecordVO.getStartTime().getMonthValue() + "月"
                 + meetingRecordVO.getStartTime().getDayOfMonth() + "日  "
                 + meetingRecordVO.getStartTime().getHour() + ":" + meetingRecordVO.getStartTime().getMinute() +
                 "-" + meetingRecordVO.getEndTime().getHour() + ":" + meetingRecordVO.getEndTime().getMinute());
@@ -832,8 +834,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         File file = new File("F:\\dd\\apply\\image.png");
         // 获取路径
         String fileUrl = "file:///" + file.getAbsolutePath();
-        String fileType = "png";
-        picture(workbook, sheet, fileUrl, fileType, 0, 0);
+        picture(workbook, sheet, fileUrl);
         //2设置excel编号
         sheet.getRow(1).getCell(0).setCellValue("编号：9fzt-xx-HY字｛2023｝A-001");
         //3会议标题
@@ -848,7 +849,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         //7
         sheet.getRow(6).getCell(0).setCellValue("参会人员：" + meetingRecordVO.getAttendees());
         //8
-        sheet.getRow(7).getCell(0).setCellValue("参会时间：" + meetingRecordVO.getStartTime().getHour() + ":" + meetingRecordVO.getStartTime().getMinute());
+        sheet.getRow(7).getCell(0).setCellValue("参会时间：" + meetingRecordVO.getStartTime().getHour() + ":"
+                + meetingRecordVO.getStartTime().getMinute());
         //9
         sheet.getRow(8).getCell(0).setCellValue("参会地点：" + meetingRecordVO.getMeetingRoomName());
         //10
@@ -979,7 +981,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .build();
     }
 
-    public static void picture(Workbook workbook, Sheet sheet, String fileUrl, String fileType, int row, int col) {
+    public static void picture(Workbook workbook, Sheet sheet, String fileUrl) {
         try {
             Drawing<?> patriarch = sheet.createDrawingPatriarch();
             URL url = new URL(fileUrl);  // 构造URL
