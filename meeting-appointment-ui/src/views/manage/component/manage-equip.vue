@@ -1,9 +1,9 @@
 <template>  
   <!-- 新增设备 弹窗 -->
   <el-dialog v-model="dialogAddVisible" width="450" top="25vh" :title="isNew ? '新增设备' : '修改设备'">
-    <el-form :model="addEquipForm" :rules="rules">
+    <el-form ref="ruleFormRef" :model="addEquipForm" :rules="rules">
       <el-form-item label="设备名称：" prop="deviceName">
-        <el-input v-model="addEquipForm.deviceName" clearable :maxlength="15" />
+        <el-input v-model.trim="addEquipForm.deviceName" clearable :maxlength="15" />
       </el-form-item>
       <el-form-item label="所在会议室：" v-if="isNew" prop="roomId">
         <el-select v-model="addEquipForm.roomId" filterable multiple clearable placement="right-start" placeholder="请选择所在会议室">
@@ -19,7 +19,7 @@
     <template #footer>
       <div class="card-footer">
         <el-button @click="cancelForm()">取消</el-button>
-        <el-button type="primary" @click="submitTab(isNew)">
+        <el-button type="primary" @click="submitTab(isNew, ruleFormRef)">
           {{ isNew ? "确认" : "修改" }}
         </el-button>
       </div>
@@ -99,8 +99,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { computed, onMounted, ref } from 'vue'
+import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus';
+import { computed, onMounted, reactive, ref } from 'vue'
 
 import { meetingStatus } from '@/stores/meeting-status'
 import { getDeviceData, addDeviceData, editDeviceData, delDeviceData, setStatusData, getInfoData } from '@/request/api/manage'
@@ -209,15 +209,20 @@ const handleChangeStatus = () => {
 
 let isNew = ref()  // 判断 新增/修改
 // 切换提交事件
-const submitTab = (isNew: boolean) => {
-  if (isNew) {
-    addEquipInfo()
-  } else {
-    editEquipInfo()
-  }
+const submitTab = (isNew: boolean, formEl: FormInstance | undefined) => {
+  if (!formEl) return
+  formEl.validate((valid) => {
+    if (!valid) return
+    if (isNew) {
+      addEquipInfo()
+    } else {
+      editEquipInfo()
+    }
+  })
 }
 
-const rules = ref({
+const ruleFormRef = ref<FormInstance>(); // 表单实例
+const rules = reactive<FormRules>({
     deviceName: [
       { required: true, message: "请输入设备名", trigger: "blur" },
       { pattern: '[^ \x22]+', message: "不可以输入空白信息", trigger: "blur" }

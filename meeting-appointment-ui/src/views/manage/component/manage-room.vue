@@ -3,12 +3,12 @@
     <template #header>
       <div class="card-header">{{ isNew ? "新增" : "编辑" }}会议室</div>
     </template>
-    <el-form :model="addMeetingForm" :rules="rules">
+    <el-form ref="ruleFormRef" :model="addMeetingForm" :rules="rules">
       <el-form-item label="会议室名称：" prop="roomName">
-        <el-input v-model="addMeetingForm.roomName" :maxlength="15"/>
+        <el-input v-model.trim="addMeetingForm.roomName" :maxlength="15"/>
       </el-form-item>
       <el-form-item label="会议室位置：" prop="location">
-        <el-input v-model="addMeetingForm.location" />
+        <el-input v-model.trim="addMeetingForm.location" />
       </el-form-item>
       <el-form-item label="会议室容量：" prop="capacity">
         <el-input type="number" min="1" v-model.number="addMeetingForm.capacity" @input="handleInputInt" />
@@ -26,7 +26,7 @@
     <template #footer>
       <div class="card-footer">
         <el-button @click="clearAddInfo()">重置</el-button>
-        <el-button type="primary" @click="submitTab(isNew)">
+        <el-button type="primary" @click="submitTab(isNew, ruleFormRef)">
           {{ isNew ? "确认" : "修改" }}
         </el-button>
       </div>
@@ -91,8 +91,8 @@
 </template>
 
 <script lang="ts" setup>
-    import { ref, onMounted, computed } from 'vue'
-    import { ElMessage, ElMessageBox } from 'element-plus';
+    import { ref, onMounted, computed, reactive } from 'vue'
+    import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus';
 
     import { meetingStatus } from '@/stores/meeting-status'
     import { getMeetingBanData, addRoomData, updateRoomData, deleteRoomDate } from '@/request/api/manage'
@@ -111,7 +111,8 @@
       equipment: '',  // 会议室设备
     })
     // 表单校验
-    const rules = ref({
+    const ruleFormRef = ref<FormInstance>(); // 表单实例
+    const rules = reactive<FormRules>({
       roomName: [
         { required: true, message: "请输入会议室名称", trigger: "blur" },
         { pattern: '[^ \x22]+', message: "不可以输入空白信息", trigger: "blur" }
@@ -167,12 +168,16 @@
     }
     
     // 切换提交事件
-    const submitTab = (isNew: boolean) => {
-      if (isNew) {
-        addMeetingInfo()
-      } else {
-        submitEditRoom()
-      }
+    const submitTab = (isNew: boolean, formEl: FormInstance | undefined) => {
+      if (!formEl) return
+      formEl.validate((valid) => {
+        if (!valid) return
+        if (isNew) {
+          addMeetingInfo()
+        } else {
+          submitEditRoom()
+        }
+      })
     }
     
     // 容量输入为整数 不可以为小数

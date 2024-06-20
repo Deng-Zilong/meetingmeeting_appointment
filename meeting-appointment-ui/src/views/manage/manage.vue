@@ -379,7 +379,13 @@
           .then((res) => {
             pieData.value = res.data
           })
-          .catch((err) => {})
+          .catch((err) => { })
+
+        getRoomOccupancyDate({})  // 获取会议室选择率数据 接口
+        .then((res) => {
+          barData.value = res.data
+        })
+        .catch((err) => {})
       } else {
         getRoomSelectionRate({ startDate: val[0], endDate: val[1] })  // 获取会议室选择率数据 接口
           .then((res) => {
@@ -390,7 +396,6 @@
         getRoomOccupancyDate({ startDate: val[0], endDate: val[1] })  // 获取会议室选择率数据 接口
           .then((res) => {
             barData.value = res.data
-            console.log(barData.value,'mana', res)
           })
           .catch((err) => {})
       }

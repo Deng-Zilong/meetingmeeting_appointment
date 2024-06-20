@@ -28,24 +28,11 @@ const option: any = {
       margin: 11, // 刻度标签与轴线之间的距离
     },
   },
-  series: [
-    {
-        type: 'bar',
-        name: '时间段总数',
-        // barWidth: 20,
-        // barGap: '-100%',
-        // z: '-1',
-        color: '#D6ECFF',
-        data: [],
-        label: {
-          show: true,
-        }
-  }
-  ],
+  series: [],
   tooltip: {}
 };
 
-const percentageFormatter = (params: any) => Math.round(params.value * 1000) / 1000 + '%'
+const percentageFormatter = (params: any) => Math.round(params.value * 10000) / 100 + '%'
 
 const refreshChart = () => {
 
@@ -55,8 +42,8 @@ const refreshChart = () => {
   
   // const yAxis = result.value.map((item: any) => item.totalOccupancy)
   // option.yAxis.data = yAxis
-  // result.data 每项是y轴的一个数据
-  const seriesItems = ['top1', 'top2', 'top3', 'other', '未占用']
+  // result.value.data 每项是y轴的一个数据
+  const seriesItems = ['top1', 'top2', 'top3', 'other']
   const series: any = seriesItems.map((name, sid) => ({
     name,
     type: 'bar',
@@ -69,8 +56,14 @@ const refreshChart = () => {
     item.timePeriods.forEach((timeItem: { occupancyRate: number }, index: number) => {
       series[index].data.push(timeItem.occupancyRate)
     })
-    series[series.length - 1].data.push((item.total - item.totalOccupancy) / item.total)
+    // series[series.length - 1].data.push((item.total - item.totalOccupancy) / item.total)
   })
+  // result.value.forEach((item: any) => {
+  //   item.timePeriods.forEach((timeItem: { occupied: number }, index: number) => {
+  //     series[index].data.push(timeItem.occupied)
+  //   })
+  //   // series[series.length - 1].data.push(item.total - item.totalOccupancy)
+  // })
   option.series = series.reverse()  // 倒序
   option.tooltip = {
     formatter: (seriesInfo: any) => {
@@ -78,16 +71,17 @@ const refreshChart = () => {
       const seriesIndex = seriesInfo.seriesIndex // 维度索引
 
       const seriesItem = result.value[xAxisIndex] // 维度数据
-      const timeRange = seriesItem.timePeriods?.[seriesIndex]?.timePeriod || '未占用' // 时间段
-      const times = seriesItem.timePeriods?.[seriesIndex]?.occupied || seriesItem.total - seriesItem.totalOccupancy
-      const percentage = seriesItem.timePeriods?.[seriesIndex]?.occupancyRate || (seriesItem.total - seriesItem.totalOccupancy) / seriesItem.total
-      return `<ul style="padding-left: 20px">
-        <li>时间段：${timeRange}</li>
-        <li>次数：${times}</li>
-        <li>百分比：${percentageFormatter({ value: percentage })}</li>
-      </ul>`
-      // let str = seriesInfo.marker + timeRange + '<br>' + '次数：' + times + '<br>' + '百分比：' + percentageFormatter({ value: percentage })
-      // return str;
+      const timeRange = seriesItem.timePeriods?.[series.length - 1 - seriesIndex]?.timePeriod // 时间段
+      const times = seriesItem.timePeriods?.[series.length - 1 - seriesIndex]?.occupied
+      const percentage = seriesItem.timePeriods?.[series.length - 1 - seriesIndex]?.occupancyRate
+      // seriesInfo.value = seriesItem.timePeriods?.[series.length - 1 - seriesIndex]?.occupied || seriesItem.total - seriesItem.totalOccupancy
+      // return `<ul style="padding-left: 20px">
+      //   <li>时间段：${timeRange}</li>
+      //   <li>次数：${times}</li>
+      //   <li>百分比：${percentageFormatter({ value: percentage })}</li>
+      // </ul>`
+      let str = seriesInfo.marker + '时间段：' + timeRange + `<br>${seriesInfo.marker}` + '使用次数：' + times + `次<br>${seriesInfo.marker}` + '百分比：' + percentageFormatter({ value: percentage })
+      return str;
     }
   }
 
@@ -105,7 +99,6 @@ watch(() => [props.barData,result.value], () => {
   refreshChart()
   if (props.barData) {
     result.value = props.barData
-    console.log(props.barData,'监听props子',result.value)
   }
 }, { deep: true });
 

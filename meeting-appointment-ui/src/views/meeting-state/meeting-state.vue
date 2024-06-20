@@ -86,7 +86,7 @@
                 </el-table-column>
               <el-table-column label="操作">
                 <template #default="scope">
-                  <el-button type="primary" @click="submitBreak(scope.row)">提交</el-button>
+                  <el-button type="primary" @click="submitBreak(scope.row, scope.$index)">提交</el-button>
                 </template>
                 </el-table-column>
             </el-table>
@@ -109,6 +109,7 @@ import capacity from '@/assets/img/capacity.png'
 import device from '@/assets/img/device.png'
 import { getBusyData } from '@/request/api/home'
 import { addBreakInfoData, getDeviceData } from '@/request/api/manage'
+import { de } from 'element-plus/es/locales.mjs';
 
 const routes = useRoute();  // 用于传数据
 const router = useRouter() // 用于选择时间段
@@ -202,7 +203,7 @@ onMounted(async() => {
   getBusy({ id: currentMeetingId.value, date: dayjs(date.value).format('YYYY-MM-DD') });
   userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}');  // 用户信息
   // 从“查询设备”接口中获取设备信息
-  newDeviceData()
+  await handleDeviceInfoReq('');
 })
 
 /**
@@ -341,18 +342,27 @@ let formDialog = reactive({
 
 const gridData = ref<any>([])
 
-const newDeviceData = async() => {
-  equipmentData.value = (await getDeviceData({ current: -1, size: -1, roomId: currentMeetingId.value, status: 1 })).data.records.map((item: any) => {
+const handleDeviceInfoReq = async(index: number | string, id?: number) => {
+  const res: any = await getDeviceData({ current: -1, size: -1, roomId: currentMeetingId.value, status: 1 });
+  equipmentData.value = res.data.records.map((item: any) => {
     return item
   })
   equipment.value = equipmentData.value.map((item: any) => item.deviceName).join(', ')  // 用于设备展示
+  if (index !== '') {
+    const deviceInfo = equipmentData.value.find((item: any) => item.id == id);
+    if (deviceInfo !== undefined) {
+      return gridData.value[index].extent = equipmentData.value.find((item: any) => item.id == id).extent;
+    }
+    return gridData.value.splice(index, 1);
+  }
   gridData.value = equipmentData.value.map((item: any) => {  // 将信息给弹窗gridData
-    const id = item.id
-    const deviceName = item.deviceName
-    const info = ''
-    const extent = item.extent
-    return { id, deviceName, info, extent }
+    return {
+      id: item.id,
+      deviceName: item.deviceName,
+      extent: item.extent
+    }
   })
+
 }
 
 /**
@@ -362,13 +372,14 @@ const newDeviceData = async() => {
  * @param {info} 报损内容
 }
 */
-const submitBreak = (row: any) => {
+const submitBreak = (row: any, index: number) => {
+  
   if (row.info != '') {
     addBreakInfoData({ deviceId: row.id, userId: userInfo.value.userId, info: row.info })
-      .then((res) => {
-        ElMessage.success(`成功提交${row.deviceName}的报损信息`)
-        newDeviceData()
-        row.info = ''
+    .then((res) => {
+        ElMessage.success(`成功提交"${row.deviceName}"的报损信息`);
+        gridData.value[index].info = '';
+        handleDeviceInfoReq(index, row.id);
       })
       .catch((err) => { })
   } else {
