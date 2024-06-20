@@ -93,7 +93,7 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
             BeanUtils.copyProperties(meetingDeviceDTO, meetingDevice,"roomId");
             meetingDevice.setRoomId(roomId);
             List<MeetingDevice> duplicate = lambdaQuery().eq(MeetingDevice::getRoomId, roomId)
-                    .eq(MeetingDevice::getDeviceName, meetingDeviceDTO.getDeviceName())
+                    .eq(MeetingDevice::getDeviceName, meetingDeviceDTO.getDeviceName().replaceAll(" ",""))
                     .list();
             duplicateList.addAll(duplicate);
             if (duplicate.isEmpty()){
