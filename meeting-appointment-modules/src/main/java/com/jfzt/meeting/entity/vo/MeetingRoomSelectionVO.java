@@ -8,7 +8,7 @@ import lombok.Data;
  * @since 2024-06-17 14:42:49
  */
 @Data
-public class MeetingRoomSelectionRateVO {
+public class MeetingRoomSelectionVO {
 
     /**
      * 会议室id

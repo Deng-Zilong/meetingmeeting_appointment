@@ -130,6 +130,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      * @param id 会议室id
      * @return 删除结果
      */
+    @Transactional
     @Override
     public Result<Integer> deleteMeetingRoom (Long id, Integer currentLevel) {
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)
@@ -236,7 +237,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             //总时间段数
             long total = 0L;
             ArrayList<TimePeriodOccupancyVO> timePeriodList = new ArrayList<>();
-            for (int i = 0; i < 18; i++) {
+            for (int i = 0; i < 9; i++) {
                 TimePeriodOccupancyVO timePeriodOccupancyVO = new TimePeriodOccupancyVO();
                 timePeriodOccupancyVO.setOccupancyRate(0L);
                 timePeriodOccupancyVO.setOccupied(0L);
@@ -252,9 +253,9 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 }
                 //统计从九点开始，十八点结束，半小时为一段
                 LocalDateTime startTime = i.atStartOfDay().plusHours(9);
-                LocalDateTime endTime = startTime.plusMinutes(30);
+                LocalDateTime endTime = startTime.plusMinutes(60);
                 //每天18个时间段
-                for (int j = 0; j < 18; j++) {
+                for (int j = 0; j < 9; j++) {
                     LocalDateTime finalStartTime = startTime;
                     LocalDateTime finalEndTime = endTime;
                     long occupied = meetingRecordList.stream().filter(record -> record.getMeetingRoomId().equals(meetingRoom.getId())
@@ -276,11 +277,11 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                     }
                     timePeriodList.set(j, timePeriodOccupancyVO);
                     //下一时间段
-                    startTime = startTime.plusMinutes(30);
-                    endTime = endTime.plusMinutes(30);
+                    startTime = startTime.plusMinutes(60);
+                    endTime = endTime.plusMinutes(60);
                 }
                 //总时间段加
-                total = total + 18;
+                total = total + 9;
             }
             MeetingRoomOccupancyVO meetingRoomOccupancyVO = new MeetingRoomOccupancyVO();
             meetingRoomOccupancyVO.setRoomId(meetingRoom.getId());
@@ -298,7 +299,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             TimePeriodOccupancyVO other = new TimePeriodOccupancyVO();
             other.setTimePeriod("other");
             other.setOccupied(0L);
-            for (int i = 3; i < 18; i++) {
+            for (int i = 3; i < 9; i++) {
                 TimePeriodOccupancyVO timePeriod = list.get(i);
                 other.setOccupied(other.getOccupied() + timePeriod.getOccupied());
             }
@@ -308,9 +309,12 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             occupancyVOList.add(list.get(1));
             occupancyVOList.add(list.get(2));
             occupancyVOList.add(other);
+            List<TimePeriodOccupancyVO> voList = occupancyVOList.stream().filter(item -> item.getOccupied() != 0).toList();
             meetingRoomOccupancyVO.setTimePeriods(occupancyVOList);
+            occupancyVOList.clear();
+            occupancyVOList.addAll(voList);
             return meetingRoomOccupancyVO;
-        }).toList();
+        }).filter(item -> item.getTotalOccupancyRate() != 0).toList();
         return Result.success(meetingRoomOccupancyVOList);
     }
 
@@ -320,7 +324,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      * @return 会议室占用比例VO
      */
     @Override
-    public Result<List<MeetingRoomSelectionRateVO>> getAllMeetingRoomProportion (DatePeriodDTO datePeriodDTO) {
+    public Result<List<MeetingRoomSelectionVO>> getAllMeetingRoomProportion (DatePeriodDTO datePeriodDTO) {
         //无条件默认统计前七天
         LocalDate startDate = LocalDate.now().minusDays(7);
         LocalDate endDate = LocalDate.now().minusDays(1);
@@ -329,8 +333,10 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             endDate = datePeriodDTO.getEndDate();
         }
         //查询所有会议室
-        List<MeetingRoom> meetingRoomList = list(new LambdaQueryWrapper<MeetingRoom>()
-                .eq(MeetingRoom::getStatus, MEETINGROOM_STATUS_AVAILABLE));
+        List<MeetingRoom> meetingRoomList = list();
+        if (meetingRoomList.isEmpty()) {
+            return Result.success(new ArrayList<>());
+        }
         //查出时间段内所有会议
         List<MeetingRecord> meetingRecordList = meetingRecordService.list(new LambdaQueryWrapper<MeetingRecord>()
                 .in(MeetingRecord::getMeetingRoomId, meetingRoomList.stream()
@@ -341,20 +347,40 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                         .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING)
                         .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_END))
         );
+        //会议总次数
         long total = meetingRecordList.size();
-        List<MeetingRoomSelectionRateVO> occupancyVOList = meetingRoomList.stream().map(meetingRoom -> {
-            MeetingRoomSelectionRateVO roomSelectionVO = new MeetingRoomSelectionRateVO();
-            long occupied = meetingRecordList.stream().filter(meetingRecord ->
-                    Objects.equals(meetingRecord.getMeetingRoomId(), meetingRoom.getId())).count();
-            if (total == 0) {
-                roomSelectionVO.setTotal(0L);
-            }
-            roomSelectionVO.setRoomName(meetingRoom.getRoomName());
-            roomSelectionVO.setRoomId(meetingRoom.getId());
-            roomSelectionVO.setTotal(total);
-            roomSelectionVO.setSelected(occupied);
-            return roomSelectionVO;
-        }).sorted((o1, o2) -> Math.toIntExact(o2.getSelected() - o1.getSelected())).toList();
+        //所有会议室被选择比例
+        List<MeetingRoomSelectionVO> occupancyVOList = meetingRoomList.stream()
+                .map(meetingRoom -> {
+                    MeetingRoomSelectionVO roomSelectionVO = new MeetingRoomSelectionVO();
+                    long occupied = meetingRecordList.stream().filter(meetingRecord ->
+                            Objects.equals(meetingRecord.getMeetingRoomId(), meetingRoom.getId())).count();
+                    if (total == 0) {
+                        roomSelectionVO.setTotal(0L);
+                    }
+                    roomSelectionVO.setRoomName(meetingRoom.getRoomName());
+                    roomSelectionVO.setTotal(total);
+                    roomSelectionVO.setSelected(occupied);
+                    return roomSelectionVO;
+                })
+                .filter(item -> item.getSelected() != 0)
+                .sorted((o1, o2) -> Math.toIntExact(o2.getSelected() - o1.getSelected()))
+                .toList();
+        //大于五个会议室只保留前五，其余合并成其他
+        if (occupancyVOList.size() > 5) {
+            List<MeetingRoomSelectionVO> subList = occupancyVOList.subList(0, 5);
+            occupancyVOList = new ArrayList<>(subList);
+            MeetingRoomSelectionVO roomSelectionVO = new MeetingRoomSelectionVO();
+            roomSelectionVO.setRoomName("其他会议室");
+            roomSelectionVO.setRoomId(0L);
+            roomSelectionVO.setTotal(occupancyVOList.getFirst().getTotal());
+            roomSelectionVO.setSelected(0L);
+            occupancyVOList.forEach(item ->
+                    roomSelectionVO.setSelected(roomSelectionVO.getSelected() + item.getSelected()));
+            //设置其他被选中次数
+            roomSelectionVO.setSelected(roomSelectionVO.getTotal() - roomSelectionVO.getSelected());
+            occupancyVOList.add(roomSelectionVO);
+        }
         return Result.success(occupancyVOList);
     }
 

@@ -19,7 +19,7 @@
                         <el-input v-model="formData.title" placeholder="请输入" />
                     </el-form-item>
                     <el-form-item label="参会人" prop="meetingPeople">
-                        <el-popover placement="bottom" trigger="hover" width="270">
+                        <!-- <el-popover placement="bottom" trigger="hover" width="270">
                             <template #reference>
                                 <el-input class="meeting-people" v-model="formData.meetingPeople" readonly :prefix-icon="Plus"
                             placeholder="添加参会人" @click="handleAddPerson" />
@@ -27,7 +27,18 @@
                             <div>
                                 <p class="prompt" @click="handlePromptPerson" >{{ popoverObj.meetingPeople }}</p>
                             </div>
-                        </el-popover>
+                        </el-popover> -->
+                        <el-dropdown @command="handlePromptPerson">
+                            <span class="el-dropdown-link">
+                                <el-input class="meeting-people" v-model="formData.meetingPeople" readonly :prefix-icon="Plus"
+                            placeholder="添加参会人" @click="handleAddPerson" />
+                            </span>
+                            <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item command="0">{{ popoverObj.meetingPeople }}</el-dropdown-item>
+                            </el-dropdown-menu>
+                            </template>
+                        </el-dropdown>
                     </el-form-item>
                 </div>
                 <div class="appoint-row">
@@ -152,6 +163,7 @@ onMounted(() => {
             date,                // 会议日期
             groupName: '',       // 群组名称
         }
+        
     }
     
     if (!meetingInfo?.id) {
@@ -170,7 +182,6 @@ onMounted(() => {
     // 获取当前开始时间和结束时间的可选时间段
     minStartTime.value = currentTime;
     minEndTime.value = formData.value.startTime;
-
     // 获取群组列表
     getGroupList();
     handleAvailableMeetingRooms(formData.value.startTime, formData.value.endTime); // 获取可用会议室
@@ -329,10 +340,10 @@ watch(()=>formData.value.date, (newValue)=> {
     timeStart.value = meetingAppointTime.value.find((item: any) => item > currentTime) ?? ''; // 设置时间段的开始时间
     minStartTime.value = currentTime;// 重置开始时间的最小可选时间
 
-    // 清空开始和结束时间
-    formData.value.startTime = '';
-    formData.value.endTime = '';
-}, {deep: true})
+    // // 清空开始和结束时间  (注释原因：影响了历史记录和今日会议记录修改传参的开始时间和结束时间)
+    // formData.value.startTime = '';
+    // formData.value.endTime = '';
+}, {immediate:true,deep: true})
 
 // 验证群组名称
 const validateGroupName = (rule: any, value: any, callback: any) => {
@@ -449,7 +460,7 @@ const handleMeetingRecordPrompt = () => {
     })
     .catch((err: any) => {})
 }
-const handlePromptPerson = () => {
+const handlePromptPerson = (value: any) => {
     const {users, meetingPeople} = popoverObj.value;
     formData.value.users = users;
     formData.value.meetingPeople = meetingPeople;
@@ -593,5 +604,8 @@ onBeforeUnmount(() => {
 }
 .prompt {
     cursor: pointer;
+}
+::v-deep(.el-dropdown__popper .el-dropdown-menu) {
+    width: 20px;
 }
 </style>
