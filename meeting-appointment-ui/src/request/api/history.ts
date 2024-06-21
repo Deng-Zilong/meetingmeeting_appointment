@@ -9,7 +9,7 @@ export const cancelMeetingRecord = (data: {userId: string, meetingId: number}) =
 }
 
 // 新增/编辑会议纪要 excel
-export const addMeetingMinutes = (data: {id?: number, userId: string, minutes: string, meetingRecordId: number}) => {
+export const addMeetingMinutes = (data: {id?: number | undefined, userId: string, minutes: string, meetingRecordId: number}) => {
     return http.post("/meeting/minutes", data)
 }
 

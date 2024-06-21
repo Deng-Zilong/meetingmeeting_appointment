@@ -24,7 +24,7 @@
                                 <img src="@/assets/img/transmit-icon.png" alt="" class="transmit-icon" @click="transmitMeeting(item)">
                                 <el-popover
                                     placement="bottom"
-                                    :disabled="item.title.length < 18"
+                                    :disabled="item.title.length < 11"
                                     :width="100"
                                     trigger="hover"
                                     :content="item.title"
@@ -503,7 +503,7 @@
     const ruleFormRef = ref<FormInstance>();
     let meetingSummaryVisible = ref<boolean>(false); // 会议纪要弹窗
     let meetingRecordId = ref<number>(0);  // 会议记录id
-    let meetingSummaryId = ref<number>(0); // 会议纪要id
+    let meetingSummaryId = ref<number | undefined>(undefined); // 会议纪要id
     let isMeetingSummaryDetail = ref<boolean>(true); // 是否是查看会议纪要详情 true 查看 false 编辑/新增
     let meetingSummaryTitle = ref<string>('查看会议纪要'); // 弹窗标题
     let meetingSummaryRow = ref<any>(); // 行数据
@@ -702,8 +702,6 @@
      * @description 提交会议纪要
      */
      const handleConfirmMeetingSummary = (formEl: FormInstance | undefined) => {
-        console.log(meetingSummaryRow.value.createdBy, "meetingSummaryRow.value.createdBy", currentUserId);
-        
         if (!formEl) return
         formEl.validate((valid) => {
             if (!valid) return;
@@ -751,6 +749,7 @@
      const handleCancelMeetingSummary = () => {
         meetingSummaryVisible.value = false;
         meetingRecordId.value = 0;
+        meetingSummaryId.value = undefined;
         isExcel.value = true;
         meetingSummaryRow.value = {};
         resetSummaryDetailForm();
