@@ -4,20 +4,34 @@
 
 <script setup lang="ts">
 import * as echarts from 'echarts'; // 5.4区别4引入方式
-import {onMounted, ref, watch} from 'vue'
-import { getRoomOccupancyDate } from '@/request/api/manage'
+import {onMounted, ref, watch} from 'vue';
+import {getRoomOccupancyDate} from '@/request/api/manage';
 
-const echartsDom = ref()
-const echartsInstance = ref()
+const echartsDom = ref();
+const echartsInstance = ref();
 const props = defineProps({
   barData: Array
-})
-let result = ref<any>() // 接收后端接口数据
+});
+let result = ref<any>(); // 接收后端接口数据
 
 const option: any = {
-  legend: { selectedMode: false  },
+  title: {
+    text: '会议室占用率统计', // 图表标题
+    left: 'center', // 标题位置
+    top: '2%' // 标题顶部对齐
+  },
+  legend: {
+    selectedMode: false,
+    right: '3%', // 图例右侧对齐
+    top: '6%' // 图例顶部对齐
+  },
   grid: {},
-  yAxis: { type: 'value', data: [] },
+  yAxis: {
+    type: 'value',
+    min: 0,
+    max: 1, // 设置 y 轴的最大值为 1
+    data: []
+  },
   xAxis: {
     type: 'category', data: [],
     axisLabel: {
@@ -32,74 +46,63 @@ const option: any = {
   tooltip: {}
 };
 
-const percentageFormatter = (params: any) => Math.round(params.value * 10000) / 100 + '%'
+const percentageFormatter = (params: any) => Math.round(params.value * 10000) / 100 + '%';
 
 const refreshChart = () => {
-
   // x 轴
-  const xAxis = result.value.map((item: any) => item.roomName)
-  option.xAxis.data = xAxis
-  
-  // const yAxis = result.value.map((item: any) => item.totalOccupancy)
-  // option.yAxis.data = yAxis
-  // result.value.data 每项是y轴的一个数据
-  const seriesItems = ['top1', 'top2', 'top3', 'other']
+  const xAxis = result.value.map((item: any) => item.roomName);
+  option.xAxis.data = xAxis;
+
+  const seriesItems = ['unoccupied', 'top1', 'top2', 'top3', 'others'];
   const series: any = seriesItems.map((name, sid) => ({
     name,
     type: 'bar',
     stack: 'total',
     barWidth: '60%',
-    label: { show: true, formatter: percentageFormatter },
+    label: name === 'unoccupied' ? {show: false} : {show: true, formatter: percentageFormatter}, // 不展示 notOccupancy 的 label
+    itemStyle: name === 'unoccupied' ? {color: 'rgba(180, 180, 180, 0.2)'} : {}, // 修改 notOccupancy 的颜色
     data: []
-  }))
+  }));
   result.value.forEach((item: any) => {
     item.timePeriods.forEach((timeItem: { occupancyRate: number }, index: number) => {
-      series[index].data.push(timeItem.occupancyRate)
+      if (timeItem.occupancyRate !== 0) {
+        series[index].data.push(timeItem.occupancyRate)
+      } else {
+        series[index].data.push(null) // 设置为null，表示不展示
+      }
     })
-    // series[series.length - 1].data.push((item.total - item.totalOccupancy) / item.total)
   })
-  // result.value.forEach((item: any) => {
-  //   item.timePeriods.forEach((timeItem: { occupied: number }, index: number) => {
-  //     series[index].data.push(timeItem.occupied)
-  //   })
-  //   // series[series.length - 1].data.push(item.total - item.totalOccupancy)
-  // })
-  option.series = series.reverse()  // 倒序
+  option.series = series.reverse(); // 倒序
   option.tooltip = {
     formatter: (seriesInfo: any) => {
-      const xAxisIndex = seriesInfo.dataIndex // x 轴索引
-      const seriesIndex = seriesInfo.seriesIndex // 维度索引
+      const xAxisIndex = seriesInfo.dataIndex; // x 轴索引
+      const seriesIndex = seriesInfo.seriesIndex; // 维度索引
 
-      const seriesItem = result.value[xAxisIndex] // 维度数据
-      const timeRange = seriesItem.timePeriods?.[series.length - 1 - seriesIndex]?.timePeriod // 时间段
-      const times = seriesItem.timePeriods?.[series.length - 1 - seriesIndex]?.occupied
-      const percentage = seriesItem.timePeriods?.[series.length - 1 - seriesIndex]?.occupancyRate
-      // seriesInfo.value = seriesItem.timePeriods?.[series.length - 1 - seriesIndex]?.occupied || seriesItem.total - seriesItem.totalOccupancy
-      // return `<ul style="padding-left: 20px">
-      //   <li>时间段：${timeRange}</li>
-      //   <li>次数：${times}</li>
-      //   <li>百分比：${percentageFormatter({ value: percentage })}</li>
-      // </ul>`
-      let str = seriesInfo.marker + '时间段：' + timeRange + `<br>${seriesInfo.marker}` + '使用次数：' + times + `次<br>${seriesInfo.marker}` + '百分比：' + percentageFormatter({ value: percentage })
+      const seriesItem = result.value[xAxisIndex]; // 维度数据
+      const timeRange = seriesItem.timePeriods?.[series.length - 1 - seriesIndex]?.timePeriod; // 时间段
+      const times = seriesItem.timePeriods?.[series.length - 1 - seriesIndex]?.occupied;
+      const percentage = seriesItem.timePeriods?.[series.length - 1 - seriesIndex]?.occupancyRate;
+
+      let str = seriesInfo.marker + '时间段：' + timeRange + `<br>${seriesInfo.marker}` + '使用次数：' + times + `次<br>${seriesInfo.marker}` + '百分比：' + percentageFormatter({value: percentage});
       return str;
     }
-  }
+  };
 
-  echartsInstance.value.setOption(option)
-}
+  echartsInstance.value.setOption(option);
+};
 
-onMounted(async() => {
-  echartsInstance.value = echarts.init(echartsDom.value)
-  result.value = (await getRoomOccupancyDate({})).data
-  refreshChart()
-})
+onMounted(async () => {
+  echartsInstance.value = echarts.init(echartsDom.value);
+  result.value = (await getRoomOccupancyDate({})).data;
+  refreshChart();
+});
 
-// 当roomX或occupied或total改变时，更新图表
-watch(() => [props.barData,result.value], () => {
-  refreshChart()
+// 当 roomX 或 occupied 或 total 改变时，更新图表
+watch(() => [props.barData, result.value], () => {
+  refreshChart();
   if (props.barData) {
-    result.value = props.barData
+    result.value = props.barData;
   }
-}, { deep: true });
+}, {deep: true});
 
 </script>

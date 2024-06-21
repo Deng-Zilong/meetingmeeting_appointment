@@ -7,6 +7,8 @@ import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.dto.DatePeriodDTO;
 import com.jfzt.meeting.entity.vo.MeetingRoomOccupancyVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomSelectionVO;
+import com.jfzt.meeting.entity.vo.MeetingRoomVO;
+import com.jfzt.meeting.entity.vo.TimePeriodOccupancyVO;
 import com.jfzt.meeting.mapper.MeetingRoomMapper;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.impl.MeetingRoomServiceImpl;
@@ -21,6 +23,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -144,11 +147,19 @@ public class MeetingRoomTest {
         assertEquals(18, occupancyVO.getTotal());
         assertEquals((float) 9 / 18, occupancyVO.getTotalOccupancyRate());
         assertNotNull(occupancyVO.getTimePeriods());
-        assertEquals("10:00-11:00", occupancyVO.getTimePeriods().getFirst().getTimePeriod());
-        assertEquals(2, occupancyVO.getTimePeriods().getFirst().getOccupied());
-        assertEquals((float) 2 / 18, occupancyVO.getTimePeriods().getFirst().getOccupancyRate());
+        TimePeriodOccupancyVO unoccupied = occupancyVO.getTimePeriods().getFirst();
+        TimePeriodOccupancyVO top1 = occupancyVO.getTimePeriods().get(1);
+        TimePeriodOccupancyVO others = occupancyVO.getTimePeriods().get(4);
+        assertEquals("unoccupied", unoccupied.getTimePeriod());
+        assertEquals("10:00-11:00", top1.getTimePeriod());
+        assertEquals("others", others.getTimePeriod());
+        assertEquals(2, top1.getOccupied());
+        assertEquals((float) 2 / 18, top1.getOccupancyRate());
     }
 
+    /**
+     * 测试getAllMeetingRoomProportion方法
+     **/
     @Test
     public void getAllMeetingRoomProportionTest () {
         //设置参数
@@ -163,6 +174,29 @@ public class MeetingRoomTest {
         assertEquals(4, allMeetingRoomProportion.getData().getFirst().getTotal());
         assertEquals(2, allMeetingRoomProportion.getData().getFirst().getSelected());
     }
+
+    /**
+     * 测试getAvailableMeetingRooms方法
+     **/
+    @Test
+    public void getAvailableMeetingRoomsTest () {
+        //模拟的条件查询结果
+        MeetingRecord meetingRecord = new MeetingRecord(2L, "会议2", "会议描述2",
+                LocalDateTime.of(2024, 6, 20, 9, 0),
+                LocalDateTime.of(2024, 6, 20, 12, 0),
+                1L, 1, "admin",
+                LocalDateTime.now(), LocalDateTime.now(), 0);
+        ArrayList<MeetingRecord> meetingRecords = new ArrayList<>();
+        meetingRecords.add(meetingRecord);
+        when(meetingRecordService.list(Mockito.<LambdaQueryWrapper<MeetingRecord>>any())).thenReturn(meetingRecords);
+        Result<List<MeetingRoomVO>> availableMeetingRooms = meetingRoomServiceImpl.getAvailableMeetingRooms(
+                LocalDateTime.of(2024, 6, 19, 9, 0),
+                LocalDateTime.of(2024, 6, 19, 10, 0));
+        //断言结果，时间段内只有会议室2未被占用
+        assertEquals(2, availableMeetingRooms.getData().getFirst().getId());
+
+    }
+
 
     @AfterEach
     public void tearDown () {

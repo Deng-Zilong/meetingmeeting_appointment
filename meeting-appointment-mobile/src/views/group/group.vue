@@ -36,13 +36,17 @@
       <van-collapse-item class="created" title="我创建的" name="1" ref="createdRef">
         <van-list v-model:loading="loading" :finished="finished" finished-text="没有更多了" offset="200"
         :style="{ height: activeNames == '1' ? '72.8vh' : '35.7vh'}" @load="onLoad">
-          <van-swipe-cell v-for="item in createdDatas">
+          <van-swipe-cell v-for="(item, index) in createdDatas">
             <div class="card">
-              <div class="card-title">{{ item.groupName }}</div>
+              <div class="card-title" @click="item.isEdit == false" v-if="item.isEdit">
+                <van-icon name="edit" @click="item.isEdit = false" v-show="item.createdBy == userInfo?.userId" />
+                {{ item.groupName }}
+            </div>
+              <div class="card-title" v-else><van-field v-model="item.groupName" placeholder="请输入用户名" @blur="editGroupName(item, index)"/></div>
               <div class="card-content">
                 <div class="content-tr"><van-icon name="underway" />{{ item.gmtCreate }}</div>
                 <div class="content-tr"><van-icon name="user" />创建人：{{ item.createdBy }}</div>
-                <div class="content-tr" @click="editGroup(item)"><van-icon name="friends" />{{ item.users.map((item: any) => { return item.userName}).join(',') }}</div>
+                <div class="content-tr" @click="editGroupPeople(item)"><van-icon name="friends" />{{ item.users.map((item: any) => { return item.userName}).join(',') }}</div>
               </div>
             </div>
             <template #right>
@@ -75,7 +79,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import  { type FormInstance, showSuccessToast } from 'vant';
+import  { type FormInstance, showSuccessToast, showFailToast } from 'vant';
 import PersonTreeDialog from '@/views/group/components/person-tree-dialog.vue';
 import { getGroupUserTree, getMeetingGroupList, deleteMeetingGroup, updateMeetingGroup, addMeetingGroup } from '@/request/api/group'
 import { useRouter } from 'vue-router'
@@ -230,11 +234,15 @@ const getMeetingGroupListData = async() => {
   await getMeetingGroupList({ pageNum: page.value, pageSize: size.value, userId: userInfo.value.userId, groupName: blurValue.value })
     .then((res) => {
       total.value = res.data.length;
-      partDatas.value.push(...res.data);
+      partDatas.value.push(...res.data.map((item: any) => {
+        item.isEdit = true;
+        return item;
+    }));
 
-      res.data.map((item: any) => {
-        if (item.userId = userInfo.value.userId) {
-          return createdDatas.value.push(item);
+    res.data.forEach((item: any) => {
+        if (item.createdBy === userInfo.value.userId) {
+          item.isEdit = true;
+          createdDatas.value.push(item);
         }
       })
     })
@@ -261,12 +269,18 @@ const refresh = async() => {
   await onLoad();
 }
 let groupId = ref<string>(''); // 群组id
-const editGroup = (item: any) => {
-//   addShow.value = true;
-//   groupName.value = item.groupName;
-//   groupPeopleNames.value = item.users.map((item: any) => item.userName).join(',');
-//   peopleIds.value = Array.from(new Set(item.users.map((item: any) => item.userId)));
-
+const editGroupName = (item: any, index: number) => {
+    console.log(item, createdDatas.value[index].isEdit);
+    
+    if (!item.groupName) {
+        showFailToast('群组名称不可为空！');
+        return;
+    }
+    createdDatas.value[index].isEdit = true;
+    updateGroupInfo({ id: item.id, groupName: item.groupName });
+    item.isEdit = false;
+}
+const editGroupPeople = (item: any) => {
   if (type.value == 1) {
         peopleIds.value = [];
     }

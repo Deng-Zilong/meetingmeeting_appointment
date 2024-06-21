@@ -40,7 +40,7 @@
      * @description 返回首页
      */
     const goHome = () => {
-       router.push('/home2');
+       router.push('/home');
     };
 
     /**
@@ -49,7 +49,7 @@
     const logout = async() => {
         const userId = JSON.parse(localStorage.getItem('userInfo') as string)?.userId; // 用户id
         const res:any = await deleteInfo(userId);
-        showSuccessToast('退出登录成功');
+        showSuccessToast('退出成功');
         localStorage.removeItem('userInfo');
         router.replace('/login');
     };
