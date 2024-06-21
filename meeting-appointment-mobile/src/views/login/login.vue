@@ -102,7 +102,7 @@
         try {
             showSuccessToast("登录成功");
             localStorage.setItem('userInfo',JSON.stringify(res.data));
-            router.replace("/home2");
+            router.replace("/home");
         } catch (error) {
             // ElMessage.error('登录失败')
         }
