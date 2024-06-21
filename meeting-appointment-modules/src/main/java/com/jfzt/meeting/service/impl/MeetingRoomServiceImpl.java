@@ -30,10 +30,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.jfzt.meeting.constant.IsDeletedConstant.NOT_DELETED;
 import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
 import static com.jfzt.meeting.constant.MeetingRoomStatusConstant.*;
 import static com.jfzt.meeting.constant.MessageConstant.*;
@@ -296,20 +298,27 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                             timePeriod.setOccupancyRate(((float) timePeriod.getOccupied() / finalTotal)))
                     .sorted((o1, o2) -> (int) (o2.getOccupied() - o1.getOccupied()))
                     .toList();
-            TimePeriodOccupancyVO other = new TimePeriodOccupancyVO();
-            other.setTimePeriod("other");
-            other.setOccupied(0L);
+            TimePeriodOccupancyVO others = new TimePeriodOccupancyVO();
+            others.setTimePeriod("others");
+            others.setOccupied(0L);
             for (int i = 3; i < 9; i++) {
                 TimePeriodOccupancyVO timePeriod = list.get(i);
-                other.setOccupied(other.getOccupied() + timePeriod.getOccupied());
+                others.setOccupied(others.getOccupied() + timePeriod.getOccupied());
             }
-            other.setOccupancyRate(((float) other.getOccupied() / finalTotal));
+            others.setOccupancyRate(((float) others.getOccupied() / finalTotal));
+            TimePeriodOccupancyVO notOccupancyVO = new TimePeriodOccupancyVO();
+            notOccupancyVO.setOccupied(total - totalOccupancy);
+            notOccupancyVO.setTimePeriod("unoccupied");
+            notOccupancyVO.setOccupancyRate(1 - list.get(0).getOccupancyRate()
+                    - list.get(1).getOccupancyRate() - list.get(2).getOccupancyRate()
+                    - others.getOccupancyRate());
             ArrayList<TimePeriodOccupancyVO> occupancyVOList = new ArrayList<>();
+            occupancyVOList.add(notOccupancyVO);
             occupancyVOList.add(list.get(0));
             occupancyVOList.add(list.get(1));
             occupancyVOList.add(list.get(2));
-            occupancyVOList.add(other);
-            List<TimePeriodOccupancyVO> voList = occupancyVOList.stream().filter(item -> item.getOccupied() != 0).toList();
+            occupancyVOList.add(others);
+            List<TimePeriodOccupancyVO> voList = occupancyVOList.stream().toList();
             meetingRoomOccupancyVO.setTimePeriods(occupancyVOList);
             occupancyVOList.clear();
             occupancyVOList.addAll(voList);
@@ -425,7 +434,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         //查询当前时间段会议室的使用信息,当前时间在开始或结束区间内的会议,填充到会议室VO,不更新会议室,状态只有01
         //查询所有会议室
         List<MeetingRoom> meetingRoomList = list(new LambdaQueryWrapper<MeetingRoom>()
-                .eq(MeetingRoom::getIsDeleted, NOT_DELETED).orderByAsc(MeetingRoom::getId));
+                .orderByAsc(MeetingRoom::getId));
 
         return meetingRoomList.stream().map(meetingRoom -> {
             MeetingRoomStatusVO meetingRoomStatusVO = new MeetingRoomStatusVO();
@@ -636,17 +645,10 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         List<MeetingRecord> meetingRecords = meetingRecordService.list(queryWrapper);
         List<MeetingRoom> meetingRooms = this.list(new LambdaQueryWrapper<MeetingRoom>()
                 .notIn(MeetingRoom::getStatus, MEETINGROOM_STATUS_PAUSE));
-        Iterator<MeetingRoom> iterator = meetingRooms.iterator();
-        while (iterator.hasNext()) {
-            MeetingRoom meetingRoom = iterator.next();
-            for (MeetingRecord meetingRecord : meetingRecords) {
-                if (meetingRoom.getId().equals(meetingRecord.getMeetingRoomId())) {
-                    //删除被占用的会议室
-                    iterator.remove();
-                    break;
-                }
-            }
-        }
+        meetingRooms = meetingRooms.stream()
+                .filter(meetingRoom -> meetingRecords.stream()
+                        .noneMatch(meetingRecord -> meetingRoom.getId().equals(meetingRecord.getMeetingRoomId())))
+                .toList();
         List<MeetingRoomVO> meetingRoomVOList = new ArrayList<>();
         for (MeetingRoom meetingRoom : meetingRooms) {
             MeetingRoomVO meetingRoomVO = new MeetingRoomVO();
