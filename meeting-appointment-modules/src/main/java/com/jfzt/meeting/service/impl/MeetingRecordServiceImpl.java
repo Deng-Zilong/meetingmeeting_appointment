@@ -855,7 +855,10 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         String hour = meetingRecordVO.getStartTime().getHour()+":";
         String minute = meetingRecordVO.getStartTime().getMinute() == 0 ? "00" : String.valueOf(meetingRecordVO.getStartTime().getMinute());
         //8
-        sheet.getRow(7).getCell(0).setCellValue("参会时间：" + hour+minute);
+        sheet.getRow(7).getCell(0).setCellValue("参会时间：" + meetingRecordVO.getStartTime().getYear() + "年" +
+                meetingRecordVO.getStartTime().getMonthValue() + "月"
+                + meetingRecordVO.getStartTime().getDayOfMonth() + "日  "
+                +hour+minute);
         //9
         sheet.getRow(8).getCell(0).setCellValue("参会地点：" + meetingRecordVO.getMeetingRoomName());
         //10
@@ -941,7 +944,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             sheet.getRow(size + 10).getCell(0).setCellValue(sysDepartment.getDepartmentName());
             sheet.getRow(size + 10).getCell(4).setCellValue(meetingRecordVO.getAdminUserName());
             String hour = meetingRecordVO.getEndTime().getHour()+":";
-            String minute = meetingRecordVO.getEndTime().getMinute() == 0 ? "00" : String.valueOf(meetingRecordVO.getStartTime().getMinute());
+            String minute = meetingRecordVO.getEndTime().getMinute() == 0 ? "00" : String.valueOf(meetingRecordVO.getEndTime().getMinute());
 
             sheet.getRow(size + 10).getCell(5).setCellValue(hour+minute);
         }
