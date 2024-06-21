@@ -956,7 +956,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         } else {
             sheet.getRow(size + 10).getCell(3).setCellValue("工作细节" + meetingMinutes.getMinutes());
         }
-        sheet.getRow(size + 10).getCell(6).setCellValue("备注111111111111");
+        sheet.getRow(size + 10).getCell(6).setCellValue(" ");
 
 
     }
