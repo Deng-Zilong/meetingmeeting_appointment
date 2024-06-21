@@ -25,18 +25,52 @@
 <script setup lang="ts">
     import { getCenterAllNumberData, getNoticeData } from '@/request/api/home';
     import { ref, onMounted } from 'vue';
-    import { useRouter } from 'vue-router'
+    import { useRouter, useRoute } from 'vue-router'
     import { meetingStatus } from '@/stores/meeting-status'
     import TodyMeeting from '@/views/home/components/today-meeting.vue'
+    import { qwLogin } from '@/request/api/login';
 
     const router = useRouter();
+    const route = useRoute();
     const useMeetingStatus = meetingStatus();
+    const userInfo = ref<any>({});
     
 
-    onMounted(() => {
-        getNotice();
-        getCenterAllNumber();
-        useMeetingStatus.getCenterRoomName();
+    onMounted(async() => {
+        /* 判断扫码登录状态 */
+        const urlParams = new URLSearchParams(window.location.search); // 获取url参数
+        const code = urlParams?.get('code') as string; // 获取code
+        const loginMethod: number = 0; // web扫码登录
+
+        userInfo.value = JSON.parse(localStorage.getItem('userInfo') as string);
+        const token = userInfo.value?.accessToken;
+        
+        // 扫码登录
+        if(!token) {
+            console.log(code,"code");
+            
+            if (code === 'undefined') {
+                return router.replace('/login');
+            }
+            try {
+                const res:any = await qwLogin({code, loginMethod});
+                if (res.code !== '00000') {
+                    throw new Error(res.msg);
+                }
+                userInfo.value = res.data;
+                localStorage.setItem('userInfo', JSON.stringify(res.data));
+                location.href = `/#/home`;
+            } catch(err) {
+                location.href = `/#/login`;
+                return;
+            }
+        }
+        // 登录成功后或已登录状态下执行
+        await Promise.all([
+            getNotice(), // 获取公告
+            getCenterAllNumber(), // 获取会议次数
+            useMeetingStatus.getCenterRoomName(), // 获取会议室
+        ])
     })
 
     /******************************************* 公告 ***********************************/
