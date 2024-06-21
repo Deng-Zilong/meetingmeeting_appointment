@@ -3,10 +3,9 @@
 </template>
 
 <script setup lang="ts">
-import * as echarts from 'echarts';// 5.4区别4引入方式
-
-import { onMounted, ref, watch } from 'vue'
-import { getRoomSelectionRate } from '@/request/api/manage'
+import * as echarts from 'echarts'; // 5.4区别4引入方式
+import {onMounted, ref, watch} from 'vue'
+import {getRoomSelectionRate} from '@/request/api/manage'
 
 const chart = ref()
 const chartInstance = ref()
@@ -21,7 +20,7 @@ const setChart = () => {
   const option = {
     title: {
       text: '统计会议室选择率',
-      top: "5%",
+      top: "2%",
       left: 'center'
     },
     legend: {  // 图例
@@ -31,7 +30,7 @@ const setChart = () => {
       top: 30,
       bottom: 20,
       icon: 'circle', // 展示icon
-      data: data.value.map((item: any) =>{
+      data: data.value.map((item: any) => {
         return {
           name: item.roomName
         }
@@ -54,7 +53,7 @@ const setChart = () => {
       {
         type: 'pie',
         radius: '60%',  // 饼图大小 如果有两个属性值，如：['60%', '70%']，第一个值表示内圈大小，第二个表示外圈大小
-        center: ['50%','60%'],
+        center: ['50%', '60%'],
         label: {
           show: true, // 是否显示文字
           backgroundColor: '#ECF0F3',
@@ -79,12 +78,13 @@ onMounted(() => {
   chartInstance.value = echarts.init(chart.value);  // 初始化图表
 
   getRoomSelectionRate({})  // 获取会议室选择率数据 接口
-  .then((res) => {
-    data.value = res.data
-    setChart();  // 数据请求到后渲染图表 刷新chart
-  })
-  .catch((err) => {})
-  
+      .then((res) => {
+        data.value = res.data
+        setChart();  // 数据请求到后渲染图表 刷新chart
+      })
+      .catch((err) => {
+      })
+
 })
 
 // 当data改变时，更新图表
@@ -93,6 +93,6 @@ watch(() => [data, props.pieData], () => {
   if (props.pieData) {
     data.value = props.pieData
   }
-}, { deep: true });
+}, {deep: true});
 
 </script>
