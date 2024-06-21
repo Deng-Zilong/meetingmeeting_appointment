@@ -485,7 +485,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 meetingRoomStatusVO.setAttendees(attendees.toString());
             }
             return meetingRoomStatusVO;
-        }).collect(Collectors.toList());
+        }).sorted((o1, o2) -> o2.getStatus() - o1.getStatus()).collect(Collectors.toList());
     }
 
     /**
