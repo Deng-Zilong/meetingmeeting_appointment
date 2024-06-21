@@ -738,8 +738,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     @Override
     public void getRecordExport(String userId, String type, List<MeetingRecordVO> meetingRecordVOList, HttpServletResponse response) throws IOException, InvalidFormatException {
         //获取excel模板的路径，一个备份一个应用
-        File templatePathApplyExcel = new File("/opt/会议纪要.xlsx");
-        File templatePathBackupsExcel = new File("/opt/会议纪要备份.xlsx");
+        File templatePathApplyExcel = new File("./opt/会议纪要.xlsx");
+        File templatePathBackupsExcel = new File("./opt/会议纪要备份.xlsx");
         if (!templatePathApplyExcel.exists() || !templatePathBackupsExcel.exists()) {
             log.error("没有找到模板信息");
             throw new RRException(ErrorCodeEnum.SYSTEM_ERROR_B01011);
@@ -760,7 +760,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     private void extractedWord(MeetingRecordVO meetingRecordVO, HttpServletResponse response) {
         // 模板全的路径
-        String templatePaht = "/opt/保险问答系统Sprint02回顾会议纪要.docx";
+        String templatePaht = "./opt/保险问答系统Sprint02回顾会议纪要.docx";
         Map<String, Object> paramMap = new HashMap<>(16);
         // 普通的占位符示例 参数数据结构 {str,str}
         paramMap.put("title", meetingRecordVO.getTitle() + "会议纪要");
@@ -831,7 +831,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         Sheet sheet = workbook.getSheetAt(0);
         //1写入excel图片
         sheet.getRow(0).getCell(0);
-        File file = new File("/opt/image.png");
+        File file = new File("./opt/image.png");
         // 获取路径
         String fileUrl = "file:///" + file.getAbsolutePath();
         picture(workbook, sheet, fileUrl);
