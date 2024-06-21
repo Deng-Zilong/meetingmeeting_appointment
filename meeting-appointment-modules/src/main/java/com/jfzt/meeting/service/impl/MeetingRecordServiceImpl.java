@@ -27,7 +27,6 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -761,14 +760,18 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     private void extractedWord(MeetingRecordVO meetingRecordVO, HttpServletResponse response) {
         // 模板全的路径
         String templatePaht = "./opt/保险问答系统Sprint02回顾会议纪要.docx";
+        String startHour = meetingRecordVO.getStartTime().getHour()+":";
+        String startMinute = meetingRecordVO.getStartTime().getMinute() == 0 ? "00" : String.valueOf(meetingRecordVO.getStartTime().getMinute());
+        String endtHour = meetingRecordVO.getEndTime().getHour()+":";
+        String endtMinute = meetingRecordVO.getEndTime().getMinute() == 0 ? "00" : String.valueOf(meetingRecordVO.getEndTime().getMinute());
         Map<String, Object> paramMap = new HashMap<>(16);
         // 普通的占位符示例 参数数据结构 {str,str}
-        paramMap.put("title", meetingRecordVO.getTitle() + "会议纪要");
+        paramMap.put("title", meetingRecordVO.getTitle());
         paramMap.put("time", meetingRecordVO.getStartTime().getYear() + "年" +
                 meetingRecordVO.getStartTime().getMonthValue() + "月"
                 + meetingRecordVO.getStartTime().getDayOfMonth() + "日  "
-                + meetingRecordVO.getStartTime().getHour() + ":" + meetingRecordVO.getStartTime().getMinute() +
-                "-" + meetingRecordVO.getEndTime().getHour() + ":" + meetingRecordVO.getEndTime().getMinute());
+                + startHour+startMinute +
+                "-" + endtHour+endtMinute);
         paramMap.put("meetingTime", meetingRecordVO.getMeetingRoomName());
         paramMap.put("attendees", meetingRecordVO.getAttendees());
         paramMap.put("meetinggenda", meetingRecordVO.getTitle());
@@ -848,9 +851,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         sheet.getRow(5).getCell(0).setCellValue("主持人：" + meetingRecordVO.getAdminUserName());
         //7
         sheet.getRow(6).getCell(0).setCellValue("参会人员：" + meetingRecordVO.getAttendees());
+
+        String hour = meetingRecordVO.getStartTime().getHour()+":";
+        String minute = meetingRecordVO.getStartTime().getMinute() == 0 ? "00" : String.valueOf(meetingRecordVO.getStartTime().getMinute());
         //8
-        sheet.getRow(7).getCell(0).setCellValue("参会时间：" + meetingRecordVO.getStartTime().getHour() + ":"
-                + meetingRecordVO.getStartTime().getMinute());
+        sheet.getRow(7).getCell(0).setCellValue("参会时间：" + hour+minute);
         //9
         sheet.getRow(8).getCell(0).setCellValue("参会地点：" + meetingRecordVO.getMeetingRoomName());
         //10
@@ -935,7 +940,10 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         if (size < 1) {
             sheet.getRow(size + 10).getCell(0).setCellValue(sysDepartment.getDepartmentName());
             sheet.getRow(size + 10).getCell(4).setCellValue(meetingRecordVO.getAdminUserName());
-            sheet.getRow(size + 10).getCell(5).setCellValue(meetingRecordVO.getEndTime().getHour() + ":" + meetingRecordVO.getEndTime().getMinute());
+            String hour = meetingRecordVO.getEndTime().getHour()+":";
+            String minute = meetingRecordVO.getEndTime().getMinute() == 0 ? "00" : String.valueOf(meetingRecordVO.getStartTime().getMinute());
+
+            sheet.getRow(size + 10).getCell(5).setCellValue(hour+minute);
         }
         sheet.getRow(size + 10).getCell(1).setCellValue(name.get(size).getUserName());
         sheet.getRow(size + 10).getCell(2).setCellValue(size + 1);
