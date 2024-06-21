@@ -737,8 +737,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     @Override
     public void getRecordExport(String userId, String type, List<MeetingRecordVO> meetingRecordVOList, HttpServletResponse response) throws IOException, InvalidFormatException {
         //获取excel模板的路径，一个备份一个应用
-        File templatePathApplyExcel = new File("./opt/会议纪要.xlsx");
-        File templatePathBackupsExcel = new File("./opt/会议纪要备份.xlsx");
+        File templatePathApplyExcel = new File("/opt/会议纪要.xlsx");
+        File templatePathBackupsExcel = new File("/opt/会议纪要备份.xlsx");
         if (!templatePathApplyExcel.exists() || !templatePathBackupsExcel.exists()) {
             log.error("没有找到模板信息");
             throw new RRException(ErrorCodeEnum.SYSTEM_ERROR_B01011);
@@ -759,7 +759,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     private void extractedWord(MeetingRecordVO meetingRecordVO, HttpServletResponse response) {
         // 模板全的路径
-        String templatePaht = "./opt/保险问答系统Sprint02回顾会议纪要.docx";
+        String templatePaht = "/opt/保险问答系统Sprint02回顾会议纪要.docx";
         String startHour = meetingRecordVO.getStartTime().getHour()+":";
         String startMinute = meetingRecordVO.getStartTime().getMinute() == 0 ? "00" : String.valueOf(meetingRecordVO.getStartTime().getMinute());
         String endtHour = meetingRecordVO.getEndTime().getHour()+":";
@@ -818,9 +818,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         meetingMinutes.setUserId(meetingRecordVO.getCreatedBy());
         List<MeetingMinutesVO> minutesVOList = meetingMinutesService.getMeetingMinutes(meetingMinutes);
         List<MinutesPlanVO> minutesPlans = new ArrayList<>();
-        int sizeOrder = 0;
-        if (minutesVOList.size() > 1) {
+        if (minutesVOList.size()>0){
             minutesPlans = minutesVOList.getFirst().getMinutesPlans();
+        }
+        int sizeOrder = 0;
+        if (minutesPlans.size() > 1) {
             //添加"其他标题"行
             sizeOrder = minutesVOList.getFirst().getMinutesPlans().size() - 1;
             ExcelWriter other = ExcelUtil.getWriter(templatePathApplyExcel, "Sheet1");
@@ -834,7 +836,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         Sheet sheet = workbook.getSheetAt(0);
         //1写入excel图片
         sheet.getRow(0).getCell(0);
-        File file = new File("./opt/image.png");
+        File file = new File("/opt/image.png");
         // 获取路径
         String fileUrl = "file:///" + file.getAbsolutePath();
         picture(workbook, sheet, fileUrl);
@@ -882,7 +884,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         sheet.getRow(10 + name.size()).getCell(0).setCellValue("其他");
         sheet.getRow(10 + name.size()).getCell(1).setCellValue(sysUserMapper.selectByUserId(userId).getUserName());
         sheet.getRow(10 + name.size()).getCell(3).setCellValue("目标与工作内容:");
-        if (sizeOrder != 0) {
+        if (minutesVOList.getFirst().getMinutesPlans().size() != 0) {
             //把数据插入到新增行里
             for (int i = 0; i < sizeOrder + 1; i++) {
                 sheet.getRow(10 + name.size() + i + 1).getCell(3).setCellValue(minutesPlans.get(i).getPlan());
