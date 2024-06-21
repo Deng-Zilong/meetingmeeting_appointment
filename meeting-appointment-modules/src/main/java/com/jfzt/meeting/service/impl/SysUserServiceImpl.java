@@ -110,6 +110,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         }
         for (String userId : userIds) {
             SysUser sysUser = sysUserMapper.selectByUserId(userId);
+            if (sysUser == null) {
+                throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0201);
+            }
             if (MessageConstant.ADMIN_LEVEL.equals(sysUser.getLevel())) {
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
             }

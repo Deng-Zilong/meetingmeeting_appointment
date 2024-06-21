@@ -1,10 +1,14 @@
 package com.jfzt.meeting.modules;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.constant.MeetingRoomStatusConstant;
+import com.jfzt.meeting.constant.MessageConstant;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.dto.DatePeriodDTO;
+import com.jfzt.meeting.entity.dto.MeetingRoomDTO;
 import com.jfzt.meeting.entity.vo.MeetingRoomOccupancyVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomSelectionVO;
 import com.jfzt.meeting.entity.vo.MeetingRoomVO;
@@ -13,6 +17,7 @@ import com.jfzt.meeting.mapper.MeetingRoomMapper;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.impl.MeetingRoomServiceImpl;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -25,11 +30,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 public class MeetingRoomTest {
@@ -41,6 +48,9 @@ public class MeetingRoomTest {
     private MeetingRecordService meetingRecordService;
     @MockBean
     private MeetingRoomMapper meetingRoomMapper;
+
+    // 会议室模拟数据
+    private MeetingRoom meetingRoom;
 
     /**
      * 测试方法所在对象
@@ -55,6 +65,7 @@ public class MeetingRoomTest {
     public void setUp () {
         //        初始化Mockito注解
         MockitoAnnotations.openMocks(this);
+
 
         //生成模拟数据
         MeetingRoom room1 = MeetingRoom.builder()
@@ -79,6 +90,17 @@ public class MeetingRoomTest {
                 .createdBy("user2")
                 .isDeleted(0)
                 .equipment("设备2")
+                .build();
+        meetingRoom = MeetingRoom.builder()
+                .id(3L)
+                .roomName("会议室3")
+                .location("地点3")
+                .capacity(10)
+                .status(1)
+                .gmtCreate(LocalDateTime.now())
+                .gmtModified(LocalDateTime.now())
+                .createdBy("user3")
+                .isDeleted(0).equipment("设备3")
                 .build();
 
         List<MeetingRoom> meetingRooms = Arrays.asList(room1, room2);
@@ -196,6 +218,81 @@ public class MeetingRoomTest {
         assertEquals(2, availableMeetingRooms.getData().getFirst().getId());
 
     }
+
+    /**
+     * 测试查询被禁用的会议室Id
+     */
+    @Test
+    public void selectUsableRoom() {
+        // Arrange
+        MeetingRoom pausedRoom = new MeetingRoom();
+        pausedRoom.setId(2L);
+        pausedRoom.setStatus(MeetingRoomStatusConstant.MEETINGROOM_STATUS_PAUSE);
+        MeetingRoom normalRoom = new MeetingRoom();
+        normalRoom.setId(1L);
+        normalRoom.setStatus(MeetingRoomStatusConstant.MEETINGROOM_STATUS_AVAILABLE);
+
+        List<MeetingRoom> allRooms = Arrays.asList(normalRoom,pausedRoom);
+
+        Mockito.when(meetingRoomMapper.selectList(Mockito.any(QueryWrapper.class))).thenReturn(allRooms);
+
+        Result<List<Long>> result = meetingRoomServiceImpl.selectUsableRoom(MessageConstant.SUPER_ADMIN_LEVEL);
+
+
+        Assertions.assertEquals(Result.success().getCode(), result.getCode());
+        Assertions.assertEquals(Collections.singletonList(2L), result.getData());
+    }
+
+
+    @Test
+    public void UpdateRoomSuccessTest() {
+        MeetingRoomDTO meetingRoomDTO = new MeetingRoomDTO();
+
+        meetingRoomDTO.setId(meetingRoom.getId());
+        meetingRoomDTO.setRoomName(meetingRoom.getRoomName());
+        meetingRoomDTO.setLocation(meetingRoom.getLocation());
+        meetingRoomDTO.setCapacity(meetingRoom.getCapacity());
+        meetingRoomDTO.setStatus(meetingRoom.getStatus());
+        meetingRoomDTO.setCurrentLevel(MessageConstant.SUPER_ADMIN_LEVEL);
+
+        when(meetingRoomMapper.selectById(meetingRoomDTO.getId())).thenReturn(meetingRoom);
+        when(meetingRoomMapper.updateRoom(eq(meetingRoomDTO.getId()), anyString(), anyString(), anyInt(), anyInt()))
+                .thenReturn(1);
+
+        Result<Integer> result = meetingRoomServiceImpl.updateRoom(meetingRoomDTO);
+        assertEquals(1, result.getData().intValue());
+        verify(meetingRoomMapper).updateRoom(eq(meetingRoomDTO.getId()), anyString(), anyString(), anyInt(), anyInt());
+    }
+
+    @Test
+    public void NonExistingRoomIdTest() {
+        MeetingRoomDTO meetingRoomDTO = new MeetingRoomDTO();
+        meetingRoomDTO.setId(99L);
+        when(meetingRoomMapper.selectById(meetingRoomDTO.getId())).thenReturn(null);
+        assertThrows(RuntimeException.class, () -> meetingRoomServiceImpl.updateRoom(meetingRoomDTO));
+    }
+
+    @Test
+    public void InvalidDataTest() {
+        MeetingRoomDTO invalidMeetingRoomDTO = new MeetingRoomDTO();
+        invalidMeetingRoomDTO.setId(1L);
+        invalidMeetingRoomDTO.setRoomName(null); // 设置会议室名字为空
+        when(meetingRoomMapper.selectById(invalidMeetingRoomDTO.getId())).thenReturn(meetingRoom);
+        assertThrows(com.jfzt.meeting.exception.RRException.class, () -> meetingRoomServiceImpl.updateRoom(invalidMeetingRoomDTO));
+    }
+
+    @Test
+    public void UserWithoutPermissionTest() {
+        MeetingRoomDTO meetingRoomDTO = new MeetingRoomDTO();
+        meetingRoomDTO.setId(1L);
+        meetingRoomDTO.setCurrentLevel(MessageConstant.EMPLOYEE_LEVEL);
+        when(meetingRoomMapper.selectById(meetingRoomDTO.getId())).thenReturn(meetingRoom);
+
+        assertThrows(com.jfzt.meeting.exception.RRException.class, () -> meetingRoomServiceImpl.updateRoom(meetingRoomDTO));
+        verify(meetingRoomMapper, never()).updateRoom(anyLong(), anyString(), anyString(), anyInt(), anyInt());
+    }
+
+
 
 
     @AfterEach
