@@ -881,7 +881,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         //12其他
         sheet.getRow(10 + name.size()).getCell(0).setCellValue("其他");
         sheet.getRow(10 + name.size()).getCell(1).setCellValue(sysUserMapper.selectByUserId(userId).getUserName());
-        sheet.getRow(10 + name.size()).getCell(3).setCellValue(meetingRecordVO.getTitle());
+        sheet.getRow(10 + name.size()).getCell(3).setCellValue("目标与工作内容:");
         if (sizeOrder != 0) {
             //把数据插入到新增行里
             for (int i = 0; i < sizeOrder + 1; i++) {
