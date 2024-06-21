@@ -897,9 +897,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 4, 4));
             sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 5, 5));
         }
-        if (sizeOrder != 0) {
-            sheet.addMergedRegion(new CellRangeAddress(10 + name.size(), 10 + sizeOrder + name.size(), 0, 0));
-        }
+        sheet.addMergedRegion(new CellRangeAddress(10 + name.size(), 11 + sizeOrder + name.size(), 0, 0));
         //直接导出电脑文件夹
 //            FileOutputStream outputStream = new FileOutputStream("F:\\会议纪要.xlsx");
 //            workbook.write(outputStream);
