@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
 
 /**
  * 设备(MeetingDevice)实体类
- * @author: chenyu.di
- * @since: 2024-06-12 10:54
+ * @author chenyu.di
+ * @since 2024-06-12 10:54
  */
 @TableName(value = "meeting_device")
 @Data
