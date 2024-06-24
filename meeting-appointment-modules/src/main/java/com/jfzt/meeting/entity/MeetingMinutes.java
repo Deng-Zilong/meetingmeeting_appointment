@@ -1,5 +1,7 @@
 package com.jfzt.meeting.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -19,15 +21,20 @@ public class MeetingMinutes implements Serializable {
     /**
      *纪要id
      */
+    @TableId(type = IdType.AUTO)
     private Integer id;
     /**
      * 用户id
      */
     private String userId;
     /**
-     * 纪要
+     * 纪要内容
      */
     private String minutes;
+    /**
+     * 纪要备注
+     */
+    private String remark;
     /**
      * 会议记录id
      */
