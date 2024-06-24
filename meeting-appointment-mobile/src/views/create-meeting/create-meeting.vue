@@ -15,9 +15,9 @@
     </div>
   </van-form> -->
     <div id="container" class="create-meeting">
-        <van-sticky>
+        <!-- <van-sticky>
             <van-nav-bar title="创建会议" left-text="返回" left-arrow @click-left="goBack" />
-        </van-sticky>
+        </van-sticky> -->
         <el-form ref="ruleFormRef" :model="formData" :rules="rules" label-width="80px">
             <el-form-item label="会议主题" prop="title">
                 <el-input v-model="formData.title" placeholder="请输入" />
@@ -472,6 +472,7 @@ onBeforeUnmount(() => {
     height: 100%;
     width: 100%;
     margin: 0 auto;
+    padding: 2vh 0 !important;
     background: #fff;
 
     :deep(.el-form) {

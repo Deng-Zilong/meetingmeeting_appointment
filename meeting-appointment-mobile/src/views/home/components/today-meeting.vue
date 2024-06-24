@@ -13,9 +13,9 @@
                         <div class="date">{{ item.date }}</div>
                     </div>
                     <div class="card">
-                        <van-icon name="edit" @click="toEdit(item)" v-show="item.status === 0" />
+                        <van-icon name="edit" @click="toEdit(item)" v-show="item.status === 0 && userId === item.createdBy" />
                         <p class="title">会议主题：{{ item.title }}</p>
-                        <p>预定人： {{ item.createdBy }}</p>
+                        <p>预定人： {{ item.adminUserName }}</p>
                         <p>时间： {{ item.time }}</p>
                         <p>会议室：{{ item.meetingRoomName }}</p>
                     </div>
@@ -75,7 +75,8 @@ onMounted(() => {
         font-weight: bold;
     }
     .visit-records {
-        height: 26.45rem;
+        // height: 27.6rem;
+        height: 47.3vh;
         padding-left: 15px;
         padding-right: 15px;
         padding-top: 28px;

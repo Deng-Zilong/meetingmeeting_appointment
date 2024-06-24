@@ -63,6 +63,7 @@
                         <el-date-picker v-model="formData.date" type="date" class="date" :disabled-date="disabledDate"
                             placeholder="选择日期"/>
                     </el-form-item>
+                    <div class="week-day">{{ week[dayjs(formData.date).day()] }}</div>
                     <el-form-item label="当前可选地点" prop="meetingRoomId">
                         <el-select v-model.string="formData.meetingRoomId" placeholder="请选择" @change="handleChangeRoom">
                             <el-option v-for="item in roomArr" :key="item.id" :label="item.roomName" :value="String(item.id)" />
@@ -130,6 +131,7 @@ const currentUserId = ref<string>(userInfo.value.userId);
 
 const currentDate:string = dayjs(new Date()).format('YYYY-MM-DD');  // 当前日期 yy-mm-dd
 const currentTime:string = dayjs(new Date()).format('HH:mm'); // 当前时间 HH:mm
+const week = ref(['星期天', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六',]) // 会议日期显示星期
 
 const isCreate = ref(true); // 是否是创建会议 true创建 false修改
 
@@ -522,7 +524,7 @@ onBeforeUnmount(() => {
             .appoint-row {
                 display: flex;
                 justify-content: space-between;
-
+                position: relative;
                 .el-form-item {
                     flex-direction: column;
                     align-items: flex-start;
@@ -530,6 +532,12 @@ onBeforeUnmount(() => {
                     ::v-deep(.el-form-item__content) {
                         width: 17rem;
                     }
+                }
+                .week-day {
+                  position: absolute;
+                  bottom: 1.5625rem;
+                  left: 6.875rem;
+                  font-size: .8rem;
                 }
 
                 // 参会人 input内部样式

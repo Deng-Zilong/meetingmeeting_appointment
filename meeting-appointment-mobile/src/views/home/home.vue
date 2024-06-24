@@ -142,7 +142,8 @@
             }
         }
         .screen-box {
-            height: 22rem;
+            // height: 22rem;
+            height: 37.7vh;
             padding-top: 10px;
             margin: .625rem 0;
             // background-image: url('@/assets/imgs/screen-bg.png');

@@ -1,5 +1,5 @@
 <template>
-  <div id="container" class="group-Manage">
+  <div id="container" class="group-manage">
     <van-dialog v-model:show="addShow" title="群组信息" show-cancel-button :before-close="closeGroupDialog">
       <van-form ref="groupFormRef">
         <van-cell-group>
@@ -28,24 +28,27 @@
         @close-dialog="closeAddGroupDialog" 
         @submit-dialog="handleCheckedNodes" />
 
-        <van-sticky>
+        <!-- <van-sticky>
             <van-nav-bar title="群组管理" left-text="返回" right-text="添加" left-arrow @click-left="onClickLeft" @click-right="onClickRight" />
-        </van-sticky>
-    <van-field v-model="blurValue" clearable placeholder="请输入群组名称搜索" @update:model-value="updataBlurValue" />
+        </van-sticky> -->
+    <div class="group-top">
+      <van-field v-model="blurValue" clearable placeholder="请输入群组名称搜索" @update:model-value="updataBlurValue" />
+      <van-button type="primary" @click="onClickRight">添加</van-button>
+    </div>
     <van-collapse v-model="activeNames">
       <van-collapse-item class="created" title="我创建的" name="1" ref="createdRef">
         <van-list v-model:loading="loading" :finished="finished" finished-text="没有更多了" offset="200"
-        :style="{ height: activeNames == '1' ? '72.8vh' : '35.7vh'}" @load="onLoad">
+        :style="{ height: activeNames == '1' ? '78.05vh' : '38.33vh'}" @load="onLoad">
           <van-swipe-cell v-for="(item, index) in createdDatas">
             <div class="card">
               <div class="card-title" @click="item.isEdit == false" v-if="item.isEdit">
                 <van-icon name="edit" @click="item.isEdit = false" v-show="item.createdBy == userInfo?.userId" />
                 {{ item.groupName }}
-            </div>
+              </div>
               <div class="card-title" v-else><van-field v-model="item.groupName" placeholder="请输入用户名" @blur="editGroupName(item, index)"/></div>
               <div class="card-content">
                 <div class="content-tr"><van-icon name="underway" />{{ item.gmtCreate }}</div>
-                <div class="content-tr"><van-icon name="user" />创建人：{{ item.createdBy }}</div>
+                <div class="content-tr"><van-icon name="user" />创建人：{{ item.userName }}</div>
                 <div class="content-tr" @click="editGroupPeople(item)"><van-icon name="friends" />{{ item.users.map((item: any) => { return item.userName}).join(',') }}</div>
               </div>
             </div>
@@ -59,13 +62,13 @@
 
       <van-collapse-item class="participate" title="我参与的" name="2">
         <van-list v-model:loading="loading" :finished="finished" finished-text="没有更多了" offset="200"
-         :style="{ height: activeNames == '2' ? '72.8vh' : '35.7vh'}" @load="onLoad">
+         :style="{ height: activeNames == '2' ? '78.05vh' : '38.33vh'}" @load="onLoad">
           <van-swipe-cell v-for="item in partDatas">
             <div class="card">
               <div class="card-title">{{ item.groupName }}</div>
               <div class="card-content">
                 <div class="content-tr content-time"><van-icon name="underway" />{{ item.gmtCreate }}</div>
-                <div class="content-tr content-found"><van-icon name="user" />创建人：{{ item.createdBy }}</div>
+                <div class="content-tr content-found"><van-icon name="user" />创建人：{{ item.userName }}</div>
                 <div class="content-tr content-users"><van-icon name="friends" />{{ item.users.map((item: any) => { return item.userName}).join(',') }}</div>
               </div>
             </div>
@@ -321,10 +324,20 @@ const deleteGroup = (id: number) => {
 html {
   background: #F7F8FA;
 }
-.group-Manage {
-  height: 94.6vh;
+.group-manage {
+  // height: 100vh;
   background: #F7F8FA;
 //   padding: .1rem 0;
+  .group-top {
+    display: flex;
+    margin-bottom: .625rem;
+    .van-button {
+      // flex: 1;
+      width: 80px;
+      font-size: 1.2rem;
+      // padding: 10px;
+    }
+  }
   // .van-cell-group {
   //   display: flex;
   //   .van-field {
