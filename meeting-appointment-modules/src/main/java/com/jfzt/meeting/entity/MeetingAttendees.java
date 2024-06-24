@@ -1,6 +1,9 @@
 package com.jfzt.meeting.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,7 +11,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * 会议参与人表(MeetingAttendees)表实体类
@@ -22,15 +25,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class MeetingAttendees implements Serializable {
     /**
-     *id
+     * id
      */
     @TableId(type = IdType.AUTO)
     private Long id;
-
-    /**
-     * 参与人id
-     */
-    private String userId;
 
     /**
      * 会议预约记录id
@@ -38,20 +36,25 @@ public class MeetingAttendees implements Serializable {
     private Long meetingRecordId;
 
     /**
+     * 参与人id
+     */
+    private String userId;
+
+    /**
+     * 参会人姓名
+     */
+    private String userName;
+
+    /**
      * 添加时间
      */
-    private LocalDateTime gmtCreate;
+    private Date gmtCreate;
 
     /**
      * 修改时间
      */
-    private LocalDateTime gmtModified;
+    private Date gmtModified;
 
-    /**
-     * 逻辑删除（0未删除 1删除）
-     */
-    @TableLogic
-    private Integer isDeleted;
 
     @Serial
     @TableField(exist = false)
@@ -70,11 +73,11 @@ public class MeetingAttendees implements Serializable {
         }
         MeetingAttendees other = (MeetingAttendees) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-                && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
                 && (this.getMeetingRecordId() == null ? other.getMeetingRecordId() == null : this.getMeetingRecordId().equals(other.getMeetingRecordId()))
+                && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
+                && (this.getUserName() == null ? other.getUserName() == null : this.getUserName().equals(other.getUserName()))
                 && (this.getGmtCreate() == null ? other.getGmtCreate() == null : this.getGmtCreate().equals(other.getGmtCreate()))
-                && (this.getGmtModified() == null ? other.getGmtModified() == null : this.getGmtModified().equals(other.getGmtModified()))
-                && (this.getIsDeleted() == null ? other.getIsDeleted() == null : this.getIsDeleted().equals(other.getIsDeleted()));
+                && (this.getGmtModified() == null ? other.getGmtModified() == null : this.getGmtModified().equals(other.getGmtModified()));
     }
 
     @Override
@@ -82,11 +85,11 @@ public class MeetingAttendees implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getUserId() == null) ? 0 : getUserId().hashCode());
         result = prime * result + ((getMeetingRecordId() == null) ? 0 : getMeetingRecordId().hashCode());
+        result = prime * result + ((getUserId() == null) ? 0 : getUserId().hashCode());
+        result = prime * result + ((getUserName() == null) ? 0 : getUserName().hashCode());
         result = prime * result + ((getGmtCreate() == null) ? 0 : getGmtCreate().hashCode());
         result = prime * result + ((getGmtModified() == null) ? 0 : getGmtModified().hashCode());
-        result = prime * result + ((getIsDeleted() == null) ? 0 : getIsDeleted().hashCode());
         return result;
     }
 
@@ -96,11 +99,11 @@ public class MeetingAttendees implements Serializable {
                 " [" +
                 "Hash = " + hashCode() +
                 ", id=" + id +
-                ", userId=" + userId +
                 ", meetingRecordId=" + meetingRecordId +
+                ", userId=" + userId +
+                ", userName=" + userName +
                 ", gmtCreate=" + gmtCreate +
                 ", gmtModified=" + gmtModified +
-                ", isDeleted=" + isDeleted +
                 ", serialVersionUID=" + serialVersionUID +
                 "]";
     }
