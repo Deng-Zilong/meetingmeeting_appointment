@@ -1,6 +1,7 @@
 <template>
     <div class="history">
         <div class="theme" > 会议历史记录查看 </div>
+        <!-- <div class="theme" >  </div> -->
         <div class="content" v-loading="loading" element-loading-background="rgba(122, 122, 122, 0.1)">
             <div class="title">
                 <div>会议主题</div>
@@ -138,11 +139,24 @@
                             :rules="{required: true,message: '不可为空',trigger: 'blur',}" >
                             <el-input
                                 v-model="summaryDetailForm.minutes"
-                                :autosize="{ minRows: 15}"
+                                :autosize="{ minRows: 10}"
                                 maxlength="10000"
                                 :show-word-limit="true"
                                 type="textarea"
                                 placeholder="请输入会议纪要"/>
+                        </el-form-item>
+                        <el-form-item
+                            class="plan"
+                            label=""
+                            prop="minutes"
+                        >
+                            <el-input
+                                v-model="summaryDetailForm.remark"
+                                :autosize="{ minRows: 5}"
+                                maxlength="1000"
+                                :show-word-limit="true"
+                                type="textarea"
+                                placeholder="请输入备注"/>
                         </el-form-item>
                         <div v-if="meetingSummaryRow.createdBy == currentUserId">
                             <p class="title">目标与工作内容：</p>
@@ -511,6 +525,7 @@
     // 会议纪要 excel 详情
     let summaryDetailForm = ref<any>({
         minutes: '',
+        remark: '',
         minutesPlans:[
         {
             plan: '',
@@ -540,10 +555,11 @@
     const getMeetingMinutesReq = () => {
         getMeetingMinutes({userId: userInfo.value.userId, meetingRecordId: meetingRecordId.value})
         .then((res) => {
-            const {minutes, id, minutesPlans} = res.data;
+            const {minutes, id, minutesPlans, remark} = res.data;
             summaryDetailForm.value.minutes = minutes;
             meetingSummaryId.value = id;
             summaryDetailForm.value.minutesPlans = minutesPlans?.length ? minutesPlans : summaryDetailForm.value.minutesPlans;
+            summaryDetailForm.value.remark = remark;
         })
         .catch(err => {})
     }
@@ -709,7 +725,8 @@
                 let params:any = {
                     id: meetingSummaryId.value, 
                     userId: userInfo.value.userId, 
-                    minutes: summaryDetailForm.value.minutes, 
+                    minutes: summaryDetailForm.value.minutes,
+                    remark: summaryDetailForm.value.remark,
                     meetingRecordId: meetingRecordId.value,
                 }
                 if (meetingSummaryRow.value.createdBy == currentUserId) {
@@ -847,87 +864,87 @@
 <style scoped lang="scss">
     .history {
         .theme {
-            width: 98rem;
-            height: 4.375rem;
-            font-size: 1.5625rem;
+            width: 1568px;
+            height: 70px;
+            font-size: 25px;
             font-weight: 500;
             text-align: center;
-            line-height: 4.375rem;
+            line-height: 70px;
             letter-spacing: 0.05em;
             color: #3268DC;
-            border-radius: .9375rem;
+            border-radius: 15px;
             background: #FFFFFF;
             margin: 0 auto;
         }
         .content {
-            width: 97.9375rem;
-            height: 40.0625rem;
-            border-radius: .9375rem;
+            width: 1567px;
+            height: 641px;
+            border-radius: 15px;
             box-sizing: border-box;
-            border: .1875rem solid rgba(18, 115, 219, 0.8);
-            margin: 1.25rem auto;
+            border: 3px solid rgba(18, 115, 219, 0.8);
+            margin: 20px auto;
             .title {
-                height: 3rem;
+                height: 48px;
                 div {
                     color: #3A3A3A;
-                    font-size: 1.1rem;
+                    font-size: 17.6px;
                     font-weight: 400;
-                    line-height: 1.75rem;
+                    line-height: 28px;
                 }
             }
             .list-container {
                 .el-timeline {
                     overflow-y: scroll;
-                    max-height: 34.4375rem;
+                    max-height: 551px;
                     margin-right: 15px;
                     .timestamp {
                         position: absolute;
                         top: 0;
-                        left: 2rem;
+                        left: 32px;
                         text-align: center;
                         p:first-child {
-                            font-size: 1rem;
+                            font-size: 16px;
                             font-weight: 600;
                             color: #676767;
-                            margin-bottom: .625rem;
+                            margin-bottom: 10px;
                         }
                         p:last-child {
-                            font-size: 1.2rem;
+                            font-size: 19.2px;
                             font-weight: 600;
                             color: #3A3A3A;
                         }
                     }
                     .loading {
                         color: #666666;
-                        font-size: 1.25rem;
+                        font-size: 20px;
                         text-align: center;
                         font-weight: 300;
                     }
                 }
                 ::-webkit-scrollbar {
-                    width: 1.1rem;
-                    border-radius: .9375rem;
+                    width: 17.6px;
+                    border-radius: 15px;
                 }
                 /* 自定义滚动条轨道 */
                 ::-webkit-scrollbar-track {
                     // background: #FFFFFF;
-                    border-radius: .9375rem;
+                    border-radius: 15px;
                 }
                 
                 /* 自定义滚动条的滑块（thumb） */
                 ::-webkit-scrollbar-thumb {
                     background: #EDEBEB;
-                    border-radius: .9375rem;
+                    border-radius: 15px;
                 }
                 .card-item {
-                    width: 87.5625rem;
-                    height: 3.75rem;
-                    border-radius: .625rem;
+                    width: 1401px;
+                    height: 60px;
+                    border-radius: 10px;
                     background: #FFFFFF;
-                    box-shadow: 0 .1875rem .125rem 0 rgba(0, 0, 0, 0.04);
+                    box-shadow: 0 3px 2px 0 rgba(0, 0, 0, 0.04);
                     div {
-                        font-size: 1rem;
-                        line-height: 1.25rem;
+                        font-size: 16px;
+                        line-height: 20px;
                         color: #666666;
                         &:nth-child(1) {
                             position: relative;
@@ -937,16 +954,16 @@
                                 color: #409EFF;
                             }
                             &>p>span:nth-child(2) {
-                                margin: 0 .625rem;
+                                margin: 0 10px;
                                 color: #F56C6C;
                             }
                             .edit-meeting-summary {
                                 color: #67C23A;
                             }
                             .download-excel {
-                                font-size: 1.125rem;
+                                font-size: 18px;
                                 color: #409EFF;
-                                margin: 0 0 0 .625rem;
+                                margin: 0 0 0 10px;
                                 transition: transform 0.2s ease;
                                 &:hover {
                                     color:#3268dc;
@@ -970,9 +987,9 @@
                 }
             }
             .title, .card-item {
-                width: 87.5625rem;
-                padding: 0 .625rem;
-                margin: 0.8rem 5rem;
+                width: 1401px;
+                padding: 0 10px;
+                margin: 12.8px 80px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
@@ -982,19 +999,19 @@
                     flex: 1;
                     justify-content: center;
                     &:nth-child(1) {
-                        width: 11.5rem;
+                        width: 184px;
                         flex: 1.2;
-                        padding: 0 .375rem 0 3.625rem;
+                        padding: 0 6px 0 58px;
                         cursor: pointer;
                     }
                     &:nth-child(2) {
-                        width: 11.5rem;
+                        width: 184px;
                         flex: 1.2;
-                        padding: 0 .375rem;
+                        padding: 0 6px;
                     }
                     &:nth-child(5) {
-                        width: 15.1875rem;
-                        padding: 0 3rem;
+                        width: 243px;
+                        padding: 0 48px;
                         flex: 1.5;
                     }
                     &:nth-child(7) {
@@ -1004,14 +1021,14 @@
             }
         }
         :deep().meeting-summary {
-            border-radius: 0.9375rem;
-            padding: 1.25rem;
+            border-radius: 15px;
+            padding: 20px;
             .my-header {
                 display: flex;
                 // align-items: space-between;
                 justify-content: space-between;
                 .el-dialog__title {
-                    font-size: 1rem;
+                    font-size: 16px;
                     font-weight: 500;
                 }
             }
@@ -1057,18 +1074,18 @@
                     line-height: 0;
                 }
                 .remove-ban {
-                    font-size: 1.4rem;
+                    font-size: 22.4px;
                     cursor: no-drop;
                 }
                 .circle-plus {
-                    margin-right: .625rem;
+                    margin-right: 10px;
                     color: #409EFF;
                 }
                 .remove {
                     color: #F56C6C;
                 }
                 .circle-plus, .remove {
-                    font-size: 1.4rem;
+                    font-size: 22.4px;
                     cursor: pointer;
                 }
             }
