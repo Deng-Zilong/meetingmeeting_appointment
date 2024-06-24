@@ -32,6 +32,11 @@ public class MeetingMinutesVO {
     private String minutes;
 
     /**
+     * 纪要备注
+     */
+    private String remark;
+
+    /**
      * 会议记录id
      */
     private Integer meetingRecordId;

@@ -72,6 +72,10 @@ public class MeetingRecordVO implements Serializable {
     private List<SysUserVO> users;
 
     /**
+     * 部门名称
+     */
+    private String department;
+    /**
      * 开始时间
      */
     @JsonSerialize(using = LocalDateTimeSerializer.class)

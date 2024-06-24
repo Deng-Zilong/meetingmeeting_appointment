@@ -404,7 +404,7 @@
 <style scoped lang="scss">
   // 操作管理员 气泡弹窗样式
   .el-popover {
-    height: 250px;
+    height: 15.625rem;
     .people-items {
       display: flex;
       align-items: center;

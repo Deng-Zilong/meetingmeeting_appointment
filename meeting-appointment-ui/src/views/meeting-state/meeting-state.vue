@@ -12,7 +12,8 @@
             <el-icon @click="addDate"><ArrowDownBold /></el-icon>
           </div>
           <el-date-picker v-model="date" type="date" class="left-date" :clearable="false" :disabled-date="disabledDate"
-            placeholder="选择日期" @change="changeDate" />
+          placeholder="选择日期" @change="changeDate" />
+          <div class="week-day">{{ week[dayjs(date).day()] }}</div>
         </div>
         <div class="left-table">
           <div class="table-title">会议预约时间选择</div>
@@ -67,16 +68,6 @@
           </div>
           <!-- 报损弹窗 -->
           <el-dialog v-model="dialogFormVisible" width="500" top="25vh">
-            <!-- <el-form :model="formDialog">
-              <el-form-item label="报损信息" label-width="">
-                <el-input v-model="formDialog.input" />
-              </el-form-item>
-              <el-form-item label="报损设备" label-width="">
-                <el-select v-model="formDialog.selected" placeholder="请选择报损设备">
-                  <el-option v-for="item in deviceData" :label="item.label" :value="item.value" />
-                </el-select>
-              </el-form-item>
-            </el-form> -->
             <el-table :data="gridData" >
               <el-table-column property="deviceName" label="设备" width="150" />
               <el-table-column property="info" label="报损信息" width="200">
@@ -109,13 +100,13 @@ import capacity from '@/assets/img/capacity.png'
 import device from '@/assets/img/device.png'
 import { getBusyData } from '@/request/api/home'
 import { addBreakInfoData, getDeviceData } from '@/request/api/manage'
-import { de } from 'element-plus/es/locales.mjs';
 
 const routes = useRoute();  // 用于传数据
 const router = useRouter() // 用于选择时间段
 
 const userInfo = ref<any>()
 const date = ref<any>(dayjs().startOf('date').format('YYYY-MM-DD'))  // 会议日期选择
+const week = ref(['星期天', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六',]) // 会议日期显示星期
 const currentMeetingId = ref<any>(routes.query.id);  // 会议室id
 const title = ref(routes.query.title);  // 会议室名称
 const locate = ref(routes.query.address);  // 会议室位置
@@ -471,11 +462,13 @@ const handleBreak = (title: any) => {
 
       .meeting-left-date {
         display: flex;
+        align-items: center;
         justify-content: flex-end;
         margin: .5rem 0;
 
         ::v-deep(.left-date) {
-          height: 3rem !important;
+          width: 245px;
+          height: 3rem;
           font-size: 1.5rem !important;
         }
 
@@ -486,6 +479,11 @@ const handleBreak = (title: any) => {
           margin-right: 10px;
           color: #A8ABB2;
           cursor: pointer;
+        }
+        .week-day {
+          font-size: 1.3rem;
+          position: absolute;
+          padding-right: 10px;
         }
       }
 

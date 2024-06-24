@@ -101,6 +101,10 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         if (meetingRoom.getCapacity() <= 0) {
             throw new RRException("会议室容量不正确", ErrorCodeEnum.SERVICE_ERROR_A0421.getCode());
         }
+        if (meetingRoom.getRoomName().isEmpty() || meetingRoom.getLocation().isEmpty()
+                || meetingRoom.getCapacity() == null) {
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
+        }
         // 根据创建人Id查询用户信息
         SysUser sysUser = sysUserMapper.selectByUserId(meetingRoom.getCreatedBy());
         // 查询会议室名称,判断是否有重复的会议室名称
@@ -114,10 +118,6 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         }
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(sysUser.getLevel())
                 || MessageConstant.ADMIN_LEVEL.equals(sysUser.getLevel())) {
-            if (meetingRoom.getRoomName().isEmpty() || meetingRoom.getLocation().isEmpty()
-                    || meetingRoom.getCapacity() == null) {
-                throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
-            }
             int result = meetingRoomMapper.insert(meetingRoom);
             if (result > 0) {
                 return Result.success(result);
@@ -137,17 +137,21 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     public Result<Integer> deleteMeetingRoom (Long id, Integer currentLevel) {
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)
                 || MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
-            // 删除会议室
-            if (id != null) {
+            // 根据id查询会议室信息
+            if (id == null) {
+                throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
+            }
+            MeetingRoom meetingRoom = meetingRoomMapper.selectById(id);
+            if (meetingRoom == null) {
+                throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
+            } else {
                 int result = meetingRoomMapper.deleteById(id);
-                meetingDeviceService.remove(new LambdaQueryWrapper<MeetingDevice>().eq(MeetingDevice::getRoomId, id));
                 if (result > 0) {
+                    meetingDeviceService.remove(new LambdaQueryWrapper<MeetingDevice>().eq(MeetingDevice::getRoomId, id));
                     return Result.success(result);
                 } else {
                     throw new RRException(ErrorCodeEnum.SYSTEM_ERROR_B0001);
                 }
-            } else {
-                throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0301);
             }
         } else {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0301);
@@ -485,7 +489,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 meetingRoomStatusVO.setAttendees(attendees.toString());
             }
             return meetingRoomStatusVO;
-        }).collect(Collectors.toList());
+        }).sorted((o1, o2) -> o2.getStatus() - o1.getStatus()).collect(Collectors.toList());
     }
 
     /**

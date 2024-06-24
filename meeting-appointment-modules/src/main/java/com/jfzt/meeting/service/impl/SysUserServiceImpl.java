@@ -61,21 +61,20 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         //去重
         HashSet<String> userIdSet = new LinkedHashSet<>(userIds);
         ArrayList<String> userIdList = new ArrayList<>(userIdSet);
-        userIdList.forEach(userId -> {
-            SysUser user = this.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, userId));
-            if (user != null) {
-                //拼接参会人姓名
-                if (sysUserVOList != null) {
-                    sysUserVOList.add(new SysUserVO(user.getUserId(), user.getUserName(),null));
-                }
-                if (attendees != null) {
-                    attendees.append(user.getUserName());
-                    if (userIdList.indexOf(userId) < userIdList.size() - 1) {
-                        attendees.append(",");
+        List<SysUser> userList = this.list(new LambdaQueryWrapper<SysUser>().in(SysUser::getUserId, userIdList));
+        userList.forEach(user -> {
+                    //拼接参会人姓名
+                    if (sysUserVOList != null) {
+                        sysUserVOList.add(new SysUserVO(user.getUserId(), user.getUserName(), null));
+                    }
+                    if (attendees != null) {
+                        attendees.append(user.getUserName());
+                        if (userIdList.indexOf(user.getUserId()) < userIdList.size() - 1) {
+                            attendees.append(",");
+                        }
                     }
                 }
-            }
-        });
+        );
     }
 
 
@@ -110,6 +109,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         }
         for (String userId : userIds) {
             SysUser sysUser = sysUserMapper.selectByUserId(userId);
+            if (sysUser == null) {
+                throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0201);
+            }
             if (MessageConstant.ADMIN_LEVEL.equals(sysUser.getLevel())) {
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
             }

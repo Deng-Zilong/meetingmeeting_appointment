@@ -133,7 +133,7 @@ public class SysUserController {
      * @param adminDTO 用户DTO对象
      * @return com.jfzt.meeting.common.Result<java.lang.Integer>
      */
-    @PutMapping("/delete-admin1")
+    @PutMapping("/delete-admin")
     public Result<Integer> deleteAdmin(@RequestBody AdminDTO adminDTO) {
         return sysUserService.deleteAdmin(adminDTO.getUserId());
     }
