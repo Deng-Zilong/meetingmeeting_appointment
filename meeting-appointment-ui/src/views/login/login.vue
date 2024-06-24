@@ -50,12 +50,12 @@
                 <iframe :src="iframeSrc" frameborder="0" width="100%" height="100%" :element-loading-text="iframeLoading"></iframe>
 
                 <!-- <iframe :src="iframeSrc" frameborder="0" width="100%" height="100%" :element-loading-text="iframeLoading" v-if="isIframeSrc"></iframe> -->
-                <!-- <el-skeleton style="width: 260px" v-else >
+                <!-- <el-skeleton style="width: 16.25rem" v-else >
                     <template #template>
-                        <el-skeleton-item variant="p" style="width: 10%; margin-right: .625rem" />
+                        <el-skeleton-item variant="p" style="width: 10%; margin-right: 10px" />
                         <el-skeleton-item variant="p" style="width: 65%" />
-                        <el-skeleton-item variant="image" style="width: 260px; height: 260px" />
-                        <div style="padding: 10px">
+                        <el-skeleton-item variant="image" style="width: 16.25rem; height: 16.25rem" />
+                        <div style="padding: .625rem">
                             <el-skeleton-item variant="text" style="width: 85%" />
                             <el-skeleton-item variant="text" style="width: 55%" />
                         </div>
@@ -250,8 +250,8 @@ const getCode = () => {
     }
     ::v-deep(.el-loading-text){
         color: #fff;
-        font-size: 1.2rem;
-        letter-spacing: .2rem;
+        font-size: 19.2px;
+        letter-spacing: 3.2px;
         opacity: 0.7;
     }
 
@@ -278,14 +278,14 @@ const getCode = () => {
                 justify-content: space-between;
                 // align-items:first baseline;
                 .logo {
-                    width: 14.3125rem;
-                    height: 4.6875rem;
-                    margin-right: -4.5rem;
+                    width: 229px;
+                    height: 75px;
+                    margin-right: -72px;
                     background: url(@/assets/img/logo.png) no-repeat;
                 }
                 .right-icon {
-                    width: 1.875rem;
-                    height: 1.875rem;
+                    width: 30px;
+                    height: 30px;
                     background: url(@/assets/img/qrcode.png) no-repeat;
                     cursor: pointer;
                     &:hover {
@@ -297,7 +297,7 @@ const getCode = () => {
             .captcha {
                 .el-image {
                     width: 100%;
-                    height: 2.125rem;
+                    height: 34px;
                     cursor: pointer;
                 }
             }
@@ -319,11 +319,11 @@ const getCode = () => {
             text-align: center;
           }
         //   .switch-arrow {
-        //     width: 1.25rem;
-        //     height: 20px;
+        //     width: 20px;
+        //     height: 1.25rem;
         //     position: absolute;
-        //     top: -0.6875rem;
-        //     right: 4.2rem;
+        //     top: -11px;
+        //     right: 67.2px;
         //     cursor: pointer;
         //     background: url(@/assets/img/switch-arrow.png) no-repeat;
         //     &:hover {

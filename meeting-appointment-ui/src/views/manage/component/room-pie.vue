@@ -1,5 +1,5 @@
 <template>
-  <div ref="chart" style="width: 770px; height:600px;"></div>
+  <div ref="chart" class="room-pie"></div>
 </template>
 
 <script setup lang="ts">
@@ -21,7 +21,10 @@ const setChart = () => {
     title: {
       text: '统计会议室选择率',
       top: "2%",
-      left: 'center'
+      left: 'center',
+      textStyle: {
+        fontSize: '22px'
+      }
     },
     legend: {  // 图例
       show: true,
@@ -30,6 +33,9 @@ const setChart = () => {
       top: 30,
       bottom: 20,
       icon: 'circle', // 展示icon
+      textStyle: {
+        fontSize: '16px'
+      },
       data: data.value.map((item: any) => {
         return {
           name: item.roomName
@@ -59,7 +65,11 @@ const setChart = () => {
           backgroundColor: '#ECF0F3',
           formatter: (params: any) => { // 格式化文字
             return params.name + ' : ' + params.percent + '%';
-          }
+          },
+          textStyle: {
+            fontSize: '16px',
+            backgroundColor: '#FFF'
+          },
         },
         data: data.value.map((item: any) => {
           return {
@@ -96,3 +106,10 @@ watch(() => [data, props.pieData], () => {
 }, {deep: true});
 
 </script>
+
+<style lang="scss" scoped>
+.room-pie {
+  width: 770px;
+  height:600px;
+}
+</style>

@@ -1,5 +1,5 @@
 <template>
-  <div ref="echartsDom" style="width: 770px; height:600px;"></div>
+  <div ref="echartsDom" class="room-chart"></div>
 </template>
 
 <script setup lang="ts">
@@ -18,19 +18,33 @@ const option: any = {
   title: {
     text: '会议室占用率统计', // 图表标题
     left: 'center', // 标题位置
-    top: '2%' // 标题顶部对齐
+    top: '2%', // 标题顶部对齐
+    textStyle: {
+      fontSize: '22px'
+    },
   },
   legend: {
     selectedMode: false,
-    right: '3%', // 图例右侧对齐
-    top: '6%' // 图例顶部对齐
+    right: '4%', // 图例右侧对齐
+    top: '7%', // 图例顶部对齐
+    textStyle: {
+      fontSize: '16px'
+    },
   },
-  grid: {},
+  grid: {
+    top: '15%',
+    bottom: '10%'
+  },
   yAxis: {
     type: 'value',
     min: 0,
     max: 1, // 设置 y 轴的最大值为 1
-    data: []
+    data: [],
+    axisLabel: {
+      textStyle: {
+        fontSize: '16px'
+      },
+    }
   },
   xAxis: {
     type: 'category', data: [],
@@ -40,6 +54,9 @@ const option: any = {
       rotate: -20, // 刻度标签旋转的角度，在类目轴的类目标签显示不下的时候可以通过旋转防止标签之间重叠；旋转的角度从-90度到90度
       inside: false, // 刻度标签是否朝内，默认朝外
       margin: 11, // 刻度标签与轴线之间的距离
+      textStyle: {
+        fontSize: '16px'
+      },
     },
   },
   series: [],
@@ -59,7 +76,7 @@ const refreshChart = () => {
     type: 'bar',
     stack: 'total',
     barWidth: '60%',
-    label: name === 'unoccupied' ? {show: false} : {show: true, formatter: percentageFormatter}, // 不展示 notOccupancy 的 label
+    label: name === 'unoccupied' ? {show: false} : {show: true, formatter: percentageFormatter , textStyle: {fontSize: '16px'}}, // 不展示 notOccupancy 的 label
     itemStyle: name === 'unoccupied' ? {color: 'rgba(180, 180, 180, 0.2)'} : {}, // 修改 notOccupancy 的颜色
     data: []
   }));
@@ -106,3 +123,10 @@ watch(() => [props.barData, result.value], () => {
 }, {deep: true});
 
 </script>
+
+<style lang="scss" scoped>
+.room-chart {
+  width: 770px;
+  height:600px;
+}
+</style>

@@ -272,13 +272,13 @@
 </script>
 <style scoped lang="scss">
   .el-card {
-    width: 29rem;
+    width: 464px;
     margin-right: 20px;
     padding: 0 20px;
-    border-radius: .9375rem;
+    border-radius: 15px;
     box-shadow: none;
     .card-header {
-      font-size: 1.1rem;
+      font-size: 17.6px;
       font-weight: 400;
       text-align: center;
     }
@@ -299,20 +299,20 @@
     height: 637px;
     // flex: 1;
     border: 2px solid rgba(18, 115, 219, 0.8);
-    border-radius: .9375rem;
+    border-radius: 15px;
     padding: 10px 18px;
     // 表内每个单元格共同样式
     .t-name {
-      width: 15rem !important;
+      width: 240px !important;
     }
     .t-location {
-      width: 18rem !important;
+      width: 288px !important;
     }
     .t-people {
-      width: 7rem !important;
+      width: 112px !important;
     }
     .t-equip {
-      width: 7rem !important;
+      width: 112px !important;
       p {
         text-wrap: nowrap;
         overflow: hidden;
@@ -320,24 +320,24 @@
       }
     }
     .t-status {
-      width: 8rem !important;
+      width: 128px !important;
     }
     .t-operate {
-      width: 10rem !important;
+      width: 160px !important;
     }
 
     .room-table-th {
       display: flex;
       text-align: center;
-      padding-bottom: 0.375rem;
-      font-size: 1.1rem;
+      padding-bottom: 6px;
+      font-size: 17.6px;
       .th-title {
         font-weight: 400;
         color: #3A3A3A;
       }
     }
     .room-table-main {
-      max-height: 36rem;
+      max-height: 576px;
       overflow-y: auto;
       &::-webkit-scrollbar {
         display: none;

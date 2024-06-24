@@ -1,5 +1,6 @@
 <template>
-  <div ref="chart" :style="`width: ${chartWidth}; height: ${chartHeight};`"></div>
+  <!-- <div ref="chart" :style="`width: ${chartWidth}; height: ${chartHeight};`"></div> -->
+  <div ref="chart" class="autosize"></div>
 </template>
 
 <script setup lang="ts">
@@ -207,3 +208,10 @@ onMounted(() => {
   refreshChart()
 })
 </script>
+
+<style lang="scss" scoped>
+.autosize {
+  width: 300px;
+  height: 270px;
+}
+</style>

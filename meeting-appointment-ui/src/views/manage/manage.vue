@@ -17,7 +17,7 @@
           @close-dialog="closeAddPersonDialog" 
           @submit-dialog="handleCheckedPerson" 
         />
-        <el-popover trigger="hover" :width="180" :popper-style="{ maxHeight: '250px', overflow: 'auto'}">
+        <el-popover trigger="hover" :width="180" :popper-style="{ maxHeight: '15.625rem', overflow: 'auto'}">
           <template #reference>
               <el-button type="primary">删除管理员</el-button>
           </template>
@@ -404,7 +404,7 @@
 <style scoped lang="scss">
   // 操作管理员 气泡弹窗样式
   .el-popover {
-    height: 15.625rem;
+    height: 250px;
     .people-items {
       display: flex;
       align-items: center;
@@ -414,8 +414,8 @@
         background: #D7E6F8;
       }
       .el-icon {
-        width: 1.25rem;
-        height: 1.25rem;
+        width: 20px;
+        height: 20px;
         &:hover {
           // background: #c3d6fc;
           color: red;
@@ -425,11 +425,11 @@
     }
   }
   .manage {
-    height: 46.9375rem;
+    height: 751px;
     padding: 0 45px;
     // 全部按钮统一样式
     .el-button {
-      border-radius: 0.6rem;
+      border-radius: 9.6px;
     }
     .manage-theme {
       display: flex;
@@ -440,7 +440,7 @@
         flex: 1;  // 占满剩余宽度
         :deep().el-input {
           .el-input__wrapper {
-            border-radius: .5rem;
+            border-radius: 8px;
             box-shadow: none;
           }
         }
@@ -449,28 +449,28 @@
         display: flex;
         align-items: center;
         margin-left: 40px;
-        width: 13.5rem;  // 宽度
+        width: 216px;  // 宽度
       }
     }
     .manage-tabs {
       :deep().el-tabs__item {
-        font-size: 1rem;
+        font-size: 16px;
       }
       // tab-会议列表样式
       .tab-table {
-        height: 39.7rem;
-        border: .1875rem solid rgba(18, 115, 219, 0.8);
+        height: 635.2px;
+        border: 3px solid rgba(18, 115, 219, 0.8);
         border-radius: 15px;
-        padding: 0.625rem 1.125rem;
+        padding: 10px 18px;
 
         .table-th, .table-tr { // 每行共同样式
           display: flex;
           text-align: center;
           div {
-            width: 14rem;
-            padding: 0 1.1rem; // 只控制每行左右内边距
+            width: 224px;
+            padding: 0 17.6px; // 只控制每行左右内边距
             &:last-child {
-              width: 5rem;
+              width: 80px;
             }
           }
           // 参会人员 单独设置宽
@@ -486,11 +486,11 @@
           }
         }
         .table-th {
-          margin-left: 2.5rem;
+          margin-left: 40px;
           margin-right: 30px;
           .title {
             padding: 10px 0; // 单独控制头部上下内边距
-            font-size: 1.1rem;
+            font-size: 17.6px;
             font-weight: 400;
             color: #3A3A3A;
           }
@@ -502,27 +502,27 @@
           padding-right: 10px;
           .table-left {
             position: absolute;
-            top: .55rem;
+            top: 8.8px;
             text-align: center;
             p:first-child {
-              // font-size: 1.1rem;
+              // font-size: 17.6px;
               font-weight: 600;
               color: #676767;
-              margin-bottom: .625rem;
+              margin-bottom: 10px;
             }
             p:last-child {
-              font-size: 1.2rem;
+              font-size: 19.2px;
               font-weight: 600;
               color: #3A3A3A;
             }
           }
           .table-main {
-            font-size: 1rem;
-            margin-left: 2.5rem;
+            font-size: 16px;
+            margin-left: 40px;
             .table-tr {
               color: #666;
               background: #FFF;
-              border-radius: 0.9375rem;
+              border-radius: 15px;
               margin: 10px 0;
               padding: 20px 0; // 单独控制单元行上下内边距
               .tr-cell {
@@ -536,25 +536,25 @@
           // 滚动条样式
           .loading {
             color: #666666;
-            font-size: 1.25rem;
+            font-size: 20px;
             text-align: center;
             font-weight: 300;
           }
           &::-webkit-scrollbar {
             display: block !important;
-            width: 1.1rem !important;
-            border-radius: .9375rem !important;
+            width: 17.6px !important;
+            border-radius: 15px !important;
           }
           /* 自定义滚动条轨道 */
           &::-webkit-scrollbar-track {
             // background: #FFFFFF;
-            border-radius: .9375rem;
+            border-radius: 15px;
           }
           
           /* 自定义滚动条的滑块（thumb） */
           &::-webkit-scrollbar-thumb {
             background: #EDEBEB;
-            border-radius: .9375rem;
+            border-radius: 15px;
           }
         }
       }
@@ -567,14 +567,14 @@
 
       .third-tab {
         .third-tab-date {
-          margin: 0 0 .625rem calc(50% - 16rem) ;
+          margin: 0 0 10px calc(50% - 256px) ;
         }
         .third-tab-echart {
           display: flex;
           justify-content: space-between;
           .tab-echart {
             background: #FFF;
-            border-radius: .9375rem;
+            border-radius: 15px;
           }
         }
       }

@@ -29,11 +29,11 @@
   <div class="equip-container">
     <div class="equip-top">
       <el-button type="primary" @click="handleAddDevice">新增设备</el-button>
-      <el-input v-model="equipValue" clearable placeholder="请搜索设备" style="width: 240px" @input="handleChangeEquip" />
-      <el-select v-model="roomValue" filterable clearable placeholder="会议室" style="width: 240px" @change="handleChangeRoom">
+      <el-input v-model="equipValue" clearable placeholder="请搜索设备" @input="handleChangeEquip" />
+      <el-select v-model="roomValue" filterable clearable placeholder="会议室" @change="handleChangeRoom">
         <el-option v-for="item in roomOptions" :key="item.id" :label="item.value" :value="item.id" />
       </el-select>
-      <el-select v-model="stateValue" filterable clearable placeholder="状态" style="width: 240px" @change="handleChangeStatus">
+      <el-select v-model="stateValue" filterable clearable placeholder="状态" @change="handleChangeStatus">
         <el-option v-for="item in stateOptions" :key="item.id" :label="item.value" :value="item.id" />
       </el-select>
     </div>
@@ -79,7 +79,7 @@
         </div>
       </div>
       <!-- 分页 -->
-      <el-row type="flex" justify="center" style="margin-top: 20px;">
+      <el-row type="flex" justify="center">
         <el-pagination @current-change="handleCurrentChange" :page-size="size" :current-page.sync="page"
           layout="total, prev, pager, next, jumper" :total="total">
         </el-pagination>
@@ -376,45 +376,49 @@ const handleDeleteRoom = (item: any) => {
     .el-button {
       margin-right: 30px;
     }
+    .el-input, .el-select {
+      width: 240px;
+    }
   }
 
   .equip-main {
     .room-table {
-      height: 33.9375rem;
+      height: 543px;
       border: 2px solid rgba(18, 115, 219, 0.8);
-      border-radius: .9375rem;
+      border-radius: 15px;
       padding: 10px 18px;
 
       // 表头与每行的 共同样式 设置宽
       .th-title, .room-tr-cell {
         width: 20%;
+        // font-size: 16px;
       }
       // 表内每个单元格共同样式
       // .t-name {
-      //   width: 15rem !important;
+      //   width: 240px !important;
       // }
 
       // .t-roomName {
-      //   width: 18rem !important;
+      //   width: 288px !important;
       // }
 
       // .t-extend {
-      //   width: 7rem !important;
+      //   width: 112px !important;
       // }
 
       // .t-status {
-      //   width: 8rem !important;
+      //   width: 128px !important;
       // }
 
       // .t-operate {
-      //   width: 17rem !important;
+      //   width: 272px !important;
       // }
 
       .room-table-th {
         display: flex;
         text-align: center;
-        padding-bottom: 0.375rem;
-        font-size: 1.1rem;
+        padding-bottom: 6px;
+        font-size: 17.6px;
 
         .th-title {
           font-weight: 400;
@@ -423,7 +427,7 @@ const handleDeleteRoom = (item: any) => {
       }
 
       .room-table-main {
-        max-height: 30rem;
+        max-height: 480px;
         overflow-y: auto;
 
         &::-webkit-scrollbar {
@@ -460,6 +464,10 @@ const handleDeleteRoom = (item: any) => {
           }
         }
       }
+    }
+
+    .el-row {
+      margin-top: 20px;
     }
   }
 }

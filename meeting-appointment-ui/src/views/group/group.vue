@@ -2,7 +2,7 @@
     <div class="group">
         <div class="theme">
             <div class="left">
-                <el-input v-model="groupTitle" style="width: 40rem" maxlength="15" placeholder="请输入" />
+                <el-input v-model="groupTitle" style="width: 640px" maxlength="15" placeholder="请输入" />
                 <div>群组名称</div>
             </div>
             <div class="center">
@@ -349,29 +349,29 @@ const handleDeleteMeeting = async (id: string,) => {
 </script>
 <style scoped lang="scss">
 .group {
-    height: 46.9375rem;
+    height: 751px;
     // background-color: #f5f5f5;
     .theme {
-        width: 97.9375rem;
+        width: 1567px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin: 0 auto;
 
         .left {
-            width: 47rem;
+            width: 752px;
 
             div {
-                width: 7.5rem;
+                width: 120px;
             }
         }
 
         .center {
-            width: 38.5rem;
+            width: 616px;
 
             // 参会人 input内部样式
             .meeting-people {
-                width: 32rem;
+                width: 512px;
 
                 ::v-deep(.el-input__prefix .el-input__icon) {
                     width: 20px;
@@ -382,8 +382,8 @@ const handleDeleteMeeting = async (id: string,) => {
                 }
 
                 ::v-deep(.el-input__inner) {
-                    font-size: .875rem;
-                    letter-spacing: .04rem;
+                    font-size: 14px;
+                    letter-spacing: .64px;
                     font-weight: 200;
                     cursor: pointer;
                     --el-input-placeholder-color: #3268DC;
@@ -393,10 +393,10 @@ const handleDeleteMeeting = async (id: string,) => {
 
         .left,
         .center {
-            height: 2.5rem;
-            border-radius: .5rem;
+            height: 40px;
+            border-radius: 8px;
             background: #FFFFFF;
-            box-shadow: 0 .1875rem .375rem 0 rgba(0, 0, 0, 0.08);
+            box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.08);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -420,48 +420,48 @@ const handleDeleteMeeting = async (id: string,) => {
 
         .right,
         .center div {
-            width: 6.375rem;
+            width: 102px;
         }
 
         .right,
         .left div,
         .center div {
-            height: 2.5rem;
-            line-height: 2.5rem;
+            height: 40px;
+            line-height: 40px;
             text-align: center;
             color: #FFFFFF;
-            border-radius: .5rem;
+            border-radius: 8px;
             background: #409EFF;
             user-select: none;
         }
     }
 
     .content {
-        width: 97.9375rem;
-        height: 41.93rem;
-        border-radius: .9375rem;
+        width: 1567px;
+        height: 670.88px;
+        border-radius: 15px;
         box-sizing: border-box;
-        border: .1875rem solid rgba(18, 115, 219, 0.8);
-        margin: 1.25rem auto 0;
+        border: 3px solid rgba(18, 115, 219, 0.8);
+        margin: 20px auto 0;
 
         .title {
-            height: 3rem;
+            height: 48px;
             div {
-                font-size: 1.1rem;
+                font-size: 17.6px;
                 font-weight: 400;
                 color: #3A3A3A;
-                line-height: 1.75rem;
+                line-height: 28px;
             }
         }
 
         .list-container {
             overflow-y: scroll;
-            max-height: 34.4375rem;
+            max-height: 551px;
             margin-right: 15px;
 
             .loading {
                 color: #666666;
-                font-size: 1.25rem;
+                font-size: 20px;
                 text-align: center;
                 font-weight: 300;
             }
@@ -469,50 +469,50 @@ const handleDeleteMeeting = async (id: string,) => {
             .timestamp {
                 position: absolute;
                 top: 0;
-                left: 2rem;
+                left: 32px;
                 text-align: center;
 
                 p:first-child {
-                    font-size: 1rem;
+                    font-size: 16px;
                     font-weight: 600;
                     color: #676767;
-                    margin-bottom: .625rem;
+                    margin-bottom: 10px;
                 }
 
                 p:last-child {
-                    font-size: 1.2rem;
+                    font-size: 19.2px;
                     font-weight: 600;
                     color: #3A3A3A;
                 }
             }
 
             &::-webkit-scrollbar {
-                width: 1.1rem;
-                border-radius: .9375rem;
+                width: 17.6px;
+                border-radius: 15px;
             }
 
             /* 自定义滚动条轨道 */
             &::-webkit-scrollbar-track {
                 // background: #FFFFFF;
-                border-radius: .9375rem;
+                border-radius: 15px;
             }
 
             /* 自定义滚动条的滑块（thumb） */
             &::-webkit-scrollbar-thumb {
                 background: #EDEBEB;
-                border-radius: .9375rem;
+                border-radius: 15px;
             }
 
             .card-item {
-                height: 3.75rem;
-                border-radius: .625rem;
+                height: 60px;
+                border-radius: 10px;
                 background: #FFFFFF;
-                box-shadow: 0 .1875rem .125rem 0 rgba(0, 0, 0, 0.04);
+                box-shadow: 0 3px 2px 0 rgba(0, 0, 0, 0.04);
 
                 div {
                     position: relative;
-                    font-size: 1rem;
-                    line-height: 1.25rem;
+                    font-size: 16px;
+                    line-height: 20px;
                     color: #666666;
 
                     &:last-child {
@@ -527,9 +527,9 @@ const handleDeleteMeeting = async (id: string,) => {
                     }
 
                     .el-icon {
-                        margin-right: .625rem;
+                        margin-right: 10px;
                         color: #409EFF;
-                        font-size: 1.1rem;
+                        font-size: 17.6px;
                         cursor: pointer;
                     }
 
@@ -543,9 +543,9 @@ const handleDeleteMeeting = async (id: string,) => {
 
         .title,
         .card-item {
-            width: 87.5625rem;
-            padding: 0 .625rem;
-            margin: 0.8rem 5rem;
+            width: 1401px;
+            padding: 0 10px;
+            margin: 12.8px 80px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -557,14 +557,14 @@ const handleDeleteMeeting = async (id: string,) => {
                 justify-content: center;
 
                 &:nth-child(3) {
-                    width: 15.1875rem;
-                    padding: 0 1rem;
+                    width: 243px;
+                    padding: 0 16px;
                     flex: 1.5;
                 }
 
                 &:nth-child(4) {
-                    width: 20.1875rem;
-                    padding: 0 2rem;
+                    width: 323px;
+                    padding: 0 32px;
                     flex: 1.5;
                 }
             }
@@ -573,8 +573,8 @@ const handleDeleteMeeting = async (id: string,) => {
 
     .delete-dialog {
         .meeting-text {
-            padding: 1.575rem 1.25rem;
-            font-size: 1.4625rem;
+            padding: 25.2px 20px;
+            font-size: 23.4px;
             text-align: center;
         }
 

@@ -40,19 +40,19 @@
 <style scoped lang="scss">
     .sidebar-box {
         height: 85vh;
-        margin-top: .5rem;
+        margin-top: 8px;
         text-align: left;
         opacity: 1;
         background: #FFFFFF;
         .menu-item {
-            margin-top: .6rem;
+            margin-top: 9.6px;
         }
         .menu-item img {
-            margin-right: .625rem;
-            padding: 0 .625rem;
+            margin-right: 10px;
+            padding: 0 10px;
         }
         .menu-item span{
-            font-size: 1.1rem;
+            font-size: 17.6px;
             font-weight: 400;
             line-height: normal;
             letter-spacing: 0.05em;
@@ -60,7 +60,7 @@
         }
         .active {
             background: rgba(18, 115, 219, 0.05);
-            border-right: #0256FF .125rem solid;
+            border-right: #0256FF 2px solid;
         }
     }
 </style>

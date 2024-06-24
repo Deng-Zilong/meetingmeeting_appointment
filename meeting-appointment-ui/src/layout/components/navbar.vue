@@ -97,10 +97,10 @@
 </script>
 <style scoped lang="scss">
   .nav-box {
-      height: 3.75rem;
+      height: 60px;
       opacity: 1;
-      padding: 0 1.875rem;
-      margin: 0.5rem 0 0 0;
+      padding: 0 30px;
+      margin: 8px 0 0 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -119,10 +119,10 @@
           .my-main-scrollbar{
             display: flex;
             align-items: center;
-            width: 53.125rem;
+            width: 850px;
             &::before {
               z-index: 1;
-              width: 8.125rem;
+              width: 130px;
               height: 100%;
               content: '';
               background: linear-gradient(to left,rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.95) 10.5%, rgba(255, 255, 255, 0.8) 30.5%, rgba(254, 254, 254, 0.3) 86.8%, rgba(254, 254, 254, 0.3) 100%);
@@ -132,12 +132,12 @@
             }
             .left-items {
               &:last-child {
-                margin-right: 8.125rem;
+                margin-right: 130px;
               }
               .btn-margin {
                 color: #557DF5;
                 border: 1px solid #557DF5;
-                margin-right: .625rem;
+                margin-right: 10px;
                 :deep()span {
                   font-weight: 400;
                 }
@@ -163,7 +163,7 @@
         display: flex;
         width: 200px;
         a {
-          margin-left: .625rem;
+          margin-left: 10px;
         }
       }
       .left, .right {

@@ -1,5 +1,5 @@
 <template>
-    <el-dialog v-model="visible" :title="title" class="add-group-dialog" width="18.75rem" :before-close="closeDialog">
+    <el-dialog v-model="visible" :title="title" class="add-group-dialog" width="18%" :before-close="closeDialog">
         <el-select
             v-model="search"
             clearable
@@ -21,7 +21,7 @@
             <span @click="handleChangeGroupType(1)" :class=" active === 1 ? 'active' : ''">从通讯录中选择</span>/
             <span @click="handleChangeGroupType(3)" :class=" active === 3 ? 'active' : ''">从群组中选择</span>
         </div>
-        <el-scrollbar height="25rem" v-if="active != 3">
+        <el-scrollbar height="400px" v-if="active != 3">
             <el-tree
                 ref="treeGroupRef"
                 style="max-width: 100%"
@@ -33,7 +33,7 @@
                 :default-expanded-keys="addGroupForm.peopleIds"
             />
         </el-scrollbar>
-        <el-scrollbar height="25rem" v-else>
+        <el-scrollbar height="400px" v-else>
             <el-tree
                 ref="treeRef"
                 style="max-width: 100%"
@@ -302,16 +302,16 @@
         align-items: center;
     }
     .el-select {
-        margin-bottom: .5rem;
+        margin-bottom: 8px;
     }
     .group-people-title {
         color: #606266;
         font-size: 14px;
         font-weight: 250;
         cursor: pointer;
-        margin-bottom: .625rem;
+        margin-bottom: 10px;
         .active {
-            font-size: .875rem;
+            font-size: 14px;
             font-weight: 250;
             letter-spacing: 0;
             color: #3268dc;

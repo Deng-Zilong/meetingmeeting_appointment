@@ -12,7 +12,7 @@
             </div>
           </div>
           <div class="guage-chart">
-            <GuageChart :gaugeData="gaugeData" :width="300" :height="270"  />
+            <GuageChart :gaugeData="gaugeData"  />
           </div>
         </div>
       </div>
@@ -476,8 +476,8 @@ onMounted( async () => {
     justify-content: space-between;
 
     .every-block {
-      width: 50.2rem;
-      height: 22.875rem;
+      width: 803.2px;
+      height: 366px;
       border-radius: 15px;
     }
 
@@ -490,7 +490,7 @@ onMounted( async () => {
       align-items: center;
       padding: 13px 20px;
       .screen-title {
-        font-size: 1.13rem;
+        font-size: 18.08px;
         color: #3E78F4;
         margin-left: 17px;
       }
@@ -523,21 +523,21 @@ onMounted( async () => {
             box-sizing: border-box;
             // border: 1px solid rgba(111, 167, 249, 0.8);
             // box-shadow: inset 0px 0px 60px -10px rgba(16, 127, 255, 0.4);
-            -webkit-backdrop-filter: blur(.3125rem);
-            backdrop-filter: blur(.3125rem);
-            border: .0625rem solid rgba(0, 102, 255, .5);
-            box-shadow: inset 0 0 1.875rem #1b7ef24d;
-            height: 5.625rem;
+            -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0, 102, 255, .5);
+            box-shadow: inset 0 0 30px #1b7ef24d;
+            height: 90px;
             &:hover {
-              backdrop-filter: blur(.1rem);
+              backdrop-filter: blur(1.6px);
               filter: opacity(0.8); /* 鼠标悬停时模糊效果 */
             }
             .name {
-              font-size: 1.1rem;
+              font-size: 17.6px;
               color: #6A6A6A;
             }
             .state {
-              font-size: 1.3rem;
+              font-size: 20.8px;
               font-weight: bold;
               color: #1273DB;
             }
@@ -557,20 +557,20 @@ onMounted( async () => {
     .info {
       display: flex;
       flex-direction: column;
-      margin-bottom: 0.625rem;
+      margin-bottom: 10px;
       // 告示滚动信息
       .info-board {
         display: flex;
         align-items: center;
-        height: 2rem;
+        height: 32px;
         border-radius: 6px;
         color: #0D3F81;
         background: #FFFFFF;
         border: 2px solid rgba(18, 115, 219, 0.6);
-        margin-bottom: 0.8rem;
+        margin-bottom: 12.8px;
 
         .el-icon {
-          margin: 0 0.7rem;
+          margin: 0 11.2px;
         }
 
         .info-text {
@@ -578,7 +578,7 @@ onMounted( async () => {
           overflow: hidden;
           @keyframes scrollX {
             0% {
-              transform: translateX(47.55rem);
+              transform: translateX(760.8px);
             }
             100% {
               transform: translateX(-100%);
@@ -616,25 +616,27 @@ onMounted( async () => {
             padding: 15px;
             .day-left {
               display: flex;
-              line-height: 4.2rem;
-              font-size: 1.6rem;
+              line-height: 67.2px;
+              // font-size: 25.6px;
               border-radius: 5px;
               border: 2px solid #6BD1D8;
               .left-year {
-                width: 5.6rem;
+                width: 89.6px;
+                font-size: 25.6px;
                 text-align: center;
                 background: #FFF;
                 border-radius: 5px 0 0 5px;
               }
               .left-date {
                 width: fit-content;
+                font-size: 25.6px;
                 color: #FFF;
                 background: #5ad0d8;
                 padding: 0 5px;
               }
             }
             .day-right {
-              width: 4.3rem;
+              width: 68.8px;
               color: #FFF;
               text-align: center;
               border: 2px solid #6BD1D8;
@@ -665,7 +667,7 @@ onMounted( async () => {
             border: 1px solid #3E78F4;
             // margin-bottom: 10px;
             .rule-title {
-              font-size: 0.8rem;
+              font-size: 12.8px;
               text-align: center;
               padding: 5px 0;
             }
@@ -674,7 +676,7 @@ onMounted( async () => {
               overflow: hidden; // 滚动溢出隐藏
               @keyframes scrollY {
                 0% {
-                  transform: translateY(7.5rem);
+                  transform: translateY(120px);
                 }
                 100% {
                   transform: translateY(-100%);
@@ -685,12 +687,13 @@ onMounted( async () => {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                font-size: 0.7rem;
+                font-size: 11.2px;
                 color: #676767;
                 animation: scrollY 20s linear infinite; // 滚动动画
                 .scroll-item {
-                  width: 12.5rem;
-                  height: 1.25rem;
+                  width: 200px;
+                  height: 20px;
+                  font-size: 12px;
                   border-radius: 4px;
                   box-sizing: border-box;
                   border: 0.2px solid #1273DB;
@@ -703,7 +706,7 @@ onMounted( async () => {
                   margin-bottom: 5px;
                   &::before {
                     content: '·';
-                    margin-right: .125rem;
+                    margin-right: 2px;
                     color: #676767;
                   }
                 }
@@ -736,16 +739,16 @@ onMounted( async () => {
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 2.8rem;
+        height: 44.8px;
         background: #FFF;
         border-radius: 15px 15px 0px 0px;
         box-shadow: inset 0px 1px 8px 0px #DBE9F7;
         color: #3E78F4;
-        font-size: 1.13rem;
+        font-size: 18px;
       }
 
       .choose-main {
-        width: 50.2rem;
+        width: 803.2px;
         display: grid;
         grid-template-columns: repeat(6, 1fr); /* 创建6列，每列等宽 */
         grid-template-rows: repeat(5, auto); /* 创建5行，自动高度适应内容 */
@@ -759,25 +762,25 @@ onMounted( async () => {
           line-height: 57px;
           text-align: center;
           overflow: hidden; /* 防止内容溢出 */
-          font-size: 0.8rem;
+          font-size: 12.8px;
           background: #FFF;
           border-radius: 5px;
           box-shadow: 1px 1px 2px 1px #DBE9F7;
           transition: transform 0.3s linear;
           &:hover {
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 16px;
             color: #FFF;
             background-color: #1273DB;
-            transform: translateY(-0.3125rem) scale(1.06);
+            transform: translateY(-5px) scale(1.06);
           }
         }
         .active {
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 16px;
             color: #FFF;
             background-color: #1273DB;
-            transform: translateY(-0.3125rem) scale(1.06);
+            transform: translateY(-5px) scale(1.06);
         }
       }
 
@@ -801,7 +804,7 @@ onMounted( async () => {
 
       .situation-title {
         text-align: center;
-        font-size: 1.15rem;
+        font-size: 18.4px;
         color: #3E78F4;
         margin-bottom: 5px;
       }
@@ -815,30 +818,30 @@ onMounted( async () => {
         // 每个单元格共同样式
         .table-th, .table-tr {
           .title, .tr-cell {
-            width: 12.32rem;
-            padding: 0 0.9rem;
+            width: 197.12px;
+            padding: 0 14.4px;
           }
         }
         .t-time {
-          width: 8rem !important;
+          width: 128px !important;
         }
         .t-status {
-          width: 6rem !important;
+          width: 96px !important;
         }
         .t-people {
-          width: 4rem !important;
+          width: 64px !important;
         }
         .t-operate {
-          width: 5rem !important;
+          width: 80px !important;
         }
 
         .table-th {
           display: flex;
           text-align: center;
-          padding-bottom: 0.375rem;
+          padding-bottom: 6px;
         }
         .table-main {
-          max-height: 18.6rem;
+          max-height: 297.6px;
           // overflow-y: auto;
           // &::-webkit-scrollbar {
           //   display: none;

@@ -69,8 +69,8 @@ const toHome = () => {
 .layout-container {
   .layout_header {
     width: 100%;
-    height: 3.75rem;
-    padding: 1.875rem;
+    height: 60px;
+    padding: 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -82,8 +82,8 @@ const toHome = () => {
       margin: 0;
 
       .el-avatar {
-        width: 3.125rem;
-        height: 3.125rem;
+        width: 50px;
+        height: 50px;
       }
     }
   }
@@ -92,11 +92,11 @@ const toHome = () => {
 
 .common-layout {
   .main {
-    margin-top: .5rem;
+    margin-top: 8px;
     background-color: #ECF0F3;
   }
   .el-aside {
-    width: 14rem !important;
+    width: 224px !important;
   }
 }
 
@@ -104,7 +104,7 @@ const toHome = () => {
 .exit-login {
   text-align: center;
   line-height: normal;
-  font-size: 1.3rem;
+  font-size: 20.8px;
   color: #96999a;
 }
 

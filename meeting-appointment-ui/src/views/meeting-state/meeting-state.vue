@@ -47,7 +47,7 @@
         <div class="right-title">{{ time }}</div>
         <div class="right-table">
           <div class="right-items" v-for="item in infoArr">
-            <img class="items-left" style="width: 40px; height: 40px;" :src="item.src" alt="">
+            <img class="items-left" :src="item.src" alt="">
             <div class="items-right">
               <div class="items-right-title">{{ item.title }}</div>
               <div class="items-right-info">{{ item.info }}</div>
@@ -55,7 +55,7 @@
           </div>
           <!-- 设备信息 单独 -->
           <div class="right-items">
-            <img class="items-left" style="width: 40px; height: 40px;" :src="deviceInfo.src" alt="">
+            <img class="items-left" :src="deviceInfo.src" alt="">
             <div class="items-right">
               <div class="items-right-title item-click">
                 <span>{{ deviceInfo.title }}</span>
@@ -410,7 +410,7 @@ const handleBreak = (title: any) => {
   }
 }
 .meeting-container {
-  padding: 2.5rem 3.5rem;
+  padding: 40px 56px;
 
   // 预约时间模块颜色 && 状态样式颜色
   .color-one {
@@ -424,7 +424,7 @@ const handleBreak = (title: any) => {
   }
 
   header {
-    font-size: 1.5rem;
+    font-size: 24px;
     .title-animation {
         display: inline-block;
         animation: scroll .5s linear;
@@ -445,17 +445,17 @@ const handleBreak = (title: any) => {
         }
     }
     .el-divider {
-      height: 3.125rem;
-      border: .25rem solid #1273DB;
-      border-radius: .25rem;
-      margin-right: 1.5rem;
+      height: 50px;
+      border: 4px solid #1273DB;
+      border-radius: 4px;
+      margin-right: 24px;
       z-index:1;
     }
   }
 
   main {
     display: flex;
-    justify-content: space-between;
+    // justify-content: space-between;
 
     .meeting-left {
       width: 1080px;
@@ -464,12 +464,12 @@ const handleBreak = (title: any) => {
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        margin: .5rem 0;
+        margin: 8px 0;
 
         ::v-deep(.left-date) {
           width: 245px;
-          height: 3rem;
-          font-size: 1.5rem !important;
+          height: 48px;
+          font-size: 24px !important;
         }
 
         .two-icon {
@@ -481,24 +481,24 @@ const handleBreak = (title: any) => {
           cursor: pointer;
         }
         .week-day {
-          font-size: 1.3rem;
+          font-size: 20.8px;
           position: absolute;
           padding-right: 10px;
         }
       }
 
       .left-table {
-        // margin: 10px 0;
+        // margin: .625rem 0;
         .table-title {
           display: flex;
           justify-content: center;
           align-items: center;
-          height: 4rem;
+          height: 64px;
           background: #FFF;
-          border-radius: 15px 15px 0px 0px;
-          box-shadow: inset 0px 1px 8px 0px #DBE9F7;
+          border-radius: 15px 15px 0 0;
+          box-shadow: inset 0 1px 8px 0 #DBE9F7;
           color: #3E78F4;
-          font-size: 1.5rem;
+          font-size: 24px;
         }
 
         .table-main {
@@ -507,35 +507,35 @@ const handleBreak = (title: any) => {
           grid-template-rows: repeat(5, auto);
           gap: 7px;
           border-radius: 0 0 15px 15px;
-          box-shadow: inset 0px 1px 8px 0px #DBE9F7;
+          box-shadow: inset 0 1px 8px 0 #DBE9F7;
           padding: 7px;
 
           .table-items {
-            // padding: 29px;
+            // padding: 1.8125rem;
             height: 79px;
             line-height: 79px;
             text-align: center;
             background: #FFF;
             overflow: hidden;
             border-radius: 5px;
-            box-shadow: inset 0px 1px 8px 0px #DBE9F7;
+            box-shadow: inset 0 1px 8px 0 #DBE9F7;
             cursor: pointer;
             transition: transform 0.2s ease;  // 标题会议室 展示动画效果
             transition: transform 0.3s linear;  // 每个时间点的动画效果
 
             &:hover {
-              font-size: 1.3rem;
+              font-size: 20.8px;
               color: #FFF;
               background-color: #1273DB;
-              transform: translateY(-0.3125rem) scale(1.06);  // 鼠标移入时，放大并上移
+              transform: translateY(-5px) scale(1.06);  // 鼠标移入时，放大并上移
             }
           }
           .active {
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 16px;
             color: #FFF;
             background-color: #1273DB;
-            transform: translateY(-0.3125rem) scale(1.06);
+            transform: translateY(-5px) scale(1.06);
           }
         }
       }
@@ -543,7 +543,7 @@ const handleBreak = (title: any) => {
       .left-state {
         display: flex;
         justify-content: space-between;
-        margin: 1.25rem;
+        margin: 20px;
 
         .state-items {
           display: flex;
@@ -551,11 +551,11 @@ const handleBreak = (title: any) => {
 
           // 状态公共样式
           .state-items-color {
-            width: 3.125rem;
-            height: 3.125rem;
-            margin: 0 1.2rem;
+            width: 50px;
+            height: 50px;
+            margin: 0 19.2px;
             border-radius: 5px;
-            box-shadow: 0px 3px 8px 0px rgba(0, 0, 0, 0.16);
+            box-shadow: 0 3px 8px 0 rgba(0, 0, 0, 0.16);
           }
 
           // 状态单独样式
@@ -564,7 +564,7 @@ const handleBreak = (title: any) => {
           }
 
           .state-items-text {
-            font-size: 1.6rem;
+            font-size: 25.6px;
             color: #636363;
           }
         }
@@ -573,10 +573,10 @@ const handleBreak = (title: any) => {
 
     .meeting-right {
       width: 359px;
-      height: 38.75rem;
+      height: 620px;
       border-radius: 15px;
       background: #FFFFFF;
-      box-shadow: inset 0px 1px 8px 0px #DBE9F7;
+      box-shadow: inset 0 1px 8px 0 #DBE9F7;
 
       .right-title {
         display: flex;
@@ -584,24 +584,26 @@ const handleBreak = (title: any) => {
         justify-content: center;
         height: 80px;
         color: #3E78F4;
-        font-size: 2.5rem;
+        font-size: 40px;
       }
 
       .right-table {
         display: flex;
         flex-direction: column;
         justify-content: space-evenly;
-        height: 33.75rem;
-        padding: 0 2.5rem;
+        height: 540px;
+        padding: 0 40px;
         border-radius: 0 0 15px 15px;
-        box-shadow: inset 0px 1px 8px 0px #DBE9F7;
-        font-size: 1.5rem;
+        box-shadow: inset 0 1px 8px 0 #DBE9F7;
+        font-size: 24px;
 
         .right-items {
           display: flex;
           align-items: center;
 
           .items-left {
+            width: 40px;
+            height: 40px;
             margin-right: 10px;
           }
 
@@ -611,7 +613,7 @@ const handleBreak = (title: any) => {
             }
 
             .items-right-info {
-              font-size: 1.2rem;
+              font-size: 19.2px;
               color: #585858;
             }
             // 报损信息单独样式
@@ -620,7 +622,7 @@ const handleBreak = (title: any) => {
               align-items: center;
               .el-icon {
                 cursor: pointer;
-                // margin-left: 5px;
+                // margin-left: .3125rem;
                 color: #F16105;
               }
             }
