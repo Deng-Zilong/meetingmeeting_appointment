@@ -40,6 +40,7 @@
     <div class="equip-main">
       <div class="room-table">
         <div class="room-table-th">
+          <!-- <el-checkbox v-model="checkAll">全选</el-checkbox> -->
           <div class="th-title t-name">设备名称</div>
           <div class="th-title t-roomName">所在会议室</div>
           <div class="th-title t-extend">报损次数</div>
@@ -48,6 +49,7 @@
         </div>
         <div class="room-table-main">
           <div class="room-table-tr" v-for="item in equipList">
+            <!-- <el-checkbox @change="changeChecked(item)"></el-checkbox> -->
             <div class="room-tr-cell t-name" @click="handleEditDevice(item)">
               <el-popover placement="bottom" :disabled="item.deviceName.length < 20" :width="130" trigger="hover"
                 :content="item.deviceName">
@@ -107,6 +109,12 @@ import { getDeviceData, addDeviceData, editDeviceData, delDeviceData, setStatusD
 
 const useMeetingStatus = meetingStatus();  // 获取所有会议室信息
 const dialogAddVisible = ref(false)
+
+// 勾选
+const checkAll = ref(false)
+const changeChecked = (item: any) => {
+  console.log(item)
+}
 
 // 搜索
 const roomValue = ref('')  // 选择会议室
@@ -391,7 +399,6 @@ const handleDeleteRoom = (item: any) => {
       // 表头与每行的 共同样式 设置宽
       .th-title, .room-tr-cell {
         width: 20%;
-        // font-size: 16px;
       }
       // 表内每个单元格共同样式
       // .t-name {

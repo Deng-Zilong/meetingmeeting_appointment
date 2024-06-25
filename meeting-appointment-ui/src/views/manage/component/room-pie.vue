@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import * as echarts from 'echarts'; // 5.4区别4引入方式
-import {onMounted, ref, watch} from 'vue'
+import {onBeforeUnmount, onMounted, ref, watch} from 'vue'
 import {getRoomSelectionRate} from '@/request/api/manage'
 
 const chart = ref()
@@ -16,6 +16,7 @@ let data = ref<any>([]) // 接收后端接口数据
 
 const setChart = () => {
   if (!chartInstance) return
+
 // 指定图表的配置项和数据
   const option = {
     title: {
@@ -23,7 +24,7 @@ const setChart = () => {
       top: "2%",
       left: 'center',
       textStyle: {
-        fontSize: '22px'
+        fontSize: nowSize(20)
       }
     },
     legend: {  // 图例
@@ -34,7 +35,7 @@ const setChart = () => {
       bottom: 20,
       icon: 'circle', // 展示icon
       textStyle: {
-        fontSize: '16px'
+        fontSize: nowSize(15)
       },
       data: data.value.map((item: any) => {
         return {
@@ -67,7 +68,7 @@ const setChart = () => {
             return params.name + ' : ' + params.percent + '%';
           },
           textStyle: {
-            fontSize: '16px',
+            fontSize: nowSize(15),
             backgroundColor: '#FFF'
           },
         },
@@ -81,8 +82,22 @@ const setChart = () => {
     ]
   };
 
-  chartInstance.value.setOption(option);  // 
+  chartInstance.value.setOption(option);
+  
 };
+const nowSize = (val?: any, initWidth = 1920) => {
+  return val / initWidth * document.documentElement.clientWidth;
+} 
+window.addEventListener("resize", () => {
+  chartInstance.value.resize();
+  setChart();
+});
+
+onBeforeUnmount(() => {
+  // 离开页面必须进行移除，否则会造成内存泄漏，导致卡顿
+  window.removeEventListener("resize", setChart);
+})
+
 // 使用刚指定的配置项和数据显示图表。
 onMounted(() => {
   chartInstance.value = echarts.init(chart.value);  // 初始化图表

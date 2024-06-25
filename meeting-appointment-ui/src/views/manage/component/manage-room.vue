@@ -5,10 +5,10 @@
     </template>
     <el-form ref="ruleFormRef" :model="addMeetingForm" :rules="rules">
       <el-form-item label="会议室名称：" prop="roomName">
-        <el-input v-model.trim="addMeetingForm.roomName" :maxlength="15"/>
+        <el-input v-model.trim="addMeetingForm.roomName" :maxlength="15" />
       </el-form-item>
       <el-form-item label="会议室位置：" prop="location">
-        <el-input v-model.trim="addMeetingForm.location" />
+        <el-input v-model.trim="addMeetingForm.location" :maxlength="30" />
       </el-form-item>
       <el-form-item label="会议室容量：" prop="capacity">
         <el-input type="number" min="1" v-model.number="addMeetingForm.capacity" @input="handleInputInt" />

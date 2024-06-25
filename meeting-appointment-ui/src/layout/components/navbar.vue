@@ -115,6 +115,11 @@
           .left-menu {
             display: flex;
             align-items: center;
+            :deep() .el-button {
+              span {
+                font-size: 14px;
+              }
+            }
           }
           .my-main-scrollbar{
             display: flex;
@@ -139,6 +144,7 @@
                 border: 1px solid #557DF5;
                 margin-right: 10px;
                 :deep()span {
+                  font-size: 14px;
                   font-weight: 400;
                 }
               }
@@ -162,12 +168,10 @@
       .right {
         display: flex;
         width: 200px;
+        margin-right: 20px;
         a {
           margin-left: 10px;
         }
-      }
-      .left, .right {
-          margin: 0;
       }
   }
   .active {

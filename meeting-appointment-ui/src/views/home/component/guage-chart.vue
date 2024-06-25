@@ -4,7 +4,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, computed } from 'vue'
+import { ref, watch, onMounted, computed, onBeforeUnmount } from 'vue'
 // 使用 ECharts 提供的按需引入的接口来打包必须的组件
 // 引入 echarts 核心模块，核心模块提供了 echarts 使用必须要的接口
 import * as echarts from 'echarts/core'
@@ -92,7 +92,7 @@ const refreshChart = () => {
       textStyle: { 
         color: '#333', 
         fontWeight: 600,
-        fontSize: 18, 
+        fontSize: nowSize(18), 
         // 文字超出宽度是否截断或者换行；只有配置width时有效
         overflow: 'breakAll', // truncate截断，并在末尾显示ellipsis配置的文本，默认为...;break换行;breakAll换行，并强制单词内换行
         ellipsis: '...'
@@ -117,7 +117,7 @@ const refreshChart = () => {
           show: true, // 是否显示仪表盘轴线
           roundCap: true, // 是否在两端显示成圆形
           lineStyle: { // 仪表盘轴线样式
-            width: 30, // 轴线宽度
+            width: nowSize(30), // 轴线宽度
             color: [ // 仪表盘的轴线可以被分成不同颜色的多段。每段的结束位置和颜色可以通过一个数组来表示
               // [20, '#FF6E76'],
               // [40, '#FDDD60'],
@@ -138,8 +138,8 @@ const refreshChart = () => {
         },
         splitLine: { // 分隔线样式
           show: true, 
-          length: 20, 
-          distance: -65, 
+          length: nowSize(20), 
+          distance: nowSize(-65), 
           lineStyle: { 
             color: '#468EFD',
             width: 3, 
@@ -150,8 +150,8 @@ const refreshChart = () => {
         axisTick: { // 刻度样式
           show: true,
           splitNumber: 5,
-          length: 12,
-          distance: -50,
+          length: nowSize(12),
+          distance: nowSize(-50),
           lineStyle: { 
             color: '#468EFD',
             width: 3, 
@@ -172,7 +172,7 @@ const refreshChart = () => {
           fontStyle: 'normal', // 文字字体的风格，可选 'normal' 'italic' 'oblique'
           fontWeight: 'bold',
           fontFamily: 'sans-serif', // 文字的字体系列，可选 'serif' , 'monospace', 'Arial', 'Courier New', 'Microsoft YaHei', ...
-          fontSize: 20
+          fontSize: nowSize(20)
         },
         detail: { // 仪表盘详情，用于显示数据，即表盘中心的数据展示
           show: true, 
@@ -180,7 +180,7 @@ const refreshChart = () => {
           fontStyle: 'normal',
           fontWeight: 'bold',
           fontFamily: 'Microsoft YaHei',
-          fontSize: 50, 
+          fontSize: nowSize(50), 
           backgroundColor: 'transparent',
           valueAnimation: true, // 是否开启标签的数字动画
           offsetCenter: [0, '-20%'],
@@ -188,15 +188,29 @@ const refreshChart = () => {
             return value + ''
           },
         },
-        /*
-        对象支持的所有属性：{ title , detail , name , value , itemStyle }
-        */
+        // 对象支持的所有属性：{ title , detail , name , value , itemStyle }
         data: props.gaugeData
       }
     ]
   }
   gaugeChart.value.setOption(option)
-}
+
+};
+
+// 窗口缩放，字体跟着缩放
+const nowSize = (val?: any, initWidth = 1920) => {
+  return val / initWidth * document.documentElement.clientWidth;
+} 
+// 监听窗口缩放，重新渲染图表
+window.addEventListener("resize", () => {
+  gaugeChart.value.resize();
+  refreshChart()
+});
+
+onBeforeUnmount(() => {
+  // 离开页面必须进行移除，否则会造成内存泄漏，导致卡顿
+  window.removeEventListener("resize", refreshChart);
+})
 
 // 监听 gaugeData 变化刷新 chart 渲染
 watch(() => props.gaugeData, () => refreshChart(), { deep: true })

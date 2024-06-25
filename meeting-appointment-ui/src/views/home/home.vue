@@ -98,19 +98,20 @@
                     :content="item.title"
                 >
                     <template #reference>
-                        {{ item.title }}
+                        <p class="three-dot">{{ item.title }}</p>
                     </template>
-                </el-popover></div>
+                </el-popover>
+              </div>
               <div class="tr-cell t-room">
                 <el-popover
                     placement="bottom"
-                    :disabled="item.meetingRoomName?.length < 16"
+                    :disabled="item.meetingRoomName?.length < 15"
                     :width="100"
                     trigger="hover"
                     :content="item.meetingRoomName"
                 >
                     <template #reference>
-                        {{ item.meetingRoomName }}
+                        <p class="three-dot">{{ item.meetingRoomName }}</p>
                     </template>
                 </el-popover>
               </div>
@@ -470,7 +471,7 @@ onMounted( async () => {
 
 <style lang="scss" scoped>
 .home-container {
-
+  height: 751px;
   .home-row {
     display: flex;
     justify-content: space-between;
@@ -479,6 +480,7 @@ onMounted( async () => {
       width: 803.2px;
       height: 366px;
       border-radius: 15px;
+      margin-bottom: 10px;
     }
 
     /* 会议室大屏样式 */
@@ -521,13 +523,12 @@ onMounted( async () => {
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.1);
             box-sizing: border-box;
-            // border: 1px solid rgba(111, 167, 249, 0.8);
-            // box-shadow: inset 0px 0px 60px -10px rgba(16, 127, 255, 0.4);
             -webkit-backdrop-filter: blur(5px);
             backdrop-filter: blur(5px);
             border: 1px solid rgba(0, 102, 255, .5);
             box-shadow: inset 0 0 30px #1b7ef24d;
             height: 90px;
+            padding: 0 8px;
             &:hover {
               backdrop-filter: blur(1.6px);
               filter: opacity(0.8); /* 鼠标悬停时模糊效果 */
@@ -557,7 +558,7 @@ onMounted( async () => {
     .info {
       display: flex;
       flex-direction: column;
-      margin-bottom: 10px;
+      // margin-bottom: 10px;
       // 告示滚动信息
       .info-board {
         display: flex;
@@ -810,7 +811,8 @@ onMounted( async () => {
       }
 
       .situation-table {
-        flex: 1;
+        // flex: 1;
+        height: 344px;
         border: 2px solid #69A5E4;
         border-radius: 15px;
         padding: 10px 18px;
@@ -841,7 +843,8 @@ onMounted( async () => {
           padding-bottom: 6px;
         }
         .table-main {
-          max-height: 297.6px;
+          max-height: 295px;
+          // max-height: 304px;
           // overflow-y: auto;
           // &::-webkit-scrollbar {
           //   display: none;
@@ -860,6 +863,14 @@ onMounted( async () => {
               text-overflow: ellipsis;
               &:last-child {
                 cursor: pointer;
+              }
+              // 有显示popover的 单独设置溢出为省略号
+              .three-dot {
+                text-wrap: nowrap;
+                word-wrap: break-word;  // 英文换行
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
               }
             }
           }

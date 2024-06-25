@@ -106,7 +106,7 @@ const router = useRouter() // 用于选择时间段
 
 const userInfo = ref<any>()
 const date = ref<any>(dayjs().startOf('date').format('YYYY-MM-DD'))  // 会议日期选择
-const week = ref(['星期天', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六',]) // 会议日期显示星期
+const week = ref(['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六',]) // 会议日期显示星期
 const currentMeetingId = ref<any>(routes.query.id);  // 会议室id
 const title = ref(routes.query.title);  // 会议室名称
 const locate = ref(routes.query.address);  // 会议室位置
@@ -424,7 +424,6 @@ const handleBreak = (title: any) => {
   }
 
   header {
-    font-size: 24px;
     .title-animation {
         display: inline-block;
         animation: scroll .5s linear;
@@ -443,19 +442,22 @@ const handleBreak = (title: any) => {
                 transform: translateX(0%);
             }
         }
+        span {
+          font-size: 24px;
+        }
     }
     .el-divider {
       height: 50px;
       border: 4px solid #1273DB;
       border-radius: 4px;
-      margin-right: 24px;
+      margin: -10px 24px 0 0;
       z-index:1;
     }
   }
 
   main {
     display: flex;
-    // justify-content: space-between;
+    justify-content: space-between;
 
     .meeting-left {
       width: 1080px;
@@ -469,7 +471,9 @@ const handleBreak = (title: any) => {
         ::v-deep(.left-date) {
           width: 245px;
           height: 48px;
-          font-size: 24px !important;
+          .el-input__inner {
+            font-size: 24px;
+          }
         }
 
         .two-icon {
@@ -488,7 +492,7 @@ const handleBreak = (title: any) => {
       }
 
       .left-table {
-        // margin: .625rem 0;
+        // margin: 10px 0;
         .table-title {
           display: flex;
           justify-content: center;
@@ -511,7 +515,7 @@ const handleBreak = (title: any) => {
           padding: 7px;
 
           .table-items {
-            // padding: 1.8125rem;
+            // padding: 29px;
             height: 79px;
             line-height: 79px;
             text-align: center;
@@ -609,10 +613,16 @@ const handleBreak = (title: any) => {
 
           .items-right {
             .items-right-title {
+              font-size: 25px;
               color: #3E78F4;
+              span {
+                font-size: 25px;
+              }
             }
 
             .items-right-info {
+              width: 239px;
+              word-wrap: break-word; // 英文换行
               font-size: 19.2px;
               color: #585858;
             }
@@ -622,7 +632,7 @@ const handleBreak = (title: any) => {
               align-items: center;
               .el-icon {
                 cursor: pointer;
-                // margin-left: .3125rem;
+                // margin-left: 5px;
                 color: #F16105;
               }
             }

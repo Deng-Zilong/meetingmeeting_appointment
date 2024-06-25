@@ -33,7 +33,7 @@
                                 <el-input class="meeting-people" v-model="formData.meetingPeople" readonly :prefix-icon="Plus"
                             placeholder="添加参会人" @click="handleAddPerson" />
                             </span>
-                            <template #dropdown>
+                            <template #dropdown v-if="popoverObj.meetingPeople.length">
                             <el-dropdown-menu>
                                 <el-dropdown-item command="0">{{ popoverObj.meetingPeople }}</el-dropdown-item>
                             </el-dropdown-menu>
@@ -131,7 +131,7 @@ const currentUserId = ref<string>(userInfo.value.userId);
 
 const currentDate:string = dayjs(new Date()).format('YYYY-MM-DD');  // 当前日期 yy-mm-dd
 const currentTime:string = dayjs(new Date()).format('HH:mm'); // 当前时间 HH:mm
-const week = ref(['星期天', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六',]) // 会议日期显示星期
+const week = ref(['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六',]) // 会议日期显示星期
 
 const isCreate = ref(true); // 是否是创建会议 true创建 false修改
 
@@ -477,7 +477,7 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .appoint-container {
-    padding: 2.5rem 3.5rem;
+    padding: 40px 56px;
 
     header {
         display: flex;
@@ -485,20 +485,20 @@ onBeforeUnmount(() => {
         justify-content: space-between;
 
         .header-title {
-            font-size: 1.5rem;
+            font-size: 24px;
 
             .el-divider {
-                height: 3.125rem;
-                border: .25rem solid #1273DB;
-                border-radius: .25rem;
-                margin-right: 1.5rem;
+                height: 50px;
+                border: 4px solid #1273DB;
+                border-radius: 4px;
+                margin-right: 24px;
             }
         }
 
         .header-back {
             display: flex;
             align-items: center;
-            font-size: 1.1rem;
+            font-size: 17.6px;
             font-weight: 100;
             cursor: pointer;
 
@@ -511,14 +511,14 @@ onBeforeUnmount(() => {
     main {
         display: flex;
         justify-content: center;
-        padding: 1.6rem;
+        padding: 25.6px;
 
         .el-form {
-            width: 38rem;
+            width: 608px;
 
             /* 统一调整预约表单中的label字体大小 */
             ::v-deep(.el-form-item__label) {
-                font-size: 1.03rem;
+                font-size: 16.48px;
             }
 
             .appoint-row {
@@ -530,14 +530,14 @@ onBeforeUnmount(() => {
                     align-items: flex-start;
 
                     ::v-deep(.el-form-item__content) {
-                        width: 17rem;
+                        width: 272px;
                     }
                 }
                 .week-day {
                   position: absolute;
-                  bottom: 1.5625rem;
-                  left: 6.875rem;
-                  font-size: .8rem;
+                  bottom: 24px;
+                  left: 125px;
+                  font-size: 14px;
                 }
 
                 // 参会人 input内部样式
@@ -559,7 +559,7 @@ onBeforeUnmount(() => {
                 /* 日期选择框 内部宽度(不包含prefix与suffix宽度) */
                 .row-date {
                     ::v-deep(.el-input__inner) {
-                        width: 14.25rem;
+                        width: 228px;
                     }
                 }
             }
@@ -570,21 +570,21 @@ onBeforeUnmount(() => {
                 margin-top: 10px;
 
                 ::v-deep(.el-checkbox__label) {
-                    font-size: 1.03rem;
+                    font-size: 16.48px;
                     font-weight: bold;
                 }
 
                 // 群组名称input宽度
                 .el-form-item {
                     .el-input {
-                        width: 23rem;
+                        width: 368px;
                     }
                 }
             }
 
             .fifth-row {
                 .el-input {
-                    height: 5.75rem;
+                    height: 92px;
                     margin-top: 8px;
 
                     ::v-deep(.el-input__wrapper) {

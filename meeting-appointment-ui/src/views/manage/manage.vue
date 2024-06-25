@@ -17,7 +17,7 @@
           @close-dialog="closeAddPersonDialog" 
           @submit-dialog="handleCheckedPerson" 
         />
-        <el-popover trigger="hover" :width="180" :popper-style="{ maxHeight: '15.625rem', overflow: 'auto'}">
+        <el-popover trigger="hover" :width="180" :popper-style="{ maxHeight: '250px', overflow: 'auto'}">
           <template #reference>
               <el-button type="primary">删除管理员</el-button>
           </template>
@@ -34,12 +34,14 @@
       <el-tab-pane label="会议列表" name="first">
         <div class="tab-table">
           <div class="table-th">
-            <div class="title">会议室名称</div>
+            <div class="title t-name">会议室名称</div>
+            <div class="title">发起人</div>
+            <div class="title t-department">发起人部门</div>
             <div class="title">会议时间</div>
-            <div class="title">会议主题</div>
-            <div class="title attend-cell">参会人员</div>
+            <div class="title t-theme">会议主题</div>
+            <div class="title t-attend">参会人员</div>
             <div class="title">会议状态</div>
-            <div class="title">其他</div>
+            <div class="title">操作</div>
           </div>
           <div class="table-container" ref="timelineRef">
             <el-timeline>
@@ -50,9 +52,23 @@
                 </div>
                 <div class="table-main">
                   <div class="table-tr" v-for="(item, index) in value.list">
-                    <div class="tr-cell">{{ item.meetingRoomName }}</div>
+                    <div class="tr-cell t-name">
+                      <el-popover
+                            placement="bottom"
+                            :disabled="item.meetingRoomName?.length < 15"
+                            :width="240"
+                            trigger="hover"
+                            :content="item.meetingRoomName"
+                        >
+                            <template #reference>
+                              <p class="three-dot">{{ item.meetingRoomName }}</p>
+                            </template>
+                        </el-popover>
+                    </div>
+                    <div class="tr-cell">{{ item.adminUserName }}</div>
+                    <div class="tr-cell t-department">{{ item.department }}</div>
                     <div class="tr-cell">{{ item.time }}</div>
-                    <div class="tr-cell">
+                    <div class="tr-cell t-theme">
                       <el-popover
                             placement="bottom"
                             :disabled="item.title?.length < 12"
@@ -65,7 +81,7 @@
                             </template>
                         </el-popover>
                     </div>
-                    <div class="tr-cell attend-cell">
+                    <div class="tr-cell t-attend">
                         <el-popover
                             placement="bottom"
                             :disabled="item.attendees?.length < 33"
@@ -79,7 +95,7 @@
                         </el-popover>
                     </div>
                     <div class="tr-cell">{{ item.stateValue }}</div>
-                    <div class="tr-cell"></div>
+                    <div class="tr-cell">会议纪要</div>
                   </div>
                 </div>
               </el-timeline-item>
@@ -467,14 +483,24 @@
           display: flex;
           text-align: center;
           div {
-            width: 224px;
+            // width: 224px;
+            width: 150px;
             padding: 0 17.6px; // 只控制每行左右内边距
             &:last-child {
-              width: 80px;
+              width: 120px;
             }
           }
-          // 参会人员 单独设置宽
-          .attend-cell {
+          // 发起人 主题 参会人员 单独设置宽
+          .t-name {
+            width: 240px;
+          }
+          .t-department {
+            width: 180px;
+          }
+          .t-theme {
+            width: 224px;
+          }
+          .t-attend {
             flex: 1;
           }
           // 有显示popover的 单独设置溢出为省略号
@@ -530,6 +556,10 @@
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
+                &:last-child {
+                  color:#75C560;
+                  cursor: pointer;
+                }
               }
             }
           }

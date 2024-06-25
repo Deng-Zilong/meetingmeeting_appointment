@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import * as echarts from 'echarts'; // 5.4区别4引入方式
-import {onMounted, ref, watch} from 'vue';
+import {onBeforeUnmount, onMounted, ref, watch} from 'vue';
 import {getRoomOccupancyDate} from '@/request/api/manage';
 
 const echartsDom = ref();
@@ -14,13 +14,18 @@ const props = defineProps({
 });
 let result = ref<any>(); // 接收后端接口数据
 
-const option: any = {
+
+
+const percentageFormatter = (params: any) => Math.round(params.value * 10000) / 100 + '%';
+
+const refreshChart = () => {
+  const option: any = {
   title: {
     text: '会议室占用率统计', // 图表标题
     left: 'center', // 标题位置
     top: '2%', // 标题顶部对齐
     textStyle: {
-      fontSize: '22px'
+      fontSize: nowSize(20)
     },
   },
   legend: {
@@ -28,12 +33,12 @@ const option: any = {
     right: '4%', // 图例右侧对齐
     top: '7%', // 图例顶部对齐
     textStyle: {
-      fontSize: '16px'
+      fontSize: nowSize(15)
     },
   },
   grid: {
     top: '15%',
-    bottom: '10%'
+    bottom: '13%'
   },
   yAxis: {
     type: 'value',
@@ -42,7 +47,7 @@ const option: any = {
     data: [],
     axisLabel: {
       textStyle: {
-        fontSize: '16px'
+        fontSize: nowSize(15)
       },
     }
   },
@@ -55,17 +60,13 @@ const option: any = {
       inside: false, // 刻度标签是否朝内，默认朝外
       margin: 11, // 刻度标签与轴线之间的距离
       textStyle: {
-        fontSize: '16px'
+        fontSize: nowSize(15)
       },
     },
   },
   series: [],
   tooltip: {}
 };
-
-const percentageFormatter = (params: any) => Math.round(params.value * 10000) / 100 + '%';
-
-const refreshChart = () => {
   // x 轴
   const xAxis = result.value.map((item: any) => item.roomName);
   option.xAxis.data = xAxis;
@@ -76,7 +77,7 @@ const refreshChart = () => {
     type: 'bar',
     stack: 'total',
     barWidth: '60%',
-    label: name === 'unoccupied' ? {show: false} : {show: true, formatter: percentageFormatter , textStyle: {fontSize: '16px'}}, // 不展示 notOccupancy 的 label
+    label: name === 'unoccupied' ? {show: false} : {show: true, formatter: percentageFormatter , textStyle: {fontSize: nowSize(15)} }, // 不展示 notOccupancy 的 label
     itemStyle: name === 'unoccupied' ? {color: 'rgba(180, 180, 180, 0.2)'} : {}, // 修改 notOccupancy 的颜色
     data: []
   }));
@@ -106,7 +107,23 @@ const refreshChart = () => {
   };
 
   echartsInstance.value.setOption(option);
+
 };
+// 窗口大小改变时，重新设置图表字体大小
+const nowSize = (val?: any, initWidth = 1920) => {
+  return val / initWidth * document.documentElement.clientWidth;
+} 
+// 窗口大小改变时，重新设置图表大小
+window.addEventListener("resize", () => {
+  echartsInstance.value.resize();
+  refreshChart();
+});
+
+
+onBeforeUnmount(() => {
+  // 离开页面必须进行移除，否则会造成内存泄漏，导致卡顿
+  window.removeEventListener("resize", refreshChart);
+})
 
 onMounted(async () => {
   echartsInstance.value = echarts.init(echartsDom.value);
