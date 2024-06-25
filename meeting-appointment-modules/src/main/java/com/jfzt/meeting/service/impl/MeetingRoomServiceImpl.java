@@ -115,8 +115,9 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         List<MeetingRoom> roomList = meetingRoomMapper.selectList(new QueryWrapper<>());
         List<String> roomName = roomList.stream().map(MeetingRoom::getRoomName).toList();
         for (String room : roomName) {
-            // 会议室名称长度限制为15个字符
-            if (meetingRoom.getRoomName().equals(room) || meetingRoom.getRoomName().length() > MAX_NAME_LENGTH) {
+            // 会议室名称长度限制为15个字符，会议室位置限制30个字符
+            if (meetingRoom.getRoomName().equals(room) || meetingRoom.getRoomName().length() > MAX_NAME_LENGTH ||
+                    (meetingRoom.getLocation().length() > MAX_ROOM_LOCATION_LENGTH)) {
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
             }
         }
@@ -418,8 +419,9 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         List<MeetingRoom> roomList = meetingRoomMapper.selectList(new QueryWrapper<>());
         List<String> roomName = roomList.stream().map(MeetingRoom::getRoomName).toList();
         for (String room : roomName) {
-            // 会议室名称长度限制为15个字符
-            if (meetingRoom.getRoomName().equals(room) || meetingRoom.getRoomName().length() > MAX_NAME_LENGTH) {
+            // 会议室名称长度限制为15个字符，会议室位置限制30个字符
+            if (meetingRoom.getRoomName().equals(room) || meetingRoom.getRoomName().length() > MAX_NAME_LENGTH ||
+                    (meetingRoom.getLocation().length() > MAX_ROOM_LOCATION_LENGTH)) {
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
             }
         }

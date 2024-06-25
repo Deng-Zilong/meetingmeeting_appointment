@@ -21,7 +21,10 @@ public class MessageConstant {
     public static final String NO_USER = "成员不能为空！";
     public static final String CREATE_SUCCESS = "创建成功！";
     public static final String OCCUPIED = "当前会议室已被占用！";
+    // 会议室名称最大长度
     public static final int MAX_NAME_LENGTH = 15;
+    // 会议室位置最大长度
+    public static final int MAX_ROOM_LOCATION_LENGTH = 30;
 
     /**
      * 权限处理提示信息
