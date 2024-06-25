@@ -449,7 +449,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         List<String> userIds = attendeesMapper.selectList(new LambdaQueryWrapper<MeetingAttendees>()
                         .eq(MeetingAttendees::getMeetingRecordId, meetingId))
                 .stream().map(MeetingAttendees::getUserId).toList();
-        this.baseMapper.updateById(meetingRecord);
+        this.baseMapper.deleteById(meetingRecord);
         attendeesMapper.delete(new LambdaQueryWrapper<MeetingAttendees>()
                 .eq(MeetingAttendees::getMeetingRecordId, meetingId));
         //取消会议提醒
