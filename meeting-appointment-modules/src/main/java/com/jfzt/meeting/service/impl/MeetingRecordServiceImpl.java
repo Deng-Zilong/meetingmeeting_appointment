@@ -13,13 +13,20 @@ import com.jfzt.meeting.exception.ErrorCodeEnum;
 import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.*;
 import com.jfzt.meeting.poiWord.DynWordUtils;
+import com.jfzt.meeting.poiWord.Transform;
 import com.jfzt.meeting.service.*;
 import com.jfzt.meeting.task.MeetingReminderScheduler;
 import com.jfzt.meeting.utils.WxUtil;
+import fr.opensagres.poi.xwpf.converter.xhtml.Base64EmbedImgManager;
+import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLConverter;
+import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLOptions;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.hssf.converter.ExcelToHtmlConverter;
+import org.apache.poi.hssf.usermodel.HSSFPictureData;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hwpf.usermodel.Picture;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -28,12 +35,23 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.imageio.ImageIO;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import jakarta.servlet.http.HttpServletResponse;
+import org.w3c.dom.Document;
+
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
@@ -92,9 +110,13 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     @Autowired
     private MeetingWordMapper meetingWordMapper;
 
+    public static String path = "F:\\dd\\apply\\";
+    public static File templatePathApplyExcel = new File(path + "会议纪要.xlsx");
+    public static File templatePathBackupsExcel = new File(path + "会议纪要备份.xlsx");
 
     /**
      * 获取当天用户参与的所有会议
+     *
      * @param userId 用户id
      * @return 会议记录VO
      */
@@ -747,12 +769,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      * @throws InvalidFormatException 1
      */
     @Override
-    public void getRecordExport (String userId
-            , String type, List<MeetingRecordVO> meetingRecordVOList
-            , HttpServletResponse response) throws IOException, InvalidFormatException {
+    public void getRecordExport(String userId, String type, List<MeetingRecordVO> meetingRecordVOList, HttpServletResponse response, String operation) throws IOException, InvalidFormatException {
         //获取excel模板的路径，一个备份一个应用
-        File templatePathApplyExcel = new File("F:\\dd\\apply\\会议纪要.xlsx");
-        File templatePathBackupsExcel = new File("F:\\dd\\backups\\会议纪要.xlsx");
         if (!templatePathApplyExcel.exists() || !templatePathBackupsExcel.exists()) {
             log.error("没有找到模板信息");
             throw new RRException(ErrorCodeEnum.SYSTEM_ERROR_B01011);
@@ -762,18 +780,18 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         for (MeetingRecordVO meetingRecordVO : meetingRecordVOList) {
             if ("0".equals(type)) {
                 //导出excel
-                extractedExcel(userId, meetingRecordVO, response, templatePathApplyExcel, templatePathBackupsExcel);
+                extractedExcel(meetingRecordVO, response, operation);
             } else {
                 //导出word
-                extractedWord(meetingRecordVO, response);
+                extractedWord(meetingRecordVO, response, operation);
             }
         }
 
     }
 
-    private void extractedWord (MeetingRecordVO meetingRecordVO, HttpServletResponse response) {
+    private void extractedWord(MeetingRecordVO meetingRecordVO, HttpServletResponse response, String operation) {
         // 模板全的路径
-        String templatePaht = "F:\\dd\\apply\\保险问答系统Sprint02回顾会议纪要.docx";
+        String templatePaht = path + "保险问答系统Sprint02回顾会议纪要.docx";
         String startHour = meetingRecordVO.getStartTime().getHour() + ":";
         String startMinute = meetingRecordVO.getStartTime().getMinute() == 0 ? "00" : String.valueOf(meetingRecordVO.getStartTime().getMinute());
         String endtHour = meetingRecordVO.getEndTime().getHour() + ":";
@@ -810,16 +828,16 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .collect(Collectors.toList());
         paramMap.put("requirements", list4);
 
-        DynWordUtils.process(paramMap, templatePaht, response, meetingRecordVO.getTitle());
+        DynWordUtils.process(paramMap, templatePaht, response, meetingRecordVO, operation, path);
     }
 
-    private void extractedExcel (String userId, MeetingRecordVO meetingRecordVO, HttpServletResponse response, File templatePathApplyExcel, File templatePathBackupsExcel) throws IOException, InvalidFormatException {
+    private void extractedExcel(MeetingRecordVO meetingRecordVO, HttpServletResponse response, String operation) throws IOException, InvalidFormatException {
         //还原文件
         restoreFile(templatePathBackupsExcel.toString(), templatePathApplyExcel.toString());
         //查看参与用户
         List<SysUserVO> name = meetingRecordVO.getUsers();
         //记录用户人数的信息
-        int rows = 0;
+        int rows;
         if (name.size() > 1) {
             //添加用户行
             ExcelWriter writer = ExcelUtil.getWriter(templatePathApplyExcel, "Sheet1");
@@ -835,7 +853,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         List<MeetingMinutesVO> minutesVOList = meetingMinutesService.getMeetingMinutes(meetingMinutes);
         List<MinutesPlanVO> minutesPlans = new ArrayList<>();
         //记录内容行的信息
-        int sizeOrder = 0;
+        int sizeOrder;
         if (minutesVOList.size() == 0) {
             minutesPlans = null;
             sizeOrder = 0;
@@ -855,12 +873,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         Workbook workbook = new XSSFWorkbook(templatePathApplyExcel);
         //读取工作薄的第一个工作表，向工作表中放数据
         Sheet sheet = workbook.getSheetAt(0);
-        //1写入excel图片
-        sheet.getRow(0).getCell(0);
-        File file = new File("F:\\dd\\apply\\image.png");
-        // 获取路径
-        String fileUrl = "file:///" + file.getAbsolutePath();
-        picture(workbook, sheet, fileUrl);
         //2设置excel编号
         sheet.getRow(1).getCell(0).setCellValue("编号：9fzt-xx-HY字｛2023｝A-001");
         //3会议标题
@@ -874,13 +886,13 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 ("参会部门：" + department);
         //5
         sheet.getRow(4).getCell(0).setCellValue
-                ("会议主题：" + meetingRecordVO.getTitle() == null ? " " : meetingRecordVO.getTitle());
+                ("会议主题：" + (meetingRecordVO.getTitle() == null ? " " : meetingRecordVO.getTitle()));
         //6
         sheet.getRow(5).getCell(0).setCellValue
-                ("主持人：" + meetingRecordVO.getAdminUserName() == null ? " " : meetingRecordVO.getAdminUserName());
+                ("主持人：" + (meetingRecordVO.getAdminUserName() == null ? " " : meetingRecordVO.getAdminUserName()));
         //7
         sheet.getRow(6).getCell(0).setCellValue
-                ("参会人员：" + meetingRecordVO.getAttendees() == null ? " " : meetingRecordVO.getAttendees());
+                ("参会人员：" + (meetingRecordVO.getAttendees() == null ? " " : meetingRecordVO.getAttendees()));
 
         String hour = meetingRecordVO.getStartTime().getHour() + ":";
         String minute = meetingRecordVO.getStartTime().getMinute() ==
@@ -911,38 +923,44 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         }
         //12其他
         sheet.getRow(10 + name.size()).getCell(0).setCellValue("其他");
-        sheet.getRow(10 + name.size()).getCell(1).setCellValue(sysUserMapper.selectByUserId(userId).getUserName());
+        sheet.getRow(10 + name.size()).getCell(1).setCellValue(meetingRecordVO.getAdminUserName() == null ? " " : meetingRecordVO.getAdminUserName());
         sheet.getRow(10 + name.size()).getCell(3).setCellValue("目标与工作内容:");
         if (sizeOrder != 0) {
             //把数据插入到新增行里
             for (int i = 0; i < sizeOrder; i++) {
                 sheet.getRow(10 + name.size() + i + 1).getCell(3).setCellValue(minutesPlans.get(i).getPlan());
-                sheet.getRow(10 + name.size() + i + 1).getCell(6).setCellValue(minutesPlans.get(i).getStatus() == 1 ? "待优化" : "研发需求");
+                sheet.getRow(10 + name.size() + i + 1).getCell(6)
+                        .setCellValue(minutesPlans.get(i).getStatus() == 1 ? "待优化" : "研发需求");
             }
         }
         //13
         sheet.getRow(10 + name.size() + sizeOrder + 1).getCell(0).setCellValue("抄送对象:");
-        sheet.getRow(10 + name.size() + sizeOrder + 1).getCell(4).setCellValue("制表人：" + meetingRecordVO.getCreatedBy());
+        sheet.getRow(10 + name.size() + sizeOrder + 1).getCell(4).
+                setCellValue("制表人：" + (meetingRecordVO.getAdminUserName() == null ? " " : meetingRecordVO.getAdminUserName()));
         if (name.size() > 1) {
             sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 0, 0));
             sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 4, 4));
             sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 5, 5));
         }
-        sheet.addMergedRegion(new CellRangeAddress(10 + name.size(), 10 + sizeOrder + name.size(), 0, 0));
-        //直接导出电脑文件夹
-        //            FileOutputStream outputStream = new FileOutputStream("F:\\会议纪要.xlsx");
-        //            workbook.write(outputStream);
-        //            outputStream.close();
-        //            workbook.close();
-        //            //还原文件
-        //            restoreFile(templatePaths.toString(), templatePath.toString());
-        // 另一种，下载到浏览器。
-        response.setContentType("application/vnd.ms-excel");
-        response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(meetingRecordVO.getTitle() + ".xlsx", StandardCharsets.UTF_8));
-        OutputStream os = response.getOutputStream();
-        workbook.write(os);
-        os.flush();
-        os.close();
+        sheet.addMergedRegion(new CellRangeAddress(10 + name.size(),
+                10 + sizeOrder + name.size(), 0, 0));
+
+        if ("1".equals(operation)) {
+            //直接导出电脑文件
+            FileOutputStream outputStream = new FileOutputStream(path +meetingRecordVO.getId()+meetingRecordVO.getTitle() +".xlsx");
+            workbook.write(outputStream);
+            outputStream.close();
+            workbook.close();
+        } else {
+            // 另一种，下载到浏览器。
+            response.setContentType("application/vnd.ms-excel");
+            response.setHeader("Content-Disposition", "attachment;filename=" +
+                    URLEncoder.encode(meetingRecordVO.getTitle() + ".xlsx", StandardCharsets.UTF_8));
+            OutputStream os = response.getOutputStream();
+            workbook.write(os);
+            os.flush();
+            os.close();
+        }
         //还原文件
         restoreFile(templatePathBackupsExcel.toString(), templatePathApplyExcel.toString());
     }
@@ -1020,24 +1038,95 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .build();
     }
 
-    public static void picture (Workbook workbook, Sheet sheet, String fileUrl) {
+
+
+    /**
+     *
+     * @param type type = 0(excel)     type = 1(word)
+     * @param meetingRecordVO 会议记录
+     * @param operation operation = 0（导出）， operation = 1（预览）
+     * @return 返回html
+     */
+    @Override
+    public String excelHtml(String type, MeetingRecordVO meetingRecordVO, String operation) {
+        //导出excel
         try {
-            Drawing<?> patriarch = sheet.createDrawingPatriarch();
-            URL url = new URL(fileUrl);  // 构造URL
-            URLConnection con = url.openConnection();   // 打开连接
-            con.setConnectTimeout(8 * 1000);  //设置请求超时
-            InputStream is = con.getInputStream();    // 输入流
-            ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
-            BufferedImage bufferImg = ImageIO.read(is);
-            ImageIO.write(bufferImg, "png", byteArrayOut);
-            bufferImg.flush();
-            byteArrayOut.flush();
-            XSSFClientAnchor anchor = new XSSFClientAnchor(0, 0, 0, 0, 0, 0, 3, 1);
-            patriarch.createPicture(anchor, workbook.addPicture(byteArrayOut.toByteArray(), HSSFWorkbook.PICTURE_TYPE_JPEG));   //参数二是图片格式 还有png格式等
+            extractedExcel(meetingRecordVO, null, operation);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RRException(ErrorCodeEnum.SYSTEM_ERROR_B01011);
+        }
+        try {
+            InputStream input = new FileInputStream(path +meetingRecordVO.getId()+meetingRecordVO.getTitle() + ".xlsx");
+            HSSFWorkbook excelBook = new HSSFWorkbook();
+            Transform xls = new Transform();
+            XSSFWorkbook workbookOld = new XSSFWorkbook(input);
+            xls.transformXSSF(workbookOld, excelBook);
+            ExcelToHtmlConverter excelToHtmlConverter = new ExcelToHtmlConverter(DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument());
+            excelToHtmlConverter.processWorkbook(excelBook);
+            List<HSSFPictureData> pics = excelBook.getAllPictures();
+            if (pics != null) {
+                for (Object o : pics) {
+                    Picture pic = (Picture) o;
+                    try {
+                        pic.writeImageContent(new FileOutputStream(path + pic.suggestFullFileName()));
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            Document htmlDocument = excelToHtmlConverter.getDocument();
+            java.io.ByteArrayOutputStream outStream = new java.io.ByteArrayOutputStream();
+            DOMSource domSource = new DOMSource(htmlDocument);
+            StreamResult streamResult = new StreamResult(outStream);
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer serializer = tf.newTransformer();
+            serializer.setOutputProperty(OutputKeys.ENCODING, "utf-8");
+            serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+            serializer.setOutputProperty(OutputKeys.METHOD, "html");
+            serializer.transform(domSource, streamResult);
+            outStream.close();
+            //Excel转换成Html
+            String excelHtml = new String(outStream.toByteArray());
+            return excelHtml;
+        } catch (Exception e) {
+            throw new RRException(ErrorCodeEnum.SYSTEM_ERROR_B01012);
         }
     }
+    /**
+     *
+     * @param type type = 0(excel)     type = 1(word)
+     * @param meetingRecordVO 会议记录
+     * @param operation operation = 0（导出）， operation = 1（预览）
+     * @return 返回html
+     */
+    @Override
+    public String docxToHtml(String type, MeetingRecordVO meetingRecordVO, String operation) {
+        //导出word
+        extractedWord(meetingRecordVO, null, operation);
+        try {
+            InputStream input = new FileInputStream(path +meetingRecordVO.getId()+meetingRecordVO.getTitle()+ ".docx");
+            return docxsToHtml(input);
+        } catch (Exception e) {
+            throw new RRException(ErrorCodeEnum.SYSTEM_ERROR_B01012);
+        }
+    }
+
+    /**
+     * doc转化成html
+     * @return 返回html
+     * @throws IOException 异常
+     */
+    public String docxsToHtml(InputStream inputStream) throws IOException {
+        XWPFDocument docxDocument = new XWPFDocument(inputStream);
+        XHTMLOptions options = XHTMLOptions.create();
+        //图片转base64
+        options.setImageManager(new Base64EmbedImgManager());
+        // 转换htm1
+        fr.opensagres.odfdom.converter.core.utils.ByteArrayOutputStream htmlStream = new fr.opensagres.odfdom.converter.core.utils.ByteArrayOutputStream();
+        XHTMLConverter.getInstance().convert(docxDocument, htmlStream, options);
+        return htmlStream.toString();
+    }
+
 
 }
 

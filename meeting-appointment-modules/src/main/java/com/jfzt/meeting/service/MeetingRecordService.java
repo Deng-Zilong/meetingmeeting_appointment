@@ -115,5 +115,22 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      * @throws IOException io流异常
      * @throws InvalidFormatException 无效格式异常
      */
-    void getRecordExport(String userId,String type, List<MeetingRecordVO> meetingRecordVOList, HttpServletResponse response) throws IOException, InvalidFormatException;
+    void getRecordExport(String userId,String type, List<MeetingRecordVO> meetingRecordVOList, HttpServletResponse response,String operation) throws IOException, InvalidFormatException;
+
+    /**
+     *
+     * @param type type = 0(excel)     type = 1(word)
+     * @param operation operation = 0（导出）， operation = 1（预览）
+     * @param meetingRecordVO 会议记录
+     * @return html
+     */
+    String excelHtml(String type, MeetingRecordVO meetingRecordVO, String operation);
+    /**
+     *
+     * @param type type = 0(excel)     type = 1(word)
+     * @param operation operation = 0（导出）， operation = 1（预览）
+     * @param meetingRecordVO 会议记录
+     * @return html
+     */
+    String docxToHtml(String type, MeetingRecordVO meetingRecordVO, String operation);
 }

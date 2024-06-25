@@ -57,6 +57,7 @@ public enum ErrorCodeEnum {
     SYSTEM_ERROR_B0100("B0100", "系统执行超时"),
     SYSTEM_ERROR_B0101("B0101", "系统订单处理超时"),
     SYSTEM_ERROR_B01011("B01011", "用户导出失败，无模板信息"),
+    SYSTEM_ERROR_B01012("B01012", "生成预览失败wordORexcel失败"),
     /**
      * 调用第三方服务
      * 一级宏观错误码

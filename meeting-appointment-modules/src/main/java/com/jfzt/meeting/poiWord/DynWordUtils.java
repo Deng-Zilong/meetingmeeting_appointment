@@ -1,8 +1,8 @@
 package com.jfzt.meeting.poiWord;
 
 
+import com.jfzt.meeting.entity.vo.MeetingRecordVO;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xwpf.usermodel.*;
 import org.apache.xmlbeans.XmlCursor;
@@ -65,10 +65,10 @@ public class DynWordUtils {
      * @param templatePaht 模板全路径
      * @param response     下载response
      */
-    public static void process(Map<String, Object> paramMap, String templatePaht, HttpServletResponse response, String title) {
+    public static void process(Map<String, Object> paramMap, String templatePaht, HttpServletResponse response, MeetingRecordVO meetingRecordVO, String operation, String path) {
         DynWordUtils dynWordUtils = new DynWordUtils();
         dynWordUtils.setParamMap(paramMap);
-        dynWordUtils.createWord(templatePaht, response, title);
+        dynWordUtils.createWord(templatePaht, response, meetingRecordVO,operation,path);
     }
 
 
@@ -78,18 +78,22 @@ public class DynWordUtils {
      * @param templatePath
      * @param response
      */
-    public void createWord(String templatePath, HttpServletResponse response, String title) {
+    public void createWord(String templatePath, HttpServletResponse response, MeetingRecordVO meetingRecordVO,String operation,String path) {
         try (InputStream inputStream = new FileInputStream(ResourceUtils.getFile(templatePath))) {
             templateDoc = new XWPFDocument(OPCPackage.open(inputStream));
             parseTemplateWord();
-            //导出word
-            response.setContentType("application/msword");
-            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(title + ".docx", "UTF-8"));
 
-            OutputStream os = response.getOutputStream();
-            templateDoc.write(os);
-            os.flush();
-            os.close();
+            if ("1".equals(operation)){
+                //直接导出电脑文件
+                FileOutputStream outputStream = new FileOutputStream(path+meetingRecordVO.getId()+meetingRecordVO.getTitle()+".docx");
+                templateDoc.write(outputStream);
+                outputStream.close();
+                templateDoc.close();
+            }else {
+                //导出word
+                response.setContentType("application/msword");
+                response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(meetingRecordVO.getTitle() + ".docx", "UTF-8"));
+            }
         } catch (Exception e) {
             StackTraceElement[] stackTrace = e.getStackTrace();
             String className = stackTrace[0].getClassName();
@@ -321,34 +325,15 @@ public class DynWordUtils {
             String text = sb.toString();
             XWPFRun currRun = runs.get(0);
             if (PoiWordUtils.isPicture(text)) {
-                // 该段落是图片占位符
-                ImageEntity imageEntity = (ImageEntity) PoiWordUtils.getValueByPlaceholder(paramMap, text);
-                int indentationFirstLine = currentPar.getIndentationFirstLine();
                 // 清除段落的格式，否则图片的缩进有问题
                 currentPar.getCTP().setPPr(null);
-                //设置缩进
-                currentPar.setIndentationFirstLine(indentationFirstLine);
-                addPicture(currRun, imageEntity);
             } else {
                 changeValue(currRun, text, paramMap);
             }
         }
     }
 
-    /**
-     * 添加图片
-     *
-     * @param currRun     当前run
-     * @param imageEntity 图片对象
-     * @throws InvalidFormatException
-     * @throws FileNotFoundException
-     */
-    private void addPicture(XWPFRun currRun, ImageEntity imageEntity) throws InvalidFormatException, FileNotFoundException {
-        Integer typeId = imageEntity.getTypeId().getTypeId();
-        String picId = currRun.getDocument().addPictureData(new FileInputStream(imageEntity.getUrl()), typeId);
-        ImageUtils.createPicture(currRun, picId, templateDoc.getNextPicNameNumber(typeId),
-                imageEntity.getWidth(), imageEntity.getHeight());
-    }
+
 
     /**
      * 添加行  标签行不是新创建的
