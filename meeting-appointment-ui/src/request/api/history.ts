@@ -34,7 +34,12 @@ export const deleteWordOrPlan = (data: {contentId?: any, planId?: any} ) => {
 }
 
 // 导出历史会议记录（单条，后可能批量导出）
-export const recordExport = (type: number, data: any[]) => {
+export const recordExport = (type: number, operation: number, data: any[]) => {
     const userId = JSON.parse(localStorage.getItem("userInfo") as string).userId;
-    return http.post(`/meeting/meeting-record/record-export/${userId}/${type}`, data, "blob")
+    return http.post(`/meeting/meeting-record/record-export/${userId}/${type}/${operation}`, data, "blob")
+}
+
+// 导出历史会议记录（单条，后可能批量导出）
+export const recordPreview = (type: number, operation: number, data: any[]) => {
+    return http.post(`/meeting/meeting-record/wordOrExcelPreview/${type}/${operation}`, data)
 }

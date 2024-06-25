@@ -7,6 +7,7 @@
                 <div>会议主题</div>
                 <div>会议室名称</div>
                 <div>发起人</div>
+                <!-- <div>部门</div> -->
                 <div>会议时间</div>
                 <div>参会人员</div>
                 <div>会议状态</div>
@@ -51,6 +52,7 @@
                             </div>
                             <!-- 发起人 -->
                             <div>{{ item.adminUserName }}</div>
+                            <!-- <div>{{ item.department }}</div> -->
                             <!-- 会议时间 -->
                             <div>{{ item.time }}</div>
                             <!-- 参会人员 -->
@@ -71,19 +73,38 @@
                             <div>{{ item.stateValue }}</div>
                             <!-- 操作 -->
                             <div>
-                                <p v-show="item.status == 0 && item.createdBy == currentUserId">
+                                <!-- <p v-show="item.status == 0 && item.createdBy == currentUserId">
                                     <span @click="handleEditMeeting(item)" >修改</span>
                                     <span @click="handleCancelMeeting(item.id)">取消</span>
-                                </p>
+                                </p> -->
                                 <span class="edit-meeting-summary" @click="handleEditMeetingSummary(item)">会议纪要</span>
-                                <el-tooltip
+                                <!-- <el-tooltip
                                     class="box-item"
                                     effect="light"
                                     content="导出会议内容"
                                     placement="top-start"
                                 >
                                     <span class="download-excel" @click="handleOpenExport(item)"><el-icon><Download /></el-icon></span>
-                                </el-tooltip>
+                                </el-tooltip> -->
+                                <el-dropdown @command="handleMoreCommand($event, item)">
+                                    <span class="el-dropdown-link">
+                                        更多
+                                    <el-icon class="el-icon--right">
+                                        <DArrowRight />
+                                    </el-icon>
+                                    </span>
+                                    <template #dropdown>
+                                    <el-dropdown-menu>
+                                        <el-dropdown-item 
+                                        v-for="(command, index) in commandList(item.status == 0 && item.createdBy == currentUserId)" 
+                                        :command="command.command"
+                                        :style="{ color: command.label === '取消' ? 'red' : 'inherit' }"
+                                        >
+                                        {{command.label}}
+                                        </el-dropdown-item>
+                                    </el-dropdown-menu>
+                                    </template>
+                                </el-dropdown>
                             </div>
                         </div>
                     </el-timeline-item>
@@ -92,21 +113,20 @@
             </div>
         </div>
         <!-- 转发会议 -->
-        <div class="transmit-dialog" >
-            <el-dialog
-                v-model="isTransmitMeeting"
-                align-center
-                width="25%"
-                title="it-web,jifuinfo.com 显示"
-                :show-close="false"
-                :close-on-click-modal="false"
-            >
+        <el-dialog
+            v-model="isTransmitMeeting"
+            align-center
+            width="25%"
+            title="it-web,jifuinfo.com 显示"
+            :show-close="false"
+            :close-on-click-modal="false">
+            <el-scrollbar height="400px">
                 <p>{{message}}</p>
-                <template #footer>
-                    <el-button type="primary" @click="isTransmitMeeting = false"> 确 认 </el-button>
-                </template>
-            </el-dialog>
-        </div>
+            </el-scrollbar>
+            <template #footer>
+                <el-button type="primary" @click="isTransmitMeeting = false"> 确 认 </el-button>
+            </template>
+        </el-dialog>
         <!-- 会议纪要 -->
         <el-dialog 
             class="meeting-summary" 
@@ -115,8 +135,7 @@
             :before-close="handleCancelMeetingSummary" 
             width="35%" 
             top="8vh"
-            :close-on-click-modal="false"
-        >
+            :close-on-click-modal="false">
             <template #header="{titleId, titleClass }">
                 <div class="my-header">
                     <h4 :id="titleId" :class="titleClass">{{meetingSummaryTitle}}</h4>
@@ -311,10 +330,17 @@
             :before-close="handleCancelExport" 
             width="20%" 
             top="30vh" 
-            :close-on-click-modal="false"
-        >
+            :close-on-click-modal="false">
             <img src="@/assets/img/excel.png" alt="" @click="handleExportMeeting(0)">
             <img src="@/assets/img/word.png" alt="" @click="handleExportMeeting(1)">
+        </el-dialog>
+        <!-- 预览excel/word -->
+        <el-dialog
+            v-model="previewVisible"
+            align-center
+            width="50%"
+            :title="previewTitle">
+            <div v-html="previewHtml"></div>
         </el-dialog>
     </div>
 </template>
@@ -324,7 +350,7 @@
     import { onMounted, reactive, ref } from 'vue';
     import { useRouter } from 'vue-router';
     import { useInfiniteScroll } from '@vueuse/core'
-    import { addMeetingMinutes, addMeetingWord, cancelMeetingRecord, getHistoryList, getMeetingMinutes, recordExport, getMeetingWord, deleteWordOrPlan } from '@/request/api/history'
+    import { addMeetingMinutes, addMeetingWord, cancelMeetingRecord, getHistoryList, getMeetingMinutes, recordExport, recordPreview, getMeetingWord, deleteWordOrPlan } from '@/request/api/history'
     import { meetingState } from '@/utils/types'
     
     const router = useRouter();
@@ -513,6 +539,46 @@
         textArea.remove();
     }
 
+    
+    const commandList = (type: any) => {
+        switch (type) {
+            case true:
+                return [
+                    {label: '修改', command: 'edit'},
+                    {label: '取消', command: 'cancel'},
+                    {label: '预览excel', command: 'viewExcel'},
+                    {label: '预览word', command: 'viewWord'},
+                    {label: '导出', command: 'download'},
+               ]
+            case false: 
+                return [
+                    {label: '预览excel', command: 'viewExcel'},
+                    {label: '预览word', command: 'viewWord'},
+                    {label: '导出', command: 'download'},
+               ]
+        }
+    }
+    const handleMoreCommand = (command: string, item: any) => {
+        switch (command) {
+            case 'edit':
+                handleEditMeeting(item);
+                break;
+            case 'cancel':
+                handleCancelMeeting(item.id);
+                break;
+            case 'viewExcel':
+                previewTitle.value = '预览Excel';
+                handlePreview(0, item);
+                break;
+            case 'viewWord':
+                previewTitle.value = '预览Word';
+                handlePreview(1, item);
+                break;
+            case 'download':
+                handleOpenExport(item);
+                break;
+        }
+    }
 
     const ruleFormRef = ref<FormInstance>();
     let meetingSummaryVisible = ref<boolean>(false); // 会议纪要弹窗
@@ -817,7 +883,7 @@
      * @description 打开选择导出类型弹窗
      * @param item 行数据
      */
-    const handleOpenExport = (item: any) => {
+    const handleOpenExport = (item?: any) => {
         downloadVisible.value = true;
         downloadRow.value = item;
     }
@@ -839,7 +905,7 @@
         // 重组参数
         const params = {id, title, description, createdBy, adminUserName, meetingRoomId, meetingRoomName, location, meetingNumber, attendees, users, startTime, endTime, status, isDeleted};
         
-        const res:any = await recordExport(type, [params]);
+        const res:any = await recordExport(type, 0, [params]);
         if (res?.data.type != "application/json") {
             ElMessage.success('导出成功!');
             downloadExcel(res.data, '会议纪要');
@@ -857,6 +923,15 @@
 
         // 模拟点击链接进行下载
         link.click();
+    }
+    let previewHtml = ref<string>('');
+    let previewVisible = ref<boolean>(false);
+    let previewTitle = ref<string>('');
+    const handlePreview = async(type: number, item: any) => {
+        const res:any = await recordPreview(type, 1, item);
+        previewHtml.value = res.data;
+        previewVisible.value = true;
+        console.log(res, "res",previewHtml.value );
     }
 
 </script>
@@ -1009,13 +1084,28 @@
                         flex: 1.2;
                         padding: 0 6px;
                     }
+                    // &:nth-child(3) {
+                    //     flex: 1.6;
+                    // }
                     &:nth-child(5) {
                         width: 243px;
-                        padding: 0 48px;
+                        padding: 0 10px;
                         flex: 1.5;
                     }
                     &:nth-child(7) {
-                        flex: 1.3;
+                        flex: 1.2;
+                        ::v-deep(.el-dropdown) {
+                            flex: .5;
+                            .el-dropdown-link {
+                                cursor: pointer;
+                                color: #409eff;
+                                font-size: 15px;
+                                display: flex;
+                                align-items: center;
+                                border: blanchedalmond;
+                                margin-left: 10px;
+                            }
+                        }
                     }
                 }
             }
