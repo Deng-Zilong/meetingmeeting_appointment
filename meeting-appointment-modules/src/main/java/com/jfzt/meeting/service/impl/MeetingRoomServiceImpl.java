@@ -414,6 +414,15 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             log.error(UPDATE_FAIL + EXCEPTION_TYPE, RRException.class);
             throw new RRException(UPDATE_FAIL, ErrorCodeEnum.SERVICE_ERROR_A0421.getCode());
         }
+        // 查询会议室名称,判断是否有重复的会议室名称
+        List<MeetingRoom> roomList = meetingRoomMapper.selectList(new QueryWrapper<>());
+        List<String> roomName = roomList.stream().map(MeetingRoom::getRoomName).toList();
+        for (String room : roomName) {
+            // 会议室名称长度限制为15个字符
+            if (meetingRoom.getRoomName().equals(room) || meetingRoom.getRoomName().length() > MAX_NAME_LENGTH) {
+                throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
+            }
+        }
         if (meetingRoomDTO.getRoomName() == null || meetingRoomDTO.getCurrentLevel() == null ||
                 meetingRoomDTO.getLocation() == null || meetingRoomDTO.getCapacity() == null ||
                 meetingRoomDTO.getStatus() == null) {
