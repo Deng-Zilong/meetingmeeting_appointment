@@ -2,6 +2,8 @@ package com.jfzt.meeting.entity.vo;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 会议室VO
  * @author zilong.deng
@@ -25,4 +27,8 @@ public class MeetingRoomVO {
      */
     private Integer status;
 
+    /**
+     * 设备异常信息
+     */
+    private List<String> deviceExceptionInfo;
 }

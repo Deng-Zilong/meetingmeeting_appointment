@@ -7,14 +7,11 @@ import com.jfzt.meeting.entity.MeetingDevice;
 import com.jfzt.meeting.entity.dto.MeetingDeviceDTO;
 import com.jfzt.meeting.entity.dto.MeetingDevicePageDTO;
 import com.jfzt.meeting.entity.vo.MeetingDeviceVO;
-import com.jfzt.meeting.entity.vo.PageVO;
-
-import java.util.List;
 
 /**
- *  针对表【meeting_device(设备表)】的数据库操作Service
- * @author: chenyu.di
- * @since: 2024-06-12 11:09
+ * 针对表【meeting_device(设备表)】的数据库操作Service
+ * @author chenyu.di
+ * @since 2024-06-12 11:09
  */
 public interface MeetingDeviceService extends IService<MeetingDevice> {
 

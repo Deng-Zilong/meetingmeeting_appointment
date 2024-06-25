@@ -15,10 +15,7 @@ import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.MeetingAttendeesMapper;
 import com.jfzt.meeting.mapper.MeetingRoomMapper;
 import com.jfzt.meeting.mapper.SysUserMapper;
-import com.jfzt.meeting.service.MeetingDeviceService;
-import com.jfzt.meeting.service.MeetingRecordService;
-import com.jfzt.meeting.service.MeetingRoomService;
-import com.jfzt.meeting.service.SysUserService;
+import com.jfzt.meeting.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +37,7 @@ import static com.jfzt.meeting.constant.MeetingRecordStatusConstant.*;
 import static com.jfzt.meeting.constant.MeetingRoomStatusConstant.*;
 import static com.jfzt.meeting.constant.MessageConstant.*;
 import static com.jfzt.meeting.constant.TimePeriodStatusConstant.*;
+import static java.util.stream.Collectors.toList;
 
 /**
  * 针对表【meeting_room(会议室表)】的数据库操作Service实现
@@ -56,6 +54,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     private MeetingRecordService meetingRecordService;
     private SysUserService userService;
     private MeetingAttendeesMapper attendeesMapper;
+    private DeviceErrorMessageService deviceErrorMessageService;
 
     /**
      * setter注入
@@ -63,6 +62,11 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
     @Autowired
     public void setSysUserMapper (SysUserMapper sysUserMapper) {
         this.sysUserMapper = sysUserMapper;
+    }
+
+    @Autowired
+    public void setDeviceErrorMessageService (DeviceErrorMessageService deviceErrorMessageService) {
+        this.deviceErrorMessageService = deviceErrorMessageService;
     }
 
     @Autowired
@@ -202,7 +206,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                     .stream()
                     .filter(room -> MEETINGROOM_STATUS_PAUSE.equals(room.getStatus()))
                     .map(MeetingRoom::getId)
-                    .collect(Collectors.toList());
+                    .collect(toList());
             return Result.success(collect);
         }
         throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0301);
@@ -353,7 +357,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         //查出时间段内所有会议
         List<MeetingRecord> meetingRecordList = meetingRecordService.list(new LambdaQueryWrapper<MeetingRecord>()
                 .in(MeetingRecord::getMeetingRoomId, meetingRoomList.stream()
-                        .map(MeetingRoom::getId).collect(Collectors.toList()))
+                        .map(MeetingRoom::getId).collect(toList()))
                 .gt(MeetingRecord::getStartTime, startDate.atStartOfDay())
                 .lt(MeetingRecord::getEndTime, endDate.atStartOfDay().plusHours(18))
                 .and(wrapper -> wrapper.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
@@ -489,7 +493,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
                 meetingRoomStatusVO.setAttendees(attendees.toString());
             }
             return meetingRoomStatusVO;
-        }).sorted((o1, o2) -> o2.getStatus() - o1.getStatus()).collect(Collectors.toList());
+        }).sorted((o1, o2) -> o2.getStatus() - o1.getStatus()).collect(toList());
     }
 
     /**
@@ -656,6 +660,21 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         List<MeetingRoomVO> meetingRoomVOList = new ArrayList<>();
         for (MeetingRoom meetingRoom : meetingRooms) {
             MeetingRoomVO meetingRoomVO = new MeetingRoomVO();
+            ArrayList<String> exceptionInfoList = new ArrayList<>();
+            List<MeetingDevice> deviceList = meetingDeviceService.list(new LambdaQueryWrapper<MeetingDevice>()
+                    .eq(MeetingDevice::getRoomId, meetingRoom.getId()));
+
+            deviceList.stream().peek(device -> {
+                Result<List<DeviceErrorMessage>> deviceErrorMessage = deviceErrorMessageService
+                        .getInfo(Math.toIntExact(device.getId()));
+                if (deviceErrorMessage.getData() != null && !deviceErrorMessage.getData().isEmpty()) {
+                    String errorMessage = device.getDeviceName() + "异常：" +
+                            String.join(",",
+                                    deviceErrorMessage.getData().stream().map(DeviceErrorMessage::getInfo).toList());
+                    exceptionInfoList.add(errorMessage);
+                }
+            }).toList();
+            meetingRoomVO.setDeviceExceptionInfo(exceptionInfoList);
             meetingRoomVO.setId(meetingRoom.getId());
             meetingRoomVO.setRoomName(meetingRoom.getRoomName());
             meetingRoomVO.setStatus(meetingRoom.getStatus());
