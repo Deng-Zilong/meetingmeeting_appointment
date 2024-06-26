@@ -28,11 +28,9 @@ import org.apache.poi.hssf.usermodel.HSSFPictureData;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hwpf.usermodel.Picture;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -41,7 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -49,13 +46,10 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import jakarta.servlet.http.HttpServletResponse;
 import org.w3c.dom.Document;
 
-import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
+
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -111,7 +105,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     private MeetingWordMapper meetingWordMapper;
 
     public static String path = "F:\\dd\\apply\\";
-    public static File templatePathApplyExcel = new File(path + "会议纪要.xlsx");
+    public static File templatePathApplyExcel = new File(path + "会议纪要备份 - 副本.xlsx");
     public static File templatePathBackupsExcel = new File(path + "会议纪要备份.xlsx");
 
     /**
@@ -809,7 +803,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         paramMap.put("meetinggenda", meetingRecordVO.getTitle());
 
         List<MeetingWord> meetingWords = meetingWordMapper.selectList(new LambdaQueryWrapper<MeetingWord>()
-                .eq(MeetingWord::getMeetingRecordId, meetingRecordVO.getId()));
+                .eq(MeetingWord::getMeetingRecordId, meetingRecordVO.getId())) ;
 
         List<Object> list1 = meetingWords.stream().filter((meetingWord -> meetingWord.getType() == 1))
                 .map(MeetingWord::getContent)
@@ -942,12 +936,13 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 4, 4));
             sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 5, 5));
         }
-        sheet.addMergedRegion(new CellRangeAddress(10 + name.size(),
-                10 + sizeOrder + name.size(), 0, 0));
+//        sheet.addMergedRegion(new CellRangeAddress(10 + name.size(),
+//                10 + sizeOrder + name.size(), 0, 0));
 
         if ("1".equals(operation)) {
             //直接导出电脑文件
-            FileOutputStream outputStream = new FileOutputStream(path +meetingRecordVO.getId()+meetingRecordVO.getTitle() +".xlsx");
+            String paths = URLEncoder.encode(path +meetingRecordVO.getId()+meetingRecordVO.getTitle() +".xlsx", StandardCharsets.UTF_8);
+            FileOutputStream outputStream = new FileOutputStream(paths);
             workbook.write(outputStream);
             outputStream.close();
             workbook.close();
@@ -1056,7 +1051,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             throw new RRException(ErrorCodeEnum.SYSTEM_ERROR_B01011);
         }
         try {
-            InputStream input = new FileInputStream(path +meetingRecordVO.getId()+meetingRecordVO.getTitle() + ".xlsx");
+            String paths = URLEncoder.encode(path +meetingRecordVO.getId()+meetingRecordVO.getTitle() +".xlsx", StandardCharsets.UTF_8);
+            InputStream input = new FileInputStream(paths);
             HSSFWorkbook excelBook = new HSSFWorkbook();
             Transform xls = new Transform();
             XSSFWorkbook workbookOld = new XSSFWorkbook(input);
@@ -1074,6 +1070,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                     }
                 }
             }
+
             Document htmlDocument = excelToHtmlConverter.getDocument();
             java.io.ByteArrayOutputStream outStream = new java.io.ByteArrayOutputStream();
             DOMSource domSource = new DOMSource(htmlDocument);
@@ -1104,7 +1101,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         //导出word
         extractedWord(meetingRecordVO, null, operation);
         try {
-            InputStream input = new FileInputStream(path +meetingRecordVO.getId()+meetingRecordVO.getTitle()+ ".docx");
+            String paths = URLEncoder.encode(path +meetingRecordVO.getId()+meetingRecordVO.getTitle() +".xlsx", StandardCharsets.UTF_8);
+            InputStream input = new FileInputStream(paths);
             return docxsToHtml(input);
         } catch (Exception e) {
             throw new RRException(ErrorCodeEnum.SYSTEM_ERROR_B01012);
