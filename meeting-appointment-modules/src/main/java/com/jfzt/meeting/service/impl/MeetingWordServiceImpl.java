@@ -6,14 +6,19 @@ import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingWord;
 import com.jfzt.meeting.entity.dto.MeetingWordDTO;
 import com.jfzt.meeting.mapper.MeetingWordMapper;
-import com.jfzt.meeting.service.MeetingMinutesService;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MeetingWordService;
 import com.jfzt.meeting.service.MinutesPlanService;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 针对表【meeting_word】的数据库操作Service实现
@@ -30,20 +35,70 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
     @Resource
     private MinutesPlanService minutesPlanService;
     @Override
-    public Result <List<MeetingWord>> getMeetingWord(Long meetingRecordId) {
+    @Transactional
+    public Result <List<MeetingWord>> getMeetingWord(Long meetingRecordId,String userId) {
         try{
+            //查询标题是否存在
             List<MeetingWord> meetingWords = meetingWordService.lambdaQuery()
                     .eq(MeetingWord::getMeetingRecordId, meetingRecordId)
+                    .eq(MeetingWord::getUserId, userId)
                     .list();
+            //创建默认标题
             if (meetingWords.isEmpty()){
-                MeetingWord meetingWord = new MeetingWord();
-                meetingWords.add(meetingWord);
+                //标题
+                ArrayList<MeetingWord> titleList = new ArrayList<>();
+                for (int i = 0; i < 4; i++) {
+                    MeetingWord defaultTitle = MeetingWord.builder()
+                            .meetingRecordId(meetingRecordId)
+                            .userId(userId)
+                            .content("")
+                            .level(1)
+                            .gmtCreate(LocalDateTime.now())
+                            .gmtModified(LocalDateTime.now())
+                            .parentId(0)
+                            .build();
+                    switch (i){
+                        case 0:
+                            defaultTitle.setTitle("本次目标:");
+                            titleList.add(defaultTitle);
+                            break;
+                        case 1:
+                            defaultTitle.setTitle("所遇问题:");
+                            titleList.add(defaultTitle);
+                            break;
+                        case 2:
+                            defaultTitle.setTitle("未来优化方向:");
+                            titleList.add(defaultTitle);
+                            break;
+                        case 3:
+                            defaultTitle.setTitle("迭代需求:");
+                            titleList.add(defaultTitle);
+                            break;
+                    }
+                }
+                saveBatch(titleList);
+                meetingWords.addAll(titleList);
             }
-            return Result.success(meetingWords);
+
+            //查询子标题
+            List<MeetingWord> wordList = meetingWords.stream()
+                    .filter(meetingWord -> meetingWord.getParentId() != null && meetingWord.getParentId() == 0 )
+                    .sorted((node1, node2) -> Math.toIntExact(node1.getId() - node2.getId()))
+                    .peek(meetingWord -> meetingWord.setChildrenPart(getChildren(meetingWord, meetingWords)))
+                    .toList();
+            return Result.success(wordList);
         }catch (Exception e){
+            log.error("获取会议内容失败",e);
             return Result.success();
         }
 
+    }
+
+    private List<MeetingWord> getChildren(MeetingWord root, List<MeetingWord> all) {
+        return all.stream()
+                .filter(meetingWord -> Objects.equals(meetingWord.getParentId(), root.getId()))
+                .peek(childrenNode -> childrenNode.setChildrenPart(getChildren(childrenNode, all)))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -54,33 +109,43 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
             return Result.fail("会议不存在");
         }
 
-        List<MeetingWordDTO> meetingWordDTOList = meetingWord.getMeetingWordDTOList();
-        meetingWordDTOList.stream().peek(meetingWordDTO -> {
-            if (meetingWordDTO.getId() == null) {
-                //新增内容
-                meetingWord.setId(null);
-                meetingWord.setContent(meetingWordDTO.getContent());
-                meetingWord.setType(meetingWordDTO.getType());
-                meetingWordService.save(meetingWord);
-            } else{
-                MeetingWord word = MeetingWord.builder()
-                        .id(meetingWordDTO.getId())
-                        .content(meetingWordDTO.getContent())
-                        .type(meetingWordDTO.getType())
-                        .build();
-                meetingWordService.updateById(word);
+        if (meetingWord.getContent() == null || meetingWord.getContent().isEmpty()) {
+            meetingWord.setContent("");
         }
-        }).toList();
+        Integer parentId = meetingWord.getParentId();
+        if (parentId == null){
+            meetingWord.setParentId(0);
+        }
+        save(meetingWord);
             return Result.success("保存成功");
         }
 
     @Override
+    @Transactional
     public Result<Object> deleteWordOrPlan(Long planId, Long contentId) {
         if (contentId == null && planId == null){
             return Result.success();
         }
+        List<MeetingWord> contents = meetingWordService.lambdaQuery()
+                .eq(MeetingWord::getParentId, contentId)
+                .list();
+        meetingWordService.removeBatchByIds(contents);
         meetingWordService.removeById(contentId);
         minutesPlanService.removeById(planId);
+        return Result.success();
+    }
+
+    @Override
+    public Result<Object> addTitle(MeetingWord meetingWord) {
+        if (StringUtils.isBlank(meetingWord.getTitle())){
+            return Result.fail("标题不能为空");
+        }
+        meetingWord.setContent("");
+        Integer parentId = meetingWord.getParentId();
+        if (parentId == null){
+            meetingWord.setParentId(0);
+        }
+        save(meetingWord);
         return Result.success();
     }
 

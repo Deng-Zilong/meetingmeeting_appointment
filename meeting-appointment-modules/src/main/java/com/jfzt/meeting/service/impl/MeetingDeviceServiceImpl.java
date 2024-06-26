@@ -121,8 +121,9 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
     @Override
     public Result<Object> updateDevice(MeetingDevice meetingDevice) {
         try{
-            Long count = lambdaQuery().eq(MeetingDevice::getRoomId, meetingDevice.getRoomId())
-                    .eq(MeetingDevice::getDeviceName, meetingDevice.getDeviceName())
+            Long count = lambdaQuery()
+                    .eq(MeetingDevice::getRoomId, meetingDevice.getRoomId())
+                    .eq(MeetingDevice::getDeviceName, meetingDevice.getDeviceName().replaceAll(" ",""))
                     .count();
             if (count>0){
                 return Result.fail("设备名重复!");

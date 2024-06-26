@@ -14,10 +14,12 @@ import java.util.List;
  */
 public interface MeetingWordService extends IService<MeetingWord> {
 
-    Result<List<MeetingWord>> getMeetingWord(Long meetingRecordId);
+    Result<List<MeetingWord>> getMeetingWord(Long meetingRecordId,String userId);
 
     Result<Object> saveOrUpdateWord(MeetingWord meetingWord);
 
 
     Result<Object> deleteWordOrPlan(Long planId, Long contentId);
+
+    Result<Object> addTitle(MeetingWord meetingWord);
 }
