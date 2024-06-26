@@ -57,5 +57,5 @@ public interface MeetingDeviceService extends IService<MeetingDevice> {
      * @param ids 所选id集合
      * @return 删除结果
      */
-    Result<Object> deleteDevices(List<Integer> ids);
+    Result<Object> deleteDevices(Integer[] ids);
 }

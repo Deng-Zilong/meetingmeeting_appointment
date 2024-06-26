@@ -84,7 +84,7 @@ public class MeetingDeviceController {
      * @return 删除结果
      */
     @DeleteMapping("/devices")
-    public Result<Object>deleteDevices (@RequestParam List<Integer> ids) {
+    public Result<Object>deleteDevices (@RequestParam Integer[] ids) {
         return meetingDeviceService.deleteDevices(ids);
     }
 

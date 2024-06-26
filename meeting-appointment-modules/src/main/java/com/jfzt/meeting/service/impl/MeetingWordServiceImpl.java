@@ -99,6 +99,12 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
 
     }
 
+    /**
+     * 递归查询子标题
+     * @param root 当前节点
+     * @param all 查询集合
+     * @return 子标题集合
+     */
     private List<MeetingWord> getChildren(MeetingWord root, List<MeetingWord> all) {
         return all.stream()
                 .filter(meetingWord -> Objects.equals(meetingWord.getParentId(), root.getId()))
@@ -115,11 +121,15 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
     @Override
     public Result<Object> saveOrUpdateWord (MeetingWord meetingWord) {
 
+
+        if (meetingWord.getId() != null) {
+            updateById(meetingWord);
+            return Result.success();
+        }
         MeetingRecord meetingRecord = meetingRecordService.getById(meetingWord.getMeetingRecordId());
         if (meetingRecord == null) {
             return Result.fail("会议不存在");
         }
-
         if (meetingWord.getContent() == null || meetingWord.getContent().isEmpty()) {
             meetingWord.setContent("");
         }
@@ -128,6 +138,7 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
             meetingWord.setParentId(0L);
         }
         save(meetingWord);
+
         return Result.success("保存成功");
     }
 

@@ -125,7 +125,8 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     @Override
     @Transactional
     public Result<Object> addMeetingGroup (MeetingGroupDTO meetingGroupDTO) {
-        meetingGroupDTO.getGroupName().replaceAll(" ", "");
+
+        meetingGroupDTO.setGroupName(meetingGroupDTO.getGroupName().replaceAll(" ", ""));
 
         if (meetingGroupDTO.getUsers().isEmpty()) {
             log.error(NO_USER + EXCEPTION_TYPE, RRException.class);
@@ -183,7 +184,6 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
      */
     @Override
     public Result<Object> updateMeetingGroup (MeetingGroupDTO meetingGroupDTO) {
-        meetingGroupDTO.setGroupName(meetingGroupDTO.getGroupName().replaceAll(" ", ""));
         //查询修改之前的群组
         MeetingGroup beforeGroup = lambdaQuery()
                 .eq(meetingGroupDTO.getId() != null, MeetingGroup::getId, meetingGroupDTO.getId())
@@ -197,6 +197,7 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         // 将meetingGroupDTO中的属性复制到meetingGroup中
         BeanUtils.copyProperties(meetingGroupDTO, meetingGroup);
         if (StringUtils.isNotBlank(meetingGroupDTO.getGroupName())) {
+            meetingGroupDTO.setGroupName(meetingGroupDTO.getGroupName().replaceAll(" ", ""));
             Long count = lambdaQuery()
                     .eq(MeetingGroup::getGroupName, meetingGroupDTO.getGroupName())
                     .count();

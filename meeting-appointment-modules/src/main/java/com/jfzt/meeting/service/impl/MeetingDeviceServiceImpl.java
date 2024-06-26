@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -180,15 +181,15 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
      * @param ids 所选id集合
      * @return 删除结果
      */
-    @Override
     @Transactional
-    public Result<Object> deleteDevices(List<Integer> ids) {
+    public Result<Object> deleteDevices(Integer[] ids) {
         try {
-            List<MeetingDevice> list = this.lambdaQuery().in(MeetingDevice::getId, ids).list();
-            if (list.size() != ids.size()){
+            List<Integer> idList = Arrays.asList(ids);
+            List<MeetingDevice> list = this.lambdaQuery().in(MeetingDevice::getId, idList).list();
+            if (list.size() != idList.size()){
                 return Result.fail("部分设备不存在!");
             }
-            this.removeByIds(ids);
+            this.removeByIds(idList);
             return Result.success("删除成功!");
         }catch (Exception e){
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
