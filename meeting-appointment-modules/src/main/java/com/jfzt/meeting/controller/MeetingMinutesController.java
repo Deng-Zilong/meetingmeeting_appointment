@@ -64,8 +64,9 @@ public class MeetingMinutesController {
         return Result.success();
     }
     @GetMapping("/word")
-    public Result<List<MeetingWord>> getMeetingWord (@RequestParam Long meetingRecordId) {
-        return meetingWordService.getMeetingWord(meetingRecordId);
+    public Result<List<MeetingWord>> getMeetingWord (@RequestParam Long meetingRecordId,
+                                                     @RequestParam String userId) {
+        return meetingWordService.getMeetingWord(meetingRecordId,userId);
     }
 
     @PostMapping("/word")
@@ -76,5 +77,10 @@ public class MeetingMinutesController {
     public Result<Object> deleteWordOrPlan (@RequestParam(required = false) Long planId,
                                             @RequestParam(required = false) Long contentId) {
         return meetingWordService.deleteWordOrPlan(planId,contentId);
+    }
+
+    @PostMapping("/title")
+    public Result<Object> addTitle (@RequestBody MeetingWord meetingWord) {
+        return meetingWordService.addTitle(meetingWord);
     }
 }

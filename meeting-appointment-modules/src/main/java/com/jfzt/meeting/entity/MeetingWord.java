@@ -4,14 +4,17 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jfzt.meeting.entity.dto.MeetingWordDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.bouncycastle.pqc.crypto.rainbow.Layer;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -48,79 +51,40 @@ public class MeetingWord implements Serializable {
     private String content;
 
     /**
-     * 类型（1：本次目标、2.问题、3.项目未来的优化方向、4.迭代需求）
+     * 标题
      */
-    private Integer type;
+    private String title;
+
+    /**
+     * 标题等级（0：非标题、1：一级标题、2：二级标题、3：三级标题）
+     */
+    private Integer level;
+
+    /**
+     * 父id
+     */
+    private Integer parentId;
 
     /**
      * 创建时间
      */
-    private Date gmtCreate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime gmtCreate;
 
     /**
      * 修改时间
      */
-    private Date gmtModified;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime gmtModified;
+
     /**
-     * 文本集合
+     * 子标题
      */
     @TableField(exist = false)
-    private List<MeetingWordDTO> meetingWordDTOList;
+    private List<MeetingWord> childrenPart;
 
     @Serial
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
-    @Override
-    public boolean equals (Object that) {
-        if (this == that) {
-            return true;
-        }
-        if (that == null) {
-            return false;
-        }
-        if (getClass() != that.getClass()) {
-            return false;
-        }
-        MeetingWord other = (MeetingWord) that;
-        return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-                && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
-                && (this.getMeetingRecordId() == null ? other.getMeetingRecordId() == null : this.getMeetingRecordId().equals(other.getMeetingRecordId()))
-                && (this.getContent() == null ? other.getContent() == null : this.getContent().equals(other.getContent()))
-                && (this.getType() == null ? other.getType() == null : this.getType().equals(other.getType()))
-                && (this.getGmtCreate() == null ? other.getGmtCreate() == null : this.getGmtCreate().equals(other.getGmtCreate()))
-                && (this.getGmtModified() == null ? other.getGmtModified() == null : this.getGmtModified().equals(other.getGmtModified()));
-    }
-
-    @Override
-    public int hashCode () {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getUserId() == null) ? 0 : getUserId().hashCode());
-        result = prime * result + ((getMeetingRecordId() == null) ? 0 : getMeetingRecordId().hashCode());
-        result = prime * result + ((getContent() == null) ? 0 : getContent().hashCode());
-        result = prime * result + ((getType() == null) ? 0 : getType().hashCode());
-        result = prime * result + ((getGmtCreate() == null) ? 0 : getGmtCreate().hashCode());
-        result = prime * result + ((getGmtModified() == null) ? 0 : getGmtModified().hashCode());
-        return result;
-    }
-
-    @Override
-    public String toString () {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getClass().getSimpleName());
-        sb.append(" [");
-        sb.append("Hash = ").append(hashCode());
-        sb.append(", id=").append(id);
-        sb.append(", userId=").append(userId);
-        sb.append(", meetingRecordId=").append(meetingRecordId);
-        sb.append(", content=").append(content);
-        sb.append(", type=").append(type);
-        sb.append(", gmtCreate=").append(gmtCreate);
-        sb.append(", gmtModified=").append(gmtModified);
-        sb.append(", serialVersionUID=").append(serialVersionUID);
-        sb.append("]");
-        return sb.toString();
-    }
 }

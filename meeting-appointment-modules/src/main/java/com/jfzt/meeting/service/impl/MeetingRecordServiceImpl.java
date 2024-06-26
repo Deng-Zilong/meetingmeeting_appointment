@@ -844,23 +844,23 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
         List<MeetingWord> meetingWords = meetingWordMapper.selectList(new LambdaQueryWrapper<MeetingWord>()
                 .eq(MeetingWord::getMeetingRecordId, meetingRecordVO.getId()));
-
-        List<Object> list1 = meetingWords.stream().filter((meetingWord -> meetingWord.getType() == 1))
-                .map(MeetingWord::getContent)
-                .collect(Collectors.toList());
-        paramMap.put("thisGoal", list1);
-        List<Object> list2 = meetingWords.stream().filter((meetingWord -> meetingWord.getType() == 2))
-                .map(MeetingWord::getContent)
-                .collect(Collectors.toList());
-        paramMap.put("problem", list2);
-        List<Object> list3 = meetingWords.stream().filter((meetingWord -> meetingWord.getType() == 3))
-                .map(MeetingWord::getContent)
-                .collect(Collectors.toList());
-        paramMap.put("optimization", list3);
-        List<Object> list4 = meetingWords.stream().filter((meetingWord -> meetingWord.getType() == 4))
-                .map(MeetingWord::getContent)
-                .collect(Collectors.toList());
-        paramMap.put("requirements", list4);
+//
+//        List<Object> list1 = meetingWords.stream().filter((meetingWord -> meetingWord.getType() == 1))
+//                .map(MeetingWord::getContent)
+//                .collect(Collectors.toList());
+//        paramMap.put("thisGoal", list1);
+//        List<Object> list2 = meetingWords.stream().filter((meetingWord -> meetingWord.getType() == 2))
+//                .map(MeetingWord::getContent)
+//                .collect(Collectors.toList());
+//        paramMap.put("problem", list2);
+//        List<Object> list3 = meetingWords.stream().filter((meetingWord -> meetingWord.getType() == 3))
+//                .map(MeetingWord::getContent)
+//                .collect(Collectors.toList());
+//        paramMap.put("optimization", list3);
+//        List<Object> list4 = meetingWords.stream().filter((meetingWord -> meetingWord.getType() == 4))
+//                .map(MeetingWord::getContent)
+//                .collect(Collectors.toList());
+//        paramMap.put("requirements", list4);
 
         DynWordUtils.process(paramMap, templatePaht, response, meetingRecordVO, operation, path);
     }

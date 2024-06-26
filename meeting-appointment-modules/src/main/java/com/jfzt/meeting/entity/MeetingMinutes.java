@@ -81,7 +81,7 @@ public class MeetingMinutes implements Serializable {
 
     @Override
     public String toString () {
-        String sb = getClass().getSimpleName() +
+        return getClass().getSimpleName() +
                 " [" +
                 "Hash = " + hashCode() +
                 ", id=" + id +
@@ -90,6 +90,5 @@ public class MeetingMinutes implements Serializable {
                 ", meetingRecordId=" + meetingRecordId +
                 ", serialVersionUID=" + serialVersionUID +
                 "]";
-        return sb;
     }
 }

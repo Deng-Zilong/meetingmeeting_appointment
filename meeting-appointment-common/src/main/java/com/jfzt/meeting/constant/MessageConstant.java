@@ -6,8 +6,9 @@ package com.jfzt.meeting.constant;
  * @since 2024-05-08 18:06:14
  */
 public class MessageConstant {
-    public static final String EXCEPTION_TYPE = "======错误原因为：{}";
+    public static final String EXCEPTION_TYPE = "------------>> 错误原因为：【{}】";
     public static final String SAME_NAME = "群组名称已存在";
+    public static final String GROUP_NAME_NOT_NULL = "群组名称不能为空!";
     public static final String START_TIME_GT_END_TIME = "结束时间不能早于等于开始时间";
     public static final String DELETE_FAIL = "删除失败！";
     public static final String DELETE_SUCCESS = "删除成功！";
