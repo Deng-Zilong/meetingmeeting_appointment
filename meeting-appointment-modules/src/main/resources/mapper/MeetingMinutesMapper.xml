@@ -13,6 +13,6 @@
 
     <sql id="Base_Column_List">
         id,user_id,minutes,
-        meeting_record_id,is_deleted
+        meeting_record_id
     </sql>
 </mapper>
