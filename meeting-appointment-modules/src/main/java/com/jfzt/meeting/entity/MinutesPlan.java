@@ -34,7 +34,7 @@ public class MinutesPlan implements Serializable {
     /**
      * 会议纪要id
      */
-    private Integer minutesId;
+    private Long minutesId;
     /**
      * 迭代内容
      */

@@ -5,17 +5,14 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.jfzt.meeting.entity.dto.MeetingWordDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.bouncycastle.pqc.crypto.rainbow.Layer;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -33,7 +30,7 @@ public class MeetingWord implements Serializable {
      * 主键id
      */
     @TableId(type = IdType.AUTO)
-    private Integer id;
+    private Long id;
 
     /**
      * 用户id
@@ -63,7 +60,7 @@ public class MeetingWord implements Serializable {
     /**
      * 父id
      */
-    private Integer parentId;
+    private Long parentId;
 
     /**
      * 创建时间
