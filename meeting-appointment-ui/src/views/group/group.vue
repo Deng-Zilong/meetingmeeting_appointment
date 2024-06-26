@@ -456,7 +456,7 @@ const handleDeleteMeeting = async (id: string,) => {
 
         .list-container {
             overflow-y: scroll;
-            max-height: 551px;
+            max-height: 581px;
             margin-right: 15px;
 
             .loading {

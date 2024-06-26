@@ -1,13 +1,54 @@
 <template>
     <div class="history">
-        <div class="theme" > 会议历史记录查看 </div>
+        <div class="theme"> 
+            <el-row :gutter="20">
+                <el-col :span="4">
+                    <el-input
+                        v-model="searchForm.title"
+                        placeholder="请输入会议主题"
+                        clearable
+                        size="large"
+                    />
+                </el-col>
+                <el-col :span="4">
+                    <el-input
+                        v-model="searchForm.adminUserName"
+                        placeholder="请输入发起人名称"
+                        clearable
+                        size="large"
+                    />
+                </el-col>
+                <el-col :span="4">
+                    <el-input
+                        v-model="searchForm.department"
+                        placeholder="请输入发起人部门"
+                        clearable
+                        size="large"
+                    />
+                </el-col>
+                <el-col :span="4">
+                    <el-date-picker
+                        v-model="searchForm.dateRange"
+                        type="daterange"
+                        range-separator="-"
+                        start-placeholder="开始日期"
+                        end-placeholder="结束日期"
+                        size="large"
+                        value-format="YYYY-MM-DD"
+                    />
+                </el-col>
+                <el-col :span="3">
+                    <el-button type="primary" size="large" @click="handleSearch">查 询</el-button>
+                    <el-button type="primary" size="large" @click="resetSearch">重 置</el-button>
+                </el-col>
+            </el-row>
+        </div>
         <!-- <div class="theme" >  </div> -->
         <div class="content" v-loading="loading" element-loading-background="rgba(122, 122, 122, 0.1)">
             <div class="title">
                 <div>会议主题</div>
                 <div>会议室名称</div>
                 <div>发起人</div>
-                <!-- <div>部门</div> -->
                 <div>会议时间</div>
                 <div>参会人员</div>
                 <div>会议状态</div>
@@ -40,8 +81,8 @@
                             <div>
                                 <el-popover
                                 placement="bottom"
-                                :disabled="item.meetingRoomName?.length < 16"
-                                :width="150"
+                                :disabled="item.meetingRoomName?.length < 15"
+                                :width="200"
                                 trigger="hover"
                                 :content="item.meetingRoomName"
                                 >
@@ -51,8 +92,19 @@
                                 </el-popover>
                             </div>
                             <!-- 发起人 -->
-                            <div>{{ item.adminUserName }}</div>
-                            <!-- <div>{{ item.department }}</div> -->
+                            <div>
+                                <el-popover
+                                    placement="bottom"
+                                    :disabled="item.adminUserName.length < 12"
+                                    :width="180"
+                                    trigger="hover"
+                                    :content="item.adminUserName"
+                                >
+                                    <template #reference>
+                                        <p class="ellipsis">{{ item.adminUserName }}</p>
+                                    </template>
+                                </el-popover>
+                            </div>
                             <!-- 会议时间 -->
                             <div>{{ item.time }}</div>
                             <!-- 参会人员 -->
@@ -383,6 +435,36 @@
     onMounted(async() => {
         await getDataOnScroll();
     })
+    let searchForm = ref<any>({
+        title: '',
+        adminUserName: '',
+        department: '',
+        meetingRoomId: '',
+        dateRange: [],
+    })
+    const handleSearch = () => {
+        refresh();
+        getDataOnScroll();
+    }
+    const resetSearch = () => {
+        searchForm.value = {
+            title: '',
+            adminUserName: '',
+            department: '',
+            meetingRoomId: '',
+            dateRange: [],
+        }
+        refresh();
+        getDataOnScroll();
+    }
+    /**
+     * @description 刷新列表数据
+     */
+    const refresh = () => {
+        page.value = 1;
+        data.value = [];
+        canLoadMore.value = true;
+    }
 
     /**
      * @description 处理列表数据
@@ -412,10 +494,24 @@
      * @param {number} page 页码
      * @param {number} limit 每页条数
      */
-    const getData = async(data: {userId: number | string, page: number, limit: number}) => {
+    const getData = async() => {
         let list:any = [];
         let total:number = 0;
-        await getHistoryList(data)
+
+        const {title, adminUserName, department} = searchForm.value;
+        const [startDate, endDate] = searchForm.value.dateRange;
+        
+        const params = {
+            userId: userInfo.value?.userId, 
+            pageNum: page.value, 
+            pageSize: limit.value,
+            title,
+            adminUserName,
+            department,
+            startDate,
+            endDate,
+        };
+        await getHistoryList(params)
             .then((res) => {
                 list = processData(res.data);
                 total = res.data?.length;
@@ -439,7 +535,7 @@
         // 打开loading
         isLoading.value = true;
         // 发送请求
-        const {data: newData, total} = await getData({userId: userInfo.value?.userId, page: page.value, limit: limit.value});
+        const {data: newData, total} = await getData();
         
         // 若返回数据长度小于限制 停止加载
         if(total < limit.value) {
@@ -939,21 +1035,25 @@
 <style scoped lang="scss">
     .history {
         .theme {
-            width: 1568px;
-            height: 70px;
-            font-size: 25px;
-            font-weight: 500;
+            width: 1567px;
             text-align: center;
-            line-height: 70px;
-            letter-spacing: 0.05em;
-            color: #3268DC;
-            border-radius: 15px;
-            background: #FFFFFF;
             margin: 0 auto;
+            ::v-deep(.el-date-editor), ::v-deep(.el-input) {
+                box-shadow: 0 3px 3px 0 rgba(0, 0, 0, 0.08);
+                width: 250px;
+                // 去掉输入框边框
+                .el-input__wrapper{
+                    box-shadow: none;
+                }
+                .el-range-input, .el-range__icon {
+                    font-size: 16px;
+                }
+                
+            }
         }
         .content {
             width: 1567px;
-            height: 641px;
+            height: 671px;
             border-radius: 15px;
             box-sizing: border-box;
             border: 3px solid rgba(18, 115, 219, 0.8);
@@ -970,7 +1070,7 @@
             .list-container {
                 .el-timeline {
                     overflow-y: scroll;
-                    max-height: 551px;
+                    max-height: 581px;
                     margin-right: 15px;
                     .timestamp {
                         position: absolute;
@@ -1021,17 +1121,18 @@
                         font-size: 16px;
                         line-height: 20px;
                         color: #666666;
+                        
                         &:nth-child(1) {
                             position: relative;
                         }
                         &:nth-child(7) {
-                            &>p>span:nth-child(1) {
-                                color: #409EFF;
-                            }
-                            &>p>span:nth-child(2) {
-                                margin: 0 10px;
-                                color: #F56C6C;
-                            }
+                            // &>p>span:nth-child(1) {
+                            //     color: #409EFF;
+                            // }
+                            // &>p>span:nth-child(2) {
+                            //     margin: 0 10px;
+                            //     color: #F56C6C;
+                            // }
                             .edit-meeting-summary {
                                 color: #67C23A;
                             }
@@ -1051,6 +1152,7 @@
                             text-overflow: ellipsis;
                             overflow: hidden;
                             white-space: nowrap;
+                            cursor: pointer;
                         }
                         .transmit-icon {
                             position: absolute;
@@ -1066,34 +1168,38 @@
                 padding: 0 10px;
                 margin: 12.8px 80px;
                 display: flex;
-                justify-content: space-between;
+                justify-content: flex-start;
                 align-items: center;
                 div {
+                    width: 180px;
                     letter-spacing: 0;
                     display: flex;
-                    flex: 1;
+                    // flex: 1;
                     justify-content: center;
                     &:nth-child(1) {
-                        width: 184px;
-                        flex: 1.2;
-                        padding: 0 6px 0 58px;
+                        width: 200px;
+                        // flex: 1.2;
+                        padding: 0 6px 0 68px;
                         cursor: pointer;
                     }
                     &:nth-child(2) {
-                        width: 184px;
-                        flex: 1.2;
+                        width: 200px;
+                        // flex: 1.2;
+                        // padding: 0 6px;
+                    }
+                    &:nth-child(3) {
+                        // width: 184px;
+                        // flex: 1.2;
                         padding: 0 6px;
                     }
-                    // &:nth-child(3) {
-                    //     flex: 1.6;
-                    // }
                     &:nth-child(5) {
                         width: 243px;
                         padding: 0 10px;
-                        flex: 1.5;
+                        // flex: 1.5;
                     }
                     &:nth-child(7) {
-                        flex: 1.2;
+                        // flex: 1.2;
+                        width: 200px;
                         ::v-deep(.el-dropdown) {
                             flex: .5;
                             .el-dropdown-link {

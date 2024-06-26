@@ -1,6 +1,6 @@
 import http from "@/request/http";
 // 获取历史会议记录
-export const getHistoryList = (data: {userId: number | string, page: number, limit: number}) => {
+export const getHistoryList = (data: any) => {
     return http.get("/meeting/meeting-record/all-meeting-record", data)
 }
 // 取消会议
