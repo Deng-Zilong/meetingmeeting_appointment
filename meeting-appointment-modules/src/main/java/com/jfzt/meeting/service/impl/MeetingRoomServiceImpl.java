@@ -317,7 +317,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             others.setOccupancyRate(((float) others.getOccupied() / finalTotal));
             TimePeriodOccupancyVO notOccupancyVO = new TimePeriodOccupancyVO();
             notOccupancyVO.setOccupied(total - totalOccupancy);
-            notOccupancyVO.setTimePeriod("unoccupied");
+            notOccupancyVO.setTimePeriod("未占用");
             notOccupancyVO.setOccupancyRate(1 - list.get(0).getOccupancyRate()
                     - list.get(1).getOccupancyRate() - list.get(2).getOccupancyRate()
                     - others.getOccupancyRate());
@@ -332,7 +332,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             occupancyVOList.clear();
             occupancyVOList.addAll(voList);
             return meetingRoomOccupancyVO;
-        }).filter(item -> item.getTotalOccupancyRate() != 0).toList();
+        }).toList();
         return Result.success(meetingRoomOccupancyVOList);
     }
 

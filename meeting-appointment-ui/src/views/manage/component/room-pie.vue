@@ -17,14 +17,22 @@ let data = ref<any>([]) // 接收后端接口数据
 const setChart = () => {
   if (!chartInstance) return
 
-// 指定图表的配置项和数据
+  // 指定图表的配置项和数据
   const option = {
     title: {
-      text: '统计会议室选择率',
+      text: '{mainTitle|统计会议室选择率} {subTitle|(工作日9:00-18:00)}',
       top: "2%",
       left: 'center',
       textStyle: {
-        fontSize: nowSize(20)
+        rich: {
+          mainTitle: {
+            fontSize: nowSize(20)
+          },
+          subTitle: {
+            fontSize: nowSize(12),
+            color: '#999'
+          }
+        }
       }
     },
     legend: {  // 图例
@@ -46,8 +54,7 @@ const setChart = () => {
     tooltip: { // 提示框浮层设置
       trigger: 'item',  // 触发类型，默认数据触发，可选为：'item' | 'axis'
       formatter: (params: any) => {
-        let str = params.marker + '使用次数：' + params.value + '次' + '<br>' + params.marker + params.name + ' : ' + params.percent + '%';
-        return str;
+        return params.marker + '使用次数：' + params.value + '次' + '<br>' + params.marker + params.name + ' : ' + params.percent + '%';
       }
     },
     xAxis: {
@@ -83,11 +90,12 @@ const setChart = () => {
   };
 
   chartInstance.value.setOption(option);
-  
 };
+
 const nowSize = (val?: any, initWidth = 1920) => {
   return val / initWidth * document.documentElement.clientWidth;
-} 
+}
+
 window.addEventListener("resize", () => {
   chartInstance.value.resize();
   setChart();
@@ -107,7 +115,7 @@ onMounted(() => {
         data.value = res.data
         setChart();  // 数据请求到后渲染图表 刷新chart
       })
-      .catch((err) => {
+      .catch(() => {
       })
 
 })
@@ -125,6 +133,6 @@ watch(() => [data, props.pieData], () => {
 <style lang="scss" scoped>
 .room-pie {
   width: 770px;
-  height:600px;
+  height: 600px;
 }
 </style>
