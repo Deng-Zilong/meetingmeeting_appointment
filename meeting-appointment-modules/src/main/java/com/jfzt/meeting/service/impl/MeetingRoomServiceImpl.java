@@ -234,8 +234,8 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         }
         //查出开始时间段在时间段内9:00-18:00的所有会议
         List<MeetingRecord> meetingRecordList = meetingRecordService.list(new LambdaQueryWrapper<MeetingRecord>()
-                .gt(MeetingRecord::getStartTime, startDate.atStartOfDay().plusHours(9).minusSeconds(1))
-                .lt(MeetingRecord::getStartTime, endDate.atStartOfDay().plusHours(18).plusSeconds(1))
+                .gt(MeetingRecord::getStartTime, startDate.atStartOfDay())
+                .lt(MeetingRecord::getStartTime, endDate.atStartOfDay().plusHours(23).plusSeconds(59))
                 .and(wrapper -> wrapper.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
                         .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING)
                         .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_END)));
