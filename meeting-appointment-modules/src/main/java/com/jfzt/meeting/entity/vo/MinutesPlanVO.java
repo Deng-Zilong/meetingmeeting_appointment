@@ -19,7 +19,7 @@ public class MinutesPlanVO {
     /**
      * 会议纪要id
      */
-    private Integer minutesId;
+    private Long minutesId;
     /**
      * 迭代内容
      */

@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.MeetingWord;
-import com.jfzt.meeting.entity.dto.MeetingWordDTO;
 import com.jfzt.meeting.mapper.MeetingWordMapper;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MeetingWordService;
@@ -34,17 +33,18 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
     private MeetingRecordService meetingRecordService;
     @Resource
     private MinutesPlanService minutesPlanService;
+
     @Override
     @Transactional
-    public Result <List<MeetingWord>> getMeetingWord(Long meetingRecordId,String userId) {
-        try{
+    public Result<List<MeetingWord>> getMeetingWord (Long meetingRecordId, String userId) {
+        try {
             //查询标题是否存在
             List<MeetingWord> meetingWords = meetingWordService.lambdaQuery()
                     .eq(MeetingWord::getMeetingRecordId, meetingRecordId)
                     .eq(MeetingWord::getUserId, userId)
                     .list();
             //创建默认标题
-            if (meetingWords.isEmpty()){
+            if (meetingWords.isEmpty()) {
                 //标题
                 ArrayList<MeetingWord> titleList = new ArrayList<>();
                 for (int i = 0; i < 4; i++) {
@@ -55,9 +55,9 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
                             .level(1)
                             .gmtCreate(LocalDateTime.now())
                             .gmtModified(LocalDateTime.now())
-                            .parentId(0)
+                            .parentId(0L)
                             .build();
-                    switch (i){
+                    switch (i) {
                         case 0:
                             defaultTitle.setTitle("本次目标:");
                             titleList.add(defaultTitle);
@@ -82,19 +82,19 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
 
             //查询子标题
             List<MeetingWord> wordList = meetingWords.stream()
-                    .filter(meetingWord -> meetingWord.getParentId() != null && meetingWord.getParentId() == 0 )
+                    .filter(meetingWord -> meetingWord.getParentId() != null && meetingWord.getParentId() == 0)
                     .sorted((node1, node2) -> Math.toIntExact(node1.getId() - node2.getId()))
                     .peek(meetingWord -> meetingWord.setChildrenPart(getChildren(meetingWord, meetingWords)))
                     .toList();
             return Result.success(wordList);
-        }catch (Exception e){
-            log.error("获取会议内容失败",e);
+        } catch (Exception e) {
+            log.error("获取会议内容失败", e);
             return Result.success();
         }
 
     }
 
-    private List<MeetingWord> getChildren(MeetingWord root, List<MeetingWord> all) {
+    private List<MeetingWord> getChildren (MeetingWord root, List<MeetingWord> all) {
         return all.stream()
                 .filter(meetingWord -> Objects.equals(meetingWord.getParentId(), root.getId()))
                 .peek(childrenNode -> childrenNode.setChildrenPart(getChildren(childrenNode, all)))
@@ -102,7 +102,7 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
     }
 
     @Override
-    public Result<Object> saveOrUpdateWord(MeetingWord meetingWord) {
+    public Result<Object> saveOrUpdateWord (MeetingWord meetingWord) {
 
         MeetingRecord meetingRecord = meetingRecordService.getById(meetingWord.getMeetingRecordId());
         if (meetingRecord == null) {
@@ -112,18 +112,18 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
         if (meetingWord.getContent() == null || meetingWord.getContent().isEmpty()) {
             meetingWord.setContent("");
         }
-        Integer parentId = meetingWord.getParentId();
-        if (parentId == null){
-            meetingWord.setParentId(0);
+        Long parentId = meetingWord.getParentId();
+        if (parentId == null) {
+            meetingWord.setParentId(0L);
         }
         save(meetingWord);
-            return Result.success("保存成功");
-        }
+        return Result.success("保存成功");
+    }
 
     @Override
     @Transactional
-    public Result<Object> deleteWordOrPlan(Long planId, Long contentId) {
-        if (contentId == null && planId == null){
+    public Result<Object> deleteWordOrPlan (Long planId, Long contentId) {
+        if (contentId == null && planId == null) {
             return Result.success();
         }
         List<MeetingWord> contents = meetingWordService.lambdaQuery()
@@ -136,14 +136,14 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
     }
 
     @Override
-    public Result<Object> addTitle(MeetingWord meetingWord) {
-        if (StringUtils.isBlank(meetingWord.getTitle())){
+    public Result<Object> addTitle (MeetingWord meetingWord) {
+        if (StringUtils.isBlank(meetingWord.getTitle())) {
             return Result.fail("标题不能为空");
         }
         meetingWord.setContent("");
-        Integer parentId = meetingWord.getParentId();
-        if (parentId == null){
-            meetingWord.setParentId(0);
+        Long parentId = meetingWord.getParentId();
+        if (parentId == null) {
+            meetingWord.setParentId(0L);
         }
         save(meetingWord);
         return Result.success();
