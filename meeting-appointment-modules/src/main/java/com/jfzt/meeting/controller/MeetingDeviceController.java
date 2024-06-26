@@ -79,6 +79,16 @@ public class MeetingDeviceController {
     }
 
     /**
+     * 批量删除设备
+     * @param ids 所选id集合
+     * @return 删除结果
+     */
+    @DeleteMapping("/devices")
+    public Result<Object>deleteDevices (@RequestParam List<Integer> ids) {
+        return meetingDeviceService.deleteDevices(ids);
+    }
+
+    /**
      * 获取报损信息
      * @param deviceId 设备id
      * @return 报损信息

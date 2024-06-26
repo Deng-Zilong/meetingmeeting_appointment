@@ -63,24 +63,39 @@ public class MeetingMinutesController {
         meetingMinutesService.deleteMeetingMinutes(meetingMinutes);
         return Result.success();
     }
+
+    /**
+     * 根据会议纪要id和用户id获取会议纪要
+     * @param meetingRecordId 会议纪要id
+     * @param userId 用户id
+     * @return 会议纪要结果
+     */
     @GetMapping("/word")
     public Result<List<MeetingWord>> getMeetingWord (@RequestParam Long meetingRecordId,
                                                      @RequestParam String userId) {
         return meetingWordService.getMeetingWord(meetingRecordId,userId);
     }
 
+    /**
+     * 保存或更新会议纪要
+     * @param meetingWord 会议纪要
+     * @return 保存结果
+     */
     @PostMapping("/word")
     public Result<Object> saveOrUpdateWord (@RequestBody MeetingWord meetingWord) {
         return meetingWordService.saveOrUpdateWord(meetingWord);
     }
+
+    /**
+     * 删除会议纪要
+     * @param planId Excel计划id
+     * @param contentId Word内容标题id
+     * @return 删除结果
+     */
     @DeleteMapping ("/wordOrPlan")
     public Result<Object> deleteWordOrPlan (@RequestParam(required = false) Long planId,
                                             @RequestParam(required = false) Long contentId) {
         return meetingWordService.deleteWordOrPlan(planId,contentId);
     }
 
-    @PostMapping("/title")
-    public Result<Object> addTitle (@RequestBody MeetingWord meetingWord) {
-        return meetingWordService.addTitle(meetingWord);
-    }
 }

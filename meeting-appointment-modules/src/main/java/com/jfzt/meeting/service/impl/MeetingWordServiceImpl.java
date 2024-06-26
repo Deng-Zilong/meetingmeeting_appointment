@@ -9,7 +9,6 @@ import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MeetingWordService;
 import com.jfzt.meeting.service.MinutesPlanService;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +33,12 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
     @Resource
     private MinutesPlanService minutesPlanService;
 
+    /**
+     * 根据会议纪要id和用户id获取会议纪要
+     * @param meetingRecordId 会议纪要id
+     * @param userId 用户id
+     * @return 会议纪要结果
+     */
     @Override
     @Transactional
     public Result<List<MeetingWord>> getMeetingWord (Long meetingRecordId, String userId) {
@@ -94,13 +99,19 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
 
     }
 
-    private List<MeetingWord> getChildren (MeetingWord root, List<MeetingWord> all) {
+    private List<MeetingWord> getChildren(MeetingWord root, List<MeetingWord> all) {
         return all.stream()
                 .filter(meetingWord -> Objects.equals(meetingWord.getParentId(), root.getId()))
                 .peek(childrenNode -> childrenNode.setChildrenPart(getChildren(childrenNode, all)))
                 .collect(Collectors.toList());
     }
 
+
+    /**
+     * 保存或更新会议纪要
+     * @param meetingWord 会议纪要
+     * @return 保存结果
+     */
     @Override
     public Result<Object> saveOrUpdateWord (MeetingWord meetingWord) {
 
@@ -120,6 +131,12 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
         return Result.success("保存成功");
     }
 
+    /**
+     * 删除会议纪要
+     * @param planId Excel计划id
+     * @param contentId Word内容标题id
+     * @return 删除结果
+     */
     @Override
     @Transactional
     public Result<Object> deleteWordOrPlan (Long planId, Long contentId) {
@@ -134,21 +151,6 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
         minutesPlanService.removeById(planId);
         return Result.success();
     }
-
-    @Override
-    public Result<Object> addTitle (MeetingWord meetingWord) {
-        if (StringUtils.isBlank(meetingWord.getTitle())) {
-            return Result.fail("标题不能为空");
-        }
-        meetingWord.setContent("");
-        Long parentId = meetingWord.getParentId();
-        if (parentId == null) {
-            meetingWord.setParentId(0L);
-        }
-        save(meetingWord);
-        return Result.success();
-    }
-
 
 }
 

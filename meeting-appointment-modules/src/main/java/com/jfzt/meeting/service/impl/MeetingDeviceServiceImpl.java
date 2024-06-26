@@ -174,4 +174,24 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
         }
     }
+
+    /**
+     * 批量删除设备
+     * @param ids 所选id集合
+     * @return 删除结果
+     */
+    @Override
+    @Transactional
+    public Result<Object> deleteDevices(List<Integer> ids) {
+        try {
+            List<MeetingDevice> list = this.lambdaQuery().in(MeetingDevice::getId, ids).list();
+            if (list.size() != ids.size()){
+                return Result.fail("部分设备不存在!");
+            }
+            this.removeByIds(ids);
+            return Result.success("删除成功!");
+        }catch (Exception e){
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
+        }
+    }
 }
