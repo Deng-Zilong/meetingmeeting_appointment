@@ -24,6 +24,7 @@ import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLOptions;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.converter.ExcelToHtmlConverter;
 import org.apache.poi.hssf.usermodel.HSSFPictureData;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -544,6 +545,16 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      */
     @Override
     public Result<Objects> addMeeting (MeetingRecordDTO meetingRecordDTO) {
+        //参数校验
+        if (Objects.isNull(meetingRecordDTO) ||
+                StringUtils.isBlank(meetingRecordDTO.getTitle()) ||
+                Objects.isNull(meetingRecordDTO.getMeetingRoomId()) ||
+                meetingRecordDTO.getUsers().isEmpty() ||
+                Objects.isNull(meetingRecordDTO.getCreatedBy()) ||
+                Objects.isNull(meetingRecordDTO.getStartTime()) ||
+                Objects.isNull(meetingRecordDTO.getEndTime())) {
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
+        }
         // 创建一个新的MeetingRecord对象
         MeetingRecord meetingRecord = new MeetingRecord();
         // 将meetingRecordDTO中的属性复制到meetingRecord中
@@ -638,6 +649,16 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     @Override
     @Transactional
     public Result<List<MeetingRecordVO>> updateMeeting (MeetingRecordDTO meetingRecordDTO) {
+        //参数校验
+        if (Objects.isNull(meetingRecordDTO) ||
+                StringUtils.isBlank(meetingRecordDTO.getTitle()) ||
+                Objects.isNull(meetingRecordDTO.getMeetingRoomId()) ||
+                meetingRecordDTO.getUsers().isEmpty() ||
+                Objects.isNull(meetingRecordDTO.getCreatedBy()) ||
+                Objects.isNull(meetingRecordDTO.getStartTime()) ||
+                Objects.isNull(meetingRecordDTO.getEndTime())) {
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
+        }
         // 创建一个新的MeetingRecord对象
         MeetingRecord meetingRecord = new MeetingRecord();
         // 将meetingRecordDTO中的属性复制到meetingRecord中
