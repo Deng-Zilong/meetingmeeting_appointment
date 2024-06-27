@@ -17,8 +17,6 @@ import com.jfzt.meeting.service.MeetingMinutesService;
 import com.jfzt.meeting.service.MeetingRecordService;
 import com.jfzt.meeting.service.MinutesPlanService;
 import com.jfzt.meeting.service.SysUserService;
-import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,12 +35,25 @@ import java.util.Objects;
 @Service
 public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper, MeetingMinutes>
         implements MeetingMinutesService {
-    @Autowired
-    SysUserService sysUserService;
-    @Autowired
-    MeetingRecordService meetingRecordService;
-    @Resource
+
+    private SysUserService sysUserService;
+    private MeetingRecordService meetingRecordService;
     private MinutesPlanService minutesPlanService;
+
+    @Autowired
+    public void setSysUserService (SysUserService sysUserService) {
+        this.sysUserService = sysUserService;
+    }
+
+    @Autowired
+    public void setMeetingRecordService (MeetingRecordService meetingRecordService) {
+        this.meetingRecordService = meetingRecordService;
+    }
+
+    @Autowired
+    public void setMinutesPlanService (MinutesPlanService minutesPlanService) {
+        this.minutesPlanService = minutesPlanService;
+    }
 
     /**
      * 根据会议记录id或用户id查询会议纪要
@@ -85,7 +96,7 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
                                 BeanUtils.copyProperties(minutesPlan, minutesPlanVO);
                                 return minutesPlanVO;
                             }).toList());
-                    if (minutesPlans.isEmpty()){
+                    if (minutesPlans.isEmpty()) {
                         minutesPlans.add(new MinutesPlanVO());
                     }
                     meetingMinutesVO.setMinutesPlans(minutesPlans);
@@ -142,7 +153,7 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
         if (meetingMinutesDTO.getMinutesPlan() == null || meetingMinutesDTO.getMinutesPlan().isEmpty()) {
             return;
         }
-        meetingMinutesDTO.getMinutesPlan().stream().peek(plan -> {
+        meetingMinutesDTO.getMinutesPlan().forEach(plan -> {
             MinutesPlan existMinutesPlan = minutesPlanService.lambdaQuery()
                     .eq(MinutesPlan::getId, plan.getId())
                     .one();
@@ -164,7 +175,7 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
                         .build();
                 minutesPlanService.updateById(updateMinutesPlan);
             }
-        }).toList();
+        });
     }
 
     /**
@@ -177,7 +188,7 @@ public class MeetingMinutesServiceImpl extends ServiceImpl<MeetingMinutesMapper,
         if (meetingRecordId == null) {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
         }
-        List<Integer> minutesIds = list(new LambdaQueryWrapper<MeetingMinutes>()
+        List<Long> minutesIds = list(new LambdaQueryWrapper<MeetingMinutes>()
                 .eq(MeetingMinutes::getMeetingRecordId, meetingRecordId))
                 .stream().map(MeetingMinutes::getId).toList();
         //删除纪要

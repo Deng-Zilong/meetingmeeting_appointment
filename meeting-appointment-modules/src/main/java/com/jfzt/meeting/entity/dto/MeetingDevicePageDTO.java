@@ -15,7 +15,7 @@ public class MeetingDevicePageDTO extends PageDTO {
     /**
      * 会议室id
      */
-    private Integer roomId;
+    private Long roomId;
     /**
      * 设备名称
      */

@@ -14,7 +14,7 @@ public class MeetingMinutesVO {
     /**
      * id
      */
-    private Integer id;
+    private Long id;
 
     /**
      * 用户id
@@ -39,7 +39,7 @@ public class MeetingMinutesVO {
     /**
      * 会议记录id
      */
-    private Integer meetingRecordId;
+    private Long meetingRecordId;
 
     /**
      * 会议记录主题

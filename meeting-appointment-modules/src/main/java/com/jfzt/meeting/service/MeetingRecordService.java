@@ -4,13 +4,13 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingRecord;
 import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
+import com.jfzt.meeting.entity.dto.RecordQueryParameters;
 import com.jfzt.meeting.entity.vo.MeetingPromptVO;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
 import com.jfzt.meeting.entity.vo.PeriodTimesVO;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
-
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
@@ -50,10 +50,10 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
 
     /**
      * 分页获取用户参与的所有会议
-     * @param userId 用户id
+     * @param recordQueryParameters 查询条件
      * @return 会议记录列表
      */
-    List<MeetingRecordVO> getAllRecordVoListPage (String userId, Long pageNum, Long pageSize);
+    List<MeetingRecordVO> getAllRecordVoListPage (RecordQueryParameters recordQueryParameters);
 
 
     /**
@@ -95,42 +95,43 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      * @return 会议记录VO
      */
     Result<List<MeetingRecordVO>> updateMeeting (MeetingRecordDTO meetingRecordDTO);
+
     /**
      * 统计七日内各时间段预约频率
      * @return 预约频率
      */
-    Result<List<PeriodTimesVO>> getTimePeriodTimes();
+    Result<List<PeriodTimesVO>> getTimePeriodTimes ();
+
     /**
      * 会议创建自动提示
      * @param userId 用户id
      * @return 最近会议信息
      */
-    Result<MeetingPromptVO> prompt(String userId);
+    Result<MeetingPromptVO> prompt (String userId);
 
     /**
      * 导出excel
-     * @param userId 用户id
+     * @param userId              用户id
      * @param meetingRecordVOList 会议室历史记录信息
-     * @param response 返回respose
-     * @throws IOException io流异常
+     * @param response            返回respose
+     * @throws IOException            io流异常
      * @throws InvalidFormatException 无效格式异常
      */
-    void getRecordExport(String userId,String type, List<MeetingRecordVO> meetingRecordVOList, HttpServletResponse response,String operation) throws IOException, InvalidFormatException;
+    void getRecordExport (String userId, String type, List<MeetingRecordVO> meetingRecordVOList, HttpServletResponse response, String operation) throws IOException, InvalidFormatException;
 
     /**
-     *
-     * @param type type = 0(excel)     type = 1(word)
-     * @param operation operation = 0（导出）， operation = 1（预览）
+     * @param type            type = 0(excel)     type = 1(word)
+     * @param operation       operation = 0（导出）， operation = 1（预览）
      * @param meetingRecordVO 会议记录
      * @return html
      */
-    String excelHtml(String type, MeetingRecordVO meetingRecordVO, String operation);
+    String excelHtml (String type, MeetingRecordVO meetingRecordVO, String operation);
+
     /**
-     *
-     * @param type type = 0(excel)     type = 1(word)
-     * @param operation operation = 0（导出）， operation = 1（预览）
+     * @param type            type = 0(excel)     type = 1(word)
+     * @param operation       operation = 0（导出）， operation = 1（预览）
      * @param meetingRecordVO 会议记录
      * @return html
      */
-    String docxToHtml(String type, MeetingRecordVO meetingRecordVO, String operation);
+    String docxToHtml (String type, MeetingRecordVO meetingRecordVO, String operation);
 }

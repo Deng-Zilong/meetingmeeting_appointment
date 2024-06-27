@@ -5,18 +5,20 @@
 <mapper namespace="com.jfzt.meeting.mapper.MeetingWordMapper">
 
     <resultMap id="BaseResultMap" type="com.jfzt.meeting.entity.MeetingWord">
-        <id property="id" column="id" jdbcType="INTEGER"/>
+        <id property="id" column="id" jdbcType="BIGINT"/>
         <result property="userId" column="user_id" jdbcType="VARCHAR"/>
         <result property="meetingRecordId" column="meeting_record_id" jdbcType="BIGINT"/>
         <result property="content" column="content" jdbcType="VARCHAR"/>
-        <result property="type" column="type" jdbcType="TINYINT"/>
+        <result property="title" column="title" jdbcType="VARCHAR"/>
+        <result property="level" column="level" jdbcType="TINYINT"/>
+        <result property="parentId" column="parent_id" jdbcType="BIGINT"/>
         <result property="gmtCreate" column="gmt_create" jdbcType="TIMESTAMP"/>
         <result property="gmtModified" column="gmt_modified" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,user_id,meeting_record_id,
-        content,type,gmt_create,
-        gmt_modified
+        content,title,level,
+        parent_id,gmt_create,gmt_modified
     </sql>
 </mapper>

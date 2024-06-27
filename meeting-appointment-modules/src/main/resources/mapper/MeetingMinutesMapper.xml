@@ -5,7 +5,7 @@
 <mapper namespace="com.jfzt.meeting.mapper.MeetingMinutesMapper">
 
     <resultMap id="BaseResultMap" type="com.jfzt.meeting.entity.MeetingMinutes">
-        <id property="id" column="id" jdbcType="INTEGER"/>
+        <id property="id" column="id" jdbcType="BIGINT"/>
         <result property="userId" column="user_id" jdbcType="VARCHAR"/>
         <result property="minutes" column="minutes" jdbcType="VARCHAR"/>
         <result property="meetingRecordId" column="meeting_record_id" jdbcType="INTEGER"/>
@@ -13,6 +13,6 @@
 
     <sql id="Base_Column_List">
         id,user_id,minutes,
-        meeting_record_id,is_deleted
+        meeting_record_id
     </sql>
 </mapper>

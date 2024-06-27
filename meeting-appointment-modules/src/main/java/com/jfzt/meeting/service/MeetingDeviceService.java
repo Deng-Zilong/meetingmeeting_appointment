@@ -8,6 +8,8 @@ import com.jfzt.meeting.entity.dto.MeetingDeviceDTO;
 import com.jfzt.meeting.entity.dto.MeetingDevicePageDTO;
 import com.jfzt.meeting.entity.vo.MeetingDeviceVO;
 
+import java.util.List;
+
 /**
  * 针对表【meeting_device(设备表)】的数据库操作Service
  * @author chenyu.di
@@ -49,4 +51,11 @@ public interface MeetingDeviceService extends IService<MeetingDevice> {
      * @return 成功信息
      */
     Result<Object> updateStatusDevice(Long id);
+
+    /**
+     * 批量删除设备
+     * @param ids 所选id集合
+     * @return 删除结果
+     */
+    Result<Object> deleteDevices(Integer[] ids);
 }

@@ -28,9 +28,9 @@ import java.util.stream.Collectors;
 
 
 /**
+ * 针对表【sys_user】的数据库操作Service实现
  * @author zilong.deng
- * @description 针对表【sys_user】的数据库操作Service实现
- * @createDate 2024-05-06 16:47:54
+ * @since 2024-05-06 16:47:54
  */
 @Slf4j
 @Service
@@ -52,8 +52,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
     /**
      * 根据用户id拼接姓名字符串并返回用户信息集合
-     * @param userIds 用户id集合
-     * @param attendees 拼接姓名字符串
+     * @param userIds       用户id集合
+     * @param attendees     拼接姓名字符串
      * @param sysUserVOList 用户信息集合
      */
     @Override
@@ -104,7 +104,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     @Override
     public Result<Integer> addAdmin (List<String> userIds) {
         int row = 0;
-        if (userIds.isEmpty()){
+        if (userIds.isEmpty()) {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
         }
         for (String userId : userIds) {
@@ -135,7 +135,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
      */
     @Override
     public Result<Integer> deleteAdmin (String userId) {
-        if (userId.isEmpty()){
+        if (userId.isEmpty()) {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
         }
         SysUser sysUser = sysUserMapper.selectByUserId(userId);
@@ -160,7 +160,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     @Override
     public BufferedImage getCaptcha (String uuid) {
         String code = producer.createText();
-        redisTemplate.opsForValue().set("uuid:"+uuid, code, Duration.ofSeconds(60));
+        redisTemplate.opsForValue().set("uuid:" + uuid, code, Duration.ofSeconds(60));
         return producer.createImage(code);
     }
 
@@ -209,11 +209,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
      * @return 二维码
      */
     @Override
-    public Map<String, String> userQrCode() {
-        String url = wxCpService.buildQrConnectUrl(wxCpDefaultConfiguration.getUrl()+"/#/home",
+    public Map<String, String> userQrCode () {
+        String url = wxCpService.buildQrConnectUrl(wxCpDefaultConfiguration.getUrl() + "/#/home",
                 wxCpDefaultConfiguration.getState());
-        Map<String,String> map = new HashMap<>(1);
-        map.put("url",url);
+        Map<String, String> map = new HashMap<>(1);
+        map.put("url", url);
         return map;
     }
 

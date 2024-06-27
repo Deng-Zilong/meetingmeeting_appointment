@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -121,8 +122,9 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
     @Override
     public Result<Object> updateDevice(MeetingDevice meetingDevice) {
         try{
-            Long count = lambdaQuery().eq(MeetingDevice::getRoomId, meetingDevice.getRoomId())
-                    .eq(MeetingDevice::getDeviceName, meetingDevice.getDeviceName())
+            Long count = lambdaQuery()
+                    .eq(MeetingDevice::getRoomId, meetingDevice.getRoomId())
+                    .eq(MeetingDevice::getDeviceName, meetingDevice.getDeviceName().replaceAll(" ",""))
                     .count();
             if (count>0){
                 return Result.fail("设备名重复!");
@@ -141,6 +143,11 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
      */
     @Override
     public Result<Object> deleteDevice(Integer id) {
+        // 根据id查询设备信息，判断是否存在
+        MeetingDevice meetingDevice = this.lambdaQuery().eq(MeetingDevice::getId, id).one();
+        if (meetingDevice == null || meetingDevice.getStatus() <= 0){
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
+        }
         try {
             this.removeById(id);
             return Result.success("删除成功!");
@@ -169,6 +176,26 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
             }
             this.updateById(meetingDevice);
             return Result.success();
+        }catch (Exception e){
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
+        }
+    }
+
+    /**
+     * 批量删除设备
+     * @param ids 所选id集合
+     * @return 删除结果
+     */
+    @Transactional
+    public Result<Object> deleteDevices(Integer[] ids) {
+        try {
+            List<Integer> idList = Arrays.asList(ids);
+            List<MeetingDevice> list = this.lambdaQuery().in(MeetingDevice::getId, idList).list();
+            if (list.size() != idList.size()){
+                return Result.fail("部分设备不存在!");
+            }
+            this.removeByIds(idList);
+            return Result.success("删除成功!");
         }catch (Exception e){
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
         }

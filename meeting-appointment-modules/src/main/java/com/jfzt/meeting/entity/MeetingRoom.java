@@ -68,11 +68,6 @@ public class MeetingRoom implements Serializable {
     @TableLogic
     private Integer isDeleted;
 
-    /**
-     * 会议室设备
-     */
-    private String equipment;
-
     @Serial
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

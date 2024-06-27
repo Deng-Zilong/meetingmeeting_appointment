@@ -102,6 +102,11 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      */
     @Override
     public Result<Integer> addMeetingRoom (MeetingRoom meetingRoom) {
+        // 会议室位置非空且长度限制30个字符
+        String location = meetingRoom.getLocation();
+        if (location != null && location.length() > MAX_ROOM_LOCATION_LENGTH) {
+            return Result.fail("会议室位置长度不能超过30个字符！");
+        }
         if (meetingRoom.getCapacity() <= 0) {
             throw new RRException("会议室容量不正确", ErrorCodeEnum.SERVICE_ERROR_A0421.getCode());
         }
@@ -115,10 +120,9 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         List<MeetingRoom> roomList = meetingRoomMapper.selectList(new QueryWrapper<>());
         List<String> roomName = roomList.stream().map(MeetingRoom::getRoomName).toList();
         for (String room : roomName) {
-            // 会议室名称长度限制为15个字符，会议室位置限制30个字符
-            if (meetingRoom.getRoomName().equals(room) || meetingRoom.getRoomName().length() > MAX_NAME_LENGTH ||
-                    (meetingRoom.getLocation().length() > MAX_ROOM_LOCATION_LENGTH)) {
-                throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
+            // 会议室名称长度限制为15个字符
+            if (meetingRoom.getRoomName().equals(room) || meetingRoom.getRoomName().length() > MAX_ROOM_NAME_LENGTH) {
+                throw new RRException("会议室名称长度不能超过15个字符！");
             }
         }
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(sysUser.getLevel())
@@ -234,8 +238,8 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         }
         //查出开始时间段在时间段内9:00-18:00的所有会议
         List<MeetingRecord> meetingRecordList = meetingRecordService.list(new LambdaQueryWrapper<MeetingRecord>()
-                .gt(MeetingRecord::getStartTime, startDate.atStartOfDay().plusHours(9).minusSeconds(1))
-                .lt(MeetingRecord::getStartTime, endDate.atStartOfDay().plusHours(18).plusSeconds(1))
+                .gt(MeetingRecord::getStartTime, startDate.atStartOfDay())
+                .lt(MeetingRecord::getStartTime, endDate.atStartOfDay().plusHours(23).plusSeconds(59))
                 .and(wrapper -> wrapper.eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_NOT_START)
                         .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_PROCESSING)
                         .or().eq(MeetingRecord::getStatus, MEETING_RECORD_STATUS_END)));
@@ -317,7 +321,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             others.setOccupancyRate(((float) others.getOccupied() / finalTotal));
             TimePeriodOccupancyVO notOccupancyVO = new TimePeriodOccupancyVO();
             notOccupancyVO.setOccupied(total - totalOccupancy);
-            notOccupancyVO.setTimePeriod("unoccupied");
+            notOccupancyVO.setTimePeriod("未占用");
             notOccupancyVO.setOccupancyRate(1 - list.get(0).getOccupancyRate()
                     - list.get(1).getOccupancyRate() - list.get(2).getOccupancyRate()
                     - others.getOccupancyRate());
@@ -332,7 +336,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             occupancyVOList.clear();
             occupancyVOList.addAll(voList);
             return meetingRoomOccupancyVO;
-        }).filter(item -> item.getTotalOccupancyRate() != 0).toList();
+        }).toList();
         return Result.success(meetingRoomOccupancyVOList);
     }
 
@@ -415,14 +419,24 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             log.error(UPDATE_FAIL + EXCEPTION_TYPE, RRException.class);
             throw new RRException(UPDATE_FAIL, ErrorCodeEnum.SERVICE_ERROR_A0421.getCode());
         }
+        // 会议室位置非空且长度限制30个字符
+        String location = meetingRoomDTO.getLocation();
+        if (location != null && location.length() > MAX_ROOM_LOCATION_LENGTH) {
+            return Result.fail("会议室位置长度不能超过30个字符！");
+        }
         // 查询会议室名称,判断是否有重复的会议室名称
         List<MeetingRoom> roomList = meetingRoomMapper.selectList(new QueryWrapper<>());
         List<String> roomName = roomList.stream().map(MeetingRoom::getRoomName).toList();
         for (String room : roomName) {
-            // 会议室名称长度限制为15个字符，会议室位置限制30个字符
-            if (meetingRoom.getRoomName().equals(room) || meetingRoom.getRoomName().length() > MAX_NAME_LENGTH ||
-                    (meetingRoom.getLocation().length() > MAX_ROOM_LOCATION_LENGTH)) {
-                throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
+            // 判断新的会议室名称和数据库中的会议室名称是否没有重复的，如果没有，则检查新的名字是否和数据库的其他名字相同
+            if (!meetingRoomDTO.getRoomName().equals(room)) {
+                if (meetingRoomDTO.getRoomName().equals(room)) {
+                    throw new RRException("会议室名称重复！");
+                }
+            }
+            // 会议室名称长度限制为15个字符
+            if (meetingRoomDTO.getRoomName().length() > MAX_ROOM_NAME_LENGTH) {
+                throw new RRException("会议室名称长度不能超过15个字符！");
             }
         }
         if (meetingRoomDTO.getRoomName() == null || meetingRoomDTO.getCurrentLevel() == null ||

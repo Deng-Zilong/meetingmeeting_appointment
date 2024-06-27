@@ -19,13 +19,18 @@
     <insert id="insertAll" parameterType="java.util.List">
         insert into sys_department (department_id,department_name,parent_id)
         values
-    <foreach collection="sysDepartmentLists" item="sysDepartment" index="index" separator=",">
-        (#{sysDepartment.departmentId}, #{sysDepartment.departmentName}, #{sysDepartment.parentId})
-    </foreach>
+        <foreach collection="sysDepartmentLists" item="sysDepartment" index="index" separator=",">
+            (#{sysDepartment.departmentId}, #{sysDepartment.departmentName}, #{sysDepartment.parentId})
+        </foreach>
 
     </insert>
     <select id="findDepartment" resultType="com.jfzt.meeting.entity.SysDepartment">
-        SELECT  d.department_name FROM sys_department_user du left join sys_department d on du.department_id = d.department_id WHERE du.user_id = #{userId} LIMIT 0,1
+        SELECT d.department_name
+        FROM sys_department_user du
+                 left join sys_department d on du.department_id = d.department_id
+        WHERE du.user_id = #{userId}
+        order by du.department_id desc
+        LIMIT 0,1
     </select>
 
 </mapper>

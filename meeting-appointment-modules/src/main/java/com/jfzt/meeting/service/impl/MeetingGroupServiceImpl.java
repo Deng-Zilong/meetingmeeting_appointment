@@ -126,6 +126,8 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
     @Transactional
     public Result<Object> addMeetingGroup (MeetingGroupDTO meetingGroupDTO) {
 
+        meetingGroupDTO.setGroupName(meetingGroupDTO.getGroupName().replaceAll(" ", ""));
+
         if (meetingGroupDTO.getUsers().isEmpty()) {
             log.error(NO_USER + EXCEPTION_TYPE, RRException.class);
             throw new RRException(NO_USER, ErrorCodeEnum.SERVICE_ERROR_A0410.getCode());
@@ -194,10 +196,18 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         MeetingGroup meetingGroup = new MeetingGroup();
         // 将meetingGroupDTO中的属性复制到meetingGroup中
         BeanUtils.copyProperties(meetingGroupDTO, meetingGroup);
-        //        MeetingGroup one = lambdaQuery().eq(MeetingGroup::getId, meetingGroupDTO.getId()).one();
-        //        one.setGroupName(meetingGroupDTO.getGroupName());
-        if (meetingGroupDTO.getGroupName() != null) {
+        if (StringUtils.isNotBlank(meetingGroupDTO.getGroupName())) {
+            meetingGroupDTO.setGroupName(meetingGroupDTO.getGroupName().replaceAll(" ", ""));
+            Long count = lambdaQuery()
+                    .eq(MeetingGroup::getGroupName, meetingGroupDTO.getGroupName())
+                    .count();
+            if (count > 0) {
+                log.info(SAME_NAME + EXCEPTION_TYPE, RRException.class);
+                throw new RRException(SAME_NAME, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+            }
             updateById(meetingGroup);
+        }else {
+            return Result.fail(GROUP_NAME_NOT_NULL);
         }
         if (!meetingGroupDTO.getUsers().isEmpty()) {
             List<UserGroup> userGroups = userGroupService.lambdaQuery()
