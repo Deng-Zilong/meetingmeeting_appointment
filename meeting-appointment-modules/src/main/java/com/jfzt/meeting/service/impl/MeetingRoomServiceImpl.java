@@ -477,7 +477,8 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             meetingRoomStatusVO.setEquipment(
                     String.join(",", meetingDeviceService
                             .list(new LambdaQueryWrapper<MeetingDevice>()
-                                    .eq(MeetingDevice::getRoomId, meetingRoom.getId()))
+                                    .eq(MeetingDevice::getRoomId, meetingRoom.getId())
+                                    .eq(MeetingDevice::getStatus, 1))
                             .stream().map(MeetingDevice::getDeviceName).toList()));
             //暂停使用直接返回
             if (Objects.equals(meetingRoomStatusVO.getStatus(), MEETINGROOM_STATUS_PAUSE)) {
