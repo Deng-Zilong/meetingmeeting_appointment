@@ -3,6 +3,7 @@ package com.jfzt.meeting.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.MeetingRecord;
+import com.jfzt.meeting.entity.SysDepartment;
 import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
 import com.jfzt.meeting.entity.dto.RecordQueryParameters;
 import com.jfzt.meeting.entity.vo.MeetingPromptVO;
@@ -134,4 +135,6 @@ public interface MeetingRecordService extends IService<MeetingRecord> {
      * @return html
      */
     String docxToHtml (String type, MeetingRecordVO meetingRecordVO, String operation);
+
+    Result<List<SysDepartment>> department();
 }

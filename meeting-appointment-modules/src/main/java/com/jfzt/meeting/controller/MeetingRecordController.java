@@ -1,6 +1,7 @@
 package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.entity.SysDepartment;
 import com.jfzt.meeting.entity.dto.MeetingRecordDTO;
 import com.jfzt.meeting.entity.dto.RecordQueryParameters;
 import com.jfzt.meeting.entity.dto.UpdateMeetingDTO;
@@ -178,5 +179,13 @@ public class MeetingRecordController {
     @GetMapping("/index/meeting-record-prompt")
     public Result<MeetingPromptVO> prompt (@RequestParam String userId) {
         return meetingRecordService.prompt(userId);
+    }
+    /**
+     * 获取部门列表
+     * @return 部门列表
+     */
+    @GetMapping("/index/meeting-record-department")
+    public Result<List<SysDepartment>> department () {
+        return meetingRecordService.department();
     }
 }

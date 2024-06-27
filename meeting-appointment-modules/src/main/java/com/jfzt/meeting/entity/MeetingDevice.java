@@ -42,6 +42,10 @@ public class MeetingDevice implements Serializable {
      */
     private String deviceName;
     /**
+     * 停止报损（1：禁止报损、0：可以报损）
+     */
+    private Integer stopSend;
+    /**
      * 设备状态（1：修复、0：禁用）
      */
     private Integer status;

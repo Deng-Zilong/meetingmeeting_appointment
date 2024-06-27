@@ -67,6 +67,15 @@ public class MeetingDeviceController {
     public Result<Object>updateStatusDevice (@RequestBody  MeetingDevice meetingDevice) {
         return meetingDeviceService.updateStatusDevice(meetingDevice.getId());
     }
+    /**
+     * 禁止设备报损(启用禁用)
+     * @param meetingDevice 设备实体类
+     * @return 成功信息
+     */
+    @PutMapping("/stopSend")
+    public Result<Object>updateStopSend (@RequestBody  MeetingDevice meetingDevice) {
+        return meetingDeviceService.updateStopSend(meetingDevice.getId());
+    }
 
     /**
      * 删除设备

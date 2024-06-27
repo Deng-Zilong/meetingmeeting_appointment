@@ -66,6 +66,7 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
                         case 0:
                             defaultTitle.setTitle("本次目标:");
                             titleList.add(defaultTitle);
+
                             break;
                         case 1:
                             defaultTitle.setTitle("所遇问题:");
@@ -89,7 +90,19 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
             List<MeetingWord> wordList = meetingWords.stream()
                     .filter(meetingWord -> meetingWord.getParentId() != null && meetingWord.getParentId() == 0)
                     .sorted((node1, node2) -> Math.toIntExact(node1.getId() - node2.getId()))
-                    .peek(meetingWord -> meetingWord.setChildrenPart(getChildren(meetingWord, meetingWords)))
+                    .peek(meetingWord -> {
+                        meetingWord.setChildrenPart(getChildren(meetingWord, meetingWords));
+                        if (meetingWord.getChildrenPart().isEmpty()) {
+                            MeetingWord word = MeetingWord.builder()
+                                    .content(" ")
+                                    .level(0)
+                                    .parentId(meetingWord.getId())
+                                    .build();
+                            List<MeetingWord> words = new ArrayList<>();
+                            words.add(word);
+                            meetingWord.setChildrenPart(words);
+                        };
+                    })
                     .toList();
             return Result.success(wordList);
         } catch (Exception e) {

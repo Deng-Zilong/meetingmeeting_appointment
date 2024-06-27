@@ -58,4 +58,6 @@ public interface MeetingDeviceService extends IService<MeetingDevice> {
      * @return 删除结果
      */
     Result<Object> deleteDevices(Integer[] ids);
+
+    Result<Object> updateStopSend(Long id);
 }

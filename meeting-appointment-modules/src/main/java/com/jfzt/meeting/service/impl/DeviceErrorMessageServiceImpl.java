@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.entity.DeviceErrorMessage;
 import com.jfzt.meeting.entity.MeetingDevice;
+import com.jfzt.meeting.entity.MeetingRoom;
 import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.dto.DeviceErrorMessageDTO;
 import com.jfzt.meeting.exception.ErrorCodeEnum;
@@ -11,6 +12,7 @@ import com.jfzt.meeting.exception.RRException;
 import com.jfzt.meeting.mapper.DeviceErrorMessageMapper;
 import com.jfzt.meeting.service.DeviceErrorMessageService;
 import com.jfzt.meeting.service.MeetingDeviceService;
+import com.jfzt.meeting.service.MeetingRoomService;
 import com.jfzt.meeting.service.SysUserService;
 import com.jfzt.meeting.utils.WxUtil;
 import jakarta.annotation.Resource;
@@ -26,6 +28,9 @@ import java.util.List;
 @Service
 public class DeviceErrorMessageServiceImpl extends ServiceImpl<DeviceErrorMessageMapper,DeviceErrorMessage>
         implements DeviceErrorMessageService {
+    @Resource
+    private MeetingRoomService meetingRoomService;
+
     @Resource
     private WxUtil wxUtil;
     @Resource
@@ -72,38 +77,74 @@ public class DeviceErrorMessageServiceImpl extends ServiceImpl<DeviceErrorMessag
                 .one();
         Integer extent = meetingDevice.getExtent();
         extent++;
+        meetingDevice.setExtent(extent);
+        meetingDeviceService.lambdaUpdate()
+                .eq(MeetingDevice::getId, deviceErrorMessageDTO.getDeviceId())
+                .set(MeetingDevice::getExtent,extent)
+                .update();
+        MeetingRoom room = meetingRoomService.lambdaQuery()
+                .eq(MeetingRoom::getId, meetingDevice.getRoomId())
+                .one();
         try {
-            // 判断报损次数是否大于等于3
-            if (extent>=3){
-                meetingDevice.setStatus(0);
+            // 判断报损次数是否大于等于3,停止报损是否开启,0可以报损
+            if (meetingDevice.getStopSend() == 0) {
+
+                if (extent >= 3) {
+                    meetingDevice.setStatus(0);
                     wxUtil.sendsWxReminders(sysUserService.lambdaQuery()
                             .ne(SysUser::getLevel, 2)
                             .list()
                             .stream()
                             .map(SysUser::getUserId)
-                            .toList(),meetingDevice.getRoomId()
+                            .toList(), room.getRoomName()
                             + "的"
                             + meetingDevice.getDeviceName()
-                            +"\n因"
+                            + "\n因"
                             + deviceErrorMessageDTO.getInfo()
                             + "\n目前已被禁用，请及时处理!!");
+                } else {
+                    wxUtil.sendsWxReminders(sysUserService.lambdaQuery()
+                            .ne(SysUser::getLevel, 2)
+                            .list()
+                            .stream()
+                            .map(SysUser::getUserId)
+                            .toList(), room.getRoomName()
+                            + "的"
+                            + meetingDevice.getDeviceName()
+                            + "已损坏\n损坏原因为："
+                            + deviceErrorMessageDTO.getInfo()
+                            + "\n请及时处理!!");
+                }
+
             }
+        }catch (Exception e){
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
+        }
+        //每十次发送一次报损信息
+        if (extent % 10 == 0) {
+
             wxUtil.sendsWxReminders(sysUserService.lambdaQuery()
                     .ne(SysUser::getLevel, 2)
                     .list()
                     .stream()
                     .map(SysUser::getUserId)
-                    .toList(),meetingDevice.getRoomId()
-                    + "的"
+                    .toList()
+                    ,"【"
+                    + room.getRoomName()
+                    + "】的【"
                     + meetingDevice.getDeviceName()
-                    +"已损坏\n损坏原因为："
-                    + deviceErrorMessageDTO.getInfo()
-                    + "\n请及时处理!!");
-        }catch (Exception e){
-            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
+                    + "】已申请 【"
+                    + meetingDevice.getExtent()
+                    + "次】报损"
+                    + "请及时处理!!");
+            return Result.fail( "【"
+                    + room.getRoomName()
+                    + "】的【"
+                    + meetingDevice.getDeviceName()
+                    + "】已申请【"
+                    + meetingDevice.getExtent()
+                    + "次】报损,请及时处理!!");
         }
-        meetingDevice.setExtent(extent);
-        meetingDeviceService.updateById(meetingDevice);
 
         return Result.success("提交成功");
     }

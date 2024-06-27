@@ -200,4 +200,18 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
         }
     }
+
+    @Override
+    @Transactional
+    public Result<Object> updateStopSend(Long id) {
+        try {
+            MeetingDevice meetingDevice = this.lambdaQuery().eq(MeetingDevice::getId, id).one();
+            Integer stopSend = meetingDevice.getStopSend();
+            meetingDevice.setStopSend(stopSend==1 ? 0 : 1);
+            this.updateById(meetingDevice);
+            return Result.success();
+        }catch (Exception e){
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
+        }
+    }
 }

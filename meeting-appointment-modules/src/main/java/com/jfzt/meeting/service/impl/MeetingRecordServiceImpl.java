@@ -97,6 +97,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     @Resource
     private MeetingRoomMapper meetingRoomMapper;
     @Resource
+    private SysDepartmentService sysDepartmentService;
+    @Resource
     private MeetingReminderScheduler meetingReminderScheduler;
     @Resource
     private MeetingMinutesService meetingMinutesService;
@@ -1198,6 +1200,16 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         } catch (Exception e) {
             throw new RRException(ErrorCodeEnum.SYSTEM_ERROR_B01012);
         }
+    }
+
+    @Override
+    public Result<List<SysDepartment>> department() {
+        List<SysDepartment> list = sysDepartmentService.lambdaQuery()
+                .list()
+                .stream()
+                .filter(sysDepartment -> sysDepartment.getDepartmentId() != 0)
+                .toList();
+        return Result.success(list);
     }
 
     /**
