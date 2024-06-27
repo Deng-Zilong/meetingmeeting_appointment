@@ -1155,6 +1155,7 @@
                             cursor: pointer;
                         }
                         .transmit-icon {
+                            width: 22px;
                             position: absolute;
                             left: 0;
                             cursor: pointer;

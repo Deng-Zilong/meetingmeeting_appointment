@@ -35,7 +35,7 @@ const setChart = () => {
       bottom: 20,
       icon: 'circle', // 展示icon
       textStyle: {
-        fontSize: nowSize(15)
+        fontSize: nowSize(14)
       },
       data: data.value.map((item: any) => {
         return {
@@ -68,7 +68,7 @@ const setChart = () => {
             return params.name + ' : ' + params.percent + '%';
           },
           textStyle: {
-            fontSize: nowSize(15),
+            fontSize: nowSize(14),
             backgroundColor: '#FFF'
           },
         },

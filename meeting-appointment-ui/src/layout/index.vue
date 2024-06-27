@@ -80,7 +80,9 @@ const toHome = () => {
     .logo,
     .avatar {
       margin: 0;
-
+      img {
+        width: 167px;
+      }
       .el-avatar {
         width: 50px;
         height: 50px;

@@ -63,8 +63,8 @@ export const addAdminData = (data: { userIds: any[] }) => {
 }
 
 // 查询所有的会议记录
-export const getAllRecordData = (data: { pageNum?: number, pageSize?: number, currentLevel: number }) => {
-  return http.get("/meeting/meeting-record/select-all-meeting-record", data)
+export const getAllRecordData = (data: any) => {
+  return http.get("/meeting/meeting-record/all-meeting-record", data)
 }
 
 /***************************************************管理设备***********************************************************/
@@ -95,4 +95,9 @@ export const getInfoData = (params: any) => {
 // 新增报损信息
 export const addBreakInfoData = (params: any) => {
   return http.post("/meeting/meetingDevice/info", params)
+}
+
+// 批量删除设备
+export const delAllDeviceData = (params: any) => {
+  return http.delete("/meeting/meetingDevice/devices", params)
 }

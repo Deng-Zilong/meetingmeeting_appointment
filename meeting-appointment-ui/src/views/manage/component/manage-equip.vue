@@ -28,19 +28,26 @@
 
   <div class="equip-container">
     <div class="equip-top">
-      <el-button type="primary" @click="handleAddDevice">新增设备</el-button>
-      <el-input v-model="equipValue" clearable placeholder="请搜索设备" @input="handleChangeEquip" />
-      <el-select v-model="roomValue" filterable clearable placeholder="会议室" @change="handleChangeRoom">
-        <el-option v-for="item in roomOptions" :key="item.id" :label="item.value" :value="item.id" />
-      </el-select>
-      <el-select v-model="stateValue" filterable clearable placeholder="状态" @change="handleChangeStatus">
-        <el-option v-for="item in stateOptions" :key="item.id" :label="item.value" :value="item.id" />
-      </el-select>
+      <div class="search-button">
+        <el-input v-model="searchList.deviceName" clearable placeholder="请搜索设备" @clear="handleChangeSearch"/>
+        <el-select v-model="searchList.roomId" filterable clearable placeholder="会议室" @clear="handleChangeSearch">
+          <el-option v-for="item in roomOptions" :key="item.id" :label="item.value" :value="item.id" />
+        </el-select>
+        <el-select v-model="searchList.status" filterable clearable placeholder="状态" @clear="handleChangeSearch">
+          <el-option v-for="item in stateOptions" :key="item.id" :label="item.value" :value="item.id" />
+        </el-select>
+        <el-button type="primary" @click="handleSearch">查 询</el-button>
+        <el-button type="primary" @click="resetSearch">重 置</el-button>
+      </div>
+      <div class="operate-button">
+        <el-button type="primary" @click="handleAddDevice">新增设备</el-button>
+        <el-button type="danger" @click="handleDelBatchDevice">批量删除</el-button>
+      </div>
     </div>
     <div class="equip-main">
       <div class="room-table">
         <div class="room-table-th">
-          <!-- <el-checkbox v-model="checkAll">全选</el-checkbox> -->
+          <el-checkbox v-model="checkAll" :indeterminate="isIndeterminate" @change="handleCheckAllChange"></el-checkbox>
           <div class="th-title t-name">设备名称</div>
           <div class="th-title t-roomName">所在会议室</div>
           <div class="th-title t-extend">报损次数</div>
@@ -49,7 +56,9 @@
         </div>
         <div class="room-table-main">
           <div class="room-table-tr" v-for="item in equipList">
-            <!-- <el-checkbox @change="changeChecked(item)"></el-checkbox> -->
+            <el-checkbox-group v-model="checkList" @change="handleCheckedChange">
+              <el-checkbox :value="item.id"></el-checkbox>
+            </el-checkbox-group>
             <div class="room-tr-cell t-name" @click="handleEditDevice(item)">
               <el-popover placement="bottom" :disabled="item.deviceName.length < 20" :width="130" trigger="hover"
                 :content="item.deviceName">
@@ -105,16 +114,12 @@ import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'elem
 import { computed, onMounted, reactive, ref } from 'vue'
 
 import { meetingStatus } from '@/stores/meeting-status'
-import { getDeviceData, addDeviceData, editDeviceData, delDeviceData, setStatusData, getInfoData } from '@/request/api/manage'
+import { getDeviceData, addDeviceData, editDeviceData, delDeviceData, delAllDeviceData, setStatusData, getInfoData } from '@/request/api/manage'
 
 const useMeetingStatus = meetingStatus();  // 获取所有会议室信息
-const dialogAddVisible = ref(false)
-
-// 勾选
-const checkAll = ref(false)
-const changeChecked = (item: any) => {
-  console.log(item)
-}
+const dialogAddVisible = ref(false)  // 新增设备 弹窗是否展示
+const userInfo = ref<any>({})  // 用户信息
+const equipList = ref()  // 列表数据
 
 // 搜索
 const roomValue = ref('')  // 选择会议室
@@ -137,6 +142,100 @@ const stateOptions = [  // 可选设备状态值
   }
 ]
 
+// 挂载获取数据
+onMounted(() => {
+  userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}')  // 用户信息
+  useMeetingStatus.getCenterRoomName();  // 获取所有会议室及状态
+  getAllDevice()  // 查询设备
+})
+
+/**************************************查询条件**********************************************/
+// 查询信息 三个搜索条件
+const searchList = ref<any>({
+  deviceName: '',
+  roomId: '',
+  status: ''
+})
+
+// 搜索三个的 clear事件 当清空搜索条件时，重新查询列表
+const handleChangeSearch = () => {
+  getAllDevice()
+  checkAll.value = false  // 全选按钮取消
+  handleCheckedChange([])
+  handleCheckAllChange(false)
+}
+
+const handleSearch = () => {
+  page.value = 1;
+  getAllDevice();
+  handleCheckedChange([])
+  handleCheckAllChange(false)
+}
+const resetSearch = () => {
+  refresh();
+  getAllDevice();
+  
+  handleCheckedChange([])
+  handleCheckAllChange(false)
+}
+
+const refresh = () => {
+  searchList.value = {
+    deviceName: '',
+    roomId: '',
+    status: ''
+  }
+  page.value = 1;
+}
+
+/**************************************批量删除**********************************************/
+// 多选
+let checkAll = ref(false) // 全选与否
+let checkList = ref<Array<number>>([]) // 选中的
+let isIndeterminate = ref(false)  // 是否半选
+
+// 全选
+const handleCheckAllChange = (val: boolean) => {
+  if (equipList.value.length === 0) return isIndeterminate.value = true;  // 列表数据没有时，全选勾选为空
+
+  checkList.value = val ? equipList.value.map((item: any) => item.id) : [];
+  isIndeterminate.value = false
+  // console.log(checkList.value,'选中的-全选-列表数据',equipList.value)
+}
+
+// 勾选中的
+const handleCheckedChange = (value: string[]) => {
+  const checkedCount = value.length;
+  checkAll.value = checkedCount === equipList.value.length;
+  isIndeterminate.value = checkedCount > 0 && checkedCount < equipList.value.length;
+  // console.log(checkList.value,'选中-选中项-全选与否',checkAll.value)
+}
+
+// 批量删除 事件
+const handleDelBatchDevice = () => {
+  if (checkList.value.length === 0) {
+    ElMessage.warning('请选择要删除的设备')
+    return;
+  };
+  ElMessageBox.confirm('确定要删除选中的设备吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    delAllDeviceData({ ids: checkList.value.join(',') })
+      .then(() => {
+        ElMessage.success('删除成功')
+        getAllDevice(); // 刷新列表
+      })
+      .catch(() => {
+        ElMessage.warning('删除失败')
+      })
+  }).catch(() => {
+    ElMessage.warning('已取消删除')
+  })
+}
+
+/**************************************切换页面**********************************************/
 // 分页
 let size = ref(10); // 默认限制条数 10
 let page = ref(1); // 默认页数 1
@@ -147,19 +246,22 @@ let total = ref(0); // 总条数
  */
 const handleCurrentChange = (value: any) => {
   page.value = value;
+  checkAll.value = false;
   getAllDevice();
+  // console.log(checkList.value, '前', value, equipList.value)
+
+  
+  // if (checkList.value !== equipList.value) {
+  //   checkAll.value = false;
+  //   console.log(checkList.value,'选中-by等于列表',equipList.value)
+  // } else {
+  //   checkAll.value = true;
+  // }
+  // 选中的包含当前列表的所有值，则全选
+  // checkAll.value = false;
+  // 当切换页码时，切换前的一页选中保留，切换后的一页根据选中情况
+  // checkList.value = equipList.value.filter((item: any) => checkList.value.includes(item.id))
 }
-
-const userInfo = ref<any>({})  // 用户信息
-
-onMounted(() => {
-  userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}')  // 用户信息
-  useMeetingStatus.getCenterRoomName();  // 获取所有会议室及状态
-  getAllDevice()  // 查询设备
-})
-
-
-const equipList = ref()  // 列表数据
 
 const changeColor = computed(() => (extent: any) => {
   switch (extent) {
@@ -192,28 +294,30 @@ const getAllDevice = async () => {
   const params = {
     current: page.value,
     size: size.value,
-    roomId: roomValue.value,
-    deviceName: equipValue.value,
-    status: stateValue.value
+    roomId: searchList.value.roomId,
+    deviceName: searchList.value.deviceName,
+    status: searchList.value.status
   }
   const res = await getDeviceData(params)
   equipList.value = res.data.records;
   total.value = res.data.total
+  // checkList.value
+
+  let arrTemp = []
+  arrTemp = equipList.value.map((item: any) => {
+    return item.id
+  })
+
+  // let tempcheckList = []
+  // for (let i = 0; i < checkList.value.length; i++){
+  //   tempcheckList.push(checkList.value[i])
+  // }
+  console.log(arrTemp, 'arrTemp', checkList.value);
+  if (JSON.stringify(arrTemp) === JSON.stringify(checkList.value)) {
+    checkAll.value = true
+  }
 }
 
-// 搜索三个的 change事件
-const handleChangeEquip = (value: any) => {
-  equipValue.value = value
-  getAllDevice()
-}
-
-const handleChangeRoom = () => {
-  getAllDevice()
-}
-
-const handleChangeStatus = () => {
-  getAllDevice()
-}
 
 let isNew = ref()  // 判断 新增/修改
 // 切换提交事件
@@ -380,12 +484,17 @@ const handleDeleteRoom = (item: any) => {
   flex-direction: column;
 
   .equip-top {
+    display: flex;
+    justify-content: space-between;
     margin-bottom: 10px;
-    .el-button {
-      margin-right: 30px;
-    }
-    .el-input, .el-select {
-      width: 240px;
+    .search-button {
+      .el-button {
+        // margin-right: 20px;
+      }
+      .el-input, .el-select {
+        width: 240px;
+        margin-right: 10px;
+      }
     }
   }
 
@@ -395,6 +504,13 @@ const handleDeleteRoom = (item: any) => {
       border: 2px solid rgba(18, 115, 219, 0.8);
       border-radius: 15px;
       padding: 10px 18px;
+
+      // 单独设置 多选框的样式
+      .room-table-th, .room-table-tr {
+        .el-checkbox {
+          padding-left: 30px;
+        }
+      }
 
       // 表头与每行的 共同样式 设置宽
       .th-title, .room-tr-cell {

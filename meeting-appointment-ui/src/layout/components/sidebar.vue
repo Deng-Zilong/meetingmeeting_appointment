@@ -1,19 +1,19 @@
 <template>
     <div class="sidebar-box">
         <el-menu :router="true">
-            <el-menu-item index="/home" :class="currentPath == '/home' ? 'active menu-item' : ' menu-item'">
+            <el-menu-item index="/home" class="menu-item" :class="currentPath == '/home' ? 'active' : ''">
                 <img src="@/assets/img/homeicon.png" alt="">
                 <span>首页概览</span>
             </el-menu-item>
-            <el-menu-item index="/history" :class="currentPath == '/history' ? 'active menu-item' : ' menu-item'">
+            <el-menu-item index="/history" class="menu-item" :class="currentPath == '/history' ? 'active' : ''">
                 <img src="@/assets/img/historyicon.png" alt="">
                 <span>历史记录</span>
             </el-menu-item>
-            <el-menu-item index="/group" class="menu-item" :class="currentPath == '/group' ? 'active menu-item' : ' menu-item'">
+            <el-menu-item index="/group" class="menu-item" :class="currentPath == '/group' ? 'active' : ''">
                 <img src="@/assets/img/groupicon.png" alt="">
                 <span>群组管理</span>
             </el-menu-item>
-            <el-menu-item index="/manage" class="menu-item" :class="currentPath == '/manage' ? 'active menu-item' : ' menu-item'" v-show="level != 2">
+            <el-menu-item index="/manage" class="menu-item" :class="currentPath == '/manage' ? 'active' : ''" v-show="level != 2">
                 <img src="@/assets/img/manageicon.png" alt="">
                 <span>后台管理</span>
             </el-menu-item>
@@ -48,6 +48,8 @@
             margin-top: 9.6px;
         }
         .menu-item img {
+            width: 39px;
+            height: 19px;
             margin-right: 10px;
             padding: 0 10px;
         }

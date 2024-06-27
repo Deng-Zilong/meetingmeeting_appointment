@@ -33,7 +33,7 @@ const refreshChart = () => {
     right: '4%', // 图例右侧对齐
     top: '7%', // 图例顶部对齐
     textStyle: {
-      fontSize: nowSize(15)
+      fontSize: nowSize(14)
     },
   },
   grid: {
@@ -47,7 +47,7 @@ const refreshChart = () => {
     data: [],
     axisLabel: {
       textStyle: {
-        fontSize: nowSize(15)
+        fontSize: nowSize(14)
       },
     }
   },
@@ -60,7 +60,7 @@ const refreshChart = () => {
       inside: false, // 刻度标签是否朝内，默认朝外
       margin: 11, // 刻度标签与轴线之间的距离
       textStyle: {
-        fontSize: nowSize(15)
+        fontSize: nowSize(14)
       },
     },
   },
@@ -77,7 +77,7 @@ const refreshChart = () => {
     type: 'bar',
     stack: 'total',
     barWidth: '60%',
-    label: name === 'unoccupied' ? {show: false} : {show: true, formatter: percentageFormatter , textStyle: {fontSize: nowSize(15)} }, // 不展示 notOccupancy 的 label
+    label: name === 'unoccupied' ? {show: false} : {show: true, formatter: percentageFormatter , textStyle: {fontSize: nowSize(14)} }, // 不展示 notOccupancy 的 label
     itemStyle: name === 'unoccupied' ? {color: 'rgba(180, 180, 180, 0.2)'} : {}, // 修改 notOccupancy 的颜色
     data: []
   }));

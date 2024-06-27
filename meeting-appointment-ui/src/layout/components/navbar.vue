@@ -36,7 +36,7 @@
     [...scrollContainer.value.children].forEach((item:any) => {
       sumWidth += item.offsetWidth;
     });
-    if (sumWidth > 840) {
+    if (sumWidth > (840 / 1920 * document.documentElement.clientWidth)) {
       isShow.value = true;
     } else {
       isShow.value = false;

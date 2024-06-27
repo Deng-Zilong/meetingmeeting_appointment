@@ -7,7 +7,7 @@
       </div>
       <div class="theme-right" v-if="userInfo.level === 0">
         <el-tooltip content="新增管理员" placement="top" effect="light">
-          <el-button type="primary" @click="handleAddManage">增加管理员</el-button>
+          <el-button type="primary" class="add-button" @click="handleAddManage">增加管理员</el-button>
         </el-tooltip>
          <!-- 添加群组成员弹窗 -->
          <personTreeDialog 
@@ -17,7 +17,7 @@
           @close-dialog="closeAddPersonDialog" 
           @submit-dialog="handleCheckedPerson" 
         />
-        <el-popover trigger="hover" :width="180" :popper-style="{ maxHeight: '250px', overflow: 'auto'}">
+        <el-popover trigger="hover" :width="180" :popper-style="{ maxHeight: '250px', overflow: 'auto' }">
           <template #reference>
               <el-button type="primary">删除管理员</el-button>
           </template>
@@ -31,14 +31,28 @@
     </div>
     <el-tabs v-model="activeName" class="manage-tabs" @tab-click="handleClick">
       
-      <el-tab-pane label="会议列表" name="first">
+      <el-tab-pane label="会议列表" name="first" class="first-tab">
+        <div class="search-form">
+          <el-input v-model="searchForm.title" clearable placeholder="请输入会议主题"  @clear="handleChangeSearch" />
+          <el-select v-model="searchForm.meetingRoomId" filterable clearable placeholder="请选择会议室" @clear="handleChangeSearch">
+            <el-option v-for="item in roomOptions" :key="item.id" :label="item.value" :value="item.id" />
+          </el-select>
+          <el-input v-model="searchForm.adminUserName" clearable placeholder="请输入发起人名称" @clear="handleChangeSearch" />
+          <el-input v-model="searchForm.department" clearable placeholder="请输入发起人部门" @clear="handleChangeSearch" />
+          <el-date-picker v-model="searchForm.dateRange" type="daterange" range-separator="-" value-format="YYYY-MM-DD"
+            start-placeholder="开始日期" end-placeholder="结束日期" />
+
+          <el-button type="primary" @click="handleSearch">查 询</el-button>
+          <el-button type="primary" @click="resetSearch">重 置</el-button>
+        </div>
+        
         <div class="tab-table">
           <div class="table-th">
+            <div class="title t-theme">会议主题</div>
             <div class="title t-name">会议室名称</div>
             <div class="title">发起人</div>
             <div class="title t-department">发起人部门</div>
             <div class="title">会议时间</div>
-            <div class="title t-theme">会议主题</div>
             <div class="title t-attend">参会人员</div>
             <div class="title">会议状态</div>
             <div class="title">操作</div>
@@ -52,6 +66,19 @@
                 </div>
                 <div class="table-main">
                   <div class="table-tr" v-for="(item, index) in value.list">
+                    <div class="tr-cell t-theme">
+                      <el-popover
+                            placement="bottom"
+                            :disabled="item.title?.length < 13"
+                            :width="240"
+                            trigger="hover"
+                            :content="item.title"
+                        >
+                            <template #reference>
+                              <p class="three-dot">{{ item.title }}</p>
+                            </template>
+                        </el-popover>
+                    </div>
                     <div class="tr-cell t-name">
                       <el-popover
                             placement="bottom"
@@ -68,24 +95,11 @@
                     <div class="tr-cell">{{ item.adminUserName }}</div>
                     <div class="tr-cell t-department">{{ item.department }}</div>
                     <div class="tr-cell">{{ item.time }}</div>
-                    <div class="tr-cell t-theme">
-                      <el-popover
-                            placement="bottom"
-                            :disabled="item.title?.length < 12"
-                            :width="240"
-                            trigger="hover"
-                            :content="item.title"
-                        >
-                            <template #reference>
-                              <p class="three-dot">{{ item.title }}</p>
-                            </template>
-                        </el-popover>
-                    </div>
                     <div class="tr-cell t-attend">
                         <el-popover
                             placement="bottom"
-                            :disabled="item.attendees?.length < 33"
-                            :width="400"
+                            :disabled="item.attendees?.length < 14"
+                            :width="300"
                             trigger="hover"
                             :content="item.attendees"
                         >
@@ -265,7 +279,7 @@
     }
     
 
-/******************************************* 会议室记录 ***********************************/
+/******************************************* 会议记录 ***********************************/
 
     /**
      * @description 处理列表数据
@@ -289,16 +303,69 @@
         }, []);
     }
 
+    // 实时搜索查询 暂无
+    const themeValue = ref()
+    const createdByValue = ref()
+    const departmentValue = ref()
+    const handleChangeSearch = () => {
+      refresh()
+      getDataOnScroll()
+    }
+    
+    // 查询信息
+    let searchForm = ref<any>({
+      title: '',
+      meetingRoomId: '',
+      adminUserName: '',
+      department: '',
+      dateRange: [],
+    })
+    const roomOptions = useMeetingStatus.centerRoomName.map((item: any) => {
+      const id = item.id
+      const value = item.roomName
+      return { id, value }
+    })
+    const handleSearch = () => {
+      refresh();
+      getDataOnScroll();
+    }
+    const resetSearch = () => {
+      searchForm.value = {
+          title: '',
+          meetingRoomId: '',
+          adminUserName: '',
+          department: '',
+          dateRange: [],
+      }
+      refresh();
+      getDataOnScroll();
+    }
+    const refresh = () => {
+      page.value = 1;
+      manageData.value = []
+      canLoadMore.value = true;
+    }
+
     /**
      * @description 查询所有会议记录
      * @param {number} pageNum 页码
      * @param {number} pageSize 每页条数 默认10
      * @param {number} currentLevel 用户等级
      */
-    const getAllRecord = async (data: { pageNum: number, pageSize: number, currentLevel: number}) => {
+    const getAllRecord = async () => {
       let list: any = [];
       let total: any = 0;
-      await getAllRecordData(data)
+      const params = {
+        pageNum: page.value,
+        pageSize: limit.value,
+        title: searchForm.value.title,
+        meetingRoomId: searchForm.value.meetingRoomId,
+        adminUserName: searchForm.value.adminUserName,
+        department: searchForm.value.department,
+        startDate: searchForm.value.dateRange[0],
+        endDate: searchForm.value.dateRange[1],
+      }
+      await getAllRecordData(params)
         .then((res) => {
           total = res.data.length;
           list = processData(res.data);
@@ -320,7 +387,7 @@
         // 打开loading
         isLoading.value = true;
         // 发送请求
-        const {data: newData, total} = await getAllRecord({ pageNum: page.value, pageSize: limit.value, currentLevel: userInfo.value.level })  // 查询所有会议记录        
+        const {data: newData, total} = await getAllRecord()  // 查询所有会议记录        
         
         // 若返回数据长度小于限制 停止加载
         if(total < limit.value) {
@@ -464,8 +531,11 @@
       .theme-right {
         display: flex;
         align-items: center;
-        margin-left: 40px;
-        width: 216px;  // 宽度
+        margin-left: 20px;
+        width: 243px;  // 宽度
+        .add-button {
+          margin-right: 20px;
+        }
       }
     }
     .manage-tabs {
@@ -473,118 +543,138 @@
         font-size: 16px;
       }
       // tab-会议列表样式
-      .tab-table {
-        height: 635.2px;
-        border: 3px solid rgba(18, 115, 219, 0.8);
-        border-radius: 15px;
-        padding: 10px 18px;
-
-        .table-th, .table-tr { // 每行共同样式
-          display: flex;
-          text-align: center;
-          div {
-            // width: 224px;
-            width: 150px;
-            padding: 0 17.6px; // 只控制每行左右内边距
-            &:last-child {
-              width: 120px;
+      .first-tab {
+        :deep() .search-form {
+          margin-bottom: 10px;
+          .el-input {
+            width: 220px;
+            margin-right: 10px;
+          }
+          .el-select {
+            width: 220px;
+            margin-right: 10px;
+          }
+          .el-date-editor--daterange {
+            width: 260px;
+            margin-right: 10px;
+            input {
+              font-size: 16px;
             }
           }
-          // 发起人 主题 参会人员 单独设置宽
-          .t-name {
-            width: 240px;
-          }
-          .t-department {
-            width: 180px;
-          }
-          .t-theme {
-            width: 224px;
-          }
-          .t-attend {
-            flex: 1;
-          }
-          // 有显示popover的 单独设置溢出为省略号
-          .three-dot {
-            text-wrap: nowrap;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
         }
-        .table-th {
-          margin-left: 40px;
-          margin-right: 30px;
-          .title {
-            padding: 10px 0; // 单独控制头部上下内边距
-            font-size: 17.6px;
-            font-weight: 400;
-            color: #3A3A3A;
-          }
-        }
-        .table-container {
-          // position: relative;
-          max-height: 92%;
-          overflow-y: auto;
-          padding-right: 10px;
-          .table-left {
-            position: absolute;
-            top: 8.8px;
+        .tab-table {
+          height: calc(635.2px - 40px);
+          border: 3px solid rgba(18, 115, 219, 0.8);
+          border-radius: 15px;
+          padding: 10px 18px;
+  
+          .table-th, .table-tr { // 每行共同样式
+            display: flex;
             text-align: center;
-            p:first-child {
-              // font-size: 17.6px;
-              font-weight: 600;
-              color: #676767;
-              margin-bottom: 10px;
+            div {
+              // width: 224px;
+              width: 150px;
+              padding: 0 17.6px; // 只控制每行左右内边距
+              &:last-child {
+                width: 120px;
+              }
             }
-            p:last-child {
-              font-size: 19.2px;
-              font-weight: 600;
+            // 发起人 主题 参会人员 单独设置宽
+            .t-name {
+              width: 240px;
+            }
+            .t-department {
+              width: 180px;
+            }
+            .t-theme {
+              width: 224px;
+            }
+            .t-attend {
+              flex: 1;
+            }
+            // 有显示popover的 单独设置溢出为省略号
+            .three-dot {
+              text-wrap: nowrap;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+          }
+          .table-th {
+            margin-left: 40px;
+            margin-right: 30px;
+            .title {
+              padding: 10px 0; // 单独控制头部上下内边距
+              font-size: 17.6px;
+              font-weight: 400;
               color: #3A3A3A;
             }
           }
-          .table-main {
-            font-size: 16px;
-            margin-left: 40px;
-            .table-tr {
-              color: #666;
-              background: #FFF;
-              border-radius: 15px;
-              margin: 10px 0;
-              padding: 20px 0; // 单独控制单元行上下内边距
-              .tr-cell {
-                text-wrap: nowrap;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                &:last-child {
-                  color:#75C560;
-                  cursor: pointer;
+          .table-container {
+            // position: relative;
+            max-height: 92%;
+            overflow-y: auto;
+            padding-right: 10px;
+            .table-left {
+              position: absolute;
+              top: 8.8px;
+              text-align: center;
+              p:first-child {
+                // font-size: 17.6px;
+                font-weight: 600;
+                color: #676767;
+                margin-bottom: 10px;
+              }
+              p:last-child {
+                font-size: 19.2px;
+                font-weight: 600;
+                color: #3A3A3A;
+              }
+            }
+            .table-main {
+              font-size: 16px;
+              margin-left: 40px;
+              .table-tr {
+                color: #666;
+                background: #FFF;
+                border-radius: 15px;
+                margin: 10px 0;
+                padding: 20px 0; // 单独控制单元行上下内边距
+                .tr-cell {
+                  text-wrap: nowrap;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  &:last-child {
+                    color:#75C560;
+                    cursor: pointer;
+                  }
                 }
               }
             }
-          }
-          // 滚动条样式
-          .loading {
-            color: #666666;
-            font-size: 20px;
-            text-align: center;
-            font-weight: 300;
-          }
-          &::-webkit-scrollbar {
-            display: block !important;
-            width: 17.6px !important;
-            border-radius: 15px !important;
-          }
-          /* 自定义滚动条轨道 */
-          &::-webkit-scrollbar-track {
-            // background: #FFFFFF;
-            border-radius: 15px;
-          }
-          
-          /* 自定义滚动条的滑块（thumb） */
-          &::-webkit-scrollbar-thumb {
-            background: #EDEBEB;
-            border-radius: 15px;
+            // 滚动条样式
+            .loading {
+              color: #666666;
+              font-size: 20px;
+              text-align: center;
+              font-weight: 300;
+            }
+            &::-webkit-scrollbar {
+              display: block !important;
+              width: 17.6px !important;
+              border-radius: 15px !important;
+            }
+            /* 自定义滚动条轨道 */
+            &::-webkit-scrollbar-track {
+              // background: #FFFFFF;
+              border-radius: 15px;
+            }
+            
+            /* 自定义滚动条的滑块（thumb） */
+            &::-webkit-scrollbar-thumb {
+              background: #EDEBEB;
+              border-radius: 15px;
+            }
           }
         }
       }
