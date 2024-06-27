@@ -1,6 +1,7 @@
 package com.jfzt.meeting.controller;
 
 import com.jfzt.meeting.common.Result;
+import com.jfzt.meeting.entity.SysUser;
 import com.jfzt.meeting.entity.dto.MeetingGroupDTO;
 import com.jfzt.meeting.entity.dto.MeetingGroupPageDTO;
 import com.jfzt.meeting.entity.vo.MeetingGroupVO;
@@ -9,6 +10,7 @@ import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 会议群组控制类
@@ -42,6 +44,7 @@ public class MeetingGroupController {
     @PostMapping("/meeting-group")
     public Result<Object> addMeetingGroup (@RequestBody MeetingGroupDTO meetingGroupDTO) {
         return meetingGroupService.addMeetingGroup(meetingGroupDTO);
+
     }
 
     /**

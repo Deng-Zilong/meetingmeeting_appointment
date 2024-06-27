@@ -37,8 +37,11 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.w3c.dom.Document;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -58,6 +61,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static com.jfzt.meeting.constant.IsDeletedConstant.IS_DELETED;
@@ -76,7 +81,8 @@ import static com.jfzt.meeting.utils.ExcelUtil.InsertRow;
 @Service
 public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, MeetingRecord>
         implements MeetingRecordService {
-
+    @Resource
+    private TransactionTemplate transactionTemplate;
     @Resource
     private WxUtil wxUtil;
     @Resource
@@ -103,7 +109,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     private MeetingWordMapper meetingWordMapper;
     @Autowired
     private SysDepartmentUserMapper sysDepartmentUserMapper;
-
+    private final ReentrantLock lock = new ReentrantLock();
     public static String path = "F:\\dd\\apply\\";
     public static File templatePathApplyExcel = new File(path + "会议纪要备份 - 副本.xlsx");
     public static File templatePathBackupsExcel = new File(path + "会议纪要备份.xlsx");
@@ -537,7 +543,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      * @return 新增会议结果
      */
     @Override
-    @Transactional
     public Result<Objects> addMeeting (MeetingRecordDTO meetingRecordDTO) {
         // 创建一个新的MeetingRecord对象
         MeetingRecord meetingRecord = new MeetingRecord();
@@ -557,35 +562,54 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         if (Objects.equals(meetingRoom.getStatus(), MEETINGROOM_STATUS_PAUSE)) {
             throw new RRException("会议室不可用", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
         }
-        //根据时间段查看是否有会议占用
-        LambdaQueryWrapper<MeetingRecord> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.notIn(MeetingRecord::getStatus, MEETING_RECORD_STATUS_CANCEL)
-                .eq(MeetingRecord::getMeetingRoomId, meetingRecord.getMeetingRoomId());
-        //开始时间或结束时间在时间段内 或 开始时间与结束时间之间包含时间段
-        queryWrapper.and(recordQueryWrapper -> recordQueryWrapper
-                //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
-                .between(MeetingRecord::getStartTime, meetingRecord.getStartTime(), meetingRecord.getEndTime().minusSeconds(1))
-                //结束时间在时间段内 前不含后含  8-9属于8.5-9不属于9-9.5
-                .or().between(MeetingRecord::getEndTime, meetingRecord.getStartTime().plusSeconds(1), meetingRecord.getEndTime())
-                //时间段包含在开始时间(含)和结束时间(含)之间    8-9 属于8-8.5属于8.5-9
-                .or().lt(MeetingRecord::getStartTime, meetingRecord.getStartTime().plusSeconds(1))
-                .gt(MeetingRecord::getEndTime, meetingRecord.getEndTime().minusSeconds(1)));
-        List<MeetingRecord> meetingRecords = list(queryWrapper);
-        if (!meetingRecords.isEmpty()) {
+        lock.lock();
+        if (!lock.tryLock()) {
             throw new RRException(OCCUPIED, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
         }
-        // 保存meetingRecord
-        save(meetingRecord);
-        // 创建一个MeetingAttendees的列表，并将meetingRecordDTO中的用户信息转换为MeetingAttendees对象
-        List<MeetingAttendees> attendeesList = meetingRecordDTO.getUsers().stream()
-                .map(user -> MeetingAttendees
-                        .builder()
-                        .userId(user.getUserId())
-                        .userName(user.getUserName())
-                        .meetingRecordId(meetingRecord.getId()).build())
-                .collect(Collectors.toList());
-        // 保存MeetingAttendees列表
-        meetingAttendeesService.saveBatch(attendeesList);
+        try {
+            transactionTemplate.execute((status) -> {
+                try {
+                    //根据时间段查看是否有会议占用
+                    LambdaQueryWrapper<MeetingRecord> queryWrapper = new LambdaQueryWrapper<>();
+                    queryWrapper.notIn(MeetingRecord::getStatus, MEETING_RECORD_STATUS_CANCEL)
+                            .eq(MeetingRecord::getMeetingRoomId, meetingRecord.getMeetingRoomId());
+                    //开始时间或结束时间在时间段内 或 开始时间与结束时间之间包含时间段
+                    queryWrapper.and(recordQueryWrapper -> recordQueryWrapper
+                            //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
+                            .between(MeetingRecord::getStartTime, meetingRecord.getStartTime(), meetingRecord.getEndTime().minusSeconds(1))
+                            //结束时间在时间段内 前不含后含  8-9属于8.5-9不属于9-9.5
+                            .or().between(MeetingRecord::getEndTime, meetingRecord.getStartTime().plusSeconds(1), meetingRecord.getEndTime())
+                            //时间段包含在开始时间(含)和结束时间(含)之间    8-9 属于8-8.5属于8.5-9
+                            .or().lt(MeetingRecord::getStartTime, meetingRecord.getStartTime().plusSeconds(1))
+                            .gt(MeetingRecord::getEndTime, meetingRecord.getEndTime().minusSeconds(1)));
+                    List<MeetingRecord> meetingRecords = list(queryWrapper);
+
+                    if (!meetingRecords.isEmpty()) {
+                        throw new RRException(OCCUPIED, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+                    }
+                    // 保存meetingRecord
+                    save(meetingRecord);
+
+                    // 创建一个MeetingAttendees的列表，并将meetingRecordDTO中的用户信息转换为MeetingAttendees对象
+                    List<MeetingAttendees> attendeesList = meetingRecordDTO.getUsers().stream()
+                            .map(user -> MeetingAttendees
+                                    .builder()
+                                    .userId(user.getUserId())
+                                    .userName(user.getUserName())
+                                    .meetingRecordId(meetingRecord.getId()).build())
+                            .collect(Collectors.toList());
+                    // 保存MeetingAttendees列表
+                    meetingAttendeesService.saveBatch(attendeesList);
+                } catch (Exception e) {
+                    status.setRollbackOnly();
+                    throw new RRException(OCCUPIED, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+
+                }
+                return null;
+            });
+        }finally  {
+            lock.unlock();
+        }
         meetingRecordDTO.setId(meetingRecord.getId());
         String reminder =
                 "#### 会议提醒\n" +
@@ -888,7 +912,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         List<MinutesPlanVO> minutesPlans = new ArrayList<>();
         //记录内容行的信息
         int sizeOrder;
-        if (minutesVOList.size() == 0) {
+        if (minutesVOList.isEmpty()) {
             minutesPlans = null;
             sizeOrder = 0;
         } else if (minutesVOList.size() == 1) {
@@ -956,9 +980,12 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             extracted(meetingRecordVO, sheet, name, size, sysDepartment);
         }
         //12其他
-        sheet.getRow(10 + name.size()).getCell(0).setCellValue("其他");
-        sheet.getRow(10 + name.size()).getCell(1).setCellValue(meetingRecordVO.getAdminUserName() == null ? " " : meetingRecordVO.getAdminUserName());
-        sheet.getRow(10 + name.size()).getCell(3).setCellValue("目标与工作内容:");
+        sheet.getRow(10 + name.size()).getCell(0)
+                .setCellValue("其他");
+        sheet.getRow(10 + name.size()).getCell(1)
+                .setCellValue(meetingRecordVO.getAdminUserName() == null ? " " : meetingRecordVO.getAdminUserName());
+        sheet.getRow(10 + name.size()).getCell(3)
+                .setCellValue("目标与工作内容:");
         if (sizeOrder != 0) {
             //把数据插入到新增行里
             for (int i = 0; i < sizeOrder; i++) {
