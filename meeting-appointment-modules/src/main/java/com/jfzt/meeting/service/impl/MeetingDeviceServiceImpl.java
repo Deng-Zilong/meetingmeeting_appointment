@@ -143,6 +143,11 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
      */
     @Override
     public Result<Object> deleteDevice(Integer id) {
+        // 根据id查询设备信息，判断是否存在
+        MeetingDevice meetingDevice = this.lambdaQuery().eq(MeetingDevice::getId, id).one();
+        if (meetingDevice == null || meetingDevice.getStatus() <= 0){
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
+        }
         try {
             this.removeById(id);
             return Result.success("删除成功!");
