@@ -131,6 +131,8 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
         if (meetingGroupDTO.getUsers().isEmpty()) {
             log.error(NO_USER + EXCEPTION_TYPE, RRException.class);
             throw new RRException(NO_USER, ErrorCodeEnum.SERVICE_ERROR_A0410.getCode());
+        } else if (meetingGroupDTO.getGroupName().isEmpty()) {
+            throw new RRException(GROUP_NAME_NOT_NULL, ErrorCodeEnum.SERVICE_ERROR_A0410.getCode());
         }
         // 创建一个新的MeetingGroup对象
         MeetingGroup meetingGroup = new MeetingGroup();
@@ -206,26 +208,27 @@ public class MeetingGroupServiceImpl extends ServiceImpl<MeetingGroupMapper, Mee
                 throw new RRException(SAME_NAME, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
             }
             updateById(meetingGroup);
-        }else {
-            return Result.fail(GROUP_NAME_NOT_NULL);
-        }
-        if (!meetingGroupDTO.getUsers().isEmpty()) {
-            List<UserGroup> userGroups = userGroupService.lambdaQuery()
-                    .select(UserGroup::getId)
-                    .eq(UserGroup::getGroupId, meetingGroupDTO.getId())
-                    .list();
-            userGroupService.removeBatchByIds(userGroups);
-            meetingGroupDTO.getUsers().stream().map((member) -> {
-                UserGroup group = UserGroup.builder()
-                        .groupId(meetingGroupDTO.getId())
-                        .userId(member.getUserId())
-                        .build();
-                userGroupService.save(group);
-                return group;
-            }).toList();
             return Result.success(UPDATE_SUCCESS);
+        } else {
+
+            if (!meetingGroupDTO.getUsers().isEmpty()) {
+                List<UserGroup> userGroups = userGroupService.lambdaQuery()
+                        .select(UserGroup::getId)
+                        .eq(UserGroup::getGroupId, meetingGroupDTO.getId())
+                        .list();
+                userGroupService.removeBatchByIds(userGroups);
+                meetingGroupDTO.getUsers().stream().map((member) -> {
+                    UserGroup group = UserGroup.builder()
+                            .groupId(meetingGroupDTO.getId())
+                            .userId(member.getUserId())
+                            .build();
+                    userGroupService.save(group);
+                    return group;
+                }).toList();
+                return Result.success(UPDATE_SUCCESS);
+            }
+            throw new RRException(NO_USER, ErrorCodeEnum.SERVICE_ERROR_A0410.getCode());
         }
-        return Result.success(UPDATE_SUCCESS);
     }
 
     /**
