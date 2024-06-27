@@ -678,22 +678,27 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         }
         // 使用meetingRecord中的数据更新数据库中的数据
         updateById(meetingRecord);
-        List<MeetingAttendees> meetingAttendees = meetingAttendeesService.lambdaQuery()
-                .eq(meetingRecord.getId() != null, MeetingAttendees::getMeetingRecordId, meetingRecord.getId())
-                .list();
-        attendeesMapper.deleteBatchIds(meetingAttendees);
-        // 创建一个MeetingAttendees的列表，并将meetingRecordDTO中的用户信息转换为MeetingAttendees对象
-        List<MeetingAttendees> attendeesList = meetingRecordDTO.getUsers()
-                .stream()
-                .map(user -> MeetingAttendees
-                        .builder()
-                        .userId(user.getUserId())
-                        .userName(user.getUserName())
-                        .meetingRecordId(meetingRecord.getId())
-                        .build())
-                .collect(Collectors.toList());
-        // 更新MeetingAttendees列表
-        meetingAttendeesService.saveBatch(attendeesList);
+        int delete = attendeesMapper.delete(
+                new LambdaQueryWrapper<MeetingAttendees>()
+                        .eq(MeetingAttendees::getMeetingRecordId, meetingRecord.getId()));
+        if (delete > 0) {
+            // 创建一个MeetingAttendees的列表，并将meetingRecordDTO中的用户信息转换为MeetingAttendees对象
+            List<MeetingAttendees> attendeesList = meetingRecordDTO.getUsers()
+                    .stream()
+                    .distinct()
+                    .map(user -> MeetingAttendees
+                            .builder()
+                            .userId(user.getUserId())
+                            .userName(user.getUserName())
+                            .meetingRecordId(meetingRecord.getId())
+                            .build())
+                    .collect(Collectors.toList());
+            // 更新MeetingAttendees列表
+            meetingAttendeesService.saveBatch(attendeesList);
+        } else {
+            throw new RRException("更新失败!", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+        }
+
         SysUser sysUser = userService
                 .getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, meetingRecordDTO.getCreatedBy()));
         String reminder =
