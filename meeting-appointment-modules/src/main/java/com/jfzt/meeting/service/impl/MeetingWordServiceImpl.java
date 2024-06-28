@@ -94,14 +94,14 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
                         meetingWord.setChildrenPart(getChildren(meetingWord, meetingWords));
                         if (meetingWord.getChildrenPart().isEmpty()) {
                             MeetingWord word = MeetingWord.builder()
-                                    .content(" ")
+                                    .content("")
                                     .level(0)
                                     .parentId(meetingWord.getId())
                                     .build();
                             List<MeetingWord> words = new ArrayList<>();
                             words.add(word);
                             meetingWord.setChildrenPart(words);
-                        };
+                        }
                     })
                     .toList();
             return Result.success(wordList);
@@ -121,8 +121,19 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
     private List<MeetingWord> getChildren(MeetingWord root, List<MeetingWord> all) {
         return all.stream()
                 .filter(meetingWord -> Objects.equals(meetingWord.getParentId(), root.getId()))
-                .peek(childrenNode -> childrenNode.setChildrenPart(getChildren(childrenNode, all)))
-                .collect(Collectors.toList());
+                .peek(childrenNode ->  {
+                    childrenNode.setChildrenPart(getChildren(childrenNode, all));
+                    if (childrenNode.getChildrenPart().isEmpty()) {
+                        MeetingWord word = MeetingWord.builder()
+                                .content(" ")
+                                .level(0)
+                                .parentId(childrenNode.getId())
+                                .build();
+                        List<MeetingWord> words = new ArrayList<>();
+                        words.add(word);
+                        childrenNode.setChildrenPart(words);
+                    }
+                }).collect(Collectors.toList());
     }
 
 
@@ -133,7 +144,6 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
      */
     @Override
     public Result<Object> saveOrUpdateWord (MeetingWord meetingWord) {
-
 
         if (meetingWord.getId() != null) {
             updateById(meetingWord);
