@@ -2,6 +2,7 @@ package com.jfzt.meeting.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Assert;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MeetingRecordStatusConstant;
@@ -101,30 +102,29 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      * @return 结果
      */
     @Override
-    public Result<Integer> addMeetingRoom (MeetingRoom meetingRoom) {
-        // 会议室位置非空且长度限制30个字符
+        public Result<Integer> addMeetingRoom (MeetingRoom meetingRoom) {
+        // meetingRoom的参数不能为空
+        if (meetingRoom.getRoomName().isEmpty() || meetingRoom.getCapacity() == null
+                || meetingRoom.getCapacity() <= 0) {
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0421);
+        }
+        // 会议室位置非空且长度限制30个字符，会议室名称长度限制为15个字符
         String location = meetingRoom.getLocation();
-        if (location != null && location.length() > MAX_ROOM_LOCATION_LENGTH) {
-            return Result.fail("会议室位置长度不能超过30个字符！");
+        if ((location != null && location.length() > MAX_ROOM_LOCATION_LENGTH)
+                || meetingRoom.getRoomName().length() > MAX_ROOM_NAME_LENGTH) {
+            return Result.fail("会议室位置长度或会议室名称过长！");
         }
-        if (meetingRoom.getCapacity() <= 0) {
-            throw new RRException("会议室容量不正确", ErrorCodeEnum.SERVICE_ERROR_A0421.getCode());
-        }
-        if (meetingRoom.getRoomName().isEmpty() || meetingRoom.getLocation().isEmpty()
-                || meetingRoom.getCapacity() == null) {
-            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
-        }
-        // 根据创建人Id查询用户信息
-        SysUser sysUser = sysUserMapper.selectByUserId(meetingRoom.getCreatedBy());
         // 查询会议室名称,判断是否有重复的会议室名称
         List<MeetingRoom> roomList = meetingRoomMapper.selectList(new QueryWrapper<>());
         List<String> roomName = roomList.stream().map(MeetingRoom::getRoomName).toList();
         for (String room : roomName) {
             // 会议室名称长度限制为15个字符
-            if (meetingRoom.getRoomName().equals(room) || meetingRoom.getRoomName().length() > MAX_ROOM_NAME_LENGTH) {
-                throw new RRException("会议室名称长度不能超过15个字符！");
+            if (meetingRoom.getRoomName().equals(room)) {
+                throw new RRException("会议室重复！");
             }
         }
+        // 根据创建人Id查询用户信息
+        SysUser sysUser = sysUserMapper.selectByUserId(meetingRoom.getCreatedBy());
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(sysUser.getLevel())
                 || MessageConstant.ADMIN_LEVEL.equals(sysUser.getLevel())) {
             int result = meetingRoomMapper.insert(meetingRoom);
@@ -147,9 +147,6 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(currentLevel)
                 || MessageConstant.ADMIN_LEVEL.equals(currentLevel)) {
             // 根据id查询会议室信息
-            if (id == null) {
-                throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
-            }
             MeetingRoom meetingRoom = meetingRoomMapper.selectById(id);
             if (meetingRoom == null) {
                 throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
@@ -413,36 +410,33 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      */
     @Override
     public Result<Integer> updateRoom (MeetingRoomDTO meetingRoomDTO) {
-        // 检查输入的会议室ID是否存在
-        MeetingRoom meetingRoom = meetingRoomMapper.selectById(meetingRoomDTO.getId());
-        if (meetingRoom == null) {
-            log.error(UPDATE_FAIL + EXCEPTION_TYPE, RRException.class);
-            throw new RRException(UPDATE_FAIL, ErrorCodeEnum.SERVICE_ERROR_A0421.getCode());
+        // meetingRoomDTO中的参数都不能为空
+        if (meetingRoomDTO.getRoomName() == null || meetingRoomDTO.getCurrentLevel() == null
+                || meetingRoomDTO.getCapacity() == null || meetingRoomDTO.getStatus() == null) {
+            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
         }
         // 会议室位置非空且长度限制30个字符
         String location = meetingRoomDTO.getLocation();
         if (location != null && location.length() > MAX_ROOM_LOCATION_LENGTH) {
             return Result.fail("会议室位置长度不能超过30个字符！");
         }
-        // 查询会议室名称,判断是否有重复的会议室名称
-        List<MeetingRoom> roomList = meetingRoomMapper.selectList(new QueryWrapper<>());
-        List<String> roomName = roomList.stream().map(MeetingRoom::getRoomName).toList();
-        for (String room : roomName) {
-            // 判断新的会议室名称和数据库中的会议室名称是否没有重复的，如果没有，则检查新的名字是否和数据库的其他名字相同
-            if (!meetingRoomDTO.getRoomName().equals(room)) {
+        // 会议室名称长度限制为15个字符
+        if (meetingRoomDTO.getRoomName().length() > MAX_ROOM_NAME_LENGTH) {
+            throw new RRException("会议室名称长度不能超过15个字符！");
+        }
+        // 获取要修改会议室的原来的名称
+        String roomName = meetingRoomMapper.selectById(meetingRoomDTO.getId()).getRoomName();
+        // 判断新的会议室名称是否与原来的重复
+        if (!roomName.equals(meetingRoomDTO.getRoomName())) {
+            // 查询会议室名称,判断是否有重复的会议室名称
+            List<MeetingRoom> roomList = meetingRoomMapper.selectList(new QueryWrapper<>());
+            List<String> roomNameList = roomList.stream().map(MeetingRoom::getRoomName).toList();
+            for (String room : roomNameList) {
+                // 判断新的会议室名称和数据库中的会议室名称是否没有重复的，如果没有，则检查新的名字是否和数据库的其他名字相同
                 if (meetingRoomDTO.getRoomName().equals(room)) {
                     throw new RRException("会议室名称重复！");
                 }
             }
-            // 会议室名称长度限制为15个字符
-            if (meetingRoomDTO.getRoomName().length() > MAX_ROOM_NAME_LENGTH) {
-                throw new RRException("会议室名称长度不能超过15个字符！");
-            }
-        }
-        if (meetingRoomDTO.getRoomName() == null || meetingRoomDTO.getCurrentLevel() == null ||
-                meetingRoomDTO.getLocation() == null || meetingRoomDTO.getCapacity() == null ||
-                meetingRoomDTO.getStatus() == null) {
-            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
         }
         // 获取当前登录用户的权限等级
         if (MessageConstant.SUPER_ADMIN_LEVEL.equals(meetingRoomDTO.getCurrentLevel())
