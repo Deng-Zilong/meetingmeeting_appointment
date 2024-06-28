@@ -1,6 +1,7 @@
 package com.jfzt.meeting.poiWord;
 
 
+import com.jfzt.meeting.entity.MeetingWord;
 import com.jfzt.meeting.entity.vo.MeetingRecordVO;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.openxml4j.opc.OPCPackage;
@@ -12,8 +13,10 @@ import org.springframework.util.Assert;
 import org.springframework.util.ResourceUtils;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -57,7 +60,14 @@ public class DynWordUtils {
      * 重复模式的占位符所在的行索引
      */
     private int currentRowIndex;
-
+    /**
+     * 用户查询所在行
+     */
+    public String searchText = "主要内容";
+    /**
+     * 所在行
+     */
+    public int row;
     /**
      * 入口
      *
@@ -65,10 +75,10 @@ public class DynWordUtils {
      * @param templatePaht 模板全路径
      * @param response     下载response
      */
-    public static void process(Map<String, Object> paramMap, String templatePaht, HttpServletResponse response, MeetingRecordVO meetingRecordVO, String operation, String path) {
+    public static void process(Map<String, Object> paramMap, String templatePaht, HttpServletResponse response, MeetingRecordVO meetingRecordVO, String operation, String path, List<MeetingWord> meetingWords1) {
         DynWordUtils dynWordUtils = new DynWordUtils();
         dynWordUtils.setParamMap(paramMap);
-        dynWordUtils.createWord(templatePaht, response, meetingRecordVO,operation,path);
+        dynWordUtils.createWord(templatePaht, response, meetingRecordVO, operation, path, meetingWords1);
     }
 
 
@@ -78,21 +88,26 @@ public class DynWordUtils {
      * @param templatePath
      * @param response
      */
-    public void createWord(String templatePath, HttpServletResponse response, MeetingRecordVO meetingRecordVO,String operation,String path) {
+    public void createWord(String templatePath, HttpServletResponse response, MeetingRecordVO meetingRecordVO, String operation, String path, List<MeetingWord> meetingWords1) {
         try (InputStream inputStream = new FileInputStream(ResourceUtils.getFile(templatePath))) {
             templateDoc = new XWPFDocument(OPCPackage.open(inputStream));
             parseTemplateWord();
-
-            if ("1".equals(operation)){
+            //填写主要内容word的
+            contentWord(templateDoc, meetingWords1);
+            if ("1".equals(operation)) {
                 //直接导出电脑文件
-                FileOutputStream outputStream = new FileOutputStream(path+meetingRecordVO.getId()+meetingRecordVO.getTitle()+".docx");
+                FileOutputStream outputStream = new FileOutputStream(path + meetingRecordVO.getId() + meetingRecordVO.getTitle() + ".docx");
                 templateDoc.write(outputStream);
                 outputStream.close();
                 templateDoc.close();
-            }else {
+            } else {
                 //导出word
                 response.setContentType("application/msword");
                 response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(meetingRecordVO.getTitle() + ".docx", "UTF-8"));
+                OutputStream os = response.getOutputStream();
+                templateDoc.write(os);
+                os.flush();
+                os.close();
             }
         } catch (Exception e) {
             StackTraceElement[] stackTrace = e.getStackTrace();
@@ -103,6 +118,42 @@ public class DynWordUtils {
             logger.error("错误：第:{}行, 类名:{}, 方法名:{}", lineNumber, className, methodName);
             throw new RuntimeException(e.getCause().getMessage());
         }
+    }
+
+    private void contentWord(XWPFDocument document, List<MeetingWord> meetingWords) throws IOException {
+
+        //所在行
+
+        row =  findWord(document, searchText);
+        meetingWords.stream()
+                .filter(meetingWord ->meetingWord.getMeetingRecordId() == 574)
+                .map((menu) -> {
+                    // 添加一级列表项
+                    XWPFParagraph para1 = document.getParagraphs().get(++row);
+                    addListLevel(para1, menu.getTitle(),  menu.getLevel());
+                    addListLevel(para1, menu.getContent(),  menu.getLevel());
+                    para1.setIndentationLeft(menu.getLevel()*400);
+                    menu.setChildrenPart(getChildrenPart(menu, document));
+                    return menu;
+                }).collect(Collectors.toList());
+
+    }
+
+    private List<MeetingWord> getChildrenPart(MeetingWord menu1, XWPFDocument document) {
+        List<MeetingWord> meetingWordList = menu1.getChildrenPart();
+        List<MeetingWord> meetingWords1 = meetingWordList.stream()
+                .filter(meetingWord ->menu1.getId().equals(meetingWord.getParentId()))
+                .map((menu) -> {
+                    // 添加1.级列表项
+                    XWPFParagraph para2 = document.getParagraphs().get(++row);
+                    addListLevel(para2, menu.getTitle(), menu.getLevel());
+                    para2.setIndentationLeft(menu.getLevel()*300);
+                    menu.setChildrenPart(getChildrenPart(menu, document));
+                    return menu;
+                }).collect(Collectors.toList());
+
+        return meetingWords1;
+
     }
 
     /**
@@ -202,10 +253,10 @@ public class DynWordUtils {
         String placeholderValue = placeholder;
         List dataList = obj;
         Collections.reverse(dataList);
-        if (dataList.size() ==0){
+        if (dataList.size() == 0) {
             Object text = " ";
             placeholderValue = String.valueOf(text);
-        }else {
+        } else {
             for (int i = 0, size = dataList.size(); i < size; i++) {
                 Object text = dataList.get(i);
                 // 占位符的那行, 不用重新创建新的行
@@ -332,7 +383,6 @@ public class DynWordUtils {
             }
         }
     }
-
 
 
     /**
@@ -516,5 +566,57 @@ public class DynWordUtils {
 
     public void setParamMap(Map<String, Object> paramMap) {
         this.paramMap = paramMap;
+    }
+
+    private static int findWord(XWPFDocument document, String searchText) throws IOException {
+        int position = -1;
+        // 遍历文档中的所有段落
+        for (int i = 0; i < document.getParagraphs().size(); i++) {
+            XWPFParagraph paragraph = document.getParagraphs().get(i);
+            String text = paragraph.getText();
+            if (text != null && text.contains(searchText)) {
+                position = i;
+                break;
+            }
+        }
+        // 如果文本不在段落中，则搜索所有运行
+        if (position == -1) {
+            for (XWPFParagraph paragraph : document.getParagraphs()) {
+                for (XWPFRun run : paragraph.getRuns()) {
+                    String text = run.getText(run.getTextPosition());
+                    if (text.contains(searchText)) {
+                        position = paragraph.getRuns().indexOf(run);
+                        break;
+                    }
+                }
+            }
+        }
+        return position;
+    }
+
+    // 添加指定级别的列表项到指定段落
+    private static void addListLevel(XWPFParagraph paragraph, String text, int level) {
+        XWPFRun run = paragraph.createRun();
+        run.setText(text);
+        // 设置段落为指定级别的有序列表
+        BigInteger numId = getNumIdForLevel(level);
+        paragraph.setNumID(numId);
+    }
+
+    // 根据级别获取对应的numId
+    private static BigInteger getNumIdForLevel(int level) {
+        // 实际应用中，根据级别返回不同的numId，这里简单示例固定几个级别对应的numId
+        switch (level) {
+            case 1:
+                return BigInteger.valueOf(1);
+            case 2:
+                return BigInteger.valueOf(2);
+            case 3:
+                return BigInteger.valueOf(3);
+            case 4:
+                return BigInteger.valueOf(4);
+            default:
+                return BigInteger.valueOf(1);
+        }
     }
 }
