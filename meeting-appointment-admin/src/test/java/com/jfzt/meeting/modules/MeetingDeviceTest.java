@@ -16,9 +16,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDateTime;
 
-
-import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 public class MeetingDeviceTest {
@@ -28,13 +27,12 @@ public class MeetingDeviceTest {
     private MeetingDeviceMapper meetingDeviceMapper;
 
 
-
     @InjectMocks
     private MeetingDeviceServiceImpl meetingDeviceServiceImpl;
 
 
     @BeforeEach
-    public void setUp() {
+    public void setUp () {
         MockitoAnnotations.openMocks(this);
 
         MeetingDevice meetingDevice = new MeetingDevice();
@@ -47,7 +45,7 @@ public class MeetingDeviceTest {
      * 测试修改设备成功
      */
     @Test
-    public void testUpdateDeviceSuccess() {
+    public void testUpdateDeviceSuccess () {
         // 准备测试数据
         MeetingDevice meetingDevice = MeetingDevice.builder()
                 .roomId(1L)
@@ -77,7 +75,7 @@ public class MeetingDeviceTest {
      * 测试修改设备失败(设备名称重复)
      */
     @Test
-    public void testUpdateDeviceFailed() {
+    public void testUpdateDeviceFailed () {
         // 准备测试数据
         MeetingDevice meetingDevice = new MeetingDevice();
         meetingDevice.setRoomId(1L);
@@ -99,8 +97,8 @@ public class MeetingDeviceTest {
      * 测试删除设备成功
      */
     @Test
-    public void testDeleteDeviceSuccess() {
-        Integer deviceId = 1;
+    public void testDeleteDeviceSuccess () {
+        Long deviceId = 1L;
         MeetingDevice existingDevice = new MeetingDevice();
         existingDevice.setId(1L);
         existingDevice.setStatus(1);
@@ -117,9 +115,9 @@ public class MeetingDeviceTest {
      * 测试删除设备失败
      */
     @Test
-    public void testDeleteDevice() {
+    public void testDeleteDevice () {
         // 准备条件，设置一个会导致异常的设备ID
-        Integer deviceId = -1;
+        Long deviceId = -1L;
         // 预期会抛出异常
         assertThrows(RRException.class, () -> meetingDeviceServiceImpl.deleteDevice(deviceId));
     }

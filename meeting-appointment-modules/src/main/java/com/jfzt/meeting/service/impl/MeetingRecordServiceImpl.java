@@ -38,10 +38,10 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.w3c.dom.Document;
 
@@ -74,7 +74,6 @@ import static com.jfzt.meeting.utils.ExcelUtil.InsertRow;
 
 /**
  * 针对表【meeting_record(会议记录表)】的数据库操作Service实现
- *
  * @author zilong.deng
  * @since 2024-04-28 11:47:39
  */
@@ -119,12 +118,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 获取当天用户参与的所有会议
-     *
      * @param userId 用户id
      * @return 会议记录VO
      */
     @Override
-    public List<MeetingRecordVO> getTodayMeetingRecord(String userId) {
+    public List<MeetingRecordVO> getTodayMeetingRecord (String userId) {
         if (userId.isBlank()) {
             throw new RRException("用户id不能为空", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
         }
@@ -169,7 +167,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             recordVO.setLocation(meetingRoom.getLocation());
             // 设置参会人信息
             List<MeetingAttendees> users = attendeesMapper.selectList(new LambdaQueryWrapper<MeetingAttendees>()
-                    .eq(MeetingAttendees::getMeetingRecordId, record.getId()))
+                            .eq(MeetingAttendees::getMeetingRecordId, record.getId()))
                     .stream().distinct().toList();
             StringBuilder attendees = new StringBuilder();
             ArrayList<SysUserVO> userList = new ArrayList<>();
@@ -199,11 +197,10 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 查询今日中心会议总次数
-     *
      * @return 会议总次数
      */
     @Override
-    public Integer getRecordNumber() {
+    public Integer getRecordNumber () {
         return Math.toIntExact(this.baseMapper.selectCount(
                 new LambdaQueryWrapper<MeetingRecord>()
                         .between(MeetingRecord::getStartTime, LocalDateTime.now().toLocalDate().atStartOfDay()
@@ -213,12 +210,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 更新会议状态
-     *
      * @param meetingRecord 会议记录
      * @return 会议记录
      */
     @Override
-    public MeetingRecord updateRecordStatus(MeetingRecord meetingRecord) {
+    public MeetingRecord updateRecordStatus (MeetingRecord meetingRecord) {
         if (meetingRecord == null) {
             return null;
         }
@@ -239,7 +235,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      * 更新今日所有会议状态
      */
     @Override
-    public void updateTodayRecordStatus() {
+    public void updateTodayRecordStatus () {
         LambdaQueryWrapper<MeetingRecord> recordQueryWrapper = new LambdaQueryWrapper<>();
         // 获取当前时间
         LocalDateTime now = LocalDateTime.now();
@@ -267,12 +263,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 分页获取用户参与的所有会议
-     *
      * @param recordQueryParameters 查询条件
      * @return 会议记录列表
      */
     @Override
-    public List<MeetingRecordVO> getAllRecordVoListPage(RecordQueryParameters recordQueryParameters) {
+    public List<MeetingRecordVO> getAllRecordVoListPage (RecordQueryParameters recordQueryParameters) {
         // 检查参数
         if (recordQueryParameters.getPageNum() == null || recordQueryParameters.getPageSize() == null) {
             //分页参数必填
@@ -295,7 +290,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         List<String> adminIds = new ArrayList<>();
         if (recordQueryParameters.getDepartment() != null && !recordQueryParameters.getDepartment().isBlank()) {
             List<Long> departmentIdS = sysDepartmentMapper.selectList(new LambdaQueryWrapper<SysDepartment>()
-                    .like(SysDepartment::getDepartmentName, recordQueryParameters.getDepartment()))
+                            .like(SysDepartment::getDepartmentName, recordQueryParameters.getDepartment()))
                     .stream().map(SysDepartment::getDepartmentId).collect(Collectors.toList());
             if (departmentIdS.isEmpty()) {
                 return Collections.emptyList();
@@ -359,7 +354,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
             recordVO.setLocation(meetingRoom.getLocation());
             // 设置参会人信息
             List<MeetingAttendees> users = attendeesMapper.selectList(new LambdaQueryWrapper<MeetingAttendees>()
-                    .eq(MeetingAttendees::getMeetingRecordId, record.getId()))
+                            .eq(MeetingAttendees::getMeetingRecordId, record.getId()))
                     .stream().distinct().toList();
             ArrayList<SysUserVO> userList = new ArrayList<>();
             //创建人排在首位
@@ -384,14 +379,13 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 查询所有会议记录
-     *
      * @param pageNum      页码
      * @param pageSize     每页显示条数
      * @param currentLevel 当前登录用户的权限等级
      * @return MeetingRecordVO列表
      */
     @Override
-    public List<MeetingRecordVO> getAllMeetingRecordVoListPage(Long pageNum, Long pageSize, Integer currentLevel) {
+    public List<MeetingRecordVO> getAllMeetingRecordVoListPage (Long pageNum, Long pageSize, Integer currentLevel) {
         // 获取当前登录用户的权限等级
         if (SUPER_ADMIN_LEVEL.equals(currentLevel) || ADMIN_LEVEL.equals(currentLevel)) {
             // 检查参数
@@ -405,48 +399,48 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                             .orderByDesc(MeetingRecord::getStartTime));
             // 构建MeetingRecordVO列表
             return meetingRecordPage.getRecords().stream().map(record -> {
-                MeetingRecordVO recordVO = new MeetingRecordVO();
-                //插入部门信息
-                SysDepartment department = sysDepartmentMapper.findDepartment(record.getCreatedBy());
-                recordVO.setDepartment(department.getDepartmentName());
-                if (Objects.equals(record.getStatus(), MEETING_RECORD_STATUS_NOT_START)
-                        || Objects.equals(record.getStatus(), MEETING_RECORD_STATUS_PROCESSING)) {
-                    //更新会议状态
-                    record = updateRecordStatus(record);
-                }
-                // 设置会议信息
-                BeanUtils.copyProperties(record, recordVO);
-                // 设置会议室信息不使用逻辑删除
-                MeetingRoom meetingRoom = meetingRoomMapper.getByRoomId(record.getMeetingRoomId());
-                recordVO.setMeetingRoomName(meetingRoom.getRoomName());
-                recordVO.setLocation(meetingRoom.getLocation());
-                // 设置参会人信息
-                List<MeetingAttendees> users = attendeesMapper.selectList(new LambdaQueryWrapper<MeetingAttendees>()
-                        .eq(MeetingAttendees::getMeetingRecordId, record.getId()))
-                        .stream().distinct().toList();
-                StringBuilder attendees = new StringBuilder();
-                ArrayList<SysUserVO> userList = new ArrayList<>();
-                //创建人排在首位
-                userList.add(new SysUserVO(record.getCreatedBy(), record.getAdminUserName(), null));
-                MeetingRecord finalRecord = record;
-                users.forEach(user -> {
-                    SysUserVO userVO = new SysUserVO();
-                    if (user.getUserId().equals(finalRecord.getCreatedBy())) {
-                        return;
-                    }
-                    BeanUtils.copyProperties(user, userVO);
-                    userVO.setUserName(user.getUserName());
-                    userList.add(userVO);
-                    if (!attendees.isEmpty()) {
-                        attendees.append(",");
-                    }
-                    attendees.append(userVO.getUserName());
-                });
-                recordVO.setAttendees(attendees.toString());
-                recordVO.setUsers(userList);
-                recordVO.setMeetingNumber(userList.size());
-                return recordVO;
-            }).sorted(Comparator.comparing(MeetingRecordVO::getStartTime).reversed())
+                        MeetingRecordVO recordVO = new MeetingRecordVO();
+                        //插入部门信息
+                        SysDepartment department = sysDepartmentMapper.findDepartment(record.getCreatedBy());
+                        recordVO.setDepartment(department.getDepartmentName());
+                        if (Objects.equals(record.getStatus(), MEETING_RECORD_STATUS_NOT_START)
+                                || Objects.equals(record.getStatus(), MEETING_RECORD_STATUS_PROCESSING)) {
+                            //更新会议状态
+                            record = updateRecordStatus(record);
+                        }
+                        // 设置会议信息
+                        BeanUtils.copyProperties(record, recordVO);
+                        // 设置会议室信息不使用逻辑删除
+                        MeetingRoom meetingRoom = meetingRoomMapper.getByRoomId(record.getMeetingRoomId());
+                        recordVO.setMeetingRoomName(meetingRoom.getRoomName());
+                        recordVO.setLocation(meetingRoom.getLocation());
+                        // 设置参会人信息
+                        List<MeetingAttendees> users = attendeesMapper.selectList(new LambdaQueryWrapper<MeetingAttendees>()
+                                        .eq(MeetingAttendees::getMeetingRecordId, record.getId()))
+                                .stream().distinct().toList();
+                        StringBuilder attendees = new StringBuilder();
+                        ArrayList<SysUserVO> userList = new ArrayList<>();
+                        //创建人排在首位
+                        userList.add(new SysUserVO(record.getCreatedBy(), record.getAdminUserName(), null));
+                        MeetingRecord finalRecord = record;
+                        users.forEach(user -> {
+                            SysUserVO userVO = new SysUserVO();
+                            if (user.getUserId().equals(finalRecord.getCreatedBy())) {
+                                return;
+                            }
+                            BeanUtils.copyProperties(user, userVO);
+                            userVO.setUserName(user.getUserName());
+                            userList.add(userVO);
+                            if (!attendees.isEmpty()) {
+                                attendees.append(",");
+                            }
+                            attendees.append(userVO.getUserName());
+                        });
+                        recordVO.setAttendees(attendees.toString());
+                        recordVO.setUsers(userList);
+                        recordVO.setMeetingNumber(userList.size());
+                        return recordVO;
+                    }).sorted(Comparator.comparing(MeetingRecordVO::getStartTime).reversed())
                     .collect(Collectors.toList());
         }
         throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0301);
@@ -454,13 +448,12 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 根据会议记录id删除会议(首页不展示非删除)
-     *
      * @param userId    用户id
      * @param meetingId 会议id
      * @return 删除结果
      */
     @Override
-    public Result<String> deleteMeetingRecord(String userId, Long meetingId) {
+    public Result<String> deleteMeetingRecord (String userId, Long meetingId) {
         if (userId == null || meetingId == null) {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
         }
@@ -477,8 +470,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         }
         //判断用户是否为参会人
         List<String> userIds = attendeesMapper.selectList(
-                new LambdaQueryWrapper<MeetingAttendees>()
-                        .eq(MeetingAttendees::getMeetingRecordId, meetingId))
+                        new LambdaQueryWrapper<MeetingAttendees>()
+                                .eq(MeetingAttendees::getMeetingRecordId, meetingId))
                 .stream().map(MeetingAttendees::getUserId).toList();
         if (userIds.contains(userId)) {
             //删除
@@ -491,14 +484,13 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 根据会议记录id取消会议
-     *
      * @param userId    用户id
      * @param meetingId 会议id
      * @return 取消结果
      */
     @Transactional
     @Override
-    public Result<String> cancelMeetingRecord(String userId, Long meetingId) {
+    public Result<String> cancelMeetingRecord (String userId, Long meetingId) {
         if (userId == null || meetingId == null) {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
         }
@@ -519,7 +511,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         }
         meetingRecord.setStatus(MEETING_RECORD_STATUS_CANCEL);
         List<String> userIds = attendeesMapper.selectList(new LambdaQueryWrapper<MeetingAttendees>()
-                .eq(MeetingAttendees::getMeetingRecordId, meetingId))
+                        .eq(MeetingAttendees::getMeetingRecordId, meetingId))
                 .stream().map(MeetingAttendees::getUserId).toList();
         this.baseMapper.deleteById(meetingRecord);
         attendeesMapper.delete(new LambdaQueryWrapper<MeetingAttendees>()
@@ -549,7 +541,6 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 新增会议
-     *
      * @param meetingRecordDTO 会议记录DTO
      * @return 新增会议结果
      */
@@ -583,33 +574,31 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         if (Objects.equals(meetingRoom.getStatus(), MEETINGROOM_STATUS_PAUSE)) {
             throw new RRException("会议室不可用", ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
         }
-        lock.lock();
-        if (!lock.tryLock()) {
-            throw new RRException(OCCUPIED, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
-        }
-        try {
-            transactionTemplate.execute((status) -> {
-                try {
-                    //根据时间段查看是否有会议占用
-                    LambdaQueryWrapper<MeetingRecord> queryWrapper = new LambdaQueryWrapper<>();
-                    queryWrapper.notIn(MeetingRecord::getStatus, MEETING_RECORD_STATUS_CANCEL)
-                            .eq(MeetingRecord::getMeetingRoomId, meetingRecord.getMeetingRoomId());
-                    //开始时间或结束时间在时间段内 或 开始时间与结束时间之间包含时间段
-                    queryWrapper.and(recordQueryWrapper -> recordQueryWrapper
-                            //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
-                            .between(MeetingRecord::getStartTime, meetingRecord.getStartTime(), meetingRecord.getEndTime().minusSeconds(1))
-                            //结束时间在时间段内 前不含后含  8-9属于8.5-9不属于9-9.5
-                            .or().between(MeetingRecord::getEndTime, meetingRecord.getStartTime().plusSeconds(1), meetingRecord.getEndTime())
-                            //时间段包含在开始时间(含)和结束时间(含)之间    8-9 属于8-8.5属于8.5-9
-                            .or().lt(MeetingRecord::getStartTime, meetingRecord.getStartTime().plusSeconds(1))
-                            .gt(MeetingRecord::getEndTime, meetingRecord.getEndTime().minusSeconds(1)));
-                    List<MeetingRecord> meetingRecords = list(queryWrapper);
-
-                    if (!meetingRecords.isEmpty()) {
-                        throw new RRException(OCCUPIED, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
-                    }
-                    // 保存meetingRecord
-                    save(meetingRecord);
+        if (lock.tryLock()) {
+            try {
+                transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+                    @Override
+                    protected void doInTransactionWithoutResult (TransactionStatus status) {
+                        try {
+                            //根据时间段查看是否有会议占用
+                            LambdaQueryWrapper<MeetingRecord> queryWrapper = new LambdaQueryWrapper<>();
+                            queryWrapper.notIn(MeetingRecord::getStatus, MEETING_RECORD_STATUS_CANCEL)
+                                    .eq(MeetingRecord::getMeetingRoomId, meetingRecord.getMeetingRoomId());
+                            //开始时间或结束时间在时间段内 或 开始时间与结束时间之间包含时间段
+                            queryWrapper.and(recordQueryWrapper -> recordQueryWrapper
+                                    //开始时间在时间段内 前含后不含  8-9 属于8-8.5不属于7.5-8
+                                    .between(MeetingRecord::getStartTime, meetingRecord.getStartTime(), meetingRecord.getEndTime().minusSeconds(1))
+                                    //结束时间在时间段内 前不含后含  8-9属于8.5-9不属于9-9.5
+                                    .or().between(MeetingRecord::getEndTime, meetingRecord.getStartTime().plusSeconds(1), meetingRecord.getEndTime())
+                                    //时间段包含在开始时间(含)和结束时间(含)之间    8-9 属于8-8.5属于8.5-9
+                                    .or().lt(MeetingRecord::getStartTime, meetingRecord.getStartTime().plusSeconds(1))
+                                    .gt(MeetingRecord::getEndTime, meetingRecord.getEndTime().minusSeconds(1)));
+                            List<MeetingRecord> meetingRecords = list(queryWrapper);
+                            if (!meetingRecords.isEmpty()) {
+                                throw new RRException(OCCUPIED, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
+                            }
+                            // 保存meetingRecord
+                            save(meetingRecord);
 
                     // 创建一个MeetingAttendees的列表，并将meetingRecordDTO中的用户信息转换为MeetingAttendees对象
                     List<MeetingAttendees> attendeesList = meetingRecordDTO.getUsers().stream()
@@ -623,32 +612,34 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                     meetingAttendeesService.saveBatch(attendeesList);
                 } catch (Exception e) {
                     status.setRollbackOnly();
-                    throw new RRException(OCCUPIED, ErrorCodeEnum.SERVICE_ERROR_A0400.getCode());
-
-                }
-                return null;
-            });
-        }finally  {
-            lock.unlock();
+                            throw e;
+                        }
+                    }
+                });
+            } finally {
+                lock.unlock();
+            }
+            meetingRecordDTO.setId(meetingRecord.getId());
+            String reminder =
+                    "#### 会议提醒\n" +
+                            "**会议主题 :** " + meetingRecordDTO.getTitle() + "\n" +
+                            "**发起人 :** " + meetingRecord.getAdminUserName() + "\n" +
+                            "**日期 :** " + meetingRecordDTO.getStartTime()
+                            .format(DateTimeFormatter.ofPattern("yyyy 年 MM 月 dd 日"))
+                            + "\n" +
+                            "**时间 :** " + meetingRecordDTO.getStartTime().format(DateTimeFormatter.ofPattern("HH : mm"))
+                            + " ~ "
+                            + meetingRecordDTO.getEndTime().format(DateTimeFormatter.ofPattern("HH : mm")) + "\n" +
+                            "**会议室 :** " + meetingRoom.getRoomName() + "\n" +
+                            "**地点 :** " + meetingRoom.getLocation() + "\n" +
+                            "<font color=\"info\">**会议已预约！** </font>";
+            wxUtil.sendsWxReminders(meetingRecordDTO.getUsers().stream().map(SysUser::getUserId).toList(), reminder);
+            //定时发送提醒
+            meetingReminderScheduler.scheduleMeetingReminder(meetingRecordDTO);
+            return Result.success(CREATE_SUCCESS);
         }
-        meetingRecordDTO.setId(meetingRecord.getId());
-        String reminder =
-                "#### 会议提醒\n" +
-                        "**会议主题 :** " + meetingRecordDTO.getTitle() + "\n" +
-                        "**发起人 :** " + meetingRecord.getAdminUserName() + "\n" +
-                        "**日期 :** " + meetingRecordDTO.getStartTime()
-                        .format(DateTimeFormatter.ofPattern("yyyy 年 MM 月 dd 日"))
-                        + "\n" +
-                        "**时间 :** " + meetingRecordDTO.getStartTime().format(DateTimeFormatter.ofPattern("HH : mm"))
-                        + " ~ "
-                        + meetingRecordDTO.getEndTime().format(DateTimeFormatter.ofPattern("HH : mm")) + "\n" +
-                        "**会议室 :** " + meetingRoom.getRoomName() + "\n" +
-                        "**地点 :** " + meetingRoom.getLocation() + "\n" +
-                        "<font color=\"info\">**会议已预约！** </font>";
-        wxUtil.sendsWxReminders(meetingRecordDTO.getUsers().stream().map(SysUser::getUserId).toList(), reminder);
-        //定时发送提醒
-        meetingReminderScheduler.scheduleMeetingReminder(meetingRecordDTO);
-        return Result.success(CREATE_SUCCESS);
+        throw new RRException("服务器繁忙，请稍后再试！", ErrorCodeEnum.SERVICE_ERROR_A0410.getCode());
+
     }
 
     /**
@@ -754,11 +745,10 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 统计七日内各时间段预约频率
-     *
      * @return 预约频率
      */
     @Override
-    public Result<List<PeriodTimesVO>> getTimePeriodTimes() {
+    public Result<List<PeriodTimesVO>> getTimePeriodTimes () {
         ArrayList<PeriodTimesVO> list = new ArrayList<>();
         LocalDateTime startTime = LocalDateTime.now().toLocalDate().atStartOfDay().plusHours(9);
         LocalDateTime endTime = startTime.plusMinutes(30);
@@ -799,11 +789,10 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 会议创建自动提示最近三次
-     *
      * @param userId 用户ID
      * @return 自动提示结果
      */
-    public Result<List<MeetingPromptVO>> prompts(String userId) {
+    public Result<List<MeetingPromptVO>> prompts (String userId) {
         //查询最后一次创建的会议
         List<MeetingRecord> records = lambdaQuery()
                 .select(MeetingRecord::getTitle, MeetingRecord::getId, MeetingRecord::getMeetingRoomId)
@@ -838,12 +827,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 会议创建自动提示最近一次
-     *
      * @param userId 用户ID
      * @return 自动提示结果
      */
     @Override
-    public Result<MeetingPromptVO> prompt(String userId) {
+    public Result<MeetingPromptVO> prompt (String userId) {
         try {
             MeetingRecord lastMeeting = lambdaQuery()
                     .select(MeetingRecord::getId, MeetingRecord::getMeetingRoomId)
@@ -866,7 +854,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      * @throws InvalidFormatException 1
      */
     @Override
-    public void getRecordExport(String userId, String type, List<MeetingRecordVO> meetingRecordVOList, HttpServletResponse response, String operation) throws IOException, InvalidFormatException {
+    public void getRecordExport (String userId, String type, List<MeetingRecordVO> meetingRecordVOList, HttpServletResponse response, String operation) throws IOException, InvalidFormatException {
         //获取excel模板的路径，一个备份一个应用
         if (!templatePathApplyExcel.exists() || !templatePathBackupsExcel.exists()) {
             log.error("没有找到模板信息");
@@ -886,7 +874,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     }
 
-    private void extractedWord(MeetingRecordVO meetingRecordVO, HttpServletResponse response, String operation) {
+    private void extractedWord (MeetingRecordVO meetingRecordVO, HttpServletResponse response, String operation) {
         // 模板全的路径
         String templatePaht = path + "保险问答系统Sprint02回顾会议纪要.docx";
         String startHour = meetingRecordVO.getStartTime().getHour() + ":";
@@ -954,7 +942,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     }
 
-    private void extractedExcel(MeetingRecordVO meetingRecordVO, HttpServletResponse response, String operation) throws IOException, InvalidFormatException {
+    private void extractedExcel (MeetingRecordVO meetingRecordVO, HttpServletResponse response, String operation) throws IOException, InvalidFormatException {
         //还原文件
         restoreFile(templatePathBackupsExcel.toString(), templatePathApplyExcel.toString());
         //查看参与用户
@@ -1093,7 +1081,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     }
 
 
-    public static void restoreFile(String backupFilePath, String targetFilePath) {
+    public static void restoreFile (String backupFilePath, String targetFilePath) {
         // 确保目标路径的目录存在
         Path targetDir = Paths.get(targetFilePath).getParent();
         if (Files.notExists(targetDir)) {
@@ -1113,7 +1101,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         }
     }
 
-    private void extracted(MeetingRecordVO meetingRecordVO, Sheet sheet, List<SysUserVO> name, int size, SysDepartment sysDepartment) {
+    private void extracted (MeetingRecordVO meetingRecordVO, Sheet sheet, List<SysUserVO> name, int size, SysDepartment sysDepartment) {
         if (size < 1) {
             String department = sysDepartment == null ? " " : sysDepartment.getDepartmentName();
             sheet.getRow(size + 10).getCell(0).setCellValue(department);
@@ -1141,11 +1129,10 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * 查询对应会议室及参会人
-     *
      * @param lastMeeting 最近会议记录
      * @return 自动提示结果
      */
-    private MeetingPromptVO getMeetingPromptVO(MeetingRecord lastMeeting) {
+    private MeetingPromptVO getMeetingPromptVO (MeetingRecord lastMeeting) {
         MeetingRoom meetingRoom = meetingRoomService.getById(lastMeeting.getMeetingRoomId());
         List<String> userIds = meetingAttendeesService.lambdaQuery()
                 .eq(MeetingAttendees::getMeetingRecordId, lastMeeting.getId())
@@ -1174,7 +1161,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      * @return 返回html
      */
     @Override
-    public String excelHtml(String type, MeetingRecordVO meetingRecordVO, String operation) {
+    public String excelHtml (String type, MeetingRecordVO meetingRecordVO, String operation) {
         //导出excel
         try {
             extractedExcel(meetingRecordVO, null, operation);
@@ -1228,7 +1215,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
      * @return 返回html
      */
     @Override
-    public String docxToHtml(String type, MeetingRecordVO meetingRecordVO, String operation) {
+    public String docxToHtml (String type, MeetingRecordVO meetingRecordVO, String operation) {
         //导出word
         extractedWord(meetingRecordVO, null, operation);
         try {
@@ -1252,11 +1239,10 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
 
     /**
      * doc转化成html
-     *
      * @return 返回html
      * @throws IOException 异常
      */
-    public String docxsToHtml(InputStream inputStream) throws IOException {
+    public String docxsToHtml (InputStream inputStream) throws IOException {
         XWPFDocument docxDocument = new XWPFDocument(inputStream);
         XHTMLOptions options = XHTMLOptions.create();
         //图片转base64

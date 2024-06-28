@@ -34,7 +34,7 @@ public class MeetingDeviceController {
      * @return 设备信息
      */
     @GetMapping("/device")
-    public Result<Page<MeetingDeviceVO>>getDevice (MeetingDevicePageDTO meetingDevicePageDTO) {
+    public Result<Page<MeetingDeviceVO>> getDevice (MeetingDevicePageDTO meetingDevicePageDTO) {
         return meetingDeviceService.getDevice(meetingDevicePageDTO);
     }
 
@@ -44,7 +44,7 @@ public class MeetingDeviceController {
      * @return 成功信息
      */
     @PostMapping("/device")
-    public Result<Object>addDevice (@RequestBody MeetingDeviceDTO meetingDeviceDTO) {
+    public Result<Object> addDevice (@RequestBody MeetingDeviceDTO meetingDeviceDTO) {
         return meetingDeviceService.addDevice(meetingDeviceDTO);
     }
 
@@ -54,7 +54,7 @@ public class MeetingDeviceController {
      * @return 成功信息
      */
     @PutMapping("/device")
-    public Result<Object>updateDevice (@RequestBody MeetingDevice meetingDevice) {
+    public Result<Object> updateDevice (@RequestBody MeetingDevice meetingDevice) {
         return meetingDeviceService.updateDevice(meetingDevice);
     }
 
@@ -64,16 +64,17 @@ public class MeetingDeviceController {
      * @return 成功信息
      */
     @PutMapping("/statusDevice")
-    public Result<Object>updateStatusDevice (@RequestBody  MeetingDevice meetingDevice) {
+    public Result<Object> updateStatusDevice (@RequestBody MeetingDevice meetingDevice) {
         return meetingDeviceService.updateStatusDevice(meetingDevice.getId());
     }
+
     /**
      * 禁止设备报损(启用禁用)
      * @param meetingDevice 设备实体类
      * @return 成功信息
      */
     @PutMapping("/stopSend")
-    public Result<Object>updateStopSend (@RequestBody  MeetingDevice meetingDevice) {
+    public Result<Object> updateStopSend (@RequestBody MeetingDevice meetingDevice) {
         return meetingDeviceService.updateStopSend(meetingDevice.getId());
     }
 
@@ -83,7 +84,7 @@ public class MeetingDeviceController {
      * @return 成功信息
      */
     @DeleteMapping("/device")
-    public Result<Object>deleteDevice (@RequestParam Integer id ) {
+    public Result<Object> deleteDevice (@RequestParam Long id) {
         return meetingDeviceService.deleteDevice(id);
     }
 
@@ -93,7 +94,7 @@ public class MeetingDeviceController {
      * @return 删除结果
      */
     @DeleteMapping("/devices")
-    public Result<Object>deleteDevices (@RequestParam Integer[] ids) {
+    public Result<Object> deleteDevices (@RequestParam Long[] ids) {
         return meetingDeviceService.deleteDevices(ids);
     }
 
@@ -103,7 +104,7 @@ public class MeetingDeviceController {
      * @return 报损信息
      */
     @GetMapping("/info")
-    public Result<List<DeviceErrorMessage>>getInfo (@RequestParam Integer deviceId) {
+    public Result<List<DeviceErrorMessage>> getInfo (@RequestParam Long deviceId) {
         return deviceErrorMessageService.getInfo(deviceId);
     }
 
@@ -113,7 +114,7 @@ public class MeetingDeviceController {
      * @return 成功信息
      */
     @PostMapping("/info")
-    public Result<List<DeviceErrorMessage>>addInfo (@RequestBody DeviceErrorMessageDTO deviceErrorMessageDTO) {
+    public Result<List<DeviceErrorMessage>> addInfo (@RequestBody DeviceErrorMessageDTO deviceErrorMessageDTO) {
         return deviceErrorMessageService.addInfo(deviceErrorMessageDTO);
     }
 

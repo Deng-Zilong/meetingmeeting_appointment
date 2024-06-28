@@ -18,15 +18,16 @@ import com.jfzt.meeting.utils.WxUtil;
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 /**
  * 针对表【device_error_message(报损表)】的数据库操作Service实现
- * @author: chenyu.di
- * @since: 2024-06-12 11:08
+ * @author chenyu.di
+ * @since 2024-06-12 11:08
  */
 @Service
-public class DeviceErrorMessageServiceImpl extends ServiceImpl<DeviceErrorMessageMapper,DeviceErrorMessage>
+public class DeviceErrorMessageServiceImpl extends ServiceImpl<DeviceErrorMessageMapper, DeviceErrorMessage>
         implements DeviceErrorMessageService {
     @Resource
     private MeetingRoomService meetingRoomService;
@@ -44,7 +45,7 @@ public class DeviceErrorMessageServiceImpl extends ServiceImpl<DeviceErrorMessag
      * @return 报损信息
      */
     @Override
-    public Result<List<DeviceErrorMessage>> getInfo(Integer deviceId) {
+    public Result<List<DeviceErrorMessage>> getInfo (Long deviceId) {
         List<DeviceErrorMessage> list = lambdaQuery()
                 .eq(DeviceErrorMessage::getDeviceId, deviceId)
                 .list()
@@ -63,12 +64,12 @@ public class DeviceErrorMessageServiceImpl extends ServiceImpl<DeviceErrorMessag
      * @return 成功信息
      */
     @Override
-    public Result<List<DeviceErrorMessage>> addInfo(DeviceErrorMessageDTO deviceErrorMessageDTO) {
-        if (deviceErrorMessageDTO.getInfo() == null){
+    public Result<List<DeviceErrorMessage>> addInfo (DeviceErrorMessageDTO deviceErrorMessageDTO) {
+        if (deviceErrorMessageDTO.getInfo() == null) {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0410);
         }
         DeviceErrorMessage deviceErrorMessage = new DeviceErrorMessage();
-        BeanUtils.copyProperties(deviceErrorMessageDTO,deviceErrorMessage);
+        BeanUtils.copyProperties(deviceErrorMessageDTO, deviceErrorMessage);
         this.save(deviceErrorMessage);
 
         // 更新设备报损次数
@@ -80,7 +81,7 @@ public class DeviceErrorMessageServiceImpl extends ServiceImpl<DeviceErrorMessag
         meetingDevice.setExtent(extent);
         meetingDeviceService.lambdaUpdate()
                 .eq(MeetingDevice::getId, deviceErrorMessageDTO.getDeviceId())
-                .set(MeetingDevice::getExtent,extent)
+                .set(MeetingDevice::getExtent, extent)
                 .update();
         MeetingRoom room = meetingRoomService.lambdaQuery()
                 .eq(MeetingRoom::getId, meetingDevice.getRoomId())
@@ -117,27 +118,27 @@ public class DeviceErrorMessageServiceImpl extends ServiceImpl<DeviceErrorMessag
                 }
 
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
         }
         //每十次发送一次报损信息
         if (extent % 10 == 0) {
 
             wxUtil.sendsWxReminders(sysUserService.lambdaQuery()
-                    .ne(SysUser::getLevel, 2)
-                    .list()
-                    .stream()
-                    .map(SysUser::getUserId)
-                    .toList()
-                    ,"【"
-                    + room.getRoomName()
-                    + "】的【"
-                    + meetingDevice.getDeviceName()
-                    + "】已申请 【"
-                    + meetingDevice.getExtent()
-                    + "次】报损"
-                    + "请及时处理!!");
-            return Result.fail( "【"
+                            .ne(SysUser::getLevel, 2)
+                            .list()
+                            .stream()
+                            .map(SysUser::getUserId)
+                            .toList()
+                    , "【"
+                            + room.getRoomName()
+                            + "】的【"
+                            + meetingDevice.getDeviceName()
+                            + "】已申请 【"
+                            + meetingDevice.getExtent()
+                            + "次】报损"
+                            + "请及时处理!!");
+            return Result.fail("【"
                     + room.getRoomName()
                     + "】的【"
                     + meetingDevice.getDeviceName()

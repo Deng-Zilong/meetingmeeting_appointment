@@ -29,8 +29,8 @@ import java.util.List;
 
 /**
  * 针对表【meeting_device(设备表)】的数据库操作Service实现
- * @author: chenyu.di
- * @since: 2024-06-12 11:08
+ * @author chenyu.di
+ * @since 2024-06-12 11:08
  */
 @Slf4j
 @Service
@@ -142,12 +142,7 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
      * @return 成功信息
      */
     @Override
-    public Result<Object> deleteDevice(Integer id) {
-        // 根据id查询设备信息，判断是否存在
-        MeetingDevice meetingDevice = this.lambdaQuery().eq(MeetingDevice::getId, id).one();
-        if (meetingDevice == null || meetingDevice.getStatus() <= 0){
-            throw new RRException(ErrorCodeEnum.SERVICE_ERROR_A0400);
-        }
+    public Result<Object> deleteDevice (Long id) {
         try {
             this.removeById(id);
             return Result.success("删除成功!");
@@ -186,10 +181,11 @@ public class MeetingDeviceServiceImpl extends ServiceImpl<MeetingDeviceMapper,Me
      * @param ids 所选id集合
      * @return 删除结果
      */
+    @Override
     @Transactional
-    public Result<Object> deleteDevices(Integer[] ids) {
+    public Result<Object> deleteDevices (Long[] ids) {
         try {
-            List<Integer> idList = Arrays.asList(ids);
+            List<Long> idList = Arrays.asList(ids);
             List<MeetingDevice> list = this.lambdaQuery().in(MeetingDevice::getId, idList).list();
             if (list.size() != idList.size()){
                 return Result.fail("部分设备不存在!");

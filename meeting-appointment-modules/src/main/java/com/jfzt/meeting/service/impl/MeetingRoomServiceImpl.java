@@ -2,7 +2,6 @@ package com.jfzt.meeting.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Assert;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jfzt.meeting.common.Result;
 import com.jfzt.meeting.constant.MeetingRecordStatusConstant;
@@ -102,7 +101,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
      * @return 结果
      */
     @Override
-        public Result<Integer> addMeetingRoom (MeetingRoom meetingRoom) {
+    public Result<Integer> addMeetingRoom (MeetingRoom meetingRoom) {
         // meetingRoom的参数不能为空
         if (meetingRoom.getRoomName().isEmpty() || meetingRoom.getCapacity() == null
                 || meetingRoom.getCapacity() <= 0) {
@@ -684,16 +683,16 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             List<MeetingDevice> deviceList = meetingDeviceService.list(new LambdaQueryWrapper<MeetingDevice>()
                     .eq(MeetingDevice::getRoomId, meetingRoom.getId()));
 
-            deviceList.stream().peek(device -> {
+            deviceList.forEach(device -> {
                 Result<List<DeviceErrorMessage>> deviceErrorMessage = deviceErrorMessageService
-                        .getInfo(Math.toIntExact(device.getId()));
+                        .getInfo(device.getId());
                 if (deviceErrorMessage.getData() != null && !deviceErrorMessage.getData().isEmpty()) {
                     String errorMessage = device.getDeviceName() + "异常：" +
                             String.join(",",
                                     deviceErrorMessage.getData().stream().map(DeviceErrorMessage::getInfo).toList());
                     exceptionInfoList.add(errorMessage);
                 }
-            }).toList();
+            });
             meetingRoomVO.setDeviceExceptionInfo(exceptionInfoList);
             meetingRoomVO.setId(meetingRoom.getId());
             meetingRoomVO.setRoomName(meetingRoom.getRoomName());
