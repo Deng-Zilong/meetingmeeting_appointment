@@ -896,48 +896,30 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .eq(MeetingWord::getMeetingRecordId, 574));
 
         List<MeetingWord> meetingWords1 = meetingWords.stream()
-                .filter(meetingWord -> meetingWord.getLevel() == 1 && meetingWord.getMeetingRecordId() == 574)
+                .filter(meetingWord ->meetingWord.getLevel() == 1&& meetingWord.getMeetingRecordId() == 574)
                 .map((menu) -> {
                     menu.setChildrenPart(getChildrenPart(meetingWords, menu, menu.getLevel()+1));
                     return menu;
                 }).collect(Collectors.toList());
 
-//        List<Object> list1 = new ArrayList<>();
-//        list1.add("list1");
-//        list1.add("list1");
-//        paramMap.put("thisGoal1", "111111");
-//        paramMap.put("thisGoal2", "1.111111111");
-//        paramMap.put("thisGoal3", list1);
-//        List<Object> list2 = new ArrayList<>();
-//        list2.add("list2");
-//        list2.add("list2");
-//        paramMap.put("problem1", "22222222");
-//        paramMap.put("problem2", "2.111");
-//        paramMap.put("problem3", list2);
-//        List<Object> list3 = new ArrayList<>();
-//        list3.add("list3");
-//        list3.add("list3");
-//        paramMap.put("optimization1", "33333");
-//        paramMap.put("optimization2", "3.111");
-//        paramMap.put("optimization3", list3);
-//        List<Object> list4 = new ArrayList<>();
-//        list4.add("list4");
-//        list4.add("list4");
-//        paramMap.put("requirements1", "44444444");
-//        paramMap.put("requirements2", "4.11111");
-//        paramMap.put("requirements3", list4);
         DynWordUtils.process(paramMap, templatePaht, response, meetingRecordVO, operation, path,meetingWords1);
 
     }
 
     private List<MeetingWord> getChildrenPart(List<MeetingWord> meetingWords, MeetingWord menu1, int level) {
+
+        List<MeetingWord> meetingWordsList = meetingWords.stream()
+                .filter(meetingWord -> meetingWord.getLevel() == 0 && menu1.getId().equals(meetingWord.getParentId()))
+                .collect(Collectors.toList());
         List<MeetingWord> meetingWords1 = meetingWords.stream()
                 .filter(meetingWord -> meetingWord.getLevel() == level && menu1.getId().equals(meetingWord.getParentId()))
                 .map((menu) -> {
                     menu.setChildrenPart(getChildrenPart(meetingWords, menu, menu.getLevel()+1));
                     return menu;
                 }).collect(Collectors.toList());
-
+        if (meetingWordsList.size() !=0){
+            meetingWords1.add(0,meetingWordsList.get(0));
+        }
         return meetingWords1;
 
     }

@@ -69,6 +69,10 @@ public class DynWordUtils {
      */
     public int row;
     /**
+     * 记录缩放
+     */
+    public int rows = 600;
+    /**
      * 入口
      *
      * @param paramMap     模板中使用的参数
@@ -121,9 +125,7 @@ public class DynWordUtils {
     }
 
     private void contentWord(XWPFDocument document, List<MeetingWord> meetingWords) throws IOException {
-
         //所在行
-
         row =  findWord(document, searchText);
         meetingWords.stream()
                 .filter(meetingWord ->meetingWord.getMeetingRecordId() == 574)
@@ -140,14 +142,24 @@ public class DynWordUtils {
     }
 
     private List<MeetingWord> getChildrenPart(MeetingWord menu1, XWPFDocument document) {
-        List<MeetingWord> meetingWordList = menu1.getChildrenPart();
-        List<MeetingWord> meetingWords1 = meetingWordList.stream()
+        if (menu1.getChildrenPart() == null){
+            return null;
+        }
+        List<MeetingWord> meetingWords1 = menu1.getChildrenPart().stream()
                 .filter(meetingWord ->menu1.getId().equals(meetingWord.getParentId()))
                 .map((menu) -> {
                     // 添加1.级列表项
                     XWPFParagraph para2 = document.getParagraphs().get(++row);
-                    addListLevel(para2, menu.getTitle(), menu.getLevel());
-                    para2.setIndentationLeft(menu.getLevel()*300);
+
+                    if (menu.getLevel() == 0){
+                        addListLevel(para2, menu.getContent(), menu.getLevel());
+                        para2.setIndentationLeft(rows);
+                    }else {
+                        addListLevel(para2, menu.getTitle(), menu.getLevel());
+                        rows = menu.getLevel()*300;
+                        para2.setIndentationLeft(menu.getLevel()*300);
+                    }
+
                     menu.setChildrenPart(getChildrenPart(menu, document));
                     return menu;
                 }).collect(Collectors.toList());
@@ -598,9 +610,12 @@ public class DynWordUtils {
     private static void addListLevel(XWPFParagraph paragraph, String text, int level) {
         XWPFRun run = paragraph.createRun();
         run.setText(text);
-        // 设置段落为指定级别的有序列表
-        BigInteger numId = getNumIdForLevel(level);
-        paragraph.setNumID(numId);
+        if (level != 0){
+            // 设置段落为指定级别的有序列表
+            BigInteger numId = getNumIdForLevel(level);
+            paragraph.setNumID(numId);
+        }
+
     }
 
     // 根据级别获取对应的numId
