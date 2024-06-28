@@ -16,7 +16,7 @@
             <el-form ref="ruleFormRef" :model="formData" :rules="rules">
                 <div class="appoint-row">
                     <el-form-item label="会议主题" prop="title">
-                        <el-input v-model="formData.title" placeholder="请输入" />
+                        <el-input v-model.trim="formData.title" placeholder="请输入" />
                     </el-form-item>
                     <el-form-item label="参会人" prop="meetingPeople">
                         <!-- <el-popover placement="bottom" trigger="hover" width="270">
@@ -86,10 +86,10 @@
 
                 <div class="last-row">
                     <el-form-item>
-                        <el-button type="primary" @click="submitForm(ruleFormRef)" v-if="isCreate">
+                        <el-button :loading="buttonLoading" type="primary" @click="submitForm(ruleFormRef)" v-if="isCreate">
                             创建会议
                         </el-button>
-                        <el-button type="primary" @click="submitForm(ruleFormRef)" v-else>
+                        <el-button :loading="buttonLoading" type="primary" @click="submitForm(ruleFormRef)" v-else>
                             修改会议
                         </el-button>
                     </el-form-item>
@@ -134,6 +134,7 @@ const currentTime:string = dayjs(new Date()).format('HH:mm'); // 当前时间 HH
 const week = ref(['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六',]) // 会议日期显示星期
 
 const isCreate = ref(true); // 是否是创建会议 true创建 false修改
+const buttonLoading = ref(false)
 
 onMounted(() => {
     // 获取会议相关参数
@@ -426,6 +427,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
         }
         // 创建会议
         if (isCreate.value) {
+          buttonLoading.value = true
             addMeetingRecord(params.value)
                 .then((res) => {
                    ElMessage.success('会议创建成功！');
@@ -433,16 +435,23 @@ const submitForm = (formEl: FormInstance | undefined) => {
                         router.push('/home');
                     }, 1000)
                 }).catch((err) => {})
+                .finally(() => {
+                  buttonLoading.value = false
+                })
         } else {
+          buttonLoading.value = true
             // 修改会议
             params.value.id = formData.value.id;
             updateMeetingRecord(params.value)
                 .then((res) => {
                    ElMessage.success('会议修改成功！');
                    setTimeout(() => {
-                        router.push('/home');
+                     router.push('/home');
                     }, 1000)
-                }).catch((err) => {})
+                  }).catch((err) => {})
+                  .finally(() => {
+                    buttonLoading.value = false
+                  })
         }
     })
 }

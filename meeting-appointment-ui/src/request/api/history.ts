@@ -8,6 +8,11 @@ export const cancelMeetingRecord = (data: {userId: string, meetingId: number}) =
     return http.put("/meeting/index/cancel-meeting-record", data)
 }
 
+// 查询部门列表
+export const getDepartmentList = () => {
+    return http.get("/meeting/index/meeting-record-department")
+}
+
 // 新增/编辑会议纪要 excel
 export const addMeetingMinutes = (data: {id?: number | undefined, userId: string, minutes: string, meetingRecordId: number, remark: string}) => {
     return http.post("/meeting/minutes", data)

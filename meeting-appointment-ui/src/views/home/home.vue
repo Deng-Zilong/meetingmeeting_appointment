@@ -46,7 +46,7 @@
           </div>
           <div class="rules">
             <div class="rule-block">
-              <div class="rule-title">近期热门时间段</div>
+              <div class="rule-title">近期热门时间段(未启动)</div>
               <div class="rule-main">
                 <div class="rule-scroll">
                   <div class="scroll-item" v-for="item in timesData.slice(0, 10)">{{ item }}</div>

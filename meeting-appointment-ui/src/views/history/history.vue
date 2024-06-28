@@ -11,6 +11,11 @@
                     />
                 </el-col>
                 <el-col :span="4">
+                  <el-select v-model="searchForm.meetingRoomId" size="large" filterable clearable placeholder="请选择会议室">
+                    <el-option v-for="item in roomOptions" :key="item.id" :label="item.value" :value="item.id" />
+                  </el-select>
+                </el-col>
+                <el-col :span="4">
                     <el-input
                         v-model="searchForm.adminUserName"
                         placeholder="请输入发起人名称"
@@ -19,13 +24,18 @@
                     />
                 </el-col>
                 <el-col :span="4">
+                  <el-select v-model="searchForm.department" size="large" filterable clearable placeholder="请选择部门">
+                    <el-option v-for="item in departmentOptions" :key="item.departmentId" :label="item.departmentName" :value="item.departmentName" />
+                  </el-select>
+                </el-col>
+                <!-- <el-col :span="4">
                     <el-input
                         v-model="searchForm.department"
                         placeholder="请输入发起人部门"
                         clearable
                         size="large"
                     />
-                </el-col>
+                </el-col> -->
                 <el-col :span="4">
                     <el-date-picker
                         v-model="searchForm.dateRange"
@@ -37,7 +47,7 @@
                         value-format="YYYY-MM-DD"
                     />
                 </el-col>
-                <el-col :span="3">
+                <el-col :span="4">
                     <el-button type="primary" size="large" @click="handleSearch">查 询</el-button>
                     <el-button type="primary" size="large" @click="resetSearch">重 置</el-button>
                 </el-col>
@@ -46,13 +56,14 @@
         <!-- <div class="theme" >  </div> -->
         <div class="content" v-loading="loading" element-loading-background="rgba(122, 122, 122, 0.1)">
             <div class="title">
-                <div>会议主题</div>
-                <div>会议室名称</div>
-                <div>发起人</div>
-                <div>会议时间</div>
-                <div>参会人员</div>
-                <div>会议状态</div>
-                <div>操作</div>
+                <div class="h-title">会议主题</div>
+                <div class="h-meeting">会议室名称</div>
+                <div class="h-person">发起人</div>
+                <div class="h-department">发起人部门</div>
+                <div class="h-time">会议时间</div>
+                <div class="h-attends">参会人员</div>
+                <div class="h-status">会议状态</div>
+                <div class="h-operate">操作</div>
             </div>
             <div class="list-container" >
                 <el-timeline ref="timelineRef">
@@ -63,11 +74,11 @@
                         </div>
                         <div v-for="(item, key) in value.list" :key="index" class="card-item">
                             <!-- 会议主题 -->
-                            <div>
+                            <div class="h-title">
                                 <img src="@/assets/img/transmit-icon.png" alt="" class="transmit-icon" @click="transmitMeeting(item)">
                                 <el-popover
                                     placement="bottom"
-                                    :disabled="item.title.length < 11"
+                                    :disabled="item.title.length < 10"
                                     :width="100"
                                     trigger="hover"
                                     :content="item.title"
@@ -78,10 +89,10 @@
                                 </el-popover>
                             </div>
                             <!-- 会议室名称 -->
-                            <div>
+                            <div class="h-meeting">
                                 <el-popover
                                 placement="bottom"
-                                :disabled="item.meetingRoomName?.length < 15"
+                                :disabled="item.meetingRoomName?.length < 12"
                                 :width="200"
                                 trigger="hover"
                                 :content="item.meetingRoomName"
@@ -92,7 +103,7 @@
                                 </el-popover>
                             </div>
                             <!-- 发起人 -->
-                            <div>
+                            <div class="h-person">
                                 <el-popover
                                     placement="bottom"
                                     :disabled="item.adminUserName.length < 12"
@@ -105,10 +116,24 @@
                                     </template>
                                 </el-popover>
                             </div>
+                            <!-- 发起人部门 -->
+                            <div class="h-department">
+                                <el-popover
+                                    placement="bottom"
+                                    :disabled="item.department.length < 12"
+                                    :width="180"
+                                    trigger="hover"
+                                    :content="item.department"
+                                >
+                                    <template #reference>
+                                        <p class="ellipsis">{{ item.department }}</p>
+                                    </template>
+                                </el-popover>
+                            </div>
                             <!-- 会议时间 -->
-                            <div>{{ item.time }}</div>
+                            <div class="h-time">{{ item.time }}</div>
                             <!-- 参会人员 -->
-                            <div>
+                            <div class="h-attends">
                                 <el-popover
                                     placement="bottom"
                                     :disabled="item.attendees.length < 18"
@@ -122,9 +147,9 @@
                                 </el-popover>
                             </div>
                             <!-- 会议状态 -->
-                            <div>{{ item.stateValue }}</div>
+                            <div class="h-status">{{ item.stateValue }}</div>
                             <!-- 操作 -->
-                            <div>
+                            <div class="h-operate">
                                 <!-- <p v-show="item.status == 0 && item.createdBy == currentUserId">
                                     <span @click="handleEditMeeting(item)" >修改</span>
                                     <span @click="handleCancelMeeting(item.id)">取消</span>
@@ -402,8 +427,9 @@
     import { onMounted, reactive, ref } from 'vue';
     import { useRouter } from 'vue-router';
     import { useInfiniteScroll } from '@vueuse/core'
-    import { addMeetingMinutes, addMeetingWord, cancelMeetingRecord, getHistoryList, getMeetingMinutes, recordExport, recordPreview, getMeetingWord, deleteWordOrPlan } from '@/request/api/history'
+    import { addMeetingMinutes, addMeetingWord, cancelMeetingRecord, getHistoryList, getMeetingMinutes, recordExport, recordPreview, getMeetingWord, deleteWordOrPlan, getDepartmentList } from '@/request/api/history'
     import { meetingState } from '@/utils/types'
+    import { meetingStatus } from '@/stores/meeting-status';
     
     const router = useRouter();
     
@@ -434,7 +460,19 @@
     
     onMounted(async() => {
         await getDataOnScroll();
+        useMeetingStatus.getCenterRoomName();  // 获取所有会议室及状态
+        departmentOptions.value = (await getDepartmentList()).data  // 获取所有部门
     })
+
+    const departmentOptions = ref<any>([]);  // 部门选择下拉
+    const useMeetingStatus = meetingStatus(); // 所有会议室
+    // 会议室选择下拉信息
+    const roomOptions = useMeetingStatus.centerRoomName.map((item: any) => {
+      const id = item.id
+      const value = item.roomName
+      return { id, value }
+    })
+
     let searchForm = ref<any>({
         title: '',
         adminUserName: '',
@@ -1038,7 +1076,7 @@
             width: 1567px;
             text-align: center;
             margin: 0 auto;
-            ::v-deep(.el-date-editor), ::v-deep(.el-input) {
+            ::v-deep(.el-date-editor), ::v-deep(.el-input), ::v-deep(.el-select) {
                 box-shadow: 0 3px 3px 0 rgba(0, 0, 0, 0.08);
                 width: 250px;
                 // 去掉输入框边框
@@ -1125,7 +1163,7 @@
                         &:nth-child(1) {
                             position: relative;
                         }
-                        &:nth-child(7) {
+                        &:last-child {
                             // &>p>span:nth-child(1) {
                             //     color: #409EFF;
                             // }
@@ -1157,6 +1195,7 @@
                         .transmit-icon {
                             width: 22px;
                             position: absolute;
+                            top: calc(50% - 9px);
                             left: 0;
                             cursor: pointer;
                         }
@@ -1172,49 +1211,56 @@
                 justify-content: flex-start;
                 align-items: center;
                 div {
-                    width: 180px;
+                    width: 140px;
                     letter-spacing: 0;
                     display: flex;
                     // flex: 1;
                     justify-content: center;
-                    &:nth-child(1) {
-                        width: 200px;
-                        // flex: 1.2;
-                        padding: 0 6px 0 68px;
-                        cursor: pointer;
-                    }
-                    &:nth-child(2) {
-                        width: 200px;
-                        // flex: 1.2;
-                        // padding: 0 6px;
-                    }
-                    &:nth-child(3) {
-                        // width: 184px;
-                        // flex: 1.2;
-                        padding: 0 6px;
-                    }
-                    &:nth-child(5) {
-                        width: 243px;
-                        padding: 0 10px;
-                        // flex: 1.5;
-                    }
-                    &:nth-child(7) {
-                        // flex: 1.2;
-                        width: 200px;
-                        ::v-deep(.el-dropdown) {
-                            flex: .5;
-                            .el-dropdown-link {
-                                cursor: pointer;
-                                color: #409eff;
-                                font-size: 15px;
-                                display: flex;
-                                align-items: center;
-                                border: blanchedalmond;
-                                margin-left: 10px;
-                            }
-                        }
-                    }
-                }
+                    padding: 0 2px;
+                  }
+                  .h-title {
+                      width: 200px;
+                      // flex: 1.2;
+                      padding: 0 6px 0 25px;
+                      cursor: pointer;
+                  }
+                  .h-meeting {
+                      width: 200px;
+                      // flex: 1.2;
+                      // padding: 0 6px;
+                  }
+                  .h-person {
+                      // width: 184px;
+                      // flex: 1.2;
+                      // padding: 0 6px;
+                  }
+                  .h-department {
+                    width: 150px;
+                  }
+                  .h-attends {
+                      width: 258px;
+                      // padding: 0 10px;
+                      // flex: 1.5;
+                  }
+                  .h-status {
+                    width: 100px;
+                  }
+                  .h-operate {
+                      // flex: 1.2;
+                      width: 192px;
+                      ::v-deep(.el-dropdown) {
+                          flex: .5;
+                          .el-dropdown-link {
+                              cursor: pointer;
+                              color: #409eff;
+                              font-size: 15px;
+                              display: flex;
+                              align-items: center;
+                              border: blanchedalmond;
+                              margin-left: 10px;
+                          }
+                      }
+                  }
             }
         }
         :deep().meeting-summary {

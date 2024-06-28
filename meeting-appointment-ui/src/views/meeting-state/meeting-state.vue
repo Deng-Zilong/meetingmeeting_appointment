@@ -367,8 +367,9 @@ const submitBreak = (row: any, index: number) => {
   
   if (row.info != '') {
     addBreakInfoData({ deviceId: row.id, userId: userInfo.value.userId, info: row.info })
-    .then((res) => {
-        ElMessage.success(`成功提交"${row.deviceName}"的报损信息`);
+      .then((res) => {
+        // ElMessage.success(`成功提交"${row.deviceName}"的报损信息`);
+        ElMessage.success(res.msg)
         gridData.value[index].info = '';
         handleDeviceInfoReq(index, row.id);
       })

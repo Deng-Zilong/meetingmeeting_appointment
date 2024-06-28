@@ -33,7 +33,7 @@
         <el-select v-model="searchList.roomId" filterable clearable placeholder="会议室" @clear="handleChangeSearch">
           <el-option v-for="item in roomOptions" :key="item.id" :label="item.value" :value="item.id" />
         </el-select>
-        <el-select v-model="searchList.status" filterable clearable placeholder="状态" @clear="handleChangeSearch">
+        <el-select v-model="searchList.status" filterable clearable placeholder="当前状态" @clear="handleChangeSearch">
           <el-option v-for="item in stateOptions" :key="item.id" :label="item.value" :value="item.id" />
         </el-select>
         <el-button type="primary" @click="handleSearch">查 询</el-button>
@@ -51,6 +51,7 @@
           <div class="th-title t-name">设备名称</div>
           <div class="th-title t-roomName">所在会议室</div>
           <div class="th-title t-extend">报损次数</div>
+          <div class="th-title t-break">设备损坏提醒</div>
           <div class="th-title t-status">当前状态</div>
           <div class="th-title t-operate">操作</div>
         </div>
@@ -78,8 +79,13 @@
             <div class="room-tr-cell t-extend" :class="changeColor(item.extent)">
               <el-tag size="large" :type="changeColor(item.extent)">{{ item.extent }}次</el-tag>
             </div>
+            <div class="room-tr-cell t-break">{{ showBreakStatus(item.stopSend) }}</div>
             <div class="room-tr-cell t-status">{{ showStatus(item.status) }}</div>
             <div class="room-tr-cell t-operate">
+              <el-button plain :type="item.stopSend == 0 ? 'default' : 'danger'" @click="handleBreakEquip(item)">
+                <el-icon v-if="item.stopSend == 0"><Bell /></el-icon>
+                <el-icon v-else><MuteNotification /></el-icon>
+              </el-button>
               <el-button plain :type="item.status == 0 ? 'primary' : 'warning'" @click="handleBanEquip(item)">
                 {{editStatus(item.status) }}
               </el-button>
@@ -114,7 +120,7 @@ import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'elem
 import { computed, onMounted, reactive, ref } from 'vue'
 
 import { meetingStatus } from '@/stores/meeting-status'
-import { getDeviceData, addDeviceData, editDeviceData, delDeviceData, delAllDeviceData, setStatusData, getInfoData } from '@/request/api/manage'
+import { getDeviceData, addDeviceData, editDeviceData, delDeviceData, delAllDeviceData, setBreakData, setStatusData, getInfoData } from '@/request/api/manage'
 
 const useMeetingStatus = meetingStatus();  // 获取所有会议室信息
 const dialogAddVisible = ref(false)  // 新增设备 弹窗是否展示
@@ -122,15 +128,12 @@ const userInfo = ref<any>({})  // 用户信息
 const equipList = ref()  // 列表数据
 
 // 搜索
-const roomValue = ref('')  // 选择会议室
 const roomOptions = useMeetingStatus.centerRoomName.map((item: any) => {
   const id = item.id
   const value = item.roomName
   return { id, value }
 })
 
-const equipValue = ref('')  // 输入设备
-const stateValue = ref()  // 选择设备状态
 const stateOptions = [  // 可选设备状态值
   {
     id: 0,
@@ -157,26 +160,30 @@ const searchList = ref<any>({
   status: ''
 })
 
+// 点 三个清空 查询 重置 时，将勾选 全选 半选 都清空
+const clearChecked = () => {
+  checkAll.value = false  // 全选按钮取消
+  checkList.value = []  // 勾选清空
+  handleCheckedChange([]) // 半选清空
+}
+
 // 搜索三个的 clear事件 当清空搜索条件时，重新查询列表
 const handleChangeSearch = () => {
   getAllDevice()
-  checkAll.value = false  // 全选按钮取消
-  handleCheckedChange([])
-  handleCheckAllChange(false)
+  clearChecked()
 }
 
 const handleSearch = () => {
   page.value = 1;
   getAllDevice();
-  handleCheckedChange([])
-  handleCheckAllChange(false)
+
+  clearChecked()
 }
 const resetSearch = () => {
   refresh();
   getAllDevice();
-  
-  handleCheckedChange([])
-  handleCheckAllChange(false)
+
+  clearChecked()
 }
 
 const refresh = () => {
@@ -196,19 +203,25 @@ let isIndeterminate = ref(false)  // 是否半选
 
 // 全选
 const handleCheckAllChange = (val: boolean) => {
-  if (equipList.value.length === 0) return isIndeterminate.value = true;  // 列表数据没有时，全选勾选为空
+  // if (equipList.value.length === 0) return isIndeterminate.value = true;  // 列表数据没有时，全选勾选为空
 
-  checkList.value = val ? equipList.value.map((item: any) => item.id) : [];
-  isIndeterminate.value = false
-  // console.log(checkList.value,'选中的-全选-列表数据',equipList.value)
+  // checkList.value = val ? equipList.value.map((item: any) => item.id) : [];
+  // isIndeterminate.value = false
+
+  equipList.value.forEach((item: any) => {
+    if (val) {
+      if (!checkList.value.includes(item.id)) checkList.value.push(item.id)
+    } else {
+      checkList.value = checkList.value.filter((id: number) => id !== item.id)
+    }
+  })
 }
 
-// 勾选中的
+// 勾选中的  单个勾选  勾选到所有时 全选按钮为true
 const handleCheckedChange = (value: string[]) => {
   const checkedCount = value.length;
   checkAll.value = checkedCount === equipList.value.length;
   isIndeterminate.value = checkedCount > 0 && checkedCount < equipList.value.length;
-  // console.log(checkList.value,'选中-选中项-全选与否',checkAll.value)
 }
 
 // 批量删除 事件
@@ -248,19 +261,6 @@ const handleCurrentChange = (value: any) => {
   page.value = value;
   checkAll.value = false;
   getAllDevice();
-  // console.log(checkList.value, '前', value, equipList.value)
-
-  
-  // if (checkList.value !== equipList.value) {
-  //   checkAll.value = false;
-  //   console.log(checkList.value,'选中-by等于列表',equipList.value)
-  // } else {
-  //   checkAll.value = true;
-  // }
-  // 选中的包含当前列表的所有值，则全选
-  // checkAll.value = false;
-  // 当切换页码时，切换前的一页选中保留，切换后的一页根据选中情况
-  // checkList.value = equipList.value.filter((item: any) => checkList.value.includes(item.id))
 }
 
 const changeColor = computed(() => (extent: any) => {
@@ -273,12 +273,21 @@ const changeColor = computed(() => (extent: any) => {
   }
 })
 
-// 展示状态
+// 展示损坏状态
 const showStatus = computed(() => (status: number) => {
   if (status === 0) {  // 0-损坏 1-可用 
     return '损坏'
   } else {
     return "可用"
+  }
+})
+
+// 展示是否可上传报损信息 状态
+const showBreakStatus = computed(() => (stopSend: number) => {
+  if (stopSend === 0) {  // 0-禁用 1-可用 
+    return '禁止提醒'
+  } else {
+    return "允许提醒"
   }
 })
 
@@ -301,21 +310,11 @@ const getAllDevice = async () => {
   const res = await getDeviceData(params)
   equipList.value = res.data.records;
   total.value = res.data.total
-  // checkList.value
 
-  let arrTemp = []
-  arrTemp = equipList.value.map((item: any) => {
-    return item.id
-  })
-
-  // let tempcheckList = []
-  // for (let i = 0; i < checkList.value.length; i++){
-  //   tempcheckList.push(checkList.value[i])
-  // }
-  console.log(arrTemp, 'arrTemp', checkList.value);
-  if (JSON.stringify(arrTemp) === JSON.stringify(checkList.value)) {
-    checkAll.value = true
-  }
+   // 当列表数据没有时，全选勾选为空
+  if (equipList.value.length === 0) return; 
+  // 勾选中的值里面 有当前列表的所有id时，全选按钮为true
+  checkAll.value = equipList.value.every((item: any) => checkList.value.includes(item.id))
 }
 
 
@@ -441,6 +440,17 @@ const handleDetail = async (item: any) => {
   })
 }
 
+// 禁用设备上传报损信息 点击事件
+const handleBreakEquip = async (item: any) => {
+  await setBreakData({ id: item.id })
+  getAllDevice()
+}
+
+/**
+ * @description 修复设备（0-禁用 1-启用(修复)）
+ * @param {id} 设备id
+ */
+
 // 操作 禁用显示 // 0-禁用 1-修复 
 const editStatus = computed(() => (status: any) => {
   if (status === 0) {
@@ -449,11 +459,6 @@ const editStatus = computed(() => (status: any) => {
     return "禁用"
   }
 })
-
-/**
- * @description 修复设备（0-禁用 1-启用(修复)）
- * @param {id} 设备id
- */
 
 // 禁用设备点击事件
 const handleBanEquip = async (item: any) => {
@@ -488,9 +493,6 @@ const handleDeleteRoom = (item: any) => {
     justify-content: space-between;
     margin-bottom: 10px;
     .search-button {
-      .el-button {
-        // margin-right: 20px;
-      }
       .el-input, .el-select {
         width: 240px;
         margin-right: 10px;
@@ -529,13 +531,17 @@ const handleDeleteRoom = (item: any) => {
       //   width: 112px !important;
       // }
 
-      // .t-status {
-      //   width: 128px !important;
+      .t-status {
+        width: 128px !important;
+      }
+
+      // .t-break {
+      //   width: 150px !important;
       // }
 
-      // .t-operate {
-      //   width: 272px !important;
-      // }
+      .t-operate {
+        width: 400px !important;
+      }
 
       .room-table-th {
         display: flex;

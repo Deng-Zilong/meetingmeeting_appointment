@@ -101,3 +101,8 @@ export const addBreakInfoData = (params: any) => {
 export const delAllDeviceData = (params: any) => {
   return http.delete("/meeting/meetingDevice/devices", params)
 }
+
+// 禁止设备报损
+export const setBreakData = (params: any) => {
+  return http.put("/meeting/meetingDevice/stopSend", params)
+}

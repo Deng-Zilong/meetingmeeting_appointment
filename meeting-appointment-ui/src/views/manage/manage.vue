@@ -38,7 +38,10 @@
             <el-option v-for="item in roomOptions" :key="item.id" :label="item.value" :value="item.id" />
           </el-select>
           <el-input v-model="searchForm.adminUserName" clearable placeholder="请输入发起人名称" @clear="handleChangeSearch" />
-          <el-input v-model="searchForm.department" clearable placeholder="请输入发起人部门" @clear="handleChangeSearch" />
+          <el-select v-model="searchForm.department" filterable clearable placeholder="请选择发起人部门" @clear="handleChangeSearch">
+            <el-option v-for="item in departmentOptions" :key="item.departmentId" :label="item.departmentName" :value="item.departmentName" />
+          </el-select>
+          <!-- <el-input v-model="searchForm.department" clearable placeholder="请输入发起人部门" @clear="handleChangeSearch" /> -->
           <el-date-picker v-model="searchForm.dateRange" type="daterange" range-separator="-" value-format="YYYY-MM-DD"
             start-placeholder="开始日期" end-placeholder="结束日期" />
 
@@ -156,7 +159,7 @@
     import RoomChart from '@/views/manage/component/room-chart.vue';
     
     import { addNoticeData, getSelectAdminData, deleteAdminData, addAdminData, getAllRecordData, getRoomSelectionRate, getRoomOccupancyDate } from '@/request/api/manage'
-      
+    import { getDepartmentList } from '@/request/api/history'      
 
     // let loading = ref(true) // 加载状态
     let userInfo = ref<any>({});  // 获取用户信息 用于传后端参数
@@ -178,15 +181,19 @@
     let addGroupVisible = ref(false)
     let type = ref<number>(4); // 1 创建群组 2 修改群组
 
+    // 发起人部门选择下拉信息
+    const departmentOptions = ref<any>([])
 
     const activeName = ref('first')
     const handleClick = (tab: TabsPaneContext, event: Event) => {
     }
-    onMounted(() => {
+    
+    onMounted( async() => {
       userInfo.value = JSON.parse(localStorage.getItem('userInfo') || '{}');  // 用户信息
       getSelectAdmin()  // 查询所有管理员
       getDataOnScroll()  // 滚动加载
       useMeetingStatus.getCenterRoomName();  // 获取所有会议室及状态
+      departmentOptions.value = (await getDepartmentList()).data  // 获取所有部门
     })
 
 /******************************************* 公告 ***********************************/
@@ -303,10 +310,7 @@
         }, []);
     }
 
-    // 实时搜索查询 暂无
-    const themeValue = ref()
-    const createdByValue = ref()
-    const departmentValue = ref()
+    // 实时搜索查询
     const handleChangeSearch = () => {
       refresh()
       getDataOnScroll()
@@ -320,11 +324,13 @@
       department: '',
       dateRange: [],
     })
+    // 会议室选择下拉信息
     const roomOptions = useMeetingStatus.centerRoomName.map((item: any) => {
       const id = item.id
       const value = item.roomName
       return { id, value }
     })
+    
     const handleSearch = () => {
       refresh();
       getDataOnScroll();

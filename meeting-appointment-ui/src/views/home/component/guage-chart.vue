@@ -111,7 +111,7 @@ const refreshChart = () => {
         endAngle: -40, // 仪表盘结束角度
         clockwise: true, 
         min: 0, // 最小的数据值，映射到 minAngle
-        max: 100, // 最大的数据值，映射到 maxAngle
+        // max: 100, // 最大的数据值，映射到 maxAngle
         splitNumber: 10, // 仪表盘刻度的分割段数
         axisLine: { 
           show: true, // 是否显示仪表盘轴线
