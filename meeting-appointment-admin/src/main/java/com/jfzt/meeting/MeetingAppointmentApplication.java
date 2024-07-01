@@ -5,8 +5,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
- * @author zilong.deng
- * @since 2024-06-28 10:29:23
+ * 中心会议室预约
+ * @author:
+ * 负责人：翟臣宇
+ * 技术：卢振新
+ * 后端：邓子龙、杨旭昌
+ * 前端：寇梦梦、周颖
+ * 测试：于淼
+ * @since 2024-04-20 10:29:23
  */
 @SpringBootApplication
 @EnableTransactionManagement
