@@ -421,7 +421,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
         }
         // 会议室名称长度限制为15个字符
         if (meetingRoomDTO.getRoomName().length() > MAX_ROOM_NAME_LENGTH) {
-            throw new RRException("会议室名称长度不能超过15个字符！");
+            return Result.fail("会议室名称长度不能超过15个字符！");
         }
         // 获取要修改会议室的原来的名称
         String roomName = meetingRoomMapper.selectById(meetingRoomDTO.getId()).getRoomName();
@@ -433,7 +433,7 @@ public class MeetingRoomServiceImpl extends ServiceImpl<MeetingRoomMapper, Meeti
             for (String room : roomNameList) {
                 // 判断新的会议室名称和数据库中的会议室名称是否没有重复的，如果没有，则检查新的名字是否和数据库的其他名字相同
                 if (meetingRoomDTO.getRoomName().equals(room)) {
-                    throw new RRException("会议室名称重复！");
+                    return Result.fail("会议室名称重复！");
                 }
             }
         }

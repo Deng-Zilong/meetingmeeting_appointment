@@ -102,8 +102,7 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
                             words.add(word);
                             meetingWord.setChildrenPart(words);
                         }
-                    })
-                    .toList();
+                    }).collect(Collectors.toList());
             return Result.success(wordList);
         } catch (Exception e) {
             log.error("获取会议内容失败", e);
@@ -121,11 +120,11 @@ public class MeetingWordServiceImpl extends ServiceImpl<MeetingWordMapper, Meeti
     private List<MeetingWord> getChildren(MeetingWord root, List<MeetingWord> all) {
         return all.stream()
                 .filter(meetingWord -> Objects.equals(meetingWord.getParentId(), root.getId()))
-                .peek(childrenNode ->  {
+                .peek(childrenNode -> {
                     childrenNode.setChildrenPart(getChildren(childrenNode, all));
                     if (childrenNode.getChildrenPart().isEmpty()) {
                         MeetingWord word = MeetingWord.builder()
-                                .content(" ")
+                                .content("")
                                 .level(0)
                                 .parentId(childrenNode.getId())
                                 .build();
