@@ -13,10 +13,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.ResourceUtils;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -61,10 +59,6 @@ public class DynWordUtils {
      */
     private int currentRowIndex;
     /**
-     * 用户查询所在行
-     */
-    public String searchText = "主要内容";
-    /**
      * 所在行
      */
     public int row;
@@ -92,12 +86,20 @@ public class DynWordUtils {
      * @param templatePath
      * @param response
      */
-    public void createWord(String templatePath, HttpServletResponse response, MeetingRecordVO meetingRecordVO, String operation, String path, List<MeetingWord> meetingWords1) {
+    public void createWord(String templatePath, HttpServletResponse response, MeetingRecordVO meetingRecordVO, String operation, String path, List<MeetingWord> nodes) {
         try (InputStream inputStream = new FileInputStream(ResourceUtils.getFile(templatePath))) {
             templateDoc = new XWPFDocument(OPCPackage.open(inputStream));
             parseTemplateWord();
-            //填写主要内容word的
-            contentWord(templateDoc, meetingWords1);
+            // 读取Word模板文件
+            // 查找并定位到“主要内容：”标题
+            XWPFParagraph targetParagraph = findParagraph(templateDoc, "主要内容：");
+            // 获取“主要内容：”标题所在位置
+            int pos = templateDoc.getPosOfParagraph(targetParagraph) + 1;
+            List<Integer> numbering = new ArrayList<>();
+            // 在“主要内容：”标题后插入树形数据
+            for (MeetingWord node : nodes) {
+                pos = fillTreeData(templateDoc, node, pos, numbering,0);
+            }
             if ("1".equals(operation)) {
                 //直接导出电脑文件
                 FileOutputStream outputStream = new FileOutputStream(path + meetingRecordVO.getId() + meetingRecordVO.getTitle() + ".docx");
@@ -124,49 +126,6 @@ public class DynWordUtils {
         }
     }
 
-    private void contentWord(XWPFDocument document, List<MeetingWord> meetingWords) throws IOException {
-        //所在行
-        row =  findWord(document, searchText);
-        meetingWords.stream()
-                .filter(meetingWord ->meetingWord.getMeetingRecordId() == 574)
-                .map((menu) -> {
-                    // 添加一级列表项
-                    XWPFParagraph para1 = document.getParagraphs().get(++row);
-                    addListLevel(para1, menu.getTitle(),  menu.getLevel());
-                    addListLevel(para1, menu.getContent(),  menu.getLevel());
-                    para1.setIndentationLeft(menu.getLevel()*400);
-                    menu.setChildrenPart(getChildrenPart(menu, document));
-                    return menu;
-                }).collect(Collectors.toList());
-
-    }
-
-    private List<MeetingWord> getChildrenPart(MeetingWord menu1, XWPFDocument document) {
-        if (menu1.getChildrenPart() == null){
-            return null;
-        }
-        List<MeetingWord> meetingWords1 = menu1.getChildrenPart().stream()
-                .filter(meetingWord ->menu1.getId().equals(meetingWord.getParentId()))
-                .map((menu) -> {
-                    // 添加1.级列表项
-                    XWPFParagraph para2 = document.getParagraphs().get(++row);
-
-                    if (menu.getLevel() == 0){
-                        addListLevel(para2, menu.getContent(), menu.getLevel());
-                        para2.setIndentationLeft(rows);
-                    }else {
-                        addListLevel(para2, menu.getTitle(), menu.getLevel());
-                        rows = menu.getLevel()*300;
-                        para2.setIndentationLeft(menu.getLevel()*300);
-                    }
-
-                    menu.setChildrenPart(getChildrenPart(menu, document));
-                    return menu;
-                }).collect(Collectors.toList());
-
-        return meetingWords1;
-
-    }
 
     /**
      * 解析word模板
@@ -580,58 +539,70 @@ public class DynWordUtils {
         this.paramMap = paramMap;
     }
 
-    private static int findWord(XWPFDocument document, String searchText) throws IOException {
-        int position = -1;
-        // 遍历文档中的所有段落
-        for (int i = 0; i < document.getParagraphs().size(); i++) {
-            XWPFParagraph paragraph = document.getParagraphs().get(i);
-            String text = paragraph.getText();
-            if (text != null && text.contains(searchText)) {
-                position = i;
-                break;
+    private static XWPFParagraph findParagraph (XWPFDocument document, String text) {
+        for (XWPFParagraph paragraph : document.getParagraphs()) {
+            if (paragraph.getText().contains(text)) {
+                return paragraph;
             }
         }
-        // 如果文本不在段落中，则搜索所有运行
-        if (position == -1) {
-            for (XWPFParagraph paragraph : document.getParagraphs()) {
-                for (XWPFRun run : paragraph.getRuns()) {
-                    String text = run.getText(run.getTextPosition());
-                    if (text.contains(searchText)) {
-                        position = paragraph.getRuns().indexOf(run);
-                        break;
-                    }
+        return null;
+    }
+
+    private static int fillTreeData (XWPFDocument document, MeetingWord node, int pos, List<Integer> numbering, Integer parentLevel) {
+        if (node.getLevel() != 0) {
+            while (numbering.size() > node.getLevel()) {
+                numbering.removeLast();
+            }
+            if (numbering.size() == node.getLevel()) {
+                numbering.set(node.getLevel() - 1, numbering.get(node.getLevel() - 1) + 1);
+            } else {
+                numbering.add(1);
+            }
+
+            StringBuilder numberPrefix = new StringBuilder();
+            for (int i = 0; i < numbering.size(); i++) {
+                if (i > 0) {
+                    numberPrefix.append(".");
                 }
+                numberPrefix.append(numbering.get(i));
             }
+            numberPrefix.append(". ");
+
+            XWPFParagraph titleParagraph = document.insertNewParagraph(document.getParagraphArray(pos++).getCTP().newCursor());
+            XWPFRun titleRun = titleParagraph.createRun();
+            titleRun.setText(numberPrefix + node.getTitle());
+            titleRun.setBold(true);
+            titleRun.setFontSize(getFontSizeForLevel(node.getLevel()));
+            titleParagraph.setIndentationLeft(node.getLevel() * 200);
+        } else {
+            XWPFParagraph contentParagraph = document.insertNewParagraph(document.getParagraphArray(pos++).getCTP().newCursor());
+            XWPFRun contentRun = contentParagraph.createRun();
+            contentRun.setText(node.getContent());
+            contentParagraph.setIndentationLeft(parentLevel * 200 + 200); // 内容缩进
         }
-        return position;
+        if (node.getChildrenPart() == null || node.getChildrenPart().isEmpty()) {
+            return pos;
+        }
+
+        for (MeetingWord child : node.getChildrenPart()) {
+            pos = fillTreeData(document, child, pos, numbering, node.getLevel());
+        }
+        return pos;
     }
 
-    // 添加指定级别的列表项到指定段落
-    private static void addListLevel(XWPFParagraph paragraph, String text, int level) {
-        XWPFRun run = paragraph.createRun();
-        run.setText(text);
-        if (level != 0){
-            // 设置段落为指定级别的有序列表
-            BigInteger numId = getNumIdForLevel(level);
-            paragraph.setNumID(numId);
-        }
-
-    }
-
-    // 根据级别获取对应的numId
-    private static BigInteger getNumIdForLevel(int level) {
-        // 实际应用中，根据级别返回不同的numId，这里简单示例固定几个级别对应的numId
+    private static int getFontSizeForLevel (int level) {
         switch (level) {
             case 1:
-                return BigInteger.valueOf(1);
+                return 16; // 一级标题字号
             case 2:
-                return BigInteger.valueOf(2);
+                return 14; // 二级标题字号
             case 3:
-                return BigInteger.valueOf(3);
-            case 4:
-                return BigInteger.valueOf(4);
+                return 12; // 三级标题字号
             default:
-                return BigInteger.valueOf(1);
+                return 12; // 默认字号
         }
     }
+
+
+
 }

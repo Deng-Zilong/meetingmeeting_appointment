@@ -110,6 +110,8 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
     @Autowired
     private MeetingWordMapper meetingWordMapper;
     @Autowired
+    private MeetingWordService meetingWordService;
+    @Autowired
     private SysDepartmentUserMapper sysDepartmentUserMapper;
     private final ReentrantLock lock = new ReentrantLock();
     public static String path = "F:\\dd\\apply\\";
@@ -892,17 +894,13 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         paramMap.put("meetingTime", meetingRecordVO.getMeetingRoomName());
         paramMap.put("attendees", meetingRecordVO.getAttendees());
         paramMap.put("meetinggenda", meetingRecordVO.getTitle());
-        List<MeetingWord> meetingWords = meetingWordMapper.selectList(new LambdaQueryWrapper<MeetingWord>()
-                .eq(MeetingWord::getMeetingRecordId, 574));
 
-        List<MeetingWord> meetingWords1 = meetingWords.stream()
-                .filter(meetingWord ->meetingWord.getLevel() == 1&& meetingWord.getMeetingRecordId() == 574)
-                .map((menu) -> {
-                    menu.setChildrenPart(getChildrenPart(meetingWords, menu, menu.getLevel()+1));
-                    return menu;
-                }).collect(Collectors.toList());
 
-        DynWordUtils.process(paramMap, templatePaht, response, meetingRecordVO, operation, path,meetingWords1);
+        Result<List<MeetingWord>> result = meetingWordService.getMeetingWord(574L, "ym");
+        List<MeetingWord> nodes = result.getData();
+        // 假设jsonString是包含嵌套结构的JSON字符串
+
+        DynWordUtils.process(paramMap, templatePaht, response, meetingRecordVO, operation, path,nodes);
 
     }
 
@@ -1028,18 +1026,22 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 sheet.getRow(10 + name.size() + i + 1).getCell(6)
                         .setCellValue(minutesPlans.get(i).getStatus() == 1 ? "待优化" : "研发需求");
             }
+        }else {
+            //13
+            sheet.getRow(10 + name.size() + sizeOrder + 1+1).getCell(0).setCellValue("抄送对象:");
+            sheet.getRow(10 + name.size() + sizeOrder + 1+1).getCell(4).
+                    setCellValue("制表人：" + (meetingRecordVO.getAdminUserName() == null ? " " : meetingRecordVO.getAdminUserName()));
         }
-        //13
-        sheet.getRow(10 + name.size() + sizeOrder + 1).getCell(0).setCellValue("抄送对象:");
-        sheet.getRow(10 + name.size() + sizeOrder + 1).getCell(4).
-                setCellValue("制表人：" + (meetingRecordVO.getAdminUserName() == null ? " " : meetingRecordVO.getAdminUserName()));
+
+
+
         if (name.size() > 1) {
             sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 0, 0));
             sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 4, 4));
             sheet.addMergedRegion(new CellRangeAddress(10, 9 + name.size(), 5, 5));
         }
-        //        sheet.addMergedRegion(new CellRangeAddress(10 + name.size(),
-        //                10 + sizeOrder + name.size(), 0, 0));
+                sheet.addMergedRegion(new CellRangeAddress(10 + name.size(),
+                        10 + sizeOrder + name.size(), 0, 0));
 
         if ("1".equals(operation)) {
             //直接导出电脑文件
@@ -1201,7 +1203,7 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
         //导出word
         extractedWord(meetingRecordVO, null, operation);
         try {
-            String paths = URLEncoder.encode(path + meetingRecordVO.getId() + meetingRecordVO.getTitle() + ".xlsx", StandardCharsets.UTF_8);
+            String paths = path + meetingRecordVO.getId() + meetingRecordVO.getTitle() + ".docx";
             InputStream input = new FileInputStream(paths);
             return docxsToHtml(input);
         } catch (Exception e) {
