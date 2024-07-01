@@ -1021,11 +1021,11 @@ public class MeetingRecordServiceImpl extends ServiceImpl<MeetingRecordMapper, M
                 .setCellValue("目标与工作内容:");
         if (sizeOrder != 0) {
             //把数据插入到新增行里
-            for (int i = 0; i < sizeOrder; i++) {
-                sheet.getRow(10 + name.size() + i + 1).getCell(3).setCellValue(minutesPlans.get(i).getPlan());
-                sheet.getRow(10 + name.size() + i + 1).getCell(6)
-                        .setCellValue(minutesPlans.get(i).getStatus() == 1 ? "待优化" : "研发需求");
-            }
+//            for (int i = 0; i < sizeOrder; i++) {
+//                sheet.getRow(10 + name.size() + i + 1+1).getCell(3).setCellValue(minutesPlans.get(i).getPlan());
+//                sheet.getRow(10 + name.size() + i + 1+1).getCell(6)
+//                        .setCellValue(minutesPlans.get(i).getStatus() == 1 ? "待优化" : "研发需求");
+//            }
         }else {
             //13
             sheet.getRow(10 + name.size() + sizeOrder + 1+1).getCell(0).setCellValue("抄送对象:");
