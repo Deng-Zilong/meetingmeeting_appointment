@@ -898,7 +898,7 @@
      */
     const getMeetingWordDetail = () => {
         
-        getMeetingWord(meetingRecordId.value)
+        getMeetingWord({userId: userInfo.value.userId, meetingRecordId: meetingRecordId.value})
             .then(res => {
 
                 const target = res.data.filter((item: any) => item.type == 1);

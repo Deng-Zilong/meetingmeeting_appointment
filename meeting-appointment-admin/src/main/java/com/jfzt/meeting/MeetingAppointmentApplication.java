@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * 中心会议室预约
- * @author:
+ * @author
  * 负责人：翟臣宇
  * 技术：卢振新
  * 后端：邓子龙、杨旭昌

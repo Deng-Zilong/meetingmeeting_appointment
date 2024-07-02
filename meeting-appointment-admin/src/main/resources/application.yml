@@ -7,7 +7,7 @@ spring:
     name: meeting-appointment
   profiles:
     active: dev
-    include: db,log,common,modules,quartz
+    include: log,common,modules,quartz
   # application.yml
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss

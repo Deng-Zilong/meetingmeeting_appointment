@@ -24,8 +24,8 @@ export const getMeetingMinutes = (data: {userId: string, meetingRecordId: number
 }
 
 // 获取查询会议纪要 Word
-export const getMeetingWord = (meetingRecordId: number) => {
-    return http.get("/meeting/word", {meetingRecordId})
+export const getMeetingWord = (data: {userId: string, meetingRecordId: number}) => {
+    return http.get("/meeting/word", data)
 }
 
 // 新增/编辑会议纪要 Word
